@@ -1,0 +1,189 @@
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-dashboard
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-dashboard
+    spec:
+      containers:      
+      - name: openwisp-dashboard
+        image: atb00ker/ready-to-run:openwisp-dashboard
+        ports:
+          - containerPort: 8003
+        envFrom:
+          - configMapRef:
+              name: common-config
+        volumeMounts:
+          - mountPath: /opt/openwisp/static
+            name: openwisp-dashboard-static
+          - mountPath: /opt/openwisp/media
+            name: openwisp-media-data
+      volumes:
+        - name: openwisp-media-data
+          persistentVolumeClaim:
+            claimName: media-pv-claim
+        - name: openwisp-dashboard-static
+          persistentVolumeClaim:
+            claimName: static-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-controller
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-controller
+    spec:
+      containers:
+      - name: openwisp-controller
+        image: atb00ker/ready-to-run:openwisp-controller
+        ports:
+          - containerPort: 8000
+        envFrom:
+          - configMapRef:
+              name: common-config
+        volumeMounts:
+          - mountPath: /opt/openwisp/static
+            name: openwisp-controller-static
+          - mountPath: /opt/openwisp/media
+            name: openwisp-media-data
+      volumes:
+        - name: openwisp-media-data
+          persistentVolumeClaim:
+            claimName: media-pv-claim
+        - name: openwisp-controller-static
+          persistentVolumeClaim:
+            claimName: static-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-radius
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-radius
+    spec:
+      containers:
+      - name: openwisp-radius
+        image: atb00ker/ready-to-run:openwisp-radius
+        ports:
+          - containerPort: 8002
+        envFrom:
+          - configMapRef:
+              name: common-config
+        volumeMounts:
+          - mountPath: /opt/openwisp/static
+            name: openwisp-radius-static
+      volumes:
+        - name: openwisp-radius-static
+          persistentVolumeClaim:
+            claimName: static-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-topology
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-topology
+    spec:
+      containers:
+      - name: openwisp-topology
+        image: atb00ker/ready-to-run:openwisp-topology
+        ports:
+          - containerPort: 8001
+        envFrom:
+          - configMapRef:
+              name: common-config
+        volumeMounts:
+          - mountPath: /opt/openwisp/static
+            name: openwisp-topology-static
+      volumes:
+        - name: openwisp-topology-static
+          persistentVolumeClaim:
+            claimName: static-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-nginx
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-nginx
+    spec:
+      containers:
+      - name: openwisp-nginx
+        image: atb00ker/ready-to-run:openwisp-nginx
+        volumeMounts:
+          - mountPath: /opt/openwisp/static
+            name: openwisp-nginx-static
+          - mountPath: /opt/openwisp/media
+            name: openwisp-media-data
+      volumes:
+        - name: openwisp-nginx-static
+          persistentVolumeClaim:
+            claimName: static-pv-claim
+        - name: openwisp-media-data
+          persistentVolumeClaim:
+            claimName: media-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-postgresql
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-postgresql
+    spec:
+      containers:
+        - name: openwisp-postgresql
+          image: mdillon/postgis:10-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: openwisp-postgres-data
+      volumes:
+        - name: openwisp-postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:alpine  
+        ports:
+          - containerPort: 6379

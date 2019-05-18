@@ -1,0 +1,9 @@
+---
+services: docker
+
+branches:
+  only:
+  - master
+  - travis
+
+script: echo "Hello, World!"
