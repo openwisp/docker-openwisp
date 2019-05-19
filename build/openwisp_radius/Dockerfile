@@ -1,16 +1,7 @@
-FROM python:3.7-alpine AS BASE
+FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
-RUN apk add  --update --no-cache build-base postgresql-dev libffi-dev openssl-dev python3-dev zlib-dev jpeg-dev git gettext linux-headers
-RUN pip install https://github.com/openwisp/django-freeradius/tarball/master && \
-    pip install https://github.com/openwisp/openwisp-users/tarball/master && \
-    pip install -e git+git://github.com/openwisp/openwisp-radius#egg=openwisp_radius && \
-    pip install -e git+git://github.com/openwisp/openwisp-utils#egg=openwisp_utils && \
-    pip install psycopg2 uwsgi
 
-FROM BASE
-
-COPY ./common/ /opt/openwisp/
 COPY ./openwisp_radius/urls.py \ 
     ./openwisp_radius/module_settings.py \
     /opt/openwisp/openwisp/

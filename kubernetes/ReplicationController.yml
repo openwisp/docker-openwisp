@@ -12,9 +12,9 @@ spec:
     spec:
       containers:      
       - name: openwisp-dashboard
-        image: atb00ker/ready-to-run:openwisp-dashboard
+        image: openwisp/openwisp-dashboard:latest
         ports:
-          - containerPort: 8003
+          - containerPort: 8000
         envFrom:
           - configMapRef:
               name: common-config
@@ -44,9 +44,9 @@ spec:
     spec:
       containers:
       - name: openwisp-controller
-        image: atb00ker/ready-to-run:openwisp-controller
+        image: openwisp/openwisp-controller:latest
         ports:
-          - containerPort: 8000
+          - containerPort: 8001
         envFrom:
           - configMapRef:
               name: common-config
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
       - name: openwisp-radius
-        image: atb00ker/ready-to-run:openwisp-radius
+        image: openwisp/openwisp-radius:latest
         ports:
           - containerPort: 8002
         envFrom:
@@ -103,9 +103,9 @@ spec:
     spec:
       containers:
       - name: openwisp-topology
-        image: atb00ker/ready-to-run:openwisp-topology
+        image: openwisp/openwisp-topology:latest
         ports:
-          - containerPort: 8001
+          - containerPort: 8003
         envFrom:
           - configMapRef:
               name: common-config
@@ -130,7 +130,7 @@ spec:
     spec:
       containers:
       - name: openwisp-nginx
-        image: atb00ker/ready-to-run:openwisp-nginx
+        image: openwisp/openwisp-nginx:latest
         volumeMounts:
           - mountPath: /opt/openwisp/static
             name: openwisp-nginx-static

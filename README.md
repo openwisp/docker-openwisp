@@ -1,22 +1,19 @@
-# OPENWISP Dockerization Prototype
+# Docker-OpenWISP 
 
-I've tested installation of openwisp-controller, openwisp-network-topology, openwisp-radius & openwisp-dashboard with a redis instance and a postgresql instance.
+[![Build Status](https://travis-ci.org/openwisp/docker-openwisp.svg?branch=master)](https://travis-ci.org/openwisp/docker-openwisp)
 
-I've also tested horizontal scaling with docker swarm & kubernetes.
+Easily running OpenWISP on your kubernetes cluster.
 
 ![kubernetes](https://i.ibb.co/rGpLq4y/ss1.png)
-
-## Testing the Prototype
-
-The sample files for deployment on kubernetes is available in the `kubernetes/` directory. You can also deploy the same using terraform and the relevant files are present in `terraform/`.
+The sample files for deployment on kubernetes are available in the `kubernetes/` directory.
 
 Images are available on docker hub and can be pulled from the following links:
-- OpenWISP Dashboard - `atb00ker/ready-to-run:openwisp-dashboard`
-- OpenWISP Radius - `atb00ker/ready-to-run:openwisp-radius`
-- OpenWISP Controller - `atb00ker/ready-to-run:openwisp-controller`
-- OpenWISP Network Topology - `atb00ker/ready-to-run:openwisp-topology`
-- OpenWISP Nginx - `atb00ker/ready-to-run:openwisp-nginx`
-- OpenWISP Orchestration - `atb00ker/ready-to-run:openwisp-orchestration`
+- OpenWISP Base - `openwisp/openwisp-base:latest`
+- OpenWISP Dashboard - `openwisp/openwisp-dashboard:latest`
+- OpenWISP Radius - `openwisp/openwisp-radius:latest`
+- OpenWISP Controller - `openwisp/openwisp-controller:latest`
+- OpenWISP Network Topology - `openwisp/openwisp-topology:latest`
+- OpenWISP Nginx - `openwisp/openwisp-nginx:latest`
 
 **Test using:**
 1. [Kubernetes](https://github.com/atb00ker/dockerize-openwisp#kubernetes)
@@ -31,7 +28,6 @@ Images are available on docker hub and can be pulled from the following links:
 3. (optional) Customization: You can change the settings in the container by changing the environment variables. You can pass the environment variables by changing [this file](https://github.com/atb00ker/dockerize-openwisp/blob/master/kubernetes/ConfigMap.yml). You can add any of the variables from the [list here](https://github.com/atb00ker/dockerize-openwisp/blob/master/.env). 
 - The ConfigMap with name `postgres-config` will pass the environment variables only to the postgresql container. 
 - The ConfigMap with name `common-config` will pass the environment variables to all the openwisp containers.
-- The ConfigMap with name `controller-config` will pass the environment variables to only the openwisp-controller container. If required, new `ConfigMap` can be easily set and added to the service as done [here](https://github.com/atb00ker/dockerize-openwisp/blob/79021ca8ad1d1c083d2822f05143f3c80b0d8077/kubernetes/ReplicationController.yml#L19).
 
 4. If you are doing bare-metal setup, follow the steps below to setup nfs-provisioner:
 
@@ -71,12 +67,12 @@ Testing on docker-compose is relatively less resource and time consuming.
 3. Pull all the required images to avoid building them. (building images is a time consuming task.)
 
 ```bash
-docker pull atb00ker/ready-to-run:openwisp-dashboard
-docker pull atb00ker/ready-to-run:openwisp-radius
-docker pull atb00ker/ready-to-run:openwisp-controller
-docker pull atb00ker/ready-to-run:openwisp-topology
-docker pull atb00ker/ready-to-run:openwisp-orchestratoin
-docker pull atb00ker/ready-to-run:openwisp-nginx
+docker pull openwisp/openwisp-base:latest
+docker pull openwisp/openwisp-dashboard:latest
+docker pull openwisp/openwisp-radius:latest
+docker pull openwisp/openwisp-controller:latest
+docker pull openwisp/openwisp-topology:latest
+docker pull openwisp/openwisp-nginx:latest
 ```
 
 4. Run containers: Inside root of the repository, run `docker-compose up`. It will take a while for the containers to start up. (~1 minute)
@@ -96,10 +92,10 @@ Guide to build images again with modification or with different environment vari
 
 ##### Steps:
 
-1. Install docker-compose: `pip install docker-compose`
+1. Install docker-compose
 2. (optional) Congfigure: Manipulate all the values in the .env file as you desire.
 3. Make desired changes in the Dockerfiles.
-4. You can build the containers with `docker-compose build`. 
+4. In the root of the repository, run `make`.
 5. After that do `docker-compose up`, when the containers are ready, you can test them out by going to the domain name of the modules.
 
 Note:

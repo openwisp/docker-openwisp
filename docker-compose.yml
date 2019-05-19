@@ -2,8 +2,8 @@ version: "3"
 
 services:
   dashboard:
-    image: atb00ker/ready-to-run:openwisp-dashboard
-    build: 
+    image: openwisp/openwisp-dashboard:latest
+    build:
       context: build
       dockerfile: openwisp_dashboard/Dockerfile
       args:
@@ -22,7 +22,7 @@ services:
       - redis
 
   controller:
-    image:  atb00ker/ready-to-run:openwisp-controller
+    image:  openwisp/openwisp-controller:latest
     build: 
       context: build
       dockerfile: openwisp_controller/Dockerfile
@@ -42,7 +42,7 @@ services:
       - dashboard
 
   radius:
-    image: atb00ker/ready-to-run:openwisp-radius
+    image: openwisp/openwisp-radius:latest
     build: 
       context: build
       dockerfile: openwisp_radius/Dockerfile
@@ -57,7 +57,7 @@ services:
       - dashboard
 
   topology:
-    image: atb00ker/ready-to-run:openwisp-topology
+    image: openwisp/openwisp-topology:latest
     build: 
       context: build
       dockerfile: openwisp_topology/Dockerfile
@@ -72,7 +72,7 @@ services:
       - dashboard
 
   orchestration:
-    image: atb00ker/ready-to-run:openwisp-orchestration
+    image: openwisp/openwisp:openwisp-orchestration
     build: 
       context: build
       dockerfile: openwisp_orchestration/Dockerfile
@@ -82,7 +82,7 @@ services:
       - openwisp_certs:/etc/letsencrypt
 
   nginx:
-    image: atb00ker/ready-to-run:openwisp-nginx
+    image: openwisp/openwisp-nginx:latest
     build: 
       context: build
       dockerfile: openwisp_nginx/Dockerfile

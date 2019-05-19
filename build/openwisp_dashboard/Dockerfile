@@ -1,17 +1,9 @@
-FROM python:3.7-alpine AS BASE
+FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
-RUN apk add --update --no-cache build-base libffi-dev openssl-dev postgresql-dev python3-dev zlib-dev jpeg-dev musl-dev gettext linux-headers git --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing gdal-dev geos-dev
-
-COPY ./openwisp_dashboard/requirements.txt /opt/openwisp/requirements.txt
-RUN pip install -r requirements.txt
-
-FROM BASE
 
 # Location: /opt/openwisp/
-COPY ./common/ \
-    ./openwisp_dashboard/load_init_data.py \
-    /opt/openwisp/
+COPY ./openwisp_dashboard/load_init_data.py /opt/openwisp/
 # Location: /opt/openwisp/openwisp/
 COPY ./openwisp_controller/module_settings.py /opt/openwisp/openwisp/controller_settings.py
 COPY ./openwisp_topology/module_settings.py /opt/openwisp/openwisp/topology_settings.py
@@ -22,6 +14,7 @@ COPY ./openwisp_dashboard/module_settings.py \
 
 RUN chmod +x /opt/openwisp/init_command.sh
 CMD /opt/openwisp/init_command.sh
+EXPOSE $DASHBOARD_APP_PORT
 
 ARG DASHBOARD_APP_PORT=8000
 ENV MODULE_NAME=dashboard \
@@ -49,5 +42,3 @@ ENV MODULE_NAME=dashboard \
     REDIS_HOST=redis \
     DJANGO_X509_DEFAULT_CERT_VALIDITY=1825 \
     DJANGO_X509_DEFAULT_CA_VALIDITY=3650
-
-EXPOSE $DASHBOARD_APP_PORT

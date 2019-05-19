@@ -1,21 +1,14 @@
-FROM python:3.7-alpine AS BASE
+FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
 
-RUN apk add --update --no-cache build-base libffi-dev openssl-dev postgresql-dev gettext linux-headers python3-dev zlib-dev jpeg-dev musl-dev git --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing gdal-dev geos-dev 
-
-COPY ./openwisp_controller/requirements.txt /opt/openwisp/requirements.txt
-RUN pip install -r requirements.txt
-
-FROM BASE
-
-COPY ./common/ /opt/openwisp/
 COPY ./openwisp_controller/urls.py \
     ./openwisp_controller/module_settings.py \
     /opt/openwisp/openwisp/
 
 RUN chmod +x /opt/openwisp/init_command.sh
 CMD /opt/openwisp/init_command.sh
+EXPOSE $CONTROLLER_APP_PORT
 
 ARG CONTROLLER_APP_PORT=8001
 ENV MODULE_NAME=controller \
@@ -44,5 +37,3 @@ ENV MODULE_NAME=controller \
     DJANGO_EMAIL_PORT=1025 \
     DJANGO_EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend \
     DASHBOARD_APP_SERVICE=dashboard
-
-EXPOSE $CONTROLLER_APP_PORT
