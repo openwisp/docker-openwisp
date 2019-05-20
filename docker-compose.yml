@@ -1,0 +1,132 @@
+version: "3"
+
+services:
+  dashboard:
+    image: atb00ker/ready-to-run:openwisp-dashboard
+    build: 
+      context: build
+      dockerfile: openwisp_dashboard/Dockerfile
+      args:
+        DASHBOARD_APP_PORT: $DASHBOARD_APP_PORT
+    deploy:
+      replicas: 1
+    environment:
+      - DB_ENGINE=$DB_GIS_ENGINE
+    env_file:
+      - .env
+    volumes:
+      - openwisp_static:/opt/openwisp/static
+      - openwisp_media:/opt/openwisp/media
+    depends_on:
+      - postgres
+      - redis
+
+  controller:
+    image:  atb00ker/ready-to-run:openwisp-controller
+    build: 
+      context: build
+      dockerfile: openwisp_controller/Dockerfile
+      args:
+        CONTROLLER_APP_PORT: $CONTROLLER_APP_PORT
+    deploy:
+      replicas: 1
+    env_file:
+      - .env
+    environment:
+      - DB_ENGINE=$DB_GIS_ENGINE
+    volumes:
+      - openwisp_media:/opt/openwisp/media
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
+  radius:
+    image: atb00ker/ready-to-run:openwisp-radius
+    build: 
+      context: build
+      dockerfile: openwisp_radius/Dockerfile
+      args:
+        RADIUS_APP_PORT: $RADIUS_APP_PORT
+    deploy:
+      replicas: 1
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - dashboard
+
+  topology:
+    image: atb00ker/ready-to-run:openwisp-topology
+    build: 
+      context: build
+      dockerfile: openwisp_topology/Dockerfile
+      args:
+        TOPOLOGY_APP_PORT: $TOPOLOGY_APP_PORT
+    deploy:
+      replicas: 1
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - dashboard
+
+  orchestration:
+    image: atb00ker/ready-to-run:openwisp-orchestration
+    build: 
+      context: build
+      dockerfile: openwisp_orchestration/Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - openwisp_certs:/etc/letsencrypt
+
+  nginx:
+    image: atb00ker/ready-to-run:openwisp-nginx
+    build: 
+      context: build
+      dockerfile: openwisp_nginx/Dockerfile
+    deploy:
+      replicas: 1
+    env_file:
+      - .env
+    volumes:
+      - openwisp_certs:/etc/letsencrypt:ro
+      - openwisp_static:/opt/openwisp/static:ro
+      - openwisp_media:/opt/openwisp/media:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - dashboard
+      - controller
+      - radius
+      - topology
+
+  postgres:
+    image: mdillon/postgis:10-alpine
+    deploy:
+      replicas: 1
+    environment:
+      - POSTGRES_DB=$DB_NAME
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASS
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    depends_on:
+      - orchestration
+
+  redis:
+    image: redis:alpine
+    deploy:
+      replicas: 1
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data: {}
+  openwisp_certs: {}
+  openwisp_media: {}
+  openwisp_static: {}

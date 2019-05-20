@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/tls-acme: "true"
+  name: openwisp
+spec:
+  rules:
+  - host: openwisp-dashboard.2stacks.net
+    http:
+      paths:
+      - backend:
+          serviceName: openwisp-nginx
+          servicePort: 8080
+        path: /
+  - host: openwisp-controller.2stacks.net
+    http:
+      paths:
+      - backend:
+          serviceName: openwisp-nginx
+          servicePort: 8081
+        path: /
+  - host: openwisp-radius.2stacks.net
+    http:
+      paths:
+      - backend:
+          serviceName: openwisp-nginx
+          servicePort: 8082
+        path: /
+  - host: openwisp-topology.2stacks.net
+    http:
+      paths:
+      - backend:
+          serviceName: openwisp-nginx
+          servicePort: 8083
+        path: /
+  tls:
+  - hosts:
+    - openwisp-dashboard.2stacks.net
+    - openwisp-controller.2stacks.net
+    - openwisp-radius.2stacks.net
+    - openwisp-topology.2stacks.net
+    secretName: openwisp-2stacks-crt
+status:
+  loadBalancer:
+    ingress:
+    - ip: 172.16.6.22
+    - ip: 172.16.6.23
+    - ip: 172.16.6.24

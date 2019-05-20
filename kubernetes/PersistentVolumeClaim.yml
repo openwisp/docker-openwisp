@@ -1,0 +1,46 @@
+# Create Persistent Volumes for use with NFS Server Provisioner 
+# See - https://github.com/kubernetes-incubator/external-storage/tree/master/nfs
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-provisioner"
+  labels:
+    app: openwisp-postgresql
+spec:
+  storageClassName: nfs-provisioner
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: media-pv-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-provisioner"
+spec:
+  storageClassName: nfs-provisioner
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: static-pv-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-provisioner"
+spec:
+  storageClassName: nfs-provisioner
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi

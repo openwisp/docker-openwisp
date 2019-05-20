@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard
+  labels:
+      app: openwisp-dashboard
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    app: openwisp-dashboard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: controller
+  labels:
+      app: openwisp-controller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8001
+      targetPort: 8001
+  selector:
+    app: openwisp-controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radius
+  labels:
+      app: openwisp-radius
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8002
+      targetPort: 8002
+  selector:
+    app: openwisp-radius
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: topology
+  labels:
+      app: openwisp-topology
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8003
+      targetPort: 8003
+  selector:
+    app: openwisp-topology
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  labels:
+    app: openwisp-postgresql
+spec:
+  type: ClusterIP
+  ports:
+   - port: 5432
+  selector:
+   app: openwisp-postgresql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  ports:
+   - port: 6379
+  selector:
+   app: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openwisp-nginx
+  labels:
+    app: openwisp-nginx
+spec:
+  type: ClusterIP
+  ports:
+    - name: insecure
+      port: 80
+    - name: secure
+      port: 443
+  selector:
+   app: openwisp-nginx
+  externalIPs:
+    - 172.16.6.22
+    - 172.16.6.23
+    - 172.16.6.24
