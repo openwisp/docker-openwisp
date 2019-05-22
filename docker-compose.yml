@@ -17,6 +17,7 @@ services:
     volumes:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
+      - public_html:/opt/openwisp/public_html
     depends_on:
       - postgres
       - redis
@@ -36,6 +37,7 @@ services:
       - DB_ENGINE=$DB_GIS_ENGINE
     volumes:
       - openwisp_media:/opt/openwisp/media
+      - public_html:/opt/openwisp/public_html
     depends_on:
       - postgres
       - redis
@@ -71,16 +73,6 @@ services:
       - postgres
       - dashboard
 
-  orchestration:
-    image: openwisp/openwisp:openwisp-orchestration
-    build: 
-      context: build
-      dockerfile: openwisp_orchestration/Dockerfile
-    env_file:
-      - .env
-    volumes:
-      - openwisp_certs:/etc/letsencrypt
-
   nginx:
     image: openwisp/openwisp-nginx:latest
     build: 
@@ -91,9 +83,10 @@ services:
     env_file:
       - .env
     volumes:
-      - openwisp_certs:/etc/letsencrypt:ro
       - openwisp_static:/opt/openwisp/static:ro
       - openwisp_media:/opt/openwisp/media:ro
+      - openwisp_certs:/etc/letsencrypt
+      - public_html:/opt/openwisp/public_html
     ports:
       - "80:80"
       - "443:443"
@@ -115,8 +108,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    depends_on:
-      - orchestration
 
   redis:
     image: redis:alpine
@@ -130,3 +121,4 @@ volumes:
   openwisp_certs: {}
   openwisp_media: {}
   openwisp_static: {}
+  public_html: {}
