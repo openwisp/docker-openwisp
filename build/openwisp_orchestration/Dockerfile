@@ -1,8 +1,8 @@
 FROM python:3.7-alpine
 
-WORKDIR /opt/openwisp/
-
 RUN apk add certbot openssl
+
+WORKDIR /opt/openwisp/
 
 ENV ORCHESTRATION_CERT_MODE=False \
     PYTHONUNBUFFERED=1 \
