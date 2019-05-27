@@ -50,15 +50,13 @@ INSTALLED_APPS = [
     'openwisp_radius',
 ]
 
-# Overwrite all previously set EXTENDED_APPS
-# To ensure the desired order is maintained
-# and we have no unpredictable migrations
-# by any future changes.
 EXTENDED_APPS = ['django_freeradius',
                  'django_netjsongraph',
                  'django_netjsonconfig',
                  'django_x509',
                  'django_loci']
 
-CORS_ORIGIN_ALLOW_ALL = bool(
-    os.environ['DJANGO_DASHBOARD_CORS_ORIGIN_ALLOW_ALL'])
+if os.environ['DJANGO_DASHBOARD_CORS_ORIGIN_ALLOW_ALL'] == "True":
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    CORS_ORIGIN_ALLOW_ALL = False

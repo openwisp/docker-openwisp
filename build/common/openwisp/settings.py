@@ -109,10 +109,8 @@ MEDIA_ROOT = '%s/media' % BASE_DIR
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
-EMAIL_PORT = os.environ['DJANGO_EMAIL_PORT']
-EMAIL_BACKEND = os.environ['DJANGO_EMAIL_BACKEND']
-
-# Set default email
+# Email Configurations
+EMAIL_HOST = os.environ['EMAIL_HOST']
 DEFAULT_FROM_EMAIL = os.environ['DJANGO_DEFAULT_FROM_EMAIL']
 
 # See http://docs.djangoproject.com/en/dev/topics/logging for
