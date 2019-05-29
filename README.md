@@ -116,10 +116,9 @@ Note:
 Guide to build images again with modification or with different environment variables.
 
 1. Install docker-compose.
-2. In the root of the repository, run `make`.
-3. Run `docker-compose up`, when the containers are ready, you can test them out by going to the domain name of the modules.
+2. In the root of the repository, run `make develop`, when the containers are ready, you can test them out by going to the domain name of the modules.
 
-Now you'll need to do steps (2) and (3) everytime you make a changes and want to build the images again. Consider using `docker-compose up -d` that may save you sometime if you need to build a container again and again.
+Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 
 **Note:**
    - Default username & password are `admin`.
@@ -142,3 +141,19 @@ To disable an openwisp service container and plug your own service like database
    - Change the [email configuration variables](docs/ENV.md) to point to your instances.
 - openwisp-nginx:
    - Configurations in `build/openwisp_nginx/` are helpful to replicate in your own instance.
+
+# Makefile Options
+
+**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/general).**
+
+The Makefile has following options, that are useful for developers & users. Default action is `compose-build`.
+
+- `build-base`: Build openwisp-base image. It is the base image used in other images. It takes the most time to build.
+- `compose-build`: Build the openwisp images. This option must be used in most usecases, example when a user is building custom images.
+- `publish-build`: Similar to `compose-build` except the produced can be used for manually testing before publishing official images and publishing the official images using the `publish` option.
+- `runtests`: Run testcases to ensure all the services are working.
+- `develop-runtests`: Similar to `runtests`, it runs the testcases except doesn't stop the containers after running the tests which maybe desired for debugging & analyzing failing container's logs.
+- `travis-runtests`: Similar to `runtests`, it runs the testcases except used in travis builds because it doesn't clean up after running the tests and prints all the container's logs when an error occurs in the tests.
+- `clean`: Purge everything produced during building the images.
+- `develop`: Useful for development. Bundles all the commands required to build the images and run containers during development. With this option, you can interact with the interface and APIs and the logs will be printed on the terminal for debugging on the debugging level you select from the `.env` file.
+- `publish`: Build, test and publish the latest Official images.

@@ -1,13 +1,15 @@
-# Makefile to create all the docker-images
+# Find documentation in README.md under
+# the heading "Makefile Options".
 
 SHELL := /bin/bash
 
-# Build
-compose-build: build-base
-	docker-compose build
-	python build.py default-secret-key
+default: compose-build
 
-build-base: python-build-script
+# Build
+python-build: build.py
+	python build.py change-secret-key
+
+build-base:
 	docker build --tag openwisp/openwisp-base:intermedia-system \
 	             --file ./build/openwisp_base/Dockerfile \
 	             --target SYSTEM ./build/
@@ -17,11 +19,49 @@ build-base: python-build-script
 	docker build --tag openwisp/openwisp-base:latest \
 	             --file ./build/openwisp_base/Dockerfile ./build/
 
-python-build-script: build.py
-	python build.py change-secret-key
+compose-build: python-build build-base
+	docker-compose build --parallel
+	python build.py default-secret-key
+
+publish-build: build-base
+	docker-compose build --parallel
 
 # Test
-runtests:
-	docker-compose up -d
-	source ./tests/tests.sh && init_dashoard_tests logs
+runtests: develop-runtests
 	docker-compose stop
+
+develop-runtests: publish-build
+	docker-compose up -d
+	source ./tests/tests.sh && init_dashoard_tests
+
+travis-runtests: publish-build
+	docker-compose up -d
+	echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org" \
+	     "radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
+	source ./tests/tests.sh && init_dashoard_tests logs
+
+# Development
+develop: publish-build
+	docker-compose up -d
+	docker-compose logs -f
+
+# Clean
+clean:
+	docker-compose stop
+	docker-compose down --remove-orphans --volumes --rmi all
+	docker-compose rm -svf
+	docker rmi --force openwisp/openwisp-base:latest \
+				openwisp/openwisp-base:intermedia-system \
+				openwisp/openwisp-base:intermedia-python \
+				`docker images -f "dangling=true" -q` || true
+
+# Publish
+publish: publish-build develop-runtests
+	docker push openwisp/openwisp-base:latest
+	docker push openwisp/openwisp-nginx:latest
+	docker push openwisp/openwisp-dashboard:latest
+	docker push openwisp/openwisp-radius:latest
+	docker push openwisp/openwisp-controller:latest
+	docker push openwisp/openwisp-topology:latest
+	docker push openwisp/openwisp-websocket:latest
+	docker push openwisp/openwisp-postfix:latest

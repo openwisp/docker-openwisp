@@ -13,6 +13,4 @@ jobs:
   include:
     - stage: tests
       script:
-      - echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
-      - make compose-build
-      - make runtests
+      - make travis-runtests
