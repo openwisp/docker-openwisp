@@ -1,6 +1,6 @@
-# This python script will take care of anything required
-# during building the images. Currently, it does:
-# 1. creates DJANGO_SECRET_KEY
+# This python script will take care of anything
+# required during building the images. It is
+# used by Makefile.
 
 import random
 import re
@@ -45,4 +45,4 @@ if __name__ == "__main__":
         keygen = get_secret_key()
         change_secret_key(keygen)
     if "default-secret-key" in arguments:
-        change_secret_key("default-secret-key")
+        change_secret_key("default_secret_key")

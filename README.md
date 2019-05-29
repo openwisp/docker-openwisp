@@ -22,7 +22,7 @@ Images are available on docker hub and can be pulled from the following links:
 - OpenWISP Postfix - `openwisp/openwisp-postfix:latest`
 - OpenWISP Websocket - `openwisp/openwisp-websocket:latest`
 
-The configurations for openwisp images is available [here](https://bit.ly/2Wos8lP).
+The configurations for openwisp images is available [here](docs/ENV.md).
 
 ## Deployment
 
@@ -63,7 +63,7 @@ The following assumes the reader knows basics of kubernetes.
 
    4.2. [Setup Cert-Manager](https://docs.cert-manager.io/en/latest/getting-started/install/) to take care of SSL certificates.
 
-5. (optional) Customization: You can change any of the variables from the [list here](https://bit.ly/2Wos8lP) to trailer to your requirements. You need to change the values in `ConfigMap.yml`.
+5. (optional) Customization: You can change any of the variables from the [list here](docs/ENV.md) to trailer to your requirements. You need to change the values in `ConfigMap.yml`.
 
    - The ConfigMap with name `postgres-config` will pass the environment variables only to the postgresql container.
    - The ConfigMap with name `common-config` will pass the environment variables to all the openwisp containers where the values are applicable except the postgres instances.
@@ -87,7 +87,7 @@ Testing on docker-compose is relatively less resource and time consuming.
 
 1. Install docker-compose: `pip install docker-compose`
 
-2. Change the following options according to your system: `DJANGO_SECRET_KEY`, `DB_USER`, `DB_PASS`, `DJANGO_DEF_EMAIL`, `DASHBOARD_DOMAIN`, `CONTROLLER_DOMAIN`, `RADIUS_DOMAIN`, `TOPOLOGY_DOMAIN`. Optionally, you may change any other setting as well. A detailed document of the available variables can be found [here](https://bit.ly/2Wos8lP).
+2. Change the following options according to your system: `DJANGO_SECRET_KEY`, `DB_USER`, `DB_PASS`, `DJANGO_DEF_EMAIL`, `DASHBOARD_DOMAIN`, `CONTROLLER_DOMAIN`, `RADIUS_DOMAIN`, `TOPOLOGY_DOMAIN`. Optionally, you may change any other setting as well. A detailed document of the available variables can be found [here](docs/ENV.md).
 
 3. Pull all the required images to avoid building them. (Building images is a time consuming task.)
 
@@ -136,9 +136,9 @@ To disable an openwisp service container and plug your own service like database
 - openwisp-postgres:
    - Ensure your database instance reachable by the OpenWISP containers.
    - Ensure your database server supports GeoDjango.
-   - Change the [database configuration variables](https://bit.ly/2Wos8lP) to point to your instances.
+   - Change the [database configuration variables](docs/ENV.md) to point to your instances.
 - openwisp-postfix:
    - Ensure your SMTP instance reachable by the OpenWISP containers.
-   - Change the [email configuration variables](https://bit.ly/2Wos8lP) to point to your instances.
+   - Change the [email configuration variables](docs/ENV.md) to point to your instances.
 - openwisp-nginx:
    - Configurations in `build/openwisp_nginx/` are helpful to replicate in your own instance.

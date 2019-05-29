@@ -6,6 +6,7 @@ source utils.sh
 # Set timezone
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
+# Start services
 if [ "$MODULE_NAME" = 'dashboard' ]; then
     python services.py database redis
     python manage.py migrate --noinput

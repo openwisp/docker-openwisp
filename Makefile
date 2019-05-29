@@ -5,6 +5,7 @@ SHELL := /bin/bash
 # Build
 compose-build: build-base
 	docker-compose build
+	python build.py default-secret-key
 
 build-base: python-build-script
 	docker build --tag openwisp/openwisp-base:intermedia-system \
@@ -21,7 +22,6 @@ python-build-script: build.py
 
 # Test
 runtests:
-	python build.py default-secret-key
 	docker-compose up -d
 	source ./tests/tests.sh && init_dashoard_tests logs
 	docker-compose stop
