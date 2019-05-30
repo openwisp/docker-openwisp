@@ -56,6 +56,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'openwisp_utils.admin_theme.context_processor.menu_items'
             ],
         },
     },
@@ -67,9 +68,10 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
-ASGI_APPLICATION = "django_loci.channels.routing.channel_routing"
+ASGI_APPLICATION = 'openwisp.asgi.channel_layer'
 
 REDIS_HOST = os.environ['REDIS_HOST']
+CELERY_BROKER_URL = 'redis://'+REDIS_HOST+':6379/1'
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases

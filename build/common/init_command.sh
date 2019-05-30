@@ -45,6 +45,9 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
         envsubst_create_config /etc/nginx/openwisp.template.conf http
     fi
     nginx -g 'daemon off;'
+elif [ "$MODULE_NAME" = 'celery' ]; then
+    python services.py database redis dashboard
+    celery -A openwisp worker -l info
 else
     python services.py database redis dashboard
     start_uwsgi
