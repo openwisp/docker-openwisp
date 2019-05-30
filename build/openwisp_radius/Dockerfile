@@ -2,7 +2,7 @@ FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
 
-COPY ./openwisp_radius/urls.py \ 
+COPY ./openwisp_radius/urls.py \
     ./openwisp_radius/module_settings.py \
     /opt/openwisp/openwisp/
 
