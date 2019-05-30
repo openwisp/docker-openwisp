@@ -10,8 +10,6 @@ services:
         DASHBOARD_APP_PORT: $DASHBOARD_APP_PORT
     deploy:
       replicas: 1
-    environment:
-      - DB_ENGINE=$DB_GIS_ENGINE
     env_file:
       - .env
     volumes:
@@ -34,8 +32,6 @@ services:
       replicas: 1
     env_file:
       - .env
-    environment:
-      - DB_ENGINE=$DB_GIS_ENGINE
     volumes:
       - openwisp_media:/opt/openwisp/media
       - public_html:/opt/openwisp/public_html
@@ -79,8 +75,6 @@ services:
     image: openwisp/openwisp-websocket:latest
     deploy:
       replicas: 1
-    environment:
-      - DB_ENGINE=$DB_GIS_ENGINE
     env_file:
       - .env
     depends_on:
@@ -98,7 +92,6 @@ services:
       replicas: 1
     environment:
       - MODULE_NAME=daphne
-      - DB_ENGINE=$DB_GIS_ENGINE
     env_file:
       - .env
     depends_on:

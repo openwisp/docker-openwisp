@@ -12,6 +12,10 @@ if [ "$MODULE_NAME" = 'dashboard' ]; then
     python load_init_data.py
     python manage.py collectstatic --noinput
     start_uwsgi
+elif [ "$MODULE_NAME" = 'postfix' ]; then
+    postfix_config
+    postfix start
+    rsyslogd -n
 elif [ "$MODULE_NAME" = 'nginx' ]; then
     rm -rf /etc/nginx/conf.d/default.conf
     envsubst < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf

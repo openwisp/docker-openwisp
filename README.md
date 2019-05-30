@@ -26,8 +26,8 @@ The configurations for openwisp images is available [here](https://bit.ly/2Wos8l
 
 ## Deployment
 
-1. [Kubernetes](https://github.com/openwisp/docker-openwisp#kubernetes)
-2. [Docker Compose](https://github.com/openwisp/docker-openwisp#docker-compose)
+1. [Kubernetes](#kubernetes)
+2. [Docker Compose](#docker-compose)
 
 ### Kubernetes
 
@@ -125,3 +125,20 @@ Now you'll need to do steps (2) and (3) everytime you make a changes and want to
    - Default username & password are `admin`.
    - Default domains are: dashboard.openwisp.org, controller.openwisp.org, radius.openwisp.org and topology.openwisp.org.
    - You may want to add the domains in your hosts file, command: `echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" >> /etc/hosts/`
+
+## Disabling Services
+
+To disable an openwisp service container and plug your own service like database, SMTP or nginx:
+
+- You cannot disable the openwisp-dashboard container. It is the heart of OpenWISP and performs core functionalities.
+- Disabling the openwisp-daphne & openwisp-websocket containers will cause some functions to fail.
+- openwisp-controller, openwisp-network-topology and openwisp-radius can be disabled in case they are not required.
+- openwisp-postgres:
+   - Ensure your database instance reachable by the OpenWISP containers.
+   - Ensure your database server supports GeoDjango.
+   - Change the [database configuration variables](https://bit.ly/2Wos8lP) to point to your instances.
+- openwisp-postfix:
+   - Ensure your SMTP instance reachable by the OpenWISP containers.
+   - Change the [email configuration variables](https://bit.ly/2Wos8lP) to point to your instances.
+- openwisp-nginx:
+   - Configurations in `build/openwisp_nginx/` are helpful to replicate in your own instance.

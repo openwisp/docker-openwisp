@@ -113,9 +113,9 @@ function init_dashoard_tests {
     admin_login
     test_dashboard_login
     test_websocket
+    rm $COOKIES
     if [[ $FAILURE = 1 ]] && [[ $1 = logs ]]; then
         print_services_logs
+        exit $FAILURE
     fi
-    rm $COOKIES
-    exit $FAILURE
 }

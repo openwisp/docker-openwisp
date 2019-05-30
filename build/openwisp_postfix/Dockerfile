@@ -1,19 +1,22 @@
 FROM alpine:latest
 
+WORKDIR /opt/openwisp/
 RUN apk add --no-cache --upgrade openssl cyrus-sasl cyrus-sasl-plain cyrus-sasl-login && \
     apk add --no-cache postfix rsyslog tzdata && \
     rm -rf /tmp/* /var/cache/apk/*
 
-WORKDIR /opt/openwisp/
-COPY ./openwisp_postfix/rsyslog.conf /etc/rsyslog.conf
-COPY ./openwisp_postfix/init_command.sh /opt/openwisp/init_command.sh
-RUN chmod +x /opt/openwisp/init_command.sh
-CMD /opt/openwisp/init_command.sh
+CMD ["sh", "init_command.sh"]
 EXPOSE 25
 
-ENV TZ=Asia/Kolkata \
-    POSTFIX_HOSTNAME=mydomain.com \
-    POSTFIX_ALLOWED_SENDER_DOMAINS=mydomain.com \
+COPY ./openwisp_postfix/rsyslog.conf /etc/rsyslog.conf
+COPY ./common/init_command.sh \
+    ./common/utils.sh \
+    /opt/openwisp/
+
+ENV MODULE_NAME=postfix \
+    TZ=UTC \
+    POSTFIX_HOSTNAME=example.com \
+    POSTFIX_ALLOWED_SENDER_DOMAINS=example.com \
     POSTFIX_RELAYHOST=False \
     POSTFIX_DESTINATION='$mydomain, $myhostname' \
     POSTFIX_RELAYHOST_USERNAME=False \
