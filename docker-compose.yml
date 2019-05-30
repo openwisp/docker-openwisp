@@ -140,6 +140,32 @@ services:
       - redis
       - dashboard
 
+  celery:
+    image: openwisp/openwisp-dashboard:latest
+    deploy:
+      replicas: 1
+    environment:
+      - MODULE_NAME=celery
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
+  celerybeat:
+    image: openwisp/openwisp-dashboard:latest
+    deploy:
+      replicas: 1
+    environment:
+      - MODULE_NAME=celerybeat
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
   postfix:
     image: openwisp/openwisp-postfix:latest
     build:

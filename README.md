@@ -124,17 +124,20 @@ To disable an openwisp service container and plug your own service like database
 
 - You cannot disable the openwisp-dashboard container. It is the heart of OpenWISP and performs core functionalities.
 - Disabling the openwisp-daphne & openwisp-websocket containers will cause some functions to fail.
-- openwisp-openvpn, openwisp-controller, openwisp-network-topology and openwisp-radius can be disabled in case they are not required.
-- disabling openwisp-postgres:
+- You can remove the openwisp-openvpn incase you do not want an OpenVPN server.
+- To disable openwisp-topology set the `SET_TOPOLOGY_TASKS` variable to `False`. Then, remove any instance of openwisp-radius in the same docker network.
+- To disable openwisp-radius set the `SET_RADIUS_TASKS` variable to `False`. Then, remove any instance of openwisp-topology in the same docker network.
+- If you do not need openwisp-controller, remove any instance of openwisp-controller in the same docker network.
+- Disabling openwisp-postgres:
    - Ensure your database instance reachable by the OpenWISP containers.
    - Ensure your database server supports GeoDjango.
    - Change the [database configuration variables](docs/ENV.md) to point to your instances.
-- disabling openwisp-postfix:
+- Disabling openwisp-postfix:
    - Ensure your SMTP instance reachable by the OpenWISP containers.
    - Change the [email configuration variables](docs/ENV.md) to point to your instances.
-- disabling openwisp-nginx:
+- Disabling openwisp-nginx:
    - Configurations in `build/openwisp_nginx/` are helpful to replicate in your own instance.
-- disabling openwisp-freeradius:
+- Disabling openwisp-freeradius:
    - Ensure your freeradius service is reachable on port 1812/udp and 1813/udp otherwise openwisp-radius services will fail to work properly.
 
 ## Build (Development)

@@ -19,6 +19,7 @@ Following are the options that can be changed. The list is divided in following 
 - [Django](#Django): Additional django settings.
 - [Email](#Email): Email & postfix configurations.
 - [Freeradius](#Freeradius): Freeradius related settings.
+- [Cron](#Cron): Settings of the periodic tasks.
 - [Nginx](#Nginx): Nginx configurations.
 - [VPN](#VPN): Default VPN and VPN template related configurations.
 - [X509](#X509): Default certificate & certicate Authority configuration options.
@@ -38,6 +39,7 @@ Additionally, you can search for the following:
 - `FREERADIUS_`: All the freeradius related settings.
 - `X509_`: All the configurations related to x509 CA and certificates.
 - `VPN_`: Default VPN and VPN template related configurations.
+- `CRON_`: Periodic tasks configurations
 
 ## Essential
 
@@ -115,6 +117,18 @@ Additionally, you can search for the following:
 - **Explaination:** Flag to enable or disable HTTPs. If it is set to true, letsencrypt certificates are automatically fetched with the help of certbot and a cronjob to ensure they stay updated is added. If it is set to `Develop`, self-signed certificates are used and cronjob for the certificates is set. If set to False, site is accessiable via HTTP.
 - **Valid Values:** True | Develop | False
 - **Default:** True
+
+### `SET_RADIUS_TASKS`
+
+- **Explaination:** Set radius celery tasks, if you are not planning to use openwisp-radius container, set this to `False`.
+- **Valid Values:** True | False
+- **Default:** True
+
+### `SET_TOPOLOGY_TASKS`
+
+- **Explaination:** Set topology celery tasks, if you are not planning to use openwisp-topology container, set this to `False`.
+- **Valid Values:** True | False
+- **Default:** False
 
 ## Database
 
@@ -286,6 +300,32 @@ Additionally, you can search for the following:
 - **Explaination:** Value of the `ipaddr` parameter of the `client` in `clients.conf`. This is the network that the freeradius instance will serve. `0.0.0.0/0` means allow all.
 - **Valid Values:** STRING
 - **Default:** 0.0.0.0/0
+
+## Cron
+
+### `CRON_DELETE_OLD_RADACCT`
+
+- **Explaination:** (Value in days) Deletes RADIUS accounting sessions older than given number of days.
+- **Valid Values:** INT
+- **Default:** 365
+
+### `CRON_DELETE_OLD_POSTAUTH`
+
+- **Explaination:** (Value in days) Deletes RADIUS post-auth logs older than given number of days.
+- **Valid Values:** INT
+- **Default:** 365
+
+### `CRON_CLEANUP_STALE_RADACCT`
+
+- **Explaination:** (Value in days) Closes stale RADIUS sessions that have remained open for the number of specified days.
+- **Valid Values:** INT
+- **Default:** 365
+
+### `CRON_DELETE_OLD_USERS`
+
+- **Explaination:** (Value in months) Deactivates expired user accounts which were created temporarily and have an expiration date set.
+- **Valid Values:** INT
+- **Default:** 12
 
 ## Nginx
 
