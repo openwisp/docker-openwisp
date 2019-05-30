@@ -40,5 +40,3 @@ EXTENDED_APPS = ['django_netjsongraph',
                  'django_netjsonconfig',
                  'django_x509',
                  'django_loci']
-
-FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'

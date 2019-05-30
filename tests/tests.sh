@@ -4,6 +4,7 @@
 # - Redis
 # - Postfix
 # - Websocket
+# - Celery
 
 function print_services_logs {
     # Print logs of the containers in case of failure
@@ -29,15 +30,15 @@ function print_services_logs {
     docker-compose logs redis
 }
 
-function admin_login {
+function test_admin_login {
     # This function is used to login into django-admin
     # It creates the cookie.txt file that containes CSRF
     # token and session ID.
-    $CURL_BIN $LOGIN_URL > /dev/null
+    $CURL_BIN ${APP_URL}/admin/login/ > /dev/null
     DJANGO_TOKEN="csrfmiddlewaretoken=$(grep csrftoken $COOKIES | \
                     sed 's/^.*csrftoken[[:blank:]]*//')"
     $CURL_BIN -d "$DJANGO_TOKEN;username=$USERNAME;password=$PASSWORD" \
-                -X POST --dump-header - $LOGIN_URL | grep -q "302 Found" && \
+                -X POST --dump-header - ${APP_URL}/admin/login/ | grep -q "302 Found" && \
                 { echo "SUCCESS: Login request acknowledgement received!"; } || \
                 { echo "ERROR: Login request acknowledgement not received!"; FAILURE=1; }
 }
@@ -45,20 +46,20 @@ function admin_login {
 function test_dashboard_login {
     # This tests the login was successful; being able to
     # access this page also means redis is running.
-    $CURL_BIN --head http://dashboard.openwisp.org/admin/ | grep -q "200 OK" && \
-              { echo "SUCCESS: Admin login successful!"; } || \
-              { echo "ERROR: Admin login failed!"; FAILURE=1; }
+    $CURL_BIN --head ${APP_URL}/admin/ | grep -q "200 OK" && \
+                { echo "SUCCESS: Admin login successful!"; } || \
+                { echo "ERROR: Admin login failed!"; FAILURE=1; }
 }
 
 function test_postfix {
     # This test ensures that postfix service is running
     # correctly by making a request to reset password.
-    $CURL_BIN $LOGIN_URL > /dev/null
+    $CURL_BIN ${APP_URL}/admin/login/ > /dev/null
     DJANGO_TOKEN="csrfmiddlewaretoken=$(grep csrftoken $COOKIES | \
                   sed 's/^.*csrftoken[[:blank:]]*//')"
     $CURL_BIN -d "$DJANGO_TOKEN;email=admin@example.com" \
               -X POST --dump-header - \
-              http://dashboard.openwisp.org/accounts/password/reset/ | grep -q "302 Found" && \
+              ${APP_URL}/accounts/password/reset/ | grep -q "302 Found" && \
             { echo "SUCCESS: Postfix service is working!"; } || \
             { echo "ERROR: Postfix service did not respond!"; FAILURE=1; }
 }
@@ -74,10 +75,19 @@ function test_websocket {
                         --header "Origin: https://dashboard.openwisp.org" \
                         --header "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" \
                         --header "Sec-WebSocket-Version: 13" \
-               http://dashboard.openwisp.org/ws/ | \
+               ${APP_URL}/ws/ | \
         grep -q "101 Switching Protocols" && \
         { echo "SUCCESS: Websocket service is working!"; } || \
-        { echo "ERROR: Websocket service did not respond!"; FAILURE=1; }
+        { echo "ERROR: Websocket service did not respond!" \
+               "(You may want to increase test timeout)"; FAILURE=1; }
+}
+
+function test_celery {
+    # This test ensures that celery status returns "OK".
+    echo `docker-compose run --rm celery celery -A openwisp status 2> /dev/null` | \
+        grep -q "OK" && \
+            { echo "SUCCESS: Celery service is working!"; } || \
+            { echo "ERROR: Celery service did not respond!"; FAILURE=1; }
 }
 
 function wait_for_services {
@@ -85,7 +95,7 @@ function wait_for_services {
     # if the openwisp-dashboard is reachable.
     FAILURE=1
     for ((i=1;i<=10;i++)); do
-        curl -s --head http://dashboard.openwisp.org/admin/login/ | grep -q "200 OK"
+        curl -s --head ${APP_URL}/admin/login/ | grep -q "200 OK"
         if [[ $? = "0" ]]; then
             echo "SUCCESS: openwisp-dashboard login page reachable!"
             FAILURE=0
@@ -101,16 +111,17 @@ function wait_for_services {
 function init_dashoard_tests {
     # Init function that can be called to run tests
     # for all the services.
-    LOGIN_URL=http://dashboard.openwisp.org/admin/login/
+    APP_URL=http://dashboard.openwisp.org
     USERNAME='admin'
     PASSWORD='admin'
     COOKIES=cookies.txt
-    CURL_BIN="curl -s -c $COOKIES -b $COOKIES -e $LOGIN_URL"
+    CURL_BIN="curl -s -c $COOKIES -b $COOKIES -e ${APP_URL}/admin/login/"
     FAILURE=0
     touch $COOKIES
     wait_for_services
+    test_admin_login
     test_postfix
-    admin_login
+    test_celery
     test_dashboard_login
     test_websocket
     rm $COOKIES

@@ -49,7 +49,8 @@ RUN pip install --prefix='/install' \
 RUN pip install --prefix='/install' \
                 --no-warn-script-location \
                 --editable git+git://github.com/openwisp/openwisp-utils#egg=openwisp_utils
-RUN pip install --prefix='/install' asgi_redis service_identity django-redis psycopg2 uwsgi sentry-sdk supervisor
+RUN pip install --prefix='/install' asgi_redis service_identity django-redis psycopg2 uwsgi \
+                                    sentry-sdk supervisor celery django-celery-beat redis
 
 FROM SYSTEM
 

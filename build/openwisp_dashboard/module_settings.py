@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'openwisp_controller.pki',
     'openwisp_controller.config',
     'openwisp_controller.geo',
+    'openwisp_controller.connection',
     # openwisp-network-topology
     'openwisp_network_topology',
     # admin
