@@ -1,12 +1,15 @@
 #!/bin/sh
 # OpenWISP common module init script
 
-if [ "$MODULE_NAME" = 'dashboard' ]; then 
+# Set timezone
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+if [ "$MODULE_NAME" = 'dashboard' ]; then
     python services_status.py database redis
     python manage.py migrate --noinput
     python load_init_data.py
     python manage.py collectstatic --noinput
-else 
+else
     python services_status.py database dashboard
 fi
 

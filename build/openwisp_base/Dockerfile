@@ -1,8 +1,8 @@
 FROM python:3.7-alpine AS BASE
 
-RUN apk add --update zlib-dev jpeg-dev openssl-dev libffi-dev gettext gcc && \
+RUN apk add --update zlib-dev jpeg-dev openssl-dev libffi-dev gettext gcc tzdata && \
     apk add --update --virtual .build-deps postgresql-dev git build-base linux-headers && \
-    apk add --update --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \ 
+    apk add --update --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     gdal-dev geos-dev && rm -rf /var/cache/apk/*
 
 COPY ./common/requirements.txt /opt/openwisp/requirements.txt

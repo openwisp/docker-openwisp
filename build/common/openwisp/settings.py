@@ -1,4 +1,5 @@
 import os
+import sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -95,7 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
 LANGUAGE_CODE = os.environ['DJANGO_LANGUAGE_CODE']
-TIME_ZONE = os.environ['TZ_DBNAME']
+TIME_ZONE = os.environ['TZ']
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -120,50 +121,39 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {
+        'user_filter': {
+            '()': 'openwisp.utils.HostFilter',
+        },
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
         },
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
     },
     'formatters': {
-        'simple': {
-            'format': '[%(levelname)s] %(message)s'
-        },
         'verbose': {
-            'format': '\n\n[%(levelname)s %(asctime)s] module: %(module)s, process: %(process)d, thread: %(thread)d\n%(message)s'
+            'format': '\n[%(host)s] - %(levelname)s, time: [%(asctime)s], process: %(process)d, thread: %(thread)d\n%(message)s'
         },
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': os.environ['DJANGO_LOG_LEVEL'],
             'class': 'logging.StreamHandler',
-            'filters': ['require_debug_true'],
-            'formatter': 'simple'
+            'filters': ['user_filter'],
+            'formatter': 'verbose',
+            'stream': sys.stdout,
         },
         'mail_admins': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        },
-        'main_log': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'formatter': 'verbose',
-            'filename': os.path.join(BASE_DIR, 'log/error.log'),
-            'maxBytes': 5242880.0,
-            'backupCount': 3
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': ['require_debug_false', 'user_filter'],
         },
     },
     'root': {
         'level': 'INFO',
         'handlers': [
-            'main_log',
             'console',
             'mail_admins',
         ]
-    }
+    },
 }
 
 try:

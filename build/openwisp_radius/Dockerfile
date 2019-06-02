@@ -2,7 +2,7 @@ FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
 
-COPY ./openwisp_radius/urls.py \ 
+COPY ./openwisp_radius/urls.py \
     ./openwisp_radius/module_settings.py \
     /opt/openwisp/openwisp/
 
@@ -13,7 +13,6 @@ ARG RADIUS_APP_PORT=8002
 ENV MODULE_NAME=radius \
     PYTHONUNBUFFERED=1 \
     TZ=UTC \
-    TZ_DBNAME=Etc/Universal \
     CONTAINER_PORT=$RADIUS_APP_PORT \
     DASHBOARD_APP_PORT=8000 \
     DB_ENGINE=django.db.backends.postgresql \
@@ -24,6 +23,7 @@ ENV MODULE_NAME=radius \
     DB_PORT=5432 \
     DB_SSLMODE=disable \
     DB_SSLROOTCERT='' \
+    DJANGO_LOG_LEVEL=ERROR \
     DJANGO_LANGUAGE_CODE=en-gb \
     DJANGO_MEDIA_VOLUME_LOCATION=./media \
     DJANGO_ALLOWED_HOSTS=* \
