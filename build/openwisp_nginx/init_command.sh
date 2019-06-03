@@ -2,35 +2,30 @@
 # Nginx init script
 set -e
 
+rm -rf /etc/nginx/conf.d/default.conf
+mkdir -p /etc/nginx/log/
+touch /etc/nginx/log/nginx.access.log /etc/nginx/log/nginx.error.log
+envsubst < /etc/nginx/http.conf > /etc/nginx/conf.d/http.conf
+source /etc/nginx/utils.sh
 
 if [ "$NGINX_IP6" = 'True' ]; then
     NGINX_IP6_STRING="listen [::]:443 ssl $NGINX_HTTP2;"
     NGINX_IP6_80_STRING="listen [::]:80;"
 fi
-
-if [ "$ORCHESTRATION_CERT_MODE" = 'True' ] || [ "$ORCHESTRATION_CERT_MODE" = 'Devel' ]; then
-    # Get nginx site configurations ready
-    envsubst < /etc/nginx/openwisp.ssl.template.conf > /etc/nginx/conf.d/default.conf
-    # Check if all the certificates exist
-    echo "Waiting for all SSL certificates to be created..."
-    dhparams="/etc/letsencrypt/openwisp-dhparams.pem"
-    dashboard_path="/etc/letsencrypt/live/${DASHBOARD_DOMAIN}/privkey.pem"
-    controller_path="/etc/letsencrypt/live/${CONTROLLER_DOMAIN}/privkey.pem"
-    radius_path="/etc/letsencrypt/live/${RADIUS_DOMAIN}/privkey.pem"
-    topology_path="/etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/privkey.pem"
-    while [ ! -f $dhparams ]; do sleep 3; done
-    while [ ! -f $dashboard_path ]; do sleep 3; done
-    while [ ! -f $controller_path ]; do sleep 3; done
-    while [ ! -f $radius_path ]; do sleep 3; done
-    while [ ! -f $topology_path ]; do sleep 3; done
-    echo "All SSL certificates found."
-    # Set cronjob to ensure updated certs reflect
-    echo "30 3 * * 7 nginx -s reload &>> /etc/nginx/crontab.log" | crontab -
+if [ "$SSL_CERT_MODE" = 'True' ]; then
+    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
+    sslHttpBehaviour
+    nginx -g 'daemon off;'
+    create_prod_certs
+    echo "0 3 * * 7 certbot renew &>> /etc/nginx/log/crontab.log" | crontab -
+elif [ "$SSL_CERT_MODE" = 'Develop' ]; then
+    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
+    sslHttpBehaviour
+    create_dev_certs
+    CMD="source /etc/nginx/utils.sh && create_dev_certs && nginx -s reload"
+    echo "0 3 1 1 * $CMD &>> /etc/nginx/log/crontab.log" | crontab -
+    nginx -g 'daemon off;'
 else
-    envsubst < /etc/nginx/openwisp.template.conf > /etc/nginx/conf.d/default.conf
+    envsubst_create_config /etc/nginx/openwisp.template.conf http
+    nginx -g 'daemon off;'
 fi
-
-mkdir -p /etc/nginx/log/
-touch /etc/nginx/log/nginx.access.log /etc/nginx/log/nginx.error.log
-
-nginx -g 'daemon off;'

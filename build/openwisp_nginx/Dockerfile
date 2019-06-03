@@ -1,11 +1,11 @@
 FROM nginx:alpine
 
+RUN apk add certbot openssl
+
 WORKDIR /etc/nginx/
 
 COPY ./common/services_status.py \
-    ./openwisp_nginx/init_command.sh \ 
-    ./openwisp_nginx/openwisp.ssl.template.conf \ 
-    ./openwisp_nginx/openwisp.template.conf \ 
+    ./openwisp_nginx/ \
     /etc/nginx/
 
 RUN chmod +x /etc/nginx/init_command.sh
@@ -16,10 +16,13 @@ ENV MODULE_NAME=nginx \
     DOLLAR=$ \
     TZ=UTC \
     TZ_DBNAME=Etc/Universal \
-    ORCHESTRATION_CERT_MODE=False \
+    SSL_CERT_MODE=True \
     NGINX_CLIENT_BODY_SIZE=5M \
-    NGINX_GZIP=off \
     NGINX_IP6=True \
+    NGINX_ADMIN_ALLOW_NETWORK=all \
+    NGINX_HTTPS_ALLOWED_IPS=all \
+    NGINX_SSL_CONFIG='gzip off;' \
+    NGINX_SERVER_NAME_HASH_BUCKET=32 \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     CONTROLLER_APP_PORT=8001 \
