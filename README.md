@@ -19,13 +19,15 @@ Images are available on docker hub and can be pulled from the following links:
 - OpenWISP Controller - `openwisp/openwisp-controller:latest`
 - OpenWISP Network Topology - `openwisp/openwisp-topology:latest`
 - OpenWISP Nginx - `openwisp/openwisp-nginx:latest`
+- OpenWISP Postfix - `openwisp/openwisp-postfix:latest`
+- OpenWISP Websocket - `openwisp/openwisp-websocket:latest`
 
 The configurations for openwisp images is available [here](https://bit.ly/2Wos8lP).
 
 ## Deployment
 
-1. [Kubernetes](https://github.com/atb00ker/dockerize-openwisp#kubernetes)
-2. [Docker Compose](https://github.com/atb00ker/dockerize-openwisp#docker-compose)
+1. [Kubernetes](https://github.com/openwisp/docker-openwisp#kubernetes)
+2. [Docker Compose](https://github.com/openwisp/docker-openwisp#docker-compose)
 
 ### Kubernetes
 
@@ -96,6 +98,8 @@ docker pull openwisp/openwisp-radius:latest
 docker pull openwisp/openwisp-controller:latest
 docker pull openwisp/openwisp-topology:latest
 docker pull openwisp/openwisp-nginx:latest
+docker pull openwisp/openwisp-postfix:latest
+docker pull openwisp/openwisp-websocket:latest
 ```
 
 4. Run containers: Inside root of the repository, run `docker-compose up`. It will take a while for the containers to start up. (~1 minute)

@@ -22,6 +22,7 @@ data:
   RADIUS_DOMAIN: radius.openwisp.org openwisp-radius.2stacks.net
   TOPOLOGY_DOMAIN: topology.openwisp.org openwisp-topology.2stacks.net
   NGINX_SERVER_NAME_HASH_BUCKET: "64"
+  SSL_CERT_MODE: "False"
 ---
 apiVersion: v1
 kind: ConfigMap

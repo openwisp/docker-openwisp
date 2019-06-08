@@ -15,7 +15,6 @@ else:
 
 ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS'].split(",")
 
-
 AUTH_USER_MODEL = 'openwisp_users.User'
 SITE_ID = 1
 LOGIN_REDIRECT_URL = 'admin:index'
@@ -39,7 +38,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'openwisp.urls'
 
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -62,8 +60,15 @@ TEMPLATES = [
     },
 ]
 
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
+ASGI_APPLICATION = "django_loci.channels.routing.channel_routing"
+
+REDIS_HOST = os.environ['REDIS_HOST']
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -80,6 +85,28 @@ DATABASES = {
             'sslrootcert': os.environ['DB_SSLROOTCERT'],
         },
     },
+}
+
+# Channels(Websocket)
+# https://channels.readthedocs.io/en/latest/topics/channel_layers.html#configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'asgi_redis.RedisChannelLayer',
+        'CONFIG': {'hosts': [(REDIS_HOST, 6379)]},
+        'ROUTING': 'openwisp_controller.geo.channels.routing.channel_routing',
+    },
+}
+
+# Cache
+# https://docs.djangoproject.com/en/2.2/ref/settings/#caches
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://"+REDIS_HOST+":6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
 }
 
 # Password validation

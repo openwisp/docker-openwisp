@@ -12,11 +12,10 @@ COPY ./openwisp_dashboard/module_settings.py \
     ./openwisp_dashboard/urls.py \
     /opt/openwisp/openwisp/
 
-RUN chmod +x /opt/openwisp/init_command.sh
-CMD /opt/openwisp/init_command.sh
-EXPOSE $DASHBOARD_APP_PORT
+CMD ["sh", "init_command.sh"]
 
 ARG DASHBOARD_APP_PORT=8000
+ARG WEBSOCKET_APP_PORT=8004
 ENV MODULE_NAME=dashboard \
     PYTHONUNBUFFERED=1 \
     TZ=UTC \
@@ -40,4 +39,4 @@ ENV MODULE_NAME=dashboard \
     DJANGO_X509_DEFAULT_CERT_VALIDITY=1825 \
     DJANGO_X509_DEFAULT_CA_VALIDITY=3650
 
-EXPOSE $DASHBOARD_APP_PORT 25
+EXPOSE $DASHBOARD_APP_PORT $WEBSOCKET_APP_PORT 25

@@ -13,6 +13,7 @@ spec:
       containers:
       - name: openwisp-dashboard
         image: openwisp/openwisp-dashboard:latest
+        imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: common-config
@@ -48,6 +49,7 @@ spec:
       containers:
       - name: openwisp-controller
         image: openwisp/openwisp-controller:latest
+        imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: common-config
@@ -83,6 +85,7 @@ spec:
       containers:
       - name: openwisp-radius
         image: openwisp/openwisp-radius:latest
+        imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: common-config
@@ -113,6 +116,7 @@ spec:
       containers:
       - name: openwisp-topology
         image: openwisp/openwisp-topology:latest
+        imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: common-config
@@ -143,6 +147,7 @@ spec:
       containers:
       - name: openwisp-nginx
         image: openwisp/openwisp-nginx:latest
+        imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: common-config
@@ -178,6 +183,7 @@ spec:
       containers:
         - name: openwisp-postgresql
           image: mdillon/postgis:10-alpine
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: postgres-config
@@ -203,6 +209,7 @@ spec:
       containers:
         - name: openwisp-postfix
           image: openwisp-postfix
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: postfix-config
@@ -228,3 +235,4 @@ spec:
       containers:
       - name: redis
         image: redis:alpine
+        imagePullPolicy: Always

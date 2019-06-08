@@ -12,8 +12,9 @@ spec:
     http: &https_rules
       paths:
       - backend:
-          serviceName: openwisp-ingress
-          servicePort: 443
+          serviceName: openwisp-nginx
+          servicePort: 80
+        path: /
   - host: openwisp-controller.2stacks.net
     http: *https_rules
   - host: openwisp-radius.2stacks.net

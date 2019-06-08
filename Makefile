@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-# Building
+# Build
 compose-build: build-base
 	docker-compose build
 
@@ -19,9 +19,9 @@ build-base: python-build-script
 python-build-script: build.py
 	python build.py change-secret-key
 
-# Testing
+# Test
 runtests:
 	python build.py default-secret-key
 	docker-compose up -d
-	source ./tests/tests.sh && init_dashoard_tests
+	source ./tests/tests.sh && init_dashoard_tests logs
 	docker-compose stop
