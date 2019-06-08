@@ -1,14 +1,14 @@
 FROM python:3.7-alpine AS BASE
 
-RUN apk add --update zlib-dev jpeg-dev openssl-dev libffi-dev gettext gcc && \
-    apk add --update --virtual .build-deps postgresql-dev git build-base linux-headers && \
-    apk add --update --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \ 
-    gdal-dev geos-dev && rm -rf /var/cache/apk/*
+RUN apk add --update --virtual .build-deps openssl-dev postgresql-dev git build-base linux-headers && \
+    apk add --update zlib-dev jpeg-dev libffi-dev gettext gcc openssl && \
+    apk add --update --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing gdal-dev geos-dev && \
+    rm -rf /var/cache/apk/* /tmp/*
 
-COPY ./common/requirements.txt /opt/openwisp/requirements.txt
+COPY ./openwisp_base/requirements.txt /opt/openwisp/requirements.txt
 
 RUN pip install --no-cache-dir -r /opt/openwisp/requirements.txt && \
-    rm -rf /root/.cache/pip/*
+    rm -rf /root/.cache/pip/* /tmp/*
 
 COPY ./common/ /opt/openwisp/
 

@@ -1,4 +1,4 @@
-# Docker-OpenWISP 
+# Docker-OpenWISP
 
 [![Build Status](https://travis-ci.org/openwisp/docker-openwisp.svg?branch=master)](https://travis-ci.org/openwisp/docker-openwisp)
 
@@ -23,10 +23,10 @@ Images are available on docker hub and can be pulled from the following links:
 
 1. (optional) Setup a Kubernetes Cluster: A guide for setting up the cluster on bare-metal machines is available [here](https://blog.alexellis.io/kubernetes-in-10-minutes/) and the guide to get started with kubernetes-dashboard (Web UI) is available [here](https://github.com/kubernetes/dashboard).
 
-2. Set external IP: You need to set the external IP for all the services. This is the IP on which you will access your openwisp applications. All the services are in [this file](https://github.com/atb00ker/dockerize-openwisp/blob/master/kubernetes/Service.yml). Please do `ctrl+f` to find `172.16.6.2*` and replace with your server's external IP in this file. 
+2. Set external IP: You need to set the external IP for all the services. This is the IP on which you will access your openwisp applications. All the services are in [this file](https://github.com/atb00ker/dockerize-openwisp/blob/master/kubernetes/Service.yml). Please do `ctrl+f` to find `172.16.6.2*` and replace with your server's external IP in this file.
 
-3. (optional) Customization: You can change the settings in the container by changing the environment variables. You can pass the environment variables by changing [this file](https://github.com/atb00ker/dockerize-openwisp/blob/master/kubernetes/ConfigMap.yml). You can add any of the variables from the [list here](https://github.com/atb00ker/dockerize-openwisp/blob/master/.env). 
-- The ConfigMap with name `postgres-config` will pass the environment variables only to the postgresql container. 
+3. (optional) Customization: You can change the settings in the container by changing the environment variables. You can pass the environment variables by changing [this file](https://github.com/atb00ker/dockerize-openwisp/blob/master/kubernetes/ConfigMap.yml). You can add any of the variables from the [list here](https://github.com/atb00ker/dockerize-openwisp/blob/master/.env).
+- The ConfigMap with name `postgres-config` will pass the environment variables only to the postgresql container.
 - The ConfigMap with name `common-config` will pass the environment variables to all the openwisp containers.
 
 4. If you are doing bare-metal setup, follow the steps below to setup nfs-provisioner:
