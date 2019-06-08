@@ -17,7 +17,6 @@ ENV MODULE_NAME=nginx \
     TZ=UTC \
     SSL_CERT_MODE=True \
     NGINX_CLIENT_BODY_SIZE=5M \
-    NGINX_IP6=True \
     NGINX_ADMIN_ALLOW_NETWORK=all \
     NGINX_HTTPS_ALLOWED_IPS=all \
     NGINX_SSL_CONFIG='gzip off;' \

@@ -1,3 +1,4 @@
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -8,33 +9,17 @@ metadata:
 spec:
   rules:
   - host: openwisp-dashboard.2stacks.net
-    http:
+    http: &https_rules
       paths:
       - backend:
-          serviceName: openwisp-nginx
-          servicePort: 8080
-        path: /
+          serviceName: openwisp-ingress
+          servicePort: 443
   - host: openwisp-controller.2stacks.net
-    http:
-      paths:
-      - backend:
-          serviceName: openwisp-nginx
-          servicePort: 8081
-        path: /
+    http: *https_rules
   - host: openwisp-radius.2stacks.net
-    http:
-      paths:
-      - backend:
-          serviceName: openwisp-nginx
-          servicePort: 8082
-        path: /
+    http: *https_rules
   - host: openwisp-topology.2stacks.net
-    http:
-      paths:
-      - backend:
-          serviceName: openwisp-nginx
-          servicePort: 8083
-        path: /
+    http: *https_rules
   tls:
   - hosts:
     - openwisp-dashboard.2stacks.net

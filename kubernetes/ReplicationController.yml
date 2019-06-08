@@ -10,11 +10,9 @@ spec:
       labels:
         app: openwisp-dashboard
     spec:
-      containers:      
+      containers:
       - name: openwisp-dashboard
         image: openwisp/openwisp-dashboard:latest
-        ports:
-          - containerPort: 8000
         envFrom:
           - configMapRef:
               name: common-config
@@ -23,6 +21,8 @@ spec:
             name: openwisp-dashboard-static
           - mountPath: /opt/openwisp/media
             name: openwisp-media-data
+          - mountPath: /opt/openwisp/public_html
+            name: openwisp-html-data
       volumes:
         - name: openwisp-media-data
           persistentVolumeClaim:
@@ -30,6 +30,9 @@ spec:
         - name: openwisp-dashboard-static
           persistentVolumeClaim:
             claimName: static-pv-claim
+        - name: openwisp-html-data
+          persistentVolumeClaim:
+            claimName: html-pv-claim
 ---
 apiVersion: v1
 kind: ReplicationController
@@ -45,8 +48,6 @@ spec:
       containers:
       - name: openwisp-controller
         image: openwisp/openwisp-controller:latest
-        ports:
-          - containerPort: 8001
         envFrom:
           - configMapRef:
               name: common-config
@@ -55,6 +56,8 @@ spec:
             name: openwisp-controller-static
           - mountPath: /opt/openwisp/media
             name: openwisp-media-data
+          - mountPath: /opt/openwisp/public_html
+            name: openwisp-html-data
       volumes:
         - name: openwisp-media-data
           persistentVolumeClaim:
@@ -62,6 +65,9 @@ spec:
         - name: openwisp-controller-static
           persistentVolumeClaim:
             claimName: static-pv-claim
+        - name: openwisp-html-data
+          persistentVolumeClaim:
+            claimName: html-pv-claim
 ---
 apiVersion: v1
 kind: ReplicationController
@@ -77,18 +83,21 @@ spec:
       containers:
       - name: openwisp-radius
         image: openwisp/openwisp-radius:latest
-        ports:
-          - containerPort: 8002
         envFrom:
           - configMapRef:
               name: common-config
         volumeMounts:
           - mountPath: /opt/openwisp/static
             name: openwisp-radius-static
+          - mountPath: /opt/openwisp/public_html
+            name: openwisp-html-data
       volumes:
         - name: openwisp-radius-static
           persistentVolumeClaim:
             claimName: static-pv-claim
+        - name: openwisp-html-data
+          persistentVolumeClaim:
+            claimName: html-pv-claim
 ---
 apiVersion: v1
 kind: ReplicationController
@@ -104,18 +113,21 @@ spec:
       containers:
       - name: openwisp-topology
         image: openwisp/openwisp-topology:latest
-        ports:
-          - containerPort: 8003
         envFrom:
           - configMapRef:
               name: common-config
         volumeMounts:
           - mountPath: /opt/openwisp/static
             name: openwisp-topology-static
+          - mountPath: /opt/openwisp/public_html
+            name: openwisp-html-data
       volumes:
         - name: openwisp-topology-static
           persistentVolumeClaim:
             claimName: static-pv-claim
+        - name: openwisp-html-data
+          persistentVolumeClaim:
+            claimName: html-pv-claim
 ---
 apiVersion: v1
 kind: ReplicationController
@@ -131,11 +143,16 @@ spec:
       containers:
       - name: openwisp-nginx
         image: openwisp/openwisp-nginx:latest
+        envFrom:
+          - configMapRef:
+              name: common-config
         volumeMounts:
           - mountPath: /opt/openwisp/static
             name: openwisp-nginx-static
           - mountPath: /opt/openwisp/media
             name: openwisp-media-data
+          - mountPath: /opt/openwisp/public_html
+            name: openwisp-html-data
       volumes:
         - name: openwisp-nginx-static
           persistentVolumeClaim:
@@ -143,6 +160,9 @@ spec:
         - name: openwisp-media-data
           persistentVolumeClaim:
             claimName: media-pv-claim
+        - name: openwisp-html-data
+          persistentVolumeClaim:
+            claimName: html-pv-claim
 ---
 apiVersion: v1
 kind: ReplicationController
@@ -158,8 +178,6 @@ spec:
       containers:
         - name: openwisp-postgresql
           image: mdillon/postgis:10-alpine
-          ports:
-            - containerPort: 5432
           envFrom:
             - configMapRef:
                 name: postgres-config
@@ -184,6 +202,4 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:alpine  
-        ports:
-          - containerPort: 6379
+        image: redis:alpine
