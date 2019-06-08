@@ -10,7 +10,7 @@ spec:
       labels:
         app: openwisp-dashboard
     spec:
-      containers:      
+      containers:
       - name: openwisp-dashboard
         image: openwisp/openwisp-dashboard:latest
         ports:
@@ -184,6 +184,6 @@ spec:
     spec:
       containers:
       - name: redis
-        image: redis:alpine  
+        image: redis:alpine
         ports:
           - containerPort: 6379

@@ -24,7 +24,7 @@ services:
 
   controller:
     image:  openwisp/openwisp-controller:latest
-    build: 
+    build:
       context: build
       dockerfile: openwisp_controller/Dockerfile
       args:
@@ -45,7 +45,7 @@ services:
 
   radius:
     image: openwisp/openwisp-radius:latest
-    build: 
+    build:
       context: build
       dockerfile: openwisp_radius/Dockerfile
       args:
@@ -60,7 +60,7 @@ services:
 
   topology:
     image: openwisp/openwisp-topology:latest
-    build: 
+    build:
       context: build
       dockerfile: openwisp_topology/Dockerfile
       args:
@@ -75,7 +75,7 @@ services:
 
   nginx:
     image: openwisp/openwisp-nginx:latest
-    build: 
+    build:
       context: build
       dockerfile: openwisp_nginx/Dockerfile
     deploy:

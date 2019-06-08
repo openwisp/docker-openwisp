@@ -1,10 +1,5 @@
 import os
 
-# When you change the INSTALLED_APPS here
-# Ensure that you change the 
-# openwisp_dashboard/migrate_settings.py 
-# as well to ensure that correct migrations
-# take place.
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,11 +35,6 @@ INSTALLED_APPS = [
     'channels'
 ]
 
-# When you change the EXTENDED_APPS here
-# Ensure that you change the
-# openwisp_dashboard/migrate_settings.py
-# as well to ensure that correct migrations
-# take place.
 EXTENDED_APPS = [
     'django_netjsonconfig',
     'django_x509',
@@ -71,8 +61,10 @@ CACHES = {
     }
 }
 
-DJANGO_X509_DEFAULT_CERT_VALIDITY = os.environ['DJANGO_X509_DEFAULT_CERT_VALIDITY']
-DJANGO_X509_DEFAULT_CA_VALIDITY = os.environ['DJANGO_X509_DEFAULT_CA_VALIDITY']
+DJANGO_X509_DEFAULT_CERT_VALIDITY = \
+    int(os.environ['DJANGO_X509_DEFAULT_CERT_VALIDITY'])
+DJANGO_X509_DEFAULT_CA_VALIDITY = \
+    int(os.environ['DJANGO_X509_DEFAULT_CA_VALIDITY'])
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"

@@ -4,7 +4,7 @@ FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
 
-COPY ./openwisp_topology/urls.py \ 
+COPY ./openwisp_topology/urls.py \
     ./openwisp_topology/module_settings.py \
     /opt/openwisp/openwisp/
 
