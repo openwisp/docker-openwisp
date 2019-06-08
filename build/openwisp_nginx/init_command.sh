@@ -2,10 +2,11 @@
 # Nginx init script
 set -e
 
+# Set timezone
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# Init
 rm -rf /etc/nginx/conf.d/default.conf
-mkdir -p /etc/nginx/log/
-touch /etc/nginx/log/nginx.access.log /etc/nginx/log/nginx.error.log
-envsubst < /etc/nginx/http.conf > /etc/nginx/conf.d/http.conf
+envsubst < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf
 source /etc/nginx/utils.sh
 
 if [ "$SSL_CERT_MODE" = 'True' ]; then

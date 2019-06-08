@@ -15,7 +15,6 @@ ENV MODULE_NAME=nginx \
     PYTHONUNBUFFERED=1 \
     DOLLAR=$ \
     TZ=UTC \
-    TZ_DBNAME=Etc/Universal \
     SSL_CERT_MODE=True \
     NGINX_CLIENT_BODY_SIZE=5M \
     NGINX_ADMIN_ALLOW_NETWORK=all \
