@@ -32,7 +32,7 @@ def get_secret_key():
             '0123456789' \
             '#^[]-_*%&=+/'
     keygen = ''.join([random.SystemRandom().choice(chars)
-                      for i in range(50)])
+                      for _ in range(50)])
     print(keygen)
     return keygen
 

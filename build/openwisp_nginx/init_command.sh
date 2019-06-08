@@ -8,10 +8,6 @@ touch /etc/nginx/log/nginx.access.log /etc/nginx/log/nginx.error.log
 envsubst < /etc/nginx/http.conf > /etc/nginx/conf.d/http.conf
 source /etc/nginx/utils.sh
 
-if [ "$NGINX_IP6" = 'True' ]; then
-    NGINX_IP6_STRING="listen [::]:443 ssl $NGINX_HTTP2;"
-    NGINX_IP6_80_STRING="listen [::]:80;"
-fi
 if [ "$SSL_CERT_MODE" = 'True' ]; then
     envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
     sslHttpBehaviour
