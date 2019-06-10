@@ -8,7 +8,6 @@ COPY ./openwisp_controller/urls.py \
 
 RUN chmod +x /opt/openwisp/init_command.sh
 CMD /opt/openwisp/init_command.sh
-EXPOSE $CONTROLLER_APP_PORT
 
 ARG CONTROLLER_APP_PORT=8001
 ENV MODULE_NAME=controller \
@@ -26,7 +25,6 @@ ENV MODULE_NAME=controller \
     DB_SSLROOTCERT='' \
     DJANGO_LOG_LEVEL=ERROR \
     DJANGO_LANGUAGE_CODE=en-gb \
-    DJANGO_MEDIA_VOLUME_LOCATION=./media \
     DJANGO_ALLOWED_HOSTS=* \
     REDIS_HOST=redis \
     DEBUG_MODE=False \
@@ -34,6 +32,6 @@ ENV MODULE_NAME=controller \
     DJANGO_X509_DEFAULT_CA_VALIDITY=3650 \
     DJANGO_DEFAULT_FROM_EMAIL=example@email.com \
     DJANGO_SECRET_KEY=DEFAULT_BAD_KEY \
-    DJANGO_EMAIL_PORT=1025 \
-    DJANGO_EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend \
     DASHBOARD_APP_SERVICE=dashboard
+
+EXPOSE $CONTROLLER_APP_PORT

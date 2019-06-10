@@ -58,3 +58,17 @@ spec:
   resources:
     requests:
       storage: 100Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postfix-pv-claim
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "nfs-provisioner"
+spec:
+  storageClassName: nfs-provisioner
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi

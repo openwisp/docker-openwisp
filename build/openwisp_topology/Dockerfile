@@ -32,8 +32,6 @@ ENV MODULE_NAME=topology \
     DEBUG_MODE=False \
     DJANGO_DEFAULT_FROM_EMAIL=example@email.com \
     DJANGO_SECRET_KEY=DEFAULT_BAD_KEY \
-    DJANGO_EMAIL_PORT=1025 \
-    DJANGO_EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend \
     DASHBOARD_APP_SERVICE=dashboard
 
 EXPOSE $TOPOLOGY_APP_PORT

@@ -1,10 +1,5 @@
 import os
 
-# When you change the INSTALLED_APPS here
-# Ensure that you change the
-# openwisp_dashboard/migrate_settings.py
-# as well to ensure that correct migrations
-# take place.
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,11 +30,6 @@ INSTALLED_APPS = [
     'openwisp_radius',
 ]
 
-# When you change the EXTENDED_APPS here
-# Ensure that you change the
-# openwisp_dashboard/migrate_settings.py
-# as well to ensure that correct migrations
-# take place.
 EXTENDED_APPS = ['django_freeradius']
 
 STATICFILES_FINDERS = [

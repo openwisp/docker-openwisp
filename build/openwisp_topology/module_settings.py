@@ -1,10 +1,5 @@
 import os
 
-# When you change the INSTALLED_APPS here
-# Ensure that you change the
-# openwisp_dashboard/migrate_settings.py
-# as well to ensure that correct migrations
-# take place.
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -26,14 +21,4 @@ INSTALLED_APPS = [
     'rest_framework'
 ]
 
-# When you change the EXTENDED_APPS here
-# Ensure that you change the
-# openwisp_dashboard/migrate_settings.py
-# as well to ensure that correct migrations
-# take place.
 EXTENDED_APPS = ['django_netjsongraph']
-
-TEST_RUNNER = 'django_netjsongraph.tests.utils.LoggingDisabledTestRunner'
-
-OPENWISP_ORGANIZATON_USER_ADMIN = True
-OPENWISP_ORGANIZATON_OWNER_ADMIN = True

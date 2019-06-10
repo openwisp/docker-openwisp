@@ -192,6 +192,31 @@ spec:
 apiVersion: v1
 kind: ReplicationController
 metadata:
+  name: openwisp-postfix
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-postfix
+    spec:
+      containers:
+        - name: openwisp-postfix
+          image: openwisp-postfix
+          envFrom:
+            - configMapRef:
+                name: postfix-config
+          volumeMounts:
+            - mountPath: /etc/ssl/mail
+              name: openwisp-postfix-data
+      volumes:
+        - name: openwisp-postfix-data
+          persistentVolumeClaim:
+            claimName: postfix-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
   name: redis
 spec:
   replicas: 1

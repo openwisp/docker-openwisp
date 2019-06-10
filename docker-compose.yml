@@ -21,6 +21,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - postfix
 
   controller:
     image:  openwisp/openwisp-controller:latest
@@ -96,6 +97,18 @@ services:
       - radius
       - topology
 
+  postfix:
+    image: openwisp/openwisp-postfix:latest
+    build:
+      context: build
+      dockerfile: openwisp_postfix/Dockerfile
+    deploy:
+      replicas: 1
+    env_file:
+      - .env
+    volumes:
+      - openwisp_certs:/etc/ssl/mail
+
   postgres:
     image: mdillon/postgis:10-alpine
     deploy:
@@ -106,15 +119,11 @@ services:
       - POSTGRES_PASSWORD=$DB_PASS
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
 
   redis:
     image: redis:alpine
     deploy:
       replicas: 1
-    ports:
-      - "6379:6379"
 
 volumes:
   postgres_data: {}
