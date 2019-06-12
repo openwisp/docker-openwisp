@@ -15,9 +15,9 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'django_extensions',
     # openwisp modules
     'openwisp_users',
+    # openwisp-controller
     'openwisp_controller.pki',
     'openwisp_controller.config',
     'openwisp_controller.geo',
@@ -31,17 +31,14 @@ INSTALLED_APPS = [
     # rest framework
     'rest_framework',
     'rest_framework_gis',
+    'django_filters',
     # channels
-    'channels'
+    'channels',
 ]
 
-EXTENDED_APPS = [
-    'django_netjsonconfig',
-    'django_x509',
-    'django_loci',
-]
+EXTENDED_APPS = ['django_netjsongraph',
+                 'django_netjsonconfig',
+                 'django_x509',
+                 'django_loci']
 
-DJANGO_X509_DEFAULT_CERT_VALIDITY = \
-    int(os.environ['DJANGO_X509_DEFAULT_CERT_VALIDITY'])
-DJANGO_X509_DEFAULT_CA_VALIDITY = \
-    int(os.environ['DJANGO_X509_DEFAULT_CA_VALIDITY'])
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'

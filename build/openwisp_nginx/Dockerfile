@@ -4,12 +4,13 @@ RUN apk add certbot openssl
 
 WORKDIR /etc/nginx/
 
-COPY ./common/services_status.py \
+COPY ./common/services.py \
+    ./common/init_command.sh \
+    ./common/utils.sh \
     ./openwisp_nginx/ \
     /etc/nginx/
 
-RUN chmod +x /etc/nginx/init_command.sh
-CMD /etc/nginx/init_command.sh
+CMD ["sh", "init_command.sh"]
 
 ENV MODULE_NAME=nginx \
     PYTHONUNBUFFERED=1 \

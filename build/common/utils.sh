@@ -1,5 +1,10 @@
 #!/bin/sh
 
+function start_uwsgi {
+    envsubst < uwsgi.conf.ini > uwsgi.ini
+    uwsgi --ini uwsgi.ini
+}
+
 function create_prod_certs {
     certbot certonly --nginx --noninteractive --agree-tos
                      --rsa-key-size 4096
@@ -44,8 +49,8 @@ function create_dev_certs {
     fi
 }
 
-function sslHttpBehaviour {
-    if [ "$HTTP_ALLOW" == "TRUE" ]; then
+function ssl_http_behaviour {
+    if [ "$NGINX_HTTP_ALLOW" == "True" ]; then
         envsubst_create_config /etc/nginx/openwisp.template.conf http
     else
         envsubst < /etc/nginx/openwisp.ssl.80.template.conf > /etc/nginx/conf.d/openwisp.http.conf
