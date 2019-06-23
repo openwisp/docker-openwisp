@@ -1,6 +1,8 @@
 import os
 import sys
 
+from openwisp.utils import env_bool
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -8,10 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.environ['DEBUG_MODE'] == "True":
-    DEBUG = True
-else:
-    DEBUG = False
+DEBUG = env_bool(os.environ['DEBUG_MODE'])
 
 ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS'].split(",")
 
@@ -19,6 +18,7 @@ AUTH_USER_MODEL = 'openwisp_users.User'
 SITE_ID = 1
 LOGIN_REDIRECT_URL = 'admin:index'
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
+CORS_ORIGIN_ALLOW_ALL = env_bool(os.environ['DJANGO_CORS_ORIGIN_ALLOW_ALL'])
 
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -72,6 +72,7 @@ REDIS_HOST = os.environ['REDIS_HOST']
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
+
 DATABASES = {
     'default': {
         'ENGINE': os.environ['DB_ENGINE'],
@@ -89,6 +90,7 @@ DATABASES = {
 
 # Channels(Websocket)
 # https://channels.readthedocs.io/en/latest/topics/channel_layers.html#configuration
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'asgi_redis.RedisChannelLayer',
@@ -99,6 +101,7 @@ CHANNEL_LAYERS = {
 
 # Cache
 # https://docs.djangoproject.com/en/2.2/ref/settings/#caches
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -107,6 +110,17 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
+}
+
+# Leaflet Configurations
+# https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration
+
+LEAFLET_CONFIG = {
+    "DEFAULT_CENTER": [
+        int(os.environ['DJANGO_LEAFET_CENTER_X_AXIS']),
+        int(os.environ['DJANGO_LEAFET_CENTER_Y_AXIS']),
+    ],
+    "DEFAULT_ZOOM": int(os.environ['DJANGO_LEAFET_ZOOM']),
 }
 
 # Password validation
@@ -137,11 +151,18 @@ STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 # Email Configurations
-EMAIL_HOST = os.environ['EMAIL_HOST']
-DEFAULT_FROM_EMAIL = os.environ['DJANGO_DEFAULT_FROM_EMAIL']
 
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
+DEFAULT_FROM_EMAIL = os.environ['EMAIL_DJANGO_DEFAULT']
+EMAIL_BACKEND = os.environ['EMAIL_BACKEND']
+EMAIL_HOST = os.environ['EMAIL_HOST']
+EMAIL_PORT = os.environ['EMAIL_HOST_PORT']
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_USE_TLS = env_bool(os.environ['EMAIL_HOST_TLS'])
+
+# Logging
+# http://docs.djangoproject.com/en/dev/topics/logging
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -180,6 +201,15 @@ LOGGING = {
         ]
     },
 }
+
+# Sentry
+# https://sentry.io/for/django/
+
+if os.environ['DJANGO_SENTRY_DSN']:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    sentry_sdk.init(dsn=os.environ['DJANGO_SENTRY_DSN'],
+                    integrations=[DjangoIntegration()])
 
 try:
     from openwisp.module_settings import *

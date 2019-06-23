@@ -13,11 +13,6 @@ jobs:
   include:
     - stage: tests
       script:
-      # Start containers
-      - make compose-build
-      - docker-compose up -d
-      # Getting ready to test
       - echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
-      - source ./tests/tests.sh
-      # Tests
-      - init_dashoard_tests
+      - make compose-build
+      - make runtests

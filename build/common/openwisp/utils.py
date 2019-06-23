@@ -11,6 +11,8 @@ class HostFilter(logging.Filter):
         record.host = socket.gethostname()
         return True
 
+def env_bool(env):
+    return env in ["True", "true", "TRUE"]
 
 # Setting correct urlpatterns for the
 # modules -- used in urls.py
@@ -30,3 +32,4 @@ def openwisp_controller_urls():
         if url.urlconf_module.__name__ in exclude:
             controller_urls.remove(url)
     return controller_urls
+

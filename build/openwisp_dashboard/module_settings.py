@@ -55,8 +55,3 @@ EXTENDED_APPS = ['django_freeradius',
                  'django_netjsonconfig',
                  'django_x509',
                  'django_loci']
-
-if os.environ['DJANGO_DASHBOARD_CORS_ORIGIN_ALLOW_ALL'] == "True":
-    CORS_ORIGIN_ALLOW_ALL = True
-else:
-    CORS_ORIGIN_ALLOW_ALL = False
