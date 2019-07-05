@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 
 from openwisp.utils import env_bool
 
@@ -81,10 +82,7 @@ DATABASES = {
         'PASSWORD': os.environ['DB_PASS'],
         'HOST': os.environ['DB_HOST'],
         'PORT': os.environ['DB_PORT'],
-        'OPTIONS': {
-            'sslmode': os.environ['DB_SSLMODE'],
-            'sslrootcert': os.environ['DB_SSLROOTCERT'],
-        },
+        'OPTIONS': json.loads(os.environ['DB_OPTIONS']),
     },
 }
 

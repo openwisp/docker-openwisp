@@ -1,0 +1,403 @@
+# Environment Variables
+
+**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/general).**
+
+The OpenWISP docker images are created with customization in mind. You can simply change the environment variables to change the containers and trailer them to your needs.
+
+- `docker-compose`: You can simply change the values in `.env` file.
+- `kubernetes`: You need to create `ConfigMap` to change the environment variables. An example is present in `kubernetes/` directory.
+
+Following are the options that can be changed. The list is divided in following sections:
+
+- [Essential](#Essential): You need to change these values to get the containers working for your system.
+- [Security](#Security): You should change these values for security reasons.
+- [Additional](#Additional): You might want to look into these options before using images in production.
+- [Database](#Database): Database settings. Database host setting is in "Host" section.
+- [Django](#Django): Additional django settings.
+- [Email](#Email): Email & postfix configurations.
+- [Nginx](#Nginx): Nginx configurations.
+- [Host](#Hosts): Want to change the host of a particular service? Like pointing all the containers to a different database service.
+- [Developer](#Developer): DON'T change these values unless you know what you are doing.
+
+Additionally, you can search for the following:
+- `DB_`: All the database settings.
+- `DJANGO_`: All the django settings.
+- `EMAIL__`: All the email settings. (Also see `POSTFIX_`)
+- `POSTFIX_`: All the postfix settings. (Also see `EMAIL_`)
+- `NGINX_`: All the nginx settings.
+- `DASHBOARD_`: All the OpenWISP dashboard specific settings.
+- `CONTROLLER_`: All the OpenWISP controller specific settings.
+- `RADIUS_`: All the OpenWISP radius specific settings.
+- `TOPOLOGY_`: All the OpenWISP network topology specific settings.
+
+## Essential
+
+### `DASHBOARD_DOMAIN`
+
+- **Explaination:** Domain on which you want to access OpenWISP dashboard.
+- **Valid Values:** Domain
+- **Default:** dashboard.openwisp.org
+
+### `CONTROLLER_DOMAIN`
+
+- **Explaination:** Domain on which you want to access OpenWISP controller API.
+- **Valid Values:** Domain
+- **Default:** controller.openwisp.org
+
+### `RADIUS_DOMAIN`
+
+- **Explaination:** Domain on which you want to access OpenWISP radius API.
+- **Valid Values:** Domain
+- **Default:** radius.openwisp.org
+
+### `TOPOLOGY_DOMAIN`
+
+- **Explaination:** Domain on which you want to access OpenWISP network topology API.
+- **Valid Values:** Domain
+- **Default:** topology.openwisp.org
+
+### `EMAIL_DJANGO_DEFAULT`
+
+- **Explaination:** It is the email address to use for various automated correspondence from the site manager(s).
+- **Valid Values:** Email address
+- **Default:** example@example.com
+
+### `DB_USER`
+
+- **Explaination:** The name of the database to use.
+- **Valid Values:** STRING
+- **Default:** admin
+
+### `DB_PASS`
+
+- **Explaination:** The password to use when connecting to the database.
+- **Valid Values:** STRING
+- **Default:** admin
+
+## Security
+
+### `DJANGO_SECRET_KEY`
+
+- **Explaination:** A random unique string that must be kept secret for security reasons. You can generate it with the command: `python build.py get-secret-key` at the root of the repository to get a key or make a random key yourself.
+- **Valid Values:** STRING
+- **Default:** default_secret_key
+
+### `DJANGO_ALLOWED_HOSTS`
+
+- **Explaination:** Used validate a request's HTTP Host header. The default value `*` means all domains. It can be `.mydomain.com`. For security allow only trusted domains.
+- **Valid Values:** Valid domain | IP adress | *
+- **Default:** *
+
+## Additional
+
+### `TZ`
+- **Explaination:** Sets the timezone for the OpenWISP containers.
+- **Valid Values:** Find list of timezone database [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+- **Default:** UTC
+
+### `CERT_ADMIN_EMAIL`
+
+- **Explaination:** Required by certbot. Email used for registration and recovery contact. Use comma to register multiple emails.
+- **Valid Values:** Email address(s)
+- **Default:** example@example.com
+
+### `SSL_CERT_MODE`
+
+- **Explaination:** Flag to enable or disable HTTPs. If it is set to true, letsencrypt certificates are automatically fetched with the help of certbot and a cronjob to ensure they stay updated is added. If it is set to `Develop`, self-signed certificates are used and cronjob for the certificates is set. If set to False, site is accessiable via HTTP.
+- **Valid Values:** True | Develop | False
+- **Default:** True
+
+## Database
+
+### `DB_NAME`
+
+- **Explaination:** The name of the database to use.
+- **Valid Values:** STRING
+- **Default:** openwisp_db
+
+### `DB_ENGINE`
+
+- **Explaination:** Django database engine compatible with GeoDjango, read more [here](https://docs.djangoproject.com/en/2.2/ref/settings/#engine)
+- **Valid Values:** Valid name from list [here](https://docs.djangoproject.com/en/2.2/ref/settings/#engine).
+- **Default:** django.contrib.gis.db.backends.postgis
+
+### `DB_PORT`
+
+- **Explaination:** The port to use when connecting to the database. Only valid port allowed.
+- **Valid Values:** INTEGER
+- **Default:** 5432
+
+### `DB_OPTIONS`
+
+- **Explaination:** Additional database options to connect to the database. These options must be supported by your `DB_ENGINE`.
+- **Valid Values:** JSON
+- **Example:** {"sslmode": "disable", "sslrootcert": ""}
+- **Default:** {}
+
+## Django
+
+### `DJANGO_X509_DEFAULT_CERT_VALIDITY`
+
+- **Explaination:** Validity of your x509 cert in days.
+- **Valid Values:** INT
+- **Default:** 1825
+
+### `DJANGO_X509_DEFAULT_CA_VALIDITY`
+
+- **Explaination:** Validity of your x509 CA in days.
+- **Valid Values:** INT
+- **Default:** 3650
+
+### `DJANGO_CORS_ORIGIN_ALLOW_ALL`
+
+- **Explaination:** Allow CORS. [See here](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+- **Valid Values:** True | False
+- **Default:** True
+
+### `DJANGO_LANGUAGE_CODE`
+
+- **Explaination:**  Language for your OpenWISP application.
+- **Valid Values:** List of available options can be found [here](https://github.com/django/django/blob/fcbc502af93f0ee75522c45ae6ec2925da9f2145/django/conf/global_settings.py#L51-L145)
+- **Default:**  en-gb
+
+### `DJANGO_SENTRY_DSN`
+
+- **Explaination:**  Sentry DSN. [See here](https://sentry.io/for/django/).
+- **Valid Values:** Your DSN value provided by sentry.
+- **Example:** https://example@sentry.io/example
+- **Default:**  --BLANK--
+
+### `DJANGO_LEAFET_CENTER_X_AXIS`
+- **Explaination:**  x-axis co-ordinate of the leaflet default center property. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
+- **Valid Values:** FLOAT
+- **Example:** 26.357896
+- **Default:**  0
+
+### `DJANGO_LEAFET_CENTER_Y_AXIS`
+- **Explaination:**  y-axis co-ordinate of the leaflet default center property. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
+- **Valid Values:** FLOAT
+- **Example:** 127.783809
+- **Default:**  0
+
+### `DJANGO_LEAFET_ZOOM`
+- **Explaination:**  Default zoom for leaflet. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
+- **Valid Values:** INT (1-16)
+- **Default:**  1
+
+## Email
+
+### `EMAIL_BACKEND`
+- **Explaination:** Email will be sent using this backend.
+- **Valid Values:** [See list](https://docs.djangoproject.com/en/2.2/topics/email/#obtaining-an-instance-of-an-email-backend)
+- **Default:** django.core.mail.backends.smtp.EmailBackend
+
+### `EMAIL_HOST_PORT`
+- **Explaination:** Port to use for the SMTP server defined in `EMAIL_HOST`.
+- **Valid Values:** INTEGER
+- **Default:** 25
+
+### `EMAIL_HOST_USER`
+- **Explaination:** Username to use for the SMTP server defined in EMAIL_HOST. If empty, Django won’t attempt authentication.
+- **Valid Values:** STRING
+- **Default:** --BLANK--
+- **Example:** example@example.com
+
+### `EMAIL_HOST_PASSWORD`
+- **Explaination:** Username to use for the SMTP server defined in EMAIL_HOST. If empty, Django won’t attempt authentication.
+- **Valid Values:** STRING
+- **Default:** --BLANK--
+
+### `EMAIL_HOST_TLS`
+- **Explaination:** Whether to use a TLS (secure) connection when talking to the SMTP server. This is used for explicit TLS connections, generally on port 587.
+- **Valid Values:** True | False
+- **Default:** False
+
+### `POSTFIX_ALLOWED_SENDER_DOMAINS`
+- **Explaination:** Due to in-built spam protection in Postfix you will need to specify sender domains.
+- **Valid Values:** Domain
+- **Default:** example.com
+
+### `POSTFIX_MYHOSTNAME`
+- **Explaination:** You may configure a specific hostname that the SMTP server will use to identify itself.
+- **Valid Values:** STRING
+- **Default:** example.com
+
+### `POSTFIX_DESTINATION`
+- **Explaination:** Destinations of the postfix service.
+- **Valid Values:** Domain
+- **Default:** $myhostname
+
+### `POSTFIX_MESSAGE_SIZE_LIMIT`
+- **Explaination:** By default, this limit is set to 0 (zero), which means unlimited. Why would you want to set this? Well, this is especially useful in relation with RELAYHOST setting.
+- **Valid Values:**
+- **Default:** 0
+- **Example:** 26214400
+
+### `POSTFIX_MYNETWORKS`
+- **Explaination:** Postfix is exposed only in mynetworks to prevent any issues with this postfix being inadvertently exposed on the internet.
+- **Valid Values:** IP Addresses
+- **Default:** 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+
+### `POSTFIX_RELAYHOST_TLS_LEVEL`
+- **Explaination:** Define relay host TLS connection level.
+- **Valid Values:** [See list](http://www.postfix.org/postconf.5.html#smtp_tls_security_level).
+- **Default:** may
+
+### `POSTFIX_RELAYHOST`
+- **Explaination:** Host that relays your mails.
+- **Valid Values:** IP address | Domain
+- **Default:** --BLANK--
+- **Example:** smtp.gmail.com:587
+
+### `POSTFIX_RELAYHOST_USERNAME`
+- **Explaination:** Username for the relay server.
+- **Valid Values:** STRING
+- **Default:** --BLANK--
+- **Example:** example@example.com
+
+### `POSTFIX_RELAYHOST_PASSWORD`
+- **Explaination:** Login password for the relay server.
+- **Valid Values:** STRING
+- **Default:** --BLANK--
+- **Example:** example
+
+## Nginx
+
+### `NGINX_HTTP2`
+
+- **Explaination:** Options:  or http2. Used by nginx to enable http2. [See here](https://www.nginx.com/blog/http2-module-nginx/#overview)
+- **Valid Values:** --BLANK-- | http2
+- **Default:** http2
+
+### `NGINX_CLIENT_BODY_SIZE`
+
+- **Explaination:** Client body size. [See here](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
+- **Valid Values:** STRING
+- **Default:** 5M
+
+### `NGINX_IP6_STRING`
+
+- **Explaination:** Nginx listen on IPv6 for SSL connection. You can either enter a valid nginx statement or leave this value empty.
+- **Valid Values:** --BLANK-- | listen [::]:443 ssl http2;
+- **Default:** --BLANK--
+
+### `NGINX_IP6_80_STRING`
+
+- **Explaination:** Nginx listen on IPv6 connection. You can either enter a valid nginx statement or leave this value empty.
+- **Valid Values:** --BLANK-- | listen [::]:80;
+- **Default:** --BLANK--
+
+### `NGINX_ADMIN_ALLOW_NETWORK`
+
+- **Explaination:** IP address allowed to access OpenWISP services.
+- **Valid Values:** all | IP address
+- **Example:** `12.213.43.54/16`
+- **Default:** all
+
+### `NGINX_SSL_CONFIG`
+
+- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example gzip is enabled in this option. You may add options to this string or leave this variable blank.
+- **Example:** `gzip on;gzip_comp_level 6;gzip_proxied any;gzip_min_length 1000;gzip_types text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype;`
+- **Default:** gzip off;
+
+### `NGINX_SERVER_NAME_HASH_BUCKET`
+
+- **Explaination:** Define domain hash bucket size. [See here](http://nginx.org/en/docs/hash.html). Value should be only in powers of 2.
+- **Valid Values:** INT
+- **Default:** 32
+
+### `NGINX_HTTPS_ALLOWED_IPS`
+
+- **Explaination:** Allow these IP addresses to access the website over http when `SSL_CERT_MODE` is set to `True` .
+- **Valid Values:** all | IP address
+- **Example:** `12.213.43.54/16`
+- **Default:** all
+
+### `NGINX_HTTP_ALLOW`
+
+- **Explaination:** Allow http access with https access. Valid only when `SSL_CERT_MODE` is set to `True` or `Develop`.
+- **Valid Values:** True | False
+- **Default:** True
+
+## Hosts
+
+### `DB_HOST`
+
+- **Explaination:** Host to be used when connecting to the database. `localhost` or empty string are not allowed.
+- **Valid Values:** STRING | IP adress
+- **Default:** postgres
+
+### `EMAIL_HOST`
+
+- **Explaination:** Host to be used when connecting to the STMP. `localhost` or empty string are not allowed.
+- **Valid Values:** STRING | IP adress
+- **Example:** smtp.gmail.com
+- **Default:** postfix
+
+### `REDIS_HOST`
+
+- **Explaination:** Host to establish redis connection.
+- **Valid Values:** Domain | IP address
+- **Default:** redis
+
+### `DASHBOARD_APP_SERVICE`
+
+- **Explaination:** Host to establish OpenWISP dashboard connection.
+- **Valid Values:** Domain | IP address
+- **Default:** dashboard
+
+### `CONTROLLER_APP_SERVICE`
+
+- **Explaination:** Host to establish OpenWISP controller connection.
+- **Valid Values:** Domain | IP address
+- **Default:** controller
+
+### `RADIUS_APP_SERVICE`
+
+- **Explaination:** Host to establish OpenWISP radius connection.
+- **Valid Values:** Domain | IP address
+- **Default:** radius
+
+### `TOPOLOGY_APP_SERVICE`
+
+- **Explaination:** Host to establish OpenWISP topology connection.
+- **Valid Values:** Domain | IP address
+- **Default:** topology
+
+## Developer
+
+### `DEBUG_MODE`
+
+- **Explaination:** Enable Django Debugging. [See here](https://docs.djangoproject.com/en/2.2/ref/settings/#debug).
+- **Valid Values:** True | False
+- **Default:** False
+
+### `DASHBOARD_APP_PORT`
+
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP  dashboard container. DON'T Change unless you know what you are doing.
+- **Valid Values:** INTEGER
+- **Default:** 8000
+
+### `CONTROLLER_APP_PORT`
+
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP  controller container. DON'T Change unless you know what you are doing.
+- **Valid Values:** INTEGER
+- **Default:** 8001
+
+### `RADIUS_APP_PORT`
+
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP  radius container. DON'T Change unless you know what you are doing.
+- **Valid Values:** INTEGER
+- **Default:** 8002
+
+### `TOPOLOGY_APP_PORT`
+
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP network topology container. DON'T Change unless you know what you are doing.
+- **Valid Values:** INTEGER
+- **Default:** 8003
+
+### `POSTFIX_DEBUG_MYNETWORKS`
+- **Explaination:** Set debug_peer_list for given list of networks.
+- **Valid Values:** False | STRING
+- **Default:** False
+- **Example:** 127.0.0.0/8
