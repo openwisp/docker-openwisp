@@ -1,13 +1,18 @@
 '''
 Load initial data before starting the server.
-- Add superuser `admin`.
+- Create superuser `admin`.
+- Create default CA
+- Create default Cert
+- Create default VPN
+- Create default VPN Client Template
 '''
+
+import json
+import os
+import django
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-
-import os
-import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 django.setup()
@@ -23,5 +28,112 @@ def create_admin():
         User.objects.create_superuser("admin", "admin@example.com", "admin")
 
 
+def get_vpn_organization(vpnOrg):
+    '''
+    Get organization for which VPN server and template
+    needs to be made
+    '''
+    return Organization.objects.get(slug=vpnOrg)
+
+def create_default_CA(vpnOrg, x509NameCA):
+    '''
+    Create default certificate authority
+    '''
+    if not Ca.objects.filter(name=x509NameCA).exists():
+        defaultCa = Ca()
+        defaultCa.organization = vpnOrg
+        defaultCa.name = x509NameCA
+        defaultCa.country_code = os.environ['X509_COUNTRY_CODE']
+        defaultCa.state =  os.environ['X509_STATE']
+        defaultCa.city =  os.environ['X509_CITY']
+        defaultCa.organization_name = os.environ['X509_ORGANIZATION_NAME']
+        defaultCa.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
+        defaultCa.email = os.environ['X509_EMAIL']
+        defaultCa.common_name = os.environ['X509_COMMON_NAME']
+        defaultCa.notes = 'This CA was created during the setup, it is used for ' \
+                          'the default management VPN. Please do not rename it.'
+        defaultCa.full_clean()
+        defaultCa.save()
+        return defaultCa
+    return Ca.objects.get(name=x509NameCA)
+
+def create_default_cert(vpnOrg, defaultCa, x509NameCert):
+    '''
+    Create default certificate
+    '''
+    if not Cert.objects.filter(name=x509NameCert).exists():
+        defaultCert = Cert()
+        defaultCert.ca = defaultCa
+        defaultCert.organization = vpnOrg
+        defaultCert.name = x509NameCert
+        defaultCert.country_code = os.environ['X509_COUNTRY_CODE']
+        defaultCert.state =  os.environ['X509_STATE']
+        defaultCert.city =  os.environ['X509_CITY']
+        defaultCert.organization_name = os.environ['X509_ORGANIZATION_NAME']
+        defaultCert.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
+        defaultCert.email = os.environ['X509_EMAIL']
+        defaultCert.common_name = os.environ['X509_COMMON_NAME']
+        defaultCert.notes = 'This certificate was created during the setup, it is used for' \
+                            'the default management VPN. Please do not rename it.'
+        defaultCert.full_clean()
+        defaultCert.save()
+        return defaultCert
+    return Cert.objects.get(name=x509NameCert)
+
+
+def create_default_vpn(vpnName, vpnOrg, defaultCa, defaultCert):
+    '''
+    Create default vpn
+    '''
+    if not Vpn.objects.filter(name=vpnName).exists():
+        defaultVpn = Vpn()
+        defaultVpn.organization = vpnOrg
+        defaultVpn.ca = defaultCa
+        defaultVpn.cert = defaultCert
+        defaultVpn.name = vpnName
+        defaultVpn.notes = 'This is the default management VPN created during setup, ' \
+                           'you may modify these settings and they will soon reflect ' \
+                           'in your OpenVPN Server instance.'
+        defaultVpn.host = 'openvpn'
+        defaultVpn.backend = 'django_netjsonconfig.vpn_backends.OpenVpn'
+        with open('openvpn.json', 'r') as json_file:
+            json_data = json.load(json_file)
+        defaultVpn.config = json_data
+        defaultVpn.full_clean()
+        defaultVpn.save()
+        return defaultVpn
+    return Vpn.objects.get(name=vpnName)
+
+
+def create_default_vpn_template(defaultVpnClient, vpnOrg, defaultVpn):
+    '''
+    Create default vpn client template
+    '''
+    if not Template.objects.filter(name=defaultVpnClient).exists():
+        defaultTp = Template()
+        defaultTp.organization = vpnOrg
+        defaultTp.auto_cert = True
+        defaultTp.name = defaultVpnClient
+        defaultTp.type = 'vpn'
+        defaultTp.tags = 'Management, VPN'
+        defaultTp.backend = 'netjsonconfig.OpenWrt'
+        defaultTp.vpn = defaultVpn
+        defaultTp.default = True
+        defaultTp.full_clean()
+        defaultTp.save()
+
+
 if __name__ == "__main__":
+    from openwisp_radius.models import OrganizationRadiusSettings
+    from openwisp_users.models import Organization
+    from openwisp_controller.config.models import Vpn, Template
+    from openwisp_controller.pki.models import Ca, Cert
     create_admin()
+    # Steps for creating new vpn client template with all the
+    # required objects (CA, Certificate, VPN Server).
+    vpnOrg = get_vpn_organization(os.environ['VPN_ORG'])
+    defaultCa = create_default_CA(vpnOrg, os.environ['X509_NAME_CA'])
+    defaultCert = create_default_cert(vpnOrg, defaultCa, os.environ['X509_NAME_CERT'])
+    defaultVpn = create_default_vpn(os.environ['VPN_NAME'], vpnOrg,
+                                    defaultCa, defaultCert)
+    create_default_vpn_template(os.environ['VPN_CLIENT_NAME'], vpnOrg, defaultVpn)

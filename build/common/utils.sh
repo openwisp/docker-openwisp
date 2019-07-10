@@ -1,5 +1,21 @@
 #!/bin/sh
 
+function init_conf {
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    default_psql_vars
+}
+
+function default_psql_vars {
+    # Set database variable values in default PG
+    # vars to use psql command without passing additional
+    # arguements.
+    export PGHOST=$DB_HOST
+    export PGPORT=$DB_PORT
+    export PGUSER=$DB_USER
+    export PGPASSWORD=$DB_PASS
+    export PGDATABASE=$DB_NAME
+}
+
 function start_uwsgi {
     envsubst < uwsgi.conf.ini > uwsgi.ini
     uwsgi --ini uwsgi.ini
@@ -213,4 +229,44 @@ function postfix_config {
     postmap /etc/postfix/generic
     postmap /etc/aliases
     newaliases
+}
+
+function openvpn_preconfig {
+    mkdir -p /dev/net
+    if [ ! -c /dev/net/tun ]; then
+        mknod /dev/net/tun c 10 200
+    fi
+    ip -6 route show default 2>/dev/null
+    if [ $? = 0 ]; then
+        echo "Enabling IPv6 Forwarding"
+        sysctl -w net.ipv6.conf.all.disable_ipv6=0 || echo "Failed to enable IPv6 support"
+        sysctl -w net.ipv6.conf.default.forwarding=1 || echo "Failed to enable IPv6 Forwarding default"
+        sysctl -w net.ipv6.conf.all.forwarding=1 || echo "Failed to enable IPv6 Forwarding"
+    fi
+}
+
+function openvpn_config {
+    export QUERY=`psql -qAtc "SELECT id,key FROM config_vpn where name='${VPN_NAME}';"`
+    export UUID=`echo "$QUERY" | cut -d'|' -f1`
+    export KEY=`echo "$QUERY" | cut -d'|' -f2`
+}
+
+function openvpn_config_checksum {
+    export OFILE=`wget -qO - --no-check-certificate \
+    ${DASHBOARD_URI}/controller/vpn/checksum/$UUID/?key=$KEY`
+    export NFILE=`cat checksum`
+}
+
+function openvpn_config_download {
+    wget -qO vpn.tar.gz --no-check-certificate \
+    ${DASHBOARD_URI}/controller/vpn/download-config/$UUID/?key=$KEY
+    wget -qO checksum --no-check-certificate \
+    ${DASHBOARD_URI}/controller/vpn/checksum/$UUID/?key=$KEY
+    tar xzf vpn.tar.gz
+    chmod 600 *.pem
+}
+
+function crl_download {
+    export CAid=`psql -qAtc "SELECT ca_id FROM config_vpn where name='${VPN_NAME}';"`
+    wget -qO revoked.crl --no-check-certificate ${DASHBOARD_URI}/x509/ca/${CAid}.crl
 }

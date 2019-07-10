@@ -20,6 +20,8 @@ Following are the options that can be changed. The list is divided in following 
 - [Email](#Email): Email & postfix configurations.
 - [Freeradius](#Freeradius): Freeradius related settings.
 - [Nginx](#Nginx): Nginx configurations.
+- [VPN](#VPN): Default VPN and VPN template related configurations.
+- [X509](#X509): Default certificate & certicate Authority configuration options.
 - [Host](#Hosts): Want to change the host of a particular service? Like pointing all the containers to a different database service.
 - [Developer](#Developer): DON'T change these values unless you know what you are doing.
 
@@ -34,6 +36,8 @@ Additionally, you can search for the following:
 - `RADIUS_`: All the OpenWISP radius specific settings.
 - `TOPOLOGY_`: All the OpenWISP network topology specific settings.
 - `FREERADIUS_`: All the freeradius related settings.
+- `X509_`: All the configurations related to x509 CA and certificates.
+- `VPN_`: Default VPN and VPN template related configurations.
 
 ## Essential
 
@@ -384,6 +388,82 @@ Additionally, you can search for the following:
 - **Explaination:** If you have a custom configuration file mounted, set this to `True`.
 - **Valid Values:** True | False
 - **Default:** False
+
+## VPN
+
+### `VPN_ORG`
+
+- **Explaination:** Name of the organization for which the VPN client template needs to be created.
+- **Valid Values:** STRING
+- **Default:** default
+
+### `VPN_NAME`
+
+- **Explaination:** Name of the VPN Server that will be visible on the OpenWISP dashboard.
+- **Valid Values:** STRING
+- **Default:** default
+
+### `VPN_CLIENT_NAME`
+
+- **Explaination:** Name of the VPN client template that will be visible on the OpenWISP dashboard.
+- **Valid Values:** STRING
+- **Default:** default
+
+## X509
+
+### `X509_NAME_CA`
+
+- **Explaination:** Name of the default certificate authority visible on the OpenWISP dashboard.
+- **Valid Values:** STRING
+- **Default:** default
+
+### `X509_NAME_CERT`
+
+- **Explaination:** Name of the default certificate visible on the OpenWISP dashboard.
+- **Valid Values:** STRING
+- **Default:** default
+
+### `X509_COUNTRY_CODE`
+
+- **Explaination:** ISO code of the country of issuance of the certificate.
+- **Valid Values:** Country code, see list [here](https://countrycode.org/)
+- **Default:** IN
+
+### `X509_STATE`
+
+- **Explaination:** Name of the state / province of issuance of the certificate.
+- **Valid Values:** STRING
+- **Default:** Delhi
+
+### `X509_CITY`
+
+- **Explaination:** Name of the city of issuance of the certificate.
+- **Valid Values:** STRING
+- **Default:** New Delhi
+
+### `X509_ORGANIZATION_NAME`
+
+- **Explaination:** Name of the organization issuing the certificate.
+- **Valid Values:** STRING
+- **Default:** OpenWISP
+
+### `X509_ORGANIZATION_UNIT_NAME`
+
+- **Explaination:** Name of the unit of the organization issuing the certificate.
+- **Valid Values:** STRING
+- **Default:** OpenWISP
+
+### `X509_EMAIL`
+
+- **Explaination:** Organzation email adddress that'll be available to view in the certificate.
+- **Valid Values:** STRING
+- **Default:** certificate@example.com
+
+### `X509_COMMON_NAME`
+
+- **Explaination:** Common name for the CA and certificate.
+- **Valid Values:** STRING
+- **Default:** OpenWISP
 
 ## Hosts
 
