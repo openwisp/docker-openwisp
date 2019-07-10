@@ -136,6 +136,46 @@ spec:
 apiVersion: v1
 kind: ReplicationController
 metadata:
+  name: openwisp-daphne
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-daphne
+    spec:
+      containers:
+        - name: openwisp-daphne
+          image: openwisp/openwisp-websocket:latest
+          args: ["/opt/openwisp/daphne.conf"]
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-websocket
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-websocket
+    spec:
+      containers:
+        - name: openwisp-websocket
+          image: openwisp/openwisp-websocket:latest
+          args: ["/opt/openwisp/worker.conf"]
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
   name: openwisp-nginx
 spec:
   replicas: 1
@@ -172,16 +212,16 @@ spec:
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: openwisp-postgresql
+  name: openwisp-postgres
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: openwisp-postgresql
+        app: openwisp-postgres
     spec:
       containers:
-        - name: openwisp-postgresql
+        - name: openwisp-postgres
           image: mdillon/postgis:10-alpine
           imagePullPolicy: Always
           envFrom:
@@ -208,11 +248,11 @@ spec:
     spec:
       containers:
         - name: openwisp-postfix
-          image: openwisp-postfix
+          image: openwisp/openwisp-postfix:latest
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-                name: postfix-config
+                name: common-config
           volumeMounts:
             - mountPath: /etc/ssl/mail
               name: openwisp-postfix-data
@@ -220,6 +260,25 @@ spec:
         - name: openwisp-postfix-data
           persistentVolumeClaim:
             claimName: postfix-pv-claim
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: openwisp-freeradius
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-freeradius
+    spec:
+      containers:
+        - name: openwisp-freeradius
+          image: openwisp/openwisp-freeradius:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
 ---
 apiVersion: v1
 kind: ReplicationController

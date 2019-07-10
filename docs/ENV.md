@@ -18,6 +18,7 @@ Following are the options that can be changed. The list is divided in following 
 - [Database](#Database): Database settings. Database host setting is in "Host" section.
 - [Django](#Django): Additional django settings.
 - [Email](#Email): Email & postfix configurations.
+- [Freeradius](#Freeradius): Freeradius related settings.
 - [Nginx](#Nginx): Nginx configurations.
 - [Host](#Hosts): Want to change the host of a particular service? Like pointing all the containers to a different database service.
 - [Developer](#Developer): DON'T change these values unless you know what you are doing.
@@ -32,6 +33,7 @@ Additionally, you can search for the following:
 - `CONTROLLER_`: All the OpenWISP controller specific settings.
 - `RADIUS_`: All the OpenWISP radius specific settings.
 - `TOPOLOGY_`: All the OpenWISP network topology specific settings.
+- `FREERADIUS_`: All the freeradius related settings.
 
 ## Essential
 
@@ -218,12 +220,12 @@ Additionally, you can search for the following:
 ### `POSTFIX_ALLOWED_SENDER_DOMAINS`
 - **Explaination:** Due to in-built spam protection in Postfix you will need to specify sender domains.
 - **Valid Values:** Domain
-- **Default:** example.com
+- **Default:** example.org
 
 ### `POSTFIX_MYHOSTNAME`
 - **Explaination:** You may configure a specific hostname that the SMTP server will use to identify itself.
 - **Valid Values:** STRING
-- **Default:** example.com
+- **Default:** example.org
 
 ### `POSTFIX_DESTINATION`
 - **Explaination:** Destinations of the postfix service.
@@ -263,6 +265,23 @@ Additionally, you can search for the following:
 - **Valid Values:** STRING
 - **Default:** --BLANK--
 - **Example:** example
+
+## Freeradius
+
+### `FREERADIUS_ORGANIZATION`
+- **Explaination:** Organization name for which you want to setup the radius service.
+- **Valid Values:** STRING
+- **Default:** default
+
+### `FREERADIUS_KEY`
+- **Explaination:** This is the shared secret between the Authenticator (the access point) and the Authentication Server (RADIUS). Value of the `secret` parameter of the `client` in `clients.conf`.
+- **Valid Values:** STRING
+- **Default:** testing123
+
+### `FREERADIUS_CLIENTS`
+- **Explaination:** Value of the `ipaddr` parameter of the `client` in `clients.conf`. This is the network that the freeradius instance will serve. `0.0.0.0/0` means allow all.
+- **Valid Values:** STRING
+- **Default:** 0.0.0.0/0
 
 ## Nginx
 
@@ -360,6 +379,12 @@ Additionally, you can search for the following:
 - **Valid Values:** True | False
 - **Default:** True
 
+### `NGINX_CUSTOM_FILE`
+
+- **Explaination:** If you have a custom configuration file mounted, set this to `True`.
+- **Valid Values:** True | False
+- **Default:** False
+
 ## Hosts
 
 ### `DB_HOST`
@@ -437,8 +462,15 @@ Additionally, you can search for the following:
 - **Valid Values:** INTEGER
 - **Default:** 8003
 
+### `DASHBOARD_URI`
+
+- **Explaination:** Internal dashboard URI to reach dashboard from other containers. This is not exposed to the outside world.
+- **Valid Values:** STRING
+- **Default:** dashboard-internal
+
 ### `POSTFIX_DEBUG_MYNETWORKS`
 - **Explaination:** Set debug_peer_list for given list of networks.
 - **Valid Values:** False | STRING
 - **Default:** False
 - **Example:** 127.0.0.0/8
+

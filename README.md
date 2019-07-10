@@ -23,7 +23,7 @@ Images are available on docker hub and can be pulled from the following links:
 - OpenWISP Postfix - `openwisp/openwisp-postfix:latest`
 - OpenWISP Websocket - `openwisp/openwisp-websocket:latest`
 
-The configurations for openwisp images is available [here](docs/ENV.md).
+The configuration for openwisp images using environment variables is available [here](docs/ENV.md). Additionally, you can further customize your setup by mounting custom configuration files for which instructions are available [here](docs/FILES.md).
 
 ## Index
 

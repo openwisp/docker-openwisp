@@ -5,6 +5,12 @@ source utils.sh
 
 # Set timezone
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# Set aliases
+export PGHOST=$DB_HOST
+export PGPORT=$DB_PORT
+export PGUSER=$DB_USER
+export PGPASSWORD=$DB_PASSWORD
+export PGDATABASE=$DB_DATABASE
 
 # Start services
 if [ "$MODULE_NAME" = 'dashboard' ]; then
@@ -17,26 +23,28 @@ elif [ "$MODULE_NAME" = 'postfix' ]; then
     postfix_config
     postfix start
     rsyslogd -n
+elif [ "$MODULE_NAME" = 'freeradius' ]; then
+    wait_nginx_services
+    pre_radius_conf
+    if [ "$DEBUG_MODE" = 'False' ]; then
+        source docker-entrypoint.sh
+    else
+        source docker-entrypoint.sh -X
+    fi
 elif [ "$MODULE_NAME" = 'nginx' ]; then
     rm -rf /etc/nginx/conf.d/default.conf
-    envsubst < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf
-    if [ "$SSL_CERT_MODE" = 'True' ]; then
-        envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
-        ssl_http_behaviour
-        nginx -g 'daemon off;'
-        create_prod_certs
-        echo "0 3 * * 7 certbot renew &>> /etc/nginx/log/crontab.log" | crontab -
-    elif [ "$SSL_CERT_MODE" = 'Develop' ]; then
-        envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
-        ssl_http_behaviour
-        create_dev_certs
-        CMD="source /etc/nginx/utils.sh && create_dev_certs && nginx -s reload"
-        echo "0 3 1 1 * $CMD &>> /etc/nginx/log/crontab.log" | crontab -
-        nginx -g 'daemon off;'
-    else
-        envsubst_create_config /etc/nginx/openwisp.template.conf http
+    if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
         nginx -g 'daemon off;'
     fi
+    envsubst < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf
+    if [ "$SSL_CERT_MODE" = 'True' ]; then
+        nginx_prod
+    elif [ "$SSL_CERT_MODE" = 'Develop' ]; then
+        nginx_dev
+    else
+        envsubst_create_config /etc/nginx/openwisp.template.conf http
+    fi
+    nginx -g 'daemon off;'
 else
     python services.py database redis dashboard
     start_uwsgi
