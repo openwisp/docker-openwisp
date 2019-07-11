@@ -87,11 +87,9 @@ def parse_addr(addr, default_port=3030):
 
 
 def get_host_from_url(url):
-    # TODO: error for https
     url = url.split('://')[-1]
 
     if url and url[0] != '/':
-        # TODO: validate hostname
         host, _, url = url.partition('/')
         return (host, '/' + url)
 

@@ -3,7 +3,9 @@ FROM openwisp/openwisp-base:latest
 WORKDIR /opt/openwisp/
 
 # Location: /opt/openwisp/
-COPY ./openwisp_dashboard/load_init_data.py /opt/openwisp/
+COPY ./openwisp_dashboard/load_init_data.py \
+    ./openwisp_dashboard/openvpn.json \
+    /opt/openwisp/
 # Location: /opt/openwisp/openwisp/
 COPY ./openwisp_controller/module_settings.py /opt/openwisp/openwisp/controller_settings.py
 COPY ./openwisp_topology/module_settings.py /opt/openwisp/openwisp/topology_settings.py

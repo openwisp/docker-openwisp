@@ -27,7 +27,7 @@ RUN pip install --prefix='/install' \
                 --editable git+git://github.com/openwisp/openwisp-network-topology#egg=openwisp_network_topology
 RUN pip install --prefix='/install' \
                 --no-warn-script-location \
-                --upgrade https://github.com/openwisp/django-freeradius/tarball/master
+                --upgrade https://github.com/atb00ker/django-freeradius/tarball/master
 RUN pip install --prefix='/install' \
                 --no-warn-script-location \
                 --upgrade https://github.com/openwisp/openwisp-users/tarball/master

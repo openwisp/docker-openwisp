@@ -1,5 +1,14 @@
 #!/bin/sh
 
+function init_conf {
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    export PGHOST=$DB_HOST
+    export PGPORT=$DB_PORT
+    export PGUSER=$DB_USER
+    export PGPASSWORD=$DB_PASS
+    export PGDATABASE=$DB_NAME
+}
+
 function start_uwsgi {
     envsubst < uwsgi.conf.ini > uwsgi.ini
     uwsgi --ini uwsgi.ini
@@ -47,6 +56,25 @@ function create_dev_certs {
                     -out /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/fullchain.pem \
                     -days 365 -nodes -subj '/CN=OpenWISP'
     fi
+}
+
+function wait_nginx_services {
+    # Wait for nginx to start up and then check
+    # if the openwisp-dashboard is reachable.
+    echo "Waiting for dashboard to become available..."
+    # Make fault tolerant to ensure connection
+    # error report by `wget` is received.
+    set +e
+    while :; do
+        wget -qSO - --no-check-certificate ${DASHBOARD_DOMAIN}/admin/login/ 2>&1 | grep -q "200 OK"
+        if [[ $? = "0" ]]; then
+            FAILURE=0
+            echo "Connection with dashboard established."
+            break
+        fi
+        sleep 5
+    done
+    set -e # Restore previous error setting.
 }
 
 function ssl_http_behaviour {
@@ -148,3 +176,55 @@ function postfix_config {
     postmap /etc/aliases
     newaliases
 }
+
+function openvpn_preconfig {
+    # pre-config
+    mkdir -p /dev/net
+    if [ ! -c /dev/net/tun ]; then
+        mknod /dev/net/tun c 10 200
+    fi
+    ip -6 route show default 2>/dev/null
+    if [ $? = 0 ]; then
+        echo "Enabling IPv6 Forwarding"
+        sysctl -w net.ipv6.conf.all.disable_ipv6=0 || echo "Failed to enable IPv6 support"
+        sysctl -w net.ipv6.conf.default.forwarding=1 || echo "Failed to enable IPv6 Forwarding default"
+        sysctl -w net.ipv6.conf.all.forwarding=1 || echo "Failed to enable IPv6 Forwarding"
+    fi
+}
+
+function openvpn_config {
+    export QUERY=`psql -qAtc "SELECT id,key FROM config_vpn where name='${VPN_NAME}';"`
+    export UUID=`echo "$QUERY" | cut -d'|' -f1`
+    export KEY=`echo "$QUERY" | cut -d'|' -f2`
+}
+
+function openvpn_config_checksum {
+    export OFILE=`wget -qO - --no-check-certificate \
+    ${DASHBOARD_DOMAIN}/controller/vpn/checksum/$UUID/?key=$KEY`
+    export NFILE=`cat checksum`
+}
+
+function openvpn_config_download {
+    wget -qO vpn.tar.gz --no-check-certificate \
+    ${DASHBOARD_DOMAIN}/controller/vpn/download-config/$UUID/?key=$KEY
+    wget -qO checksum --no-check-certificate \
+    ${DASHBOARD_DOMAIN}/controller/vpn/checksum/$UUID/?key=$KEY
+    tar xzf vpn.tar.gz
+    chmod 600 *.pem
+}
+
+function crl_download {
+    export CAid=`psql -qAtc "SELECT ca_id FROM config_vpn where name='${VPN_NAME}';"`
+    wget -qO revoked.crl --no-check-certificate ${DASHBOARD_DOMAIN}/x509/ca/${CAid}.crl
+}
+
+# TODO: Remove this
+# printf %s "$lines" | while IFS= read -r line
+# do
+#     UUID=`echo "$line" | cut -d'|' -f1`
+#     KEY=`echo "$line" | cut -d'|' -f2`
+#     wget -qO vpn.tar.gz ${DASHBOARD_DOMAIN}/controller/vpn/download-config/$UUID/?key=$KEY
+# done
+# UUID=`echo "$lines" | tail -n1 | cut -d'|' -f1`
+# KEY=`echo "$lines" | tail -n1 | cut -d'|' -f2`
+# wget -qO vpn.tar.gz ${DASHBOARD_DOMAIN}/controller/vpn/download-config/$UUID/?key=$KEY

@@ -121,6 +121,13 @@ services:
       - controller
       - radius
       - topology
+    networks:
+      default:
+        aliases:
+         - dashboard.openwisp.org
+         - controller.openwisp.org
+         - topology.openwisp.org
+         - radius.openwisp.org
 
   postfix:
     image: openwisp/openwisp-postfix:latest
@@ -145,6 +152,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  openvpn:
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    image: openwisp/openwisp-openvpn:latest
+    build:
+      context: build
+      dockerfile: openwisp_openvpn/Dockerfile
+    ports:
+      - "1194:1194/udp"
+    env_file:
+      - .env
+    volumes:
+      - openvpn_data:/etc/openvpn
+
   redis:
     image: redis:alpine
     deploy:
@@ -152,6 +174,7 @@ services:
 
 volumes:
   postgres_data: {}
+  openvpn_data: {}
   openwisp_certs: {}
   openwisp_media: {}
   openwisp_static: {}
