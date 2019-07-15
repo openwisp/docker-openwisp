@@ -1,5 +1,8 @@
 # Environment Variables
 
+[![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/general)
+[![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
+
 **Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/general).**
 
 The OpenWISP docker images are created with customization in mind. You can simply change the environment variables to change the containers and trailer them to your needs.
