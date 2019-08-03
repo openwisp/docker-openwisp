@@ -1,5 +1,14 @@
 FROM python:3.7-alpine AS SYSTEM
 
+# TODO: install proj4 when it's available.
+# System requirements:
+# 1. Geodjango: gdal & geos are required by Django. proj4 is also required
+# as per Django documentation, which is not yet available for alpine yet.
+# 2. Pillow: zlib-dev & jpeg-dev.
+# 3. service_identity: openssl & libffi-dev are required while openssl-dev is
+# required during installation.
+# 4. gettext: Required by envsubst used in scripts.
+# 5. tzdata: Changing timezone, used in utils.sh.
 RUN apk add --no-cache \
             --update zlib-dev jpeg-dev libffi-dev gettext gcc openssl tzdata && \
     apk add --no-cache \

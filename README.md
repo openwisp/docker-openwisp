@@ -1,8 +1,9 @@
 # Docker-OpenWISP
 
 [![Build Status](https://travis-ci.org/openwisp/docker-openwisp.svg?branch=master)](https://travis-ci.org/openwisp/docker-openwisp)
-[![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/general)
 [![Docker Hub](https://img.shields.io/badge/docker--hub-openwisp-blue.svg)](https://hub.docker.com/u/openwisp)
+[![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/general)
+[![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
 [![GitHub license](https://img.shields.io/github/license/atb00ker/docker-openwisp.svg)](https://github.com/atb00ker/docker-openwisp/blob/master/LICENSE)
 
 This repository contains Official docker images of OpenWISP. Designed with horizontal scaling, easily replicable deployments and user customization in mind.
@@ -23,6 +24,12 @@ Images are available on docker hub and can be pulled from the following links:
 - OpenWISP Websocket - `openwisp/openwisp-websocket:latest`
 
 The configurations for openwisp images is available [here](docs/ENV.md).
+
+## Index
+
+1. [Deployment](#Deployment): Steps for a sample deployment of these images in production.
+2. [Disabling Services](#disabling-services): Instructions to disable services you don't want to use, like when using database-as-a-service, you don't need postgresql container.
+3. [Build (Development)](#build-development): Instructions for building your custom images.
 
 ## Deployment
 
@@ -111,6 +118,25 @@ Note:
 
 **Note:** If you are using pipenv, remember that changing the values in `.env` file does nothing because `.env` is also a special file in `pipenv`, you need to change the values in `.env` file then re-activate environment to ensure that the changes reflect.
 
+## Disabling Services
+
+To disable an openwisp service container and plug your own service like database, SMTP or nginx:
+
+- You cannot disable the openwisp-dashboard container. It is the heart of OpenWISP and performs core functionalities.
+- Disabling the openwisp-daphne & openwisp-websocket containers will cause some functions to fail.
+- openwisp-openvpn, openwisp-controller, openwisp-network-topology and openwisp-radius can be disabled in case they are not required.
+- disabling openwisp-postgres:
+   - Ensure your database instance reachable by the OpenWISP containers.
+   - Ensure your database server supports GeoDjango.
+   - Change the [database configuration variables](docs/ENV.md) to point to your instances.
+- disabling openwisp-postfix:
+   - Ensure your SMTP instance reachable by the OpenWISP containers.
+   - Change the [email configuration variables](docs/ENV.md) to point to your instances.
+- disabling openwisp-nginx:
+   - Configurations in `build/openwisp_nginx/` are helpful to replicate in your own instance.
+- disabling openwisp-freeradius:
+   - Ensure your freeradius service is reachable on port 1812/udp and 1813/udp otherwise openwisp-radius services will fail to work properly.
+
 ## Build (Development)
 
 Guide to build images again with modification or with different environment variables.
@@ -125,22 +151,6 @@ Now you'll need to do steps (2) everytime you make a changes and want to build t
    - Default domains are: dashboard.openwisp.org, controller.openwisp.org, radius.openwisp.org and topology.openwisp.org.
    - You may want to add the domains in your hosts file, command: `echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" >> /etc/hosts/`
 
-## Disabling Services
-
-To disable an openwisp service container and plug your own service like database, SMTP or nginx:
-
-- You cannot disable the openwisp-dashboard container. It is the heart of OpenWISP and performs core functionalities.
-- Disabling the openwisp-daphne & openwisp-websocket containers will cause some functions to fail.
-- openwisp-controller, openwisp-network-topology and openwisp-radius can be disabled in case they are not required.
-- openwisp-postgres:
-   - Ensure your database instance reachable by the OpenWISP containers.
-   - Ensure your database server supports GeoDjango.
-   - Change the [database configuration variables](docs/ENV.md) to point to your instances.
-- openwisp-postfix:
-   - Ensure your SMTP instance reachable by the OpenWISP containers.
-   - Change the [email configuration variables](docs/ENV.md) to point to your instances.
-- openwisp-nginx:
-   - Configurations in `build/openwisp_nginx/` are helpful to replicate in your own instance.
 
 # Makefile Options
 
