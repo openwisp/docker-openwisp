@@ -297,17 +297,55 @@ Additionally, you can search for the following:
 - **Example:** `12.213.43.54/16`
 - **Default:** all
 
-### `NGINX_SSL_CONFIG`
-
-- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example gzip is enabled in this option. You may add options to this string or leave this variable blank.
-- **Example:** `gzip on;gzip_comp_level 6;gzip_proxied any;gzip_min_length 1000;gzip_types text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype;`
-- **Default:** gzip off;
 
 ### `NGINX_SERVER_NAME_HASH_BUCKET`
 
 - **Explaination:** Define domain hash bucket size. [See here](http://nginx.org/en/docs/hash.html). Value should be only in powers of 2.
 - **Valid Values:** INT
 - **Default:** 32
+
+### `NGINX_SSL_CONFIG`
+
+- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example `index` option is configured. You may add options to this string or leave this variable blank. This variable is only applicable when `SSL_CERT_MODE` is `True` or `Develop`.
+- **Example:** `index index.html index.htm;`
+- **Default:** --BLANK--
+
+### `NGINX_80_CONFIG`
+
+- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example `index` option is configured. You may add options to this string or leave this variable blank. This variable is only applicable when `SSL_CERT_MODE` is `False`.
+- **Example:** `index index.html index.htm;`
+- **Default:** --BLANK--
+
+### `NGINX_GZIP_SWITCH`
+
+- **Explaination:** Turn on/off Nginx GZIP.
+- **Valid Values:** `on` | `off`
+- **Default:** `off`
+
+### `NGINX_GZIP_LEVEL`
+
+- **Explaination:** Sets a gzip compression level of a response. Acceptable values are in the range from 1 to 9.
+- **Valid Values:** INT
+- **Default:** 6
+
+### `NGINX_GZIP_PROXIED`
+
+- **Explaination:** Enables or disables gzipping of responses for proxied requests depending on the request and response.
+- **Valid Values:** `off` | `expired` | `no-cache` | `no-store` | `private` | `no_last_modified` | `no_etag` | `auth` | `any`
+- **Default:** `any`
+
+### `NGINX_GZIP_MIN_LENGTH`
+
+- **Explaination:** Sets the minimum length of a response that will be gzipped. The length is determined only from the “Content-Length” response header field.
+- **Valid Values:** INT
+- **Default:** 1000
+
+### `NGINX_GZIP_TYPES`
+
+- **Explaination:** Enables gzipping of responses for the specified MIME types in addition to “text/html”. The special value “*” matches any MIME type. Responses with the “text/html” type are always compressed.
+- **Valid Values:** MIME type
+- **Example:** `text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype`
+- **Default:** *
 
 ### `NGINX_HTTPS_ALLOWED_IPS`
 
