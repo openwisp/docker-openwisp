@@ -11,6 +11,20 @@ branches:
 
 jobs:
   include:
-    - stage: tests
+    - stage: build
       script:
-      - make travis-runtests
+      - make publish-build
+      - docker images
+      - bash tests/travis/travis-save.sh
+    - stage: tests
+      name: "test_services, http"
+      script: make runtests-travis TESTCASE=test_services ENV_FILE=http
+    - stage: tests
+      name: "test_services, https"
+      script: make runtests-travis TESTCASE=test_services ENV_FILE=https
+    - stage: tests
+      name: "docker-images"
+      script: ls -la docker-images
+    - stage: destroy
+      name: "docker-images"
+      script: aws s3 rm --recursive s3://docker-images

@@ -27,18 +27,15 @@ publish-build: build-base
 	docker-compose build --parallel
 
 # Test
-runtests: develop-runtests
-	docker-compose stop
+runtests: publish-build
+	source tests/testcases.sh && init_tests test_services http
+	source tests/testcases.sh && init_tests test_services https
 
-develop-runtests: publish-build
-	docker-compose up -d
-	source ./tests/tests.sh && init_dashoard_tests
-
-travis-runtests: publish-build
-	docker-compose up -d
+runtests-travis:
+	source tests/travis/travis-load.sh
 	echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org" \
 	     "radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
-	source ./tests/tests.sh && init_dashoard_tests logs
+	source tests/testcases.sh && init_tests $(TESTCASE) $(ENV_FILE)
 
 # Development
 develop: publish-build
