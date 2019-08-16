@@ -15,8 +15,8 @@ COPY ./common/init_command.sh \
 
 ENV MODULE_NAME=postfix \
     TZ=UTC \
-    POSTFIX_HOSTNAME=example.com \
-    POSTFIX_ALLOWED_SENDER_DOMAINS=example.com \
+    POSTFIX_MYHOSTNAME=example.org \
+    POSTFIX_ALLOWED_SENDER_DOMAINS=example.org \
     POSTFIX_RELAYHOST=False \
     POSTFIX_DESTINATION='$mydomain, $myhostname' \
     POSTFIX_RELAYHOST_USERNAME=False \

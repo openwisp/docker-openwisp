@@ -8,7 +8,7 @@ metadata:
   annotations:
     volume.beta.kubernetes.io/storage-class: "nfs-provisioner"
   labels:
-    app: openwisp-postgresql
+    app: openwisp-postgres
 spec:
   storageClassName: nfs-provisioner
   accessModes:

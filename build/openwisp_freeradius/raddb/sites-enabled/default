@@ -1,0 +1,59 @@
+server default {
+    api_token_header = "Authorization: Bearer $ENV{ORG_UUID} $ENV{FREERADIUS_TOKEN}"
+
+    listen {
+        type = auth
+        ipaddr = *
+        port = 0
+        limit {
+            max_connections = 16
+            lifetime = 0
+            idle_timeout = 30
+        }
+    }
+
+    listen {
+        ipaddr = *
+        port = 0
+        type = acct
+        limit {}
+    }
+
+    authorize {
+        update control { &REST-HTTP-Header += "${...api_token_header}" }
+        rest
+        sql
+        dailycounter
+        noresetcounter
+        dailybandwidthcounter
+    }
+
+    authenticate {}
+
+    preacct {
+        preprocess
+        acct_unique
+        suffix
+        files
+    }
+
+    accounting {
+        update control { &REST-HTTP-Header += "${...api_token_header}" }
+        rest
+    }
+
+    session {}
+
+    post-auth {
+        update control { &REST-HTTP-Header += "${...api_token_header}" }
+        rest
+
+        Post-Auth-Type REJECT {
+            update control { &REST-HTTP-Header += "${....api_token_header}" }
+            rest
+        }
+    }
+
+    pre-proxy {}
+    post-proxy {}
+}

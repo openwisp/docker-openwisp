@@ -1,14 +1,19 @@
 #!/bin/bash
-# This script will ensure that the following services are running:
-# - Django (dashboard)
-# - Redis
-# - Postfix
-# - Websocket
+: """
+This script will ensure that the following services are running:
+- Django (dashboard)
+- Redis
+- Postfix
+- Websocket
+- Freeradius
+"""
 
 function print_services_logs {
     # Print logs of the containers in case of failure
     # to help with debugging in travis-ci. first arguement
     # needs to be "logs" for this function to be called.
+    echo "Pre-test logs:"
+    cat $PRE_LOGS
     echo "Containers:"
     docker container ls -a
     echo "Dashboard logs:"
@@ -23,13 +28,15 @@ function print_services_logs {
     docker-compose logs postfix
     echo "postgresql logs:"
     docker-compose logs postgres
+    echo "freeradius logs:"
+    docker-compose logs freeradius
     echo "nginx logs:"
     docker-compose logs nginx
-    echo "nginx logs:"
+    echo "redis logs:"
     docker-compose logs redis
 }
 
-function admin_login {
+function test_admin_login {
     # This function is used to login into django-admin
     # It creates the cookie.txt file that containes CSRF
     # token and session ID.
@@ -61,6 +68,15 @@ function test_postfix {
               http://dashboard.openwisp.org/accounts/password/reset/ | grep -q "302 Found" && \
             { echo "SUCCESS: Postfix service is working!"; } || \
             { echo "ERROR: Postfix service did not respond!"; FAILURE=1; }
+}
+
+function test_freeradius {
+    # This test ensures that freeradius service is running correctly.
+    docker run -it --rm --network docker-openwisp_default 2stacks/radtest \
+               radtest admin admin freeradius 0 testing123 | \
+               grep -q "Received Access-Accept" && \
+            { echo "SUCCESS: Freeradius service is working!"; } || \
+            { echo "ERROR: Freeradius service did not respond!"; FAILURE=1; }
 }
 
 function test_websocket {
@@ -98,24 +114,36 @@ function wait_for_services {
     fi
 }
 
-function init_dashoard_tests {
+function pre_tests {
+    # Functions need to performed before tests.
+    docker pull 2stacks/radtest &>> $PRE_LOGS
+    docker-compose run --rm -v $PWD/tests/pre_tests.py:/opt/openwisp/pre_tests.py dashboard python pre_tests.py &>> $PRE_LOGS
+    docker-compose up -d freeradius &>> $PRE_LOGS
+}
+
+function init_tests {
     # Init function that can be called to run tests
     # for all the services.
     LOGIN_URL=http://dashboard.openwisp.org/admin/login/
-    USERNAME='admin'
-    PASSWORD='admin'
+    USERNAME="admin"
+    PASSWORD="admin"
     COOKIES=cookies.txt
+    PRE_LOGS=pre_logs.logs
     CURL_BIN="curl -s -c $COOKIES -b $COOKIES -e $LOGIN_URL"
     FAILURE=0
-    touch $COOKIES
+    touch $COOKIES $PRE_LOGS
     wait_for_services
+    pre_tests
     test_postfix
-    admin_login
+    test_admin_login
     test_dashboard_login
     test_websocket
-    rm $COOKIES
+    test_freeradius
     if [[ $FAILURE = 1 ]] && [[ $1 = logs ]]; then
         print_services_logs
+    fi
+    rm $COOKIES $PRE_LOGS
+    if [[ $FAILURE = 1 ]]; then
         exit $FAILURE
     fi
 }

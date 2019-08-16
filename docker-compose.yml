@@ -113,6 +113,10 @@ services:
       - openwisp_media:/opt/openwisp/media:ro
       - openwisp_certs:/etc/letsencrypt
       - public_html:/opt/openwisp/public_html
+    networks:
+      default:
+        aliases:
+         - dashboard-internal
     ports:
       - "80:80"
       - "443:443"
@@ -121,6 +125,7 @@ services:
       - controller
       - radius
       - topology
+      - daphne
 
   postfix:
     image: openwisp/openwisp-postfix:latest
@@ -133,6 +138,22 @@ services:
       - .env
     volumes:
       - openwisp_certs:/etc/ssl/mail
+
+  freeradius:
+    image: openwisp/openwisp-freeradius:latest
+    build:
+      context: build
+      dockerfile: openwisp_freeradius/Dockerfile
+    deploy:
+      replicas: 1
+    env_file:
+      - .env
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    depends_on:
+      - postgres
+      - radius
 
   postgres:
     image: mdillon/postgis:10-alpine
@@ -156,3 +177,9 @@ volumes:
   openwisp_media: {}
   openwisp_static: {}
   public_html: {}
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16

@@ -32,13 +32,13 @@ runtests: develop-runtests
 
 develop-runtests: publish-build
 	docker-compose up -d
-	source ./tests/tests.sh && init_dashoard_tests
+	source ./tests/tests.sh && init_tests
 
 travis-runtests: publish-build
 	docker-compose up -d
 	echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org" \
 	     "radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
-	source ./tests/tests.sh && init_dashoard_tests logs
+	source ./tests/tests.sh && init_tests logs
 
 # Development
 develop: publish-build
@@ -58,10 +58,4 @@ clean:
 # Publish
 publish: publish-build develop-runtests
 	docker push openwisp/openwisp-base:latest
-	docker push openwisp/openwisp-nginx:latest
-	docker push openwisp/openwisp-dashboard:latest
-	docker push openwisp/openwisp-radius:latest
-	docker push openwisp/openwisp-controller:latest
-	docker push openwisp/openwisp-topology:latest
-	docker push openwisp/openwisp-websocket:latest
-	docker push openwisp/openwisp-postfix:latest
+	docker-compose push

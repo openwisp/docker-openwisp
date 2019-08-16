@@ -1,6 +1,8 @@
 FROM nginx:alpine
 
-RUN apk add certbot openssl
+RUN apk add --update --no-cache certbot openssl && \
+    rm -rf /var/cache/apk/* /tmp/*
+
 WORKDIR /etc/nginx/
 CMD ["sh", "init_command.sh"]
 EXPOSE 80 443
@@ -29,18 +31,21 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_PROXIED=any \
     NGINX_GZIP_MIN_LENGTH=1000 \
     NGINX_GZIP_TYPES=* \
+    NGINX_CUSTOM_FILE=False \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     CONTROLLER_APP_PORT=8001 \
     RADIUS_APP_PORT=8002 \
     TOPOLOGY_APP_PORT=8003 \
+    WEBSOCKET_APP_PORT=8004 \
     # Application Service Name
     DASHBOARD_APP_SERVICE=dashboard \
     CONTROLLER_APP_SERVICE=controller \
     RADIUS_APP_SERVICE=radius \
     TOPOLOGY_APP_SERVICE=topology \
+    WEBSOCKET_APP_SERVICE=daphne \
     # Listen domains
-    DASHBOARD_DOMAIN=dashboard.openwisp.org \
-    CONTROLLER_DOMAIN=controller.openwisp.org \
-    RADIUS_DOMAIN=radius.openwisp.org \
-    TOPOLOGY_DOMAIN=topology.openwisp.org
+    DASHBOARD_DOMAIN=dashboard.example.com \
+    CONTROLLER_DOMAIN=controller.example.com \
+    RADIUS_DOMAIN=radius.example.com \
+    TOPOLOGY_DOMAIN=topology.example.com

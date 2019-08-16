@@ -6,14 +6,30 @@ function start_uwsgi {
 }
 
 function create_prod_certs {
-    certbot certonly --nginx --noninteractive --agree-tos
-                     --rsa-key-size 4096
-                     --domain ${DASHBOARD_DOMAIN}
-                     --domain ${CONTROLLER_DOMAIN}
-                     --domain ${RADIUS_DOMAIN}
-                     --domain ${TOPOLOGY_DOMAIN}
-                     --email ${CERT_ADMIN_EMAIL}
-    nginx -s reload # reload to reflect changes
+    if [ ! -f /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/privkey.pem ]; then
+        certbot certonly --standalone --noninteractive --agree-tos \
+                        --rsa-key-size 4096 \
+                        --domain ${DASHBOARD_DOMAIN} \
+                        --email ${CERT_ADMIN_EMAIL}
+    fi
+    if [ ! -f /etc/letsencrypt/live/${CONTROLLER_DOMAIN}/privkey.pem ]; then
+        certbot certonly --standalone --noninteractive --agree-tos \
+                        --rsa-key-size 4096 \
+                        --domain ${CONTROLLER_DOMAIN} \
+                        --email ${CERT_ADMIN_EMAIL}
+    fi
+    if [ ! -f /etc/letsencrypt/live/${RADIUS_DOMAIN}/privkey.pem ]; then
+        certbot certonly --standalone --noninteractive --agree-tos \
+                        --rsa-key-size 4096 \
+                        --domain ${RADIUS_DOMAIN} \
+                        --email ${CERT_ADMIN_EMAIL}
+    fi
+    if [ ! -f /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/privkey.pem  ]; then
+        certbot certonly --standalone --noninteractive --agree-tos \
+                        --rsa-key-size 4096 \
+                        --domain ${TOPOLOGY_DOMAIN} \
+                        --email ${CERT_ADMIN_EMAIL}
+    fi
 }
 
 function create_dev_certs {
@@ -46,6 +62,56 @@ function create_dev_certs {
                     -keyout /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/privkey.pem  \
                     -out /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/fullchain.pem \
                     -days 365 -nodes -subj '/CN=OpenWISP'
+    fi
+}
+
+function nginx_dev {
+    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
+    ssl_http_behaviour
+    create_dev_certs
+    CMD="source /etc/nginx/utils.sh && create_dev_certs && nginx -s reload"
+    echo "0 3 1 1 * $CMD &>> /etc/nginx/log/crontab.log" | crontab -
+    nginx -g 'daemon off;'
+}
+
+function nginx_prod {
+    create_prod_certs
+    ssl_http_behaviour
+    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
+    echo "0 3 * * 7 certbot renew &>> /etc/nginx/log/crontab.log" | crontab -
+}
+
+function wait_nginx_services {
+    # Wait for nginx to start up and then check
+    # if the openwisp-dashboard is reachable.
+    echo "Waiting for dashboard to become available..."
+    # Make fault tolerant to ensure connection
+    # error report by `wget` is received.
+    set +e
+    while :; do
+        wget -qS ${DASHBOARD_URI}/admin/login/ 2>&1 | grep -q "200 OK"
+        if [[ $? = "0" ]]; then
+            FAILURE=0
+            echo "Connection with dashboard established."
+            break
+        fi
+        sleep 5
+    done
+    set -e # Restore previous error setting.
+}
+
+function pre_radius_conf {
+    export DB_SSLMODE=`echo "$DB_OPTIONS" | jq -r '.sslmode'`
+    if [ "$DB_SSLMODE" == "null" ]; then
+        export DB_SSLMODE=disable
+    fi
+    export QUERY="select id from openwisp_users_organization where name='${FREERADIUS_ORGANIZATION}';"
+    export ORG_UUID=`psql -Atc "${QUERY}"`
+    export QUERY="select token from openwisp_radius_organizationradiussettings where organization_id='${ORG_UUID}';"
+    export FREERADIUS_TOKEN=`psql -Atc "${QUERY}";`
+    if [ -z "$FREERADIUS_TOKEN" ]; then
+        echo "ERROR: Selected Organization does not have a radius token!";
+        exit 1
     fi
 }
 
