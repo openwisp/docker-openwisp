@@ -389,6 +389,12 @@ Additionally, you can search for the following:
 - **Valid Values:** True | False
 - **Default:** False
 
+### `NINGX_REAL_REMOTE_ADDR`
+
+- **Explaination:** The nginx header to get the value of the real IP address of Access points. Example if a reverse proxy is used in your cluster (Example if you are using an Ingress), then the real IP of the AP is most likely the `$http_x_forwarded_for`.
+- **Valid Values:** `$remote_addr` | `$http_x_forwarded_for` | `$realip_remote_addr`
+- **Default:** `$remote_addr`
+
 ## VPN
 
 ### `VPN_ORG`

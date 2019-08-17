@@ -32,6 +32,7 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_MIN_LENGTH=1000 \
     NGINX_GZIP_TYPES=* \
     NGINX_CUSTOM_FILE=False \
+    NINGX_REAL_REMOTE_ADDR='$http_x_forwarded_for' \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     CONTROLLER_APP_PORT=8001 \
