@@ -283,6 +283,28 @@ spec:
 apiVersion: v1
 kind: ReplicationController
 metadata:
+  name: openwisp-celery
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: openwisp-celery
+    spec:
+      containers:
+        - name: openwisp-celery
+          image: openwisp/openwisp-dashboard:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
+          env:
+            - name: MODULE_NAME
+              value: celery
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
   name: redis
 spec:
   replicas: 1
