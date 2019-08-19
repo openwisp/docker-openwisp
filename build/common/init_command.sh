@@ -3,14 +3,7 @@
 set -e
 source utils.sh
 
-# Set timezone
-ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-# Set aliases
-export PGHOST=$DB_HOST
-export PGPORT=$DB_PORT
-export PGUSER=$DB_USER
-export PGPASSWORD=$DB_PASSWORD
-export PGDATABASE=$DB_DATABASE
+init_conf
 
 # Start services
 if [ "$MODULE_NAME" = 'dashboard' ]; then
@@ -31,6 +24,21 @@ elif [ "$MODULE_NAME" = 'freeradius' ]; then
     else
         source docker-entrypoint.sh -X
     fi
+elif [ "$MODULE_NAME" = 'openvpn' ]; then
+    wait_nginx_services
+    openvpn_preconfig
+    openvpn_config
+    openvpn_config_download
+    crl_download
+    echo "*/1 * * * * sh /openvpn.sh" | crontab -
+    (crontab -l ; echo "0 3 * * 7 sh /revokelist.sh")| crontab -
+    crond
+    # Supervisor is used to start the service because OpenVPN
+    # needs to restart after crl list is updated or configurations
+    # are changed. If OpenVPN as the service keeping the
+    # docker container running, restarting would mean killing
+    # the container while supervisor helps only to restart the service!
+    supervisord --nodaemon --configuration supervisord.conf
 elif [ "$MODULE_NAME" = 'nginx' ]; then
     rm -rf /etc/nginx/conf.d/default.conf
     if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then

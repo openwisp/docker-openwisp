@@ -95,4 +95,17 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     WEBSOCKET_APP_PORT=8004 \
     # Radius Settings
     FREERADIUS_ORGANIZATION=default \
-    DASHBOARD_URI=http://dashboard-internal
+    DASHBOARD_URI=http://dashboard-internal \
+    # VPN Configurations
+    VPN_NAME=default \
+    VPN_ORG=default \
+    VPN_CLIENT_NAME=default \
+    X509_NAME_CA=default \
+    X509_NAME_CERT=default \
+    X509_COUNTRY_CODE=IN \
+    X509_STATE=Delhi \
+    X509_CITY="New Delhi" \
+    X509_ORGANIZATION_NAME=OpenWISP \
+    X509_ORGANIZATION_UNIT_NAME=OpenWISP \
+    X509_EMAIL=certificate@example.com \
+    X509_COMMON_NAME=OpenWISP
