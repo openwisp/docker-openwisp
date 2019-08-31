@@ -99,7 +99,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     # VPN Configurations
     VPN_NAME=default \
     VPN_ORG=default \
-    VPN_CLIENT_NAME=default \
+    VPN_CLIENT_NAME="Default Management Vpn" \
     X509_NAME_CA=default \
     X509_NAME_CERT=default \
     X509_COUNTRY_CODE=IN \
