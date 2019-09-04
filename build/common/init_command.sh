@@ -56,6 +56,10 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 elif [ "$MODULE_NAME" = 'celery' ]; then
     python services.py database redis dashboard
     celery -A openwisp worker -l info
+elif [ "$MODULE_NAME" = 'celerybeat' ]; then
+    rm -rf celerybeat.pid
+    python services.py database redis dashboard
+    celery -A openwisp beat -l info
 else
     python services.py database redis dashboard
     start_uwsgi

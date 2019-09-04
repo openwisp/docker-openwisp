@@ -61,6 +61,8 @@ COPY ./common/ /opt/openwisp/
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \
     TZ=UTC \
+    SET_RADIUS_TASKS=True \
+    SET_TOPOLOGY_TASKS=True \
     DEBUG_MODE=False \
     REDIS_HOST=redis \
     DB_ENGINE=django.contrib.gis.db.backends.postgis \
@@ -108,4 +110,9 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     X509_ORGANIZATION_NAME=OpenWISP \
     X509_ORGANIZATION_UNIT_NAME=OpenWISP \
     X509_EMAIL=certificate@example.com \
-    X509_COMMON_NAME=OpenWISP
+    X509_COMMON_NAME=OpenWISP \
+    # Celery-beat cron Configurations
+    CRON_DELETE_OLD_RADACCT=365 \
+    CRON_DELETE_OLD_POSTAUTH=365 \
+    CRON_CLEANUP_STALE_RADACCT=365 \
+    CRON_DELETE_OLD_USERS=12
