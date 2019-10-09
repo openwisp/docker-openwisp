@@ -1,8 +1,8 @@
 ---
-sudo: required
-services: docker
-language: generic
+os: linux
 dist: xenial
+language: generic
+services: docker
 
 branches:
   only:
@@ -13,4 +13,7 @@ jobs:
   include:
     - stage: tests
       script:
-      - make travis-runtests
+      - export hosts="127.0.0.1 dashboard.openwisp.org controller.openwisp.org \
+                                radius.openwisp.org topology.openwisp.org"
+      - sudo bash -c 'echo "${hosts}" >> /etc/hosts'
+      - make develop-runtests

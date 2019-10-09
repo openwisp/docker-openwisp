@@ -9,10 +9,10 @@ default: compose-build
 python-build: build.py
 	python build.py change-secret-key
 
-build-base:
+base-build:
 	BUILD_ARGS_FILE=$$(cat .build.env 2>/dev/null); \
 	for build_arg in $$BUILD_ARGS_FILE; do \
-		BUILD_ARGS+="--build-arg $$build_arg "; \
+	    BUILD_ARGS+="--build-arg $$build_arg"; \
 	done; \
 	docker build --tag openwisp/openwisp-base:intermedia-system \
 	             --file ./build/openwisp_base/Dockerfile \
@@ -25,29 +25,23 @@ build-base:
 	             --file ./build/openwisp_base/Dockerfile ./build/ \
 	             $$BUILD_ARGS
 
-compose-build: python-build build-base
-	docker-compose build --parallel
-	python build.py default-secret-key
+nfs-build:
+	docker build --tag openwisp/openwisp-nfs:latest \
+	             --file ./build/openwisp_nfs/Dockerfile ./build/
 
-publish-build: build-base
+compose-build: base-build
 	docker-compose build --parallel
 
 # Test
 runtests: develop-runtests
 	docker-compose stop
 
-develop-runtests: publish-build
+develop-runtests:
 	docker-compose up -d
 	source ./tests/tests.sh && init_tests
 
-travis-runtests: publish-build
-	docker-compose up -d
-	echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org" \
-	     "radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
-	source ./tests/tests.sh && init_tests logs
-
 # Development
-develop: publish-build
+develop: compose-build
 	docker-compose up -d
 	docker-compose logs -f
 
@@ -59,9 +53,11 @@ clean:
 	docker rmi --force openwisp/openwisp-base:latest \
 				openwisp/openwisp-base:intermedia-system \
 				openwisp/openwisp-base:intermedia-python \
-				`docker images -f "dangling=true" -q` || true
+				openwisp/openwisp-nfs:latest \
+				`docker images -f "dangling=true" -q`
 
 # Publish
-publish: publish-build develop-runtests
+publish: compose-build runtests nfs-build
+	docker push openwisp/openwisp-nfs:latest
 	docker push openwisp/openwisp-base:latest
 	docker-compose push

@@ -8,7 +8,7 @@
 The OpenWISP docker images are created with customization in mind. You can simply change the environment variables to change the containers and trailer them to your needs.
 
 - `docker-compose`: You can simply change the values in `.env` file.
-- `kubernetes`: You need to create `ConfigMap` to change the environment variables. An example is present in `kubernetes/` directory.
+- `kubernetes`: You need to create `ConfigMap` to change the environment variables. An example is present in `deployment-examples/kubernetes/` directory.
 
 Following are the options that can be changed. The list is divided in following sections:
 
@@ -25,8 +25,10 @@ Following are the options that can be changed. The list is divided in following 
 - [X509](#X509): Default certificate & certicate Authority configuration options.
 - [Host](#Hosts): Want to change the host of a particular service? Like pointing all the containers to a different database service.
 - [Developer](#Developer): DON'T change these values unless you know what you are doing.
+- [Export](#Export): Changing options for NFS container.
 
 Additionally, you can search for the following:
+
 - `DB_`: All the database settings.
 - `DJANGO_`: All the django settings.
 - `EMAIL__`: All the email settings. (Also see `POSTFIX_`)
@@ -40,6 +42,7 @@ Additionally, you can search for the following:
 - `X509_`: All the configurations related to x509 CA and certificates.
 - `VPN_`: Default VPN and VPN template related configurations.
 - `CRON_`: Periodic tasks configurations
+- `EXPORT_`: NFS Server related configurations
 
 ## Essential
 
@@ -600,3 +603,15 @@ Additionally, you can search for the following:
 - **Default:** null
 - **Example:** 127.0.0.0/8
 
+## Export
+
+### `EXPORT_DIR`
+
+- **Explaination:** Directory to be exported by the NFS server. Don't change this unless you know what you are doing.
+- **Valid Values:** STRING
+- **Default:** /exports
+
+### `EXPORT_OPTS`
+- **Explaination:** NFS export options for the directory in `EXPORT_DIR` variable.
+- **Valid Values:** STRING
+- **Default:** 10.0.0.0/8(rw,fsid=0,insecure,no_root_squash,no_subtree_check,sync)

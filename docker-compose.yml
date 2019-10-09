@@ -8,8 +8,6 @@ services:
       dockerfile: openwisp_dashboard/Dockerfile
       args:
         DASHBOARD_APP_PORT: $DASHBOARD_APP_PORT
-    deploy:
-      replicas: 1
     env_file:
       - .env
     volumes:
@@ -28,8 +26,6 @@ services:
       dockerfile: openwisp_controller/Dockerfile
       args:
         CONTROLLER_APP_PORT: $CONTROLLER_APP_PORT
-    deploy:
-      replicas: 1
     env_file:
       - .env
     volumes:
@@ -47,8 +43,6 @@ services:
       dockerfile: openwisp_radius/Dockerfile
       args:
         RADIUS_APP_PORT: $RADIUS_APP_PORT
-    deploy:
-      replicas: 1
     env_file:
       - .env
     depends_on:
@@ -62,8 +56,6 @@ services:
       dockerfile: openwisp_topology/Dockerfile
       args:
         TOPOLOGY_APP_PORT: $TOPOLOGY_APP_PORT
-    deploy:
-      replicas: 1
     env_file:
       - .env
     depends_on:
@@ -73,8 +65,6 @@ services:
   websocket:
     command: /opt/openwisp/worker.conf
     image: openwisp/openwisp-websocket:latest
-    deploy:
-      replicas: 1
     env_file:
       - .env
     depends_on:
@@ -88,8 +78,6 @@ services:
       dockerfile: openwisp_websocket/Dockerfile
       args:
         WEBSOCKET_APP_PORT: $WEBSOCKET_APP_PORT
-    deploy:
-      replicas: 1
     environment:
       - MODULE_NAME=daphne
     env_file:
@@ -104,8 +92,6 @@ services:
     build:
       context: build
       dockerfile: openwisp_nginx/Dockerfile
-    deploy:
-      replicas: 1
     env_file:
       - .env
     volumes:
@@ -129,8 +115,6 @@ services:
 
   celery:
     image: openwisp/openwisp-dashboard:latest
-    deploy:
-      replicas: 1
     environment:
       - MODULE_NAME=celery
     env_file:
@@ -142,8 +126,6 @@ services:
 
   celerybeat:
     image: openwisp/openwisp-dashboard:latest
-    deploy:
-      replicas: 1
     environment:
       - MODULE_NAME=celerybeat
     env_file:
@@ -158,8 +140,6 @@ services:
     build:
       context: build
       dockerfile: openwisp_postfix/Dockerfile
-    deploy:
-      replicas: 1
     env_file:
       - .env
     volumes:
@@ -170,8 +150,6 @@ services:
     build:
       context: build
       dockerfile: openwisp_freeradius/Dockerfile
-    deploy:
-      replicas: 1
     env_file:
       - .env
     ports:
@@ -183,8 +161,6 @@ services:
 
   postgres:
     image: mdillon/postgis:10-alpine
-    deploy:
-      replicas: 1
     environment:
       - POSTGRES_DB=$DB_NAME
       - POSTGRES_USER=$DB_USER
@@ -209,8 +185,6 @@ services:
 
   redis:
     image: redis:alpine
-    deploy:
-      replicas: 1
 
 volumes:
   postgres_data: {}

@@ -1,0 +1,191 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nfs-server
+spec:
+  clusterIP: 10.0.10.240
+  ports:
+  - name: udp-nfs
+    port: 2049
+    protocol: UDP
+  - name: udp-rpcbind
+    port: 111
+    protocol: UDP
+  - name: udp-statdp
+    port: 32765
+    protocol: UDP
+  - name: udp-statdo
+    port: 32766
+    protocol: UDP
+  - name: udp-mountd
+    port: 32767
+    protocol: UDP
+  - name: udp-nlockmgr
+    port: 32768
+    protocol: UDP
+  - name: tcp-nfs
+    port: 2049
+    protocol: TCP
+  - name: tcp-rpcbind
+    port: 111
+    protocol: TCP
+  - name: tcp-statdp
+    port: 32765
+    protocol: TCP
+  - name: tcp-statdo
+    port: 32766
+    protocol: TCP
+  - name: tcp-mountd
+    port: 32767
+    protocol: TCP
+  - name: tcp-nlockmgr
+    port: 32768
+    protocol: TCP
+  selector:
+    role: nfs-server
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openwisp-storage-class
+provisioner: example.com/nfs
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-volume
+spec:
+  storageClassName: openwisp-storage-class
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/exports/postgres/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-volume
+spec:
+  storageClassName: openwisp-storage-class
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/exports/media/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: static-volume
+spec:
+  storageClassName: openwisp-storage-class
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/exports/static/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: html-volume
+spec:
+  storageClassName: openwisp-storage-class
+  capacity:
+    storage: 50Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/exports/html/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: certs-volume
+spec:
+  storageClassName: openwisp-storage-class
+  capacity:
+    storage: 50Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/exports/postfix/"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: openwisp-postgres
+spec:
+  volumeName: postgres-volume
+  storageClassName: openwisp-storage-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: media-pv-claim
+spec:
+  volumeName: media-volume
+  storageClassName: openwisp-storage-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: static-pv-claim
+spec:
+  volumeName: static-volume
+  storageClassName: openwisp-storage-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: html-pv-claim
+spec:
+  volumeName: html-volume
+  storageClassName: openwisp-storage-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: certs-pv-claim
+spec:
+  volumeName: certs-volume
+  storageClassName: openwisp-storage-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
