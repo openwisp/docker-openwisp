@@ -1,0 +1,183 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nfs-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: nfs-server
+  template:
+    metadata:
+      labels:
+        role: nfs-server
+    spec:
+      containers:
+      - name: nfs-server
+        image: gcr.io/google_containers/volume-nfs:0.8
+        ports:
+          - name: nfs
+            containerPort: 2049
+          - name: mountd
+            containerPort: 20048
+          - name: rpcbind
+            containerPort: 111
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /exports/
+            name: persistent-disk
+      volumes:
+        - name: persistent-disk
+          gcePersistentDisk:
+            pdName: openwisp-disk
+            fsType: ext4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nfs-server
+spec:
+  clusterIP: 10.0.10.240
+  ports:
+    - name: nfs
+      port: 2049
+    - name: mountd
+      port: 20048
+    - name: rpcbind
+      port: 111
+  selector:
+    role: nfs-server
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-volume
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/postgres/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-volume
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/media/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: static-volume
+spec:
+  capacity:
+    storage: 300Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/static/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: html-volume
+spec:
+  capacity:
+    storage: 50Mi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/html/"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postfix-volume
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.0.10.240
+    path: "/postfix/"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: openwisp-postgres
+spec:
+  volumeName: postgres-volume
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: media-pv-claim
+spec:
+  volumeName: media-volume
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: static-pv-claim
+spec:
+  volumeName: static-volume
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 300Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: html-pv-claim
+spec:
+  volumeName: html-volume
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postfix-pv-claim
+spec:
+  volumeName: postfix-volume
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

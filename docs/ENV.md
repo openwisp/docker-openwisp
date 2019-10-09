@@ -8,7 +8,7 @@
 The OpenWISP docker images are created with customization in mind. You can simply change the environment variables to change the containers and trailer them to your needs.
 
 - `docker-compose`: You can simply change the values in `.env` file.
-- `kubernetes`: You need to create `ConfigMap` to change the environment variables. An example is present in `kubernetes/` directory.
+- `kubernetes`: You need to create `ConfigMap` to change the environment variables. An example is present in `deployment-examples/kubernetes/` directory.
 
 Following are the options that can be changed. The list is divided in following sections:
 

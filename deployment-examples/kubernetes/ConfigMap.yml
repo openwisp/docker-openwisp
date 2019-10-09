@@ -1,0 +1,36 @@
+---
+# Pass environment variables only to the postgresql container.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: openwisp-postgres
+data:
+  POSTGRES_DB: openwisp_db
+  POSTGRES_USER: admin
+  POSTGRES_PASSWORD: admin
+---
+# Pass the environment variables to all the openwisp containers
+# where the values are applicable except the postgres instance.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-config
+data:
+  DJANGO_SECRET_KEY: MY_COMPANY_SECRET_KEY
+  DASHBOARD_DOMAIN: dashboard.openwisp.org
+  CONTROLLER_DOMAIN: controller.openwisp.org
+  RADIUS_DOMAIN: radius.openwisp.org
+  TOPOLOGY_DOMAIN: topology.openwisp.org
+  NGINX_SERVER_NAME_HASH_BUCKET: "64"
+  SSL_CERT_MODE: "False"
+  DEBUG_MODE: "False"
+  TZ: "Asia/Kolkata"
+  CERT_ADMIN_EMAIL: "example@openwisp.org"
+  X509_EMAIL: "example@openwisp.org"
+  POSTFIX_RELAYHOST: "[smtp.gmail.com]:587"
+  POSTFIX_ALLOWED_SENDER_DOMAINS: "openwisp.org gmail.com"
+  POSTFIX_MYNETWORKS: "10.0.0.0/8"
+  POSTFIX_RELAYHOST_USERNAME: "example@openwisp.org"
+  POSTFIX_RELAYHOST_PASSWORD: "example"

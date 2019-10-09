@@ -25,6 +25,13 @@ spec:
             name: openwisp-media-data
           - mountPath: /opt/openwisp/public_html
             name: openwisp-html-data
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
       volumes:
         - name: openwisp-media-data
           persistentVolumeClaim:
@@ -62,6 +69,13 @@ spec:
             name: openwisp-media-data
           - mountPath: /opt/openwisp/public_html
             name: openwisp-html-data
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
       volumes:
         - name: openwisp-media-data
           persistentVolumeClaim:
@@ -97,6 +111,13 @@ spec:
             name: openwisp-radius-static
           - mountPath: /opt/openwisp/public_html
             name: openwisp-html-data
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
       volumes:
         - name: openwisp-radius-static
           persistentVolumeClaim:
@@ -129,6 +150,13 @@ spec:
             name: openwisp-topology-static
           - mountPath: /opt/openwisp/public_html
             name: openwisp-html-data
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
       volumes:
         - name: openwisp-topology-static
           persistentVolumeClaim:
@@ -194,6 +222,9 @@ spec:
       containers:
       - name: openwisp-nginx
         image: openwisp/openwisp-nginx:latest
+        ports:
+          - containerPort: 443
+          - containerPort: 80
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
@@ -205,6 +236,14 @@ spec:
             name: openwisp-media-data
           - mountPath: /opt/openwisp/public_html
             name: openwisp-html-data
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          failureThreshold: 2
+          successThreshold: 2
       volumes:
         - name: openwisp-nginx-static
           persistentVolumeClaim:

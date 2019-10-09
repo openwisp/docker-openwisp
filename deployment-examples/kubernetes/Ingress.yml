@@ -1,0 +1,31 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: openwisp-http-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: openwisp-http-loadbalancer-ip
+  labels:
+    app: openwisp-nginx
+spec:
+  rules:
+  - host: dashboard.openwisp.org
+    http: &https_rules
+      paths:
+      - path: /*
+        backend:
+          serviceName: openwisp-nginx
+          servicePort: 80
+  - host: controller.openwisp.org
+    http: *https_rules
+  - host: radius.openwisp.org
+    http: *https_rules
+  - host: topology.openwisp.org
+    http: *https_rules
+  tls:
+  - hosts:
+    - dashboard.openwisp.org
+    - controller.openwisp.org
+    - radius.openwisp.org
+    - topology.openwisp.org
+    secretName: openwisp-tls-secret

@@ -6,10 +6,10 @@
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
 [![GitHub license](https://img.shields.io/github/license/atb00ker/docker-openwisp.svg)](https://github.com/openwisp/docker-openwisp/blob/master/LICENSE)
 
-This repository contains Official docker images of OpenWISP. Designed with horizontal scaling, easily replicable deployments and user customization in mind.
+This repository contains official docker images of OpenWISP. Designed with horizontal scaling, easily replicable deployments and user customization in mind.
 
 ![kubernetes](https://i.ibb.co/rGpLq4y/ss1.png)
-The sample files for deployment on kubernetes are available in the `kubernetes/` directory.
+The sample files for deployment on kubernetes are available in the `deployment-examples/kubernetes/` directory.
 
 ## TL;DR
 
@@ -30,63 +30,14 @@ The configuration for openwisp images using environment variables is available [
 1. [Deployment](#Deployment): Steps for a sample deployment of these images in production.
 2. [Disabling Services](#disabling-services): Instructions to disable services you don't want to use, like when using database-as-a-service, you don't need postgresql container.
 3. [Build (Development)](#build-development): Instructions for building your custom images.
+4. [Makefile Options](#makefile-options): Instructions for using the makefile.
 
 ## Deployment
 
-1. [Kubernetes](#kubernetes)
-2. [Docker Compose](#docker-compose)
-
-### Kubernetes
-
-The following are steps of a sample deployment on a kubernetes cluster. All the files are present in `kubernetes/` directory of this repository.
-The following assumes the reader knows basics of kubernetes.
-
-1. (optional) Setup a Kubernetes Cluster: A guide for setting up the cluster on bare-metal machines is available [here](https://blog.alexellis.io/kubernetes-in-10-minutes/) and the guide to get started with kubernetes-dashboard (Web UI) is available [here](https://github.com/kubernetes/dashboard).
-
-2. Changes for your cluster:
-
-   2.1. `externalIPs` in `Service.yml` should to be your cluster's `externalIPs`
-
-   2.2 `ingress` in `Ingress.yml` should to be your cluster's loadbalancer IPs.
-
-   2.3 `<SERVICE-NAME>_DOMAIN` variables in `ConfigMap.yml` should to be your domain names.
-
-3. If you are doing bare-metal setup, follow the steps below to setup nfs-provisioner. If you are using a provider like GKE or Amazon EKS your provider may have this ready out-of-the-box (If your provider doesn't provide it and you can't make these changes you need to alter the `PersistentVolumeClaim.yml` file):
-
-   3.1. Install NFS requirements: `sudo apt install nfs-kernel-server nfs-common`
-
-   3.2. Setup storage directory:
-
-   ```bash
-   sudo mkdir -p /mnt/kubes
-   sudo chown nobody: /mnt/kubes
-   ```
-
-   3.3. Export the directory file system - inside the `/etc/exports` file add line: `/mnt/kubes    *(rw,sync,no_root_squash,no_subtree_check,no_all_squash,insecure)` and then export `sudo exportfs -rav`
-
-4. [Setup helm](https://helm.sh/docs/using_helm/) and install the requirement(s):
-
-   4.1. NFS Provisioner: `helm install --set storageClass.name=nfs-provisioner --set nfs.server=<ip-address> --set nfs.path=/mnt/kubes stable/nfs-client-provisioner`
-
-   4.2. [Setup Cert-Manager](https://docs.cert-manager.io/en/latest/getting-started/install/) to take care of SSL certificates.
-
-5. (optional) Customization: You can change any of the variables from the [list here](docs/ENV.md) to trailer to your requirements. You need to change the values in `ConfigMap.yml`.
-
-   - The ConfigMap with name `postgres-config` will pass the environment variables only to the postgresql container.
-   - The ConfigMap with name `common-config` will pass the environment variables to all the openwisp containers where the values are applicable except the postgres instances.
-
-6. Apply to Kubernetes Cluster: You need to apply all the files in the `kubernetes/` directory to your cluster. Some `ReplicationControllers` are dependant on other components, so it'll be helpful to apply them at last. This is the recommended order:
-
-```bash
-kubectl apply -f ConfigMap.yml
-kubectl apply -f ClusterIssuer.yml
-kubectl apply -f PersistentVolumeClaim.yml
-kubectl apply -f Service.yml
-kubectl apply -f Ingress.yml
-kubectl apply -f ReplicationController.yml
-```
-
-NOTE: Containers will take a little while to start their work. You can see the status on the Web UI or on CLI by `kubectl get all` command.
+1. [Docker Compose](#docker-compose)
+2. Kubernetes
+   2.1 [Bare Metal](docs/kubernetes/BARE_METAL.md)
+   2.2 [Google Cloud](docs/kubernetes/GOOGLE_CLOUD.md)
 
 ### Docker Compose
 
@@ -152,6 +103,7 @@ Guide to build images again with modification or with different environment vari
 Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 
 #### Notes:
+
    - Default username & password are `admin`.
    - Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
    - To reach the dashboard you should add the openwisp domains set in your `.env` to your hosts file, example:
@@ -162,7 +114,7 @@ Now you'll need to do steps (2) everytime you make a changes and want to build t
 
 # Makefile Options
 
-**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge).**
+**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/dockerize-openwisp).**
 
 The Makefile has following options, that are useful for developers & users. Default action is `compose-build`.
 
