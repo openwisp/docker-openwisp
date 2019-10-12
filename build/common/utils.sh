@@ -196,21 +196,21 @@ function postfix_config {
     postconf -e minimal_backoff_time=5m
     postconf -e queue_run_delay=5m
 
-    if [ "$POSTFIX_ALLOWED_SENDER_DOMAINS" != 'False' ]; then
+    if [ "$POSTFIX_ALLOWED_SENDER_DOMAINS" != 'null' ]; then
         for i in $POSTFIX_ALLOWED_SENDER_DOMAINS; do
             echo -e "$i\tOK" >> /etc/allowed_senders
         done
         postmap /etc/allowed_senders
         postconf -e "smtpd_restriction_classes=allowed_domains_only"
         postconf -e "allowed_domains_only=permit_mynetworks, reject_non_fqdn_sender reject"
-        postconf -e "smtpd_recipient_restrictions=reject_non_fqdn_recipient, check_sender_access hash:/etc/allowed_senders, reject"
+        postconf -e "smtpd_recipient_restrictions=reject_non_fqdn_recipient, check_sender_access hash:/etc/allowed_senders,permit_sasl_authenticated, reject_unauth_destination"
         postconf -e "smtpd_relay_restrictions=permit"
     fi
 
-    if [ "$POSTFIX_RELAYHOST" != 'False' ]; then
+    if [ "$POSTFIX_RELAYHOST" != 'null' ]; then
         postconf -e "relayhost=$POSTFIX_RELAYHOST"
         postconf -e smtp_tls_CAfile=/etc/ssl/mail/openwisp.mail.crt
-        if [ -n "$POSTFIX_RELAYHOST_USERNAME" ] && [ -n "$POSTFIX_RELAYHOST_PASSWORD" ]; then
+        if [ "$POSTFIX_RELAYHOST_USERNAME" != 'null' ] && [ "$POSTFIX_RELAYHOST_PASSWORD" != 'null' ]; then
             echo "$POSTFIX_RELAYHOST $POSTFIX_RELAYHOST_USERNAME:$POSTFIX_RELAYHOST_PASSWORD" >> /etc/postfix/sasl_passwd
             postmap hash:/etc/postfix/sasl_passwd
             postconf -e "smtp_sasl_auth_enable=yes"
@@ -221,7 +221,7 @@ function postfix_config {
         postconf -e smtp_tls_security_level="$POSTFIX_RELAYHOST_TLS_LEVEL"
     fi
 
-    if [ "$POSTFIX_DEBUG_MYNETWORKS" != 'False' ]; then
+    if [ "$POSTFIX_DEBUG_MYNETWORKS" != 'null' ]; then
         postconf -e debug_peer_level=10
         postconf -e debug_peer_list="$POSTFIX_DEBUG_MYNETWORKS"
     fi

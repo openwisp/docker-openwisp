@@ -269,19 +269,19 @@ Additionally, you can search for the following:
 ### `POSTFIX_RELAYHOST`
 - **Explaination:** Host that relays your mails.
 - **Valid Values:** IP address | Domain
-- **Default:** --BLANK--
-- **Example:** smtp.gmail.com:587
+- **Default:** null
+- **Example:** [smtp.gmail.com]:587
 
 ### `POSTFIX_RELAYHOST_USERNAME`
 - **Explaination:** Username for the relay server.
 - **Valid Values:** STRING
-- **Default:** --BLANK--
+- **Default:** null
 - **Example:** example@example.com
 
 ### `POSTFIX_RELAYHOST_PASSWORD`
 - **Explaination:** Login password for the relay server.
 - **Valid Values:** STRING
-- **Default:** --BLANK--
+- **Default:** null
 - **Example:** example
 
 ## Freeradius
@@ -596,7 +596,7 @@ Additionally, you can search for the following:
 
 ### `POSTFIX_DEBUG_MYNETWORKS`
 - **Explaination:** Set debug_peer_list for given list of networks.
-- **Valid Values:** False | STRING
-- **Default:** False
+- **Valid Values:** STRING
+- **Default:** null
 - **Example:** 127.0.0.0/8
 
