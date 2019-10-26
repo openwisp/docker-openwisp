@@ -1,9 +1,9 @@
 # Configuration Files
 
-[![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/general)
+[![Gitter](https://badges.gitter.im/openwisp/dockerize-openwisp.svg)](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
 
-**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/general).**
+**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge).**
 
 For some of the images, if you want additional customization options, you can mount your custom configuration files using following instructions:
 

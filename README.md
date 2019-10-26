@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/openwisp/docker-openwisp.svg?branch=master)](https://travis-ci.org/openwisp/docker-openwisp)
 [![Docker Hub](https://img.shields.io/badge/docker--hub-openwisp-blue.svg)](https://hub.docker.com/u/openwisp)
-[![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/general)
+[![Gitter](https://badges.gitter.im/openwisp/dockerize-openwisp.svg)](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
 [![GitHub license](https://img.shields.io/github/license/atb00ker/docker-openwisp.svg)](https://github.com/openwisp/docker-openwisp/blob/master/LICENSE)
 
@@ -157,7 +157,7 @@ Now you'll need to do steps (2) everytime you make a changes and want to build t
 
 # Makefile Options
 
-**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/general).**
+**Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge).**
 
 The Makefile has following options, that are useful for developers & users. Default action is `compose-build`.
 
