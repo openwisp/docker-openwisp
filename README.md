@@ -90,11 +90,11 @@ NOTE: Containers will take a little while to start their work. You can see the s
 
 ### Docker Compose
 
-Testing on docker-compose is relatively less resource and time consuming.
+Installing on docker-compose is relatively less resource and time consuming.
 
 1. Install docker-compose: `pip install docker-compose`
 
-2. Change the following options according to your system: `DJANGO_SECRET_KEY`, `DB_USER`, `DB_PASS`, `DJANGO_DEF_EMAIL`, `DASHBOARD_DOMAIN`, `CONTROLLER_DOMAIN`, `RADIUS_DOMAIN`, `TOPOLOGY_DOMAIN`. Optionally, you may change any other setting as well. A detailed document of the available variables can be found [here](docs/ENV.md).
+2. Change the following options in `.env` file according to your system: `DJANGO_SECRET_KEY`, `DB_USER`, `DB_PASS`, `EMAIL_DJANGO_DEFAULT`, `DASHBOARD_DOMAIN`, `CONTROLLER_DOMAIN`, `RADIUS_DOMAIN`, `TOPOLOGY_DOMAIN`. Optionally, you may change any other setting as well. A detailed document of the available variables can be found [here](docs/ENV.md).
 
 3. Pull all the required images to avoid building them. (Building images is a time consuming task.)
 
@@ -113,10 +113,7 @@ docker pull openwisp/openwisp-websocket:latest
 
 5. When the containers are ready, you can test them out by going to the domain name that you've set for the modules.
 
-Note:
-   - Default username & password are `admin`.
-
-**Note:** If you are using pipenv, remember that changing the values in `.env` file does nothing because `.env` is also a special file in `pipenv`, you need to change the values in `.env` file then re-activate environment to ensure that the changes reflect.
+**Note:** If you are installing for testing, please read the [notes](#notes) below.
 
 ## Disabling Services
 
@@ -149,11 +146,13 @@ Guide to build images again with modification or with different environment vari
 
 Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 
-**Note:**
+#### Notes:
    - Default username & password are `admin`.
    - Default domains are: dashboard.openwisp.org, controller.openwisp.org, radius.openwisp.org and topology.openwisp.org.
-   - You may want to add the domains in your hosts file, command: `echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" >> /etc/hosts/`
-
+   - `To reach the dashboard` you should add the domains in `/etc/hosts` file by command 
+   ```bash
+   bash -c 'echo "127.0.0.1 <your-dashboard-domain> <your-controller-domain> <your-radius-domain> <your-topology-domain>" >> /etc/hosts'
+   ```
 
 # Makefile Options
 
