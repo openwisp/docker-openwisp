@@ -6,7 +6,7 @@ COPY ./openwisp_radius/urls.py \
     ./openwisp_radius/module_settings.py \
     /opt/openwisp/openwisp/
 
-CMD ["sh", "init_command.sh"]
+CMD ["bash", "init_command.sh"]
 
 ARG RADIUS_APP_PORT=8002
 ENV MODULE_NAME=radius \

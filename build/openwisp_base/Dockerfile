@@ -1,54 +1,39 @@
-FROM python:3.7-alpine AS SYSTEM
+FROM python:3.7.5-slim-buster AS SYSTEM
 
-# TODO: install proj4 when it's available.
 # System requirements:
-# 1. Geodjango: gdal & geos are required by Django. proj4 is also required
-# as per Django documentation, which is not yet available for alpine yet.
-# 2. Pillow: zlib-dev & jpeg-dev.
-# 3. service_identity: openssl & libffi-dev are required while openssl-dev is
-# required during installation.
-# 4. gettext: Required by envsubst used in scripts.
-# 5. tzdata: Changing timezone, used in utils.sh.
-RUN apk add --no-cache \
-            --update zlib-dev jpeg-dev libffi-dev gettext gcc openssl tzdata && \
-    apk add --no-cache \
-            --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-            --update geos gdal && \
-    ln -s /usr/lib/libgdal.so.20 /usr/lib/libgdal.so && \
-    ln -s /usr/lib/libgeos_c.so.1 /usr/lib/libgeos_c.so && \
-    rm -rf /var/cache/apk/* /root/.cache/pip/* /tmp/*
+# 1. Pillow: zlib1g-dev libjpeg-dev
+# 2. gettext: Required by envsubst used in scripts
+RUN apt update && \
+    apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev gdal-bin gettext && \
+    rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 FROM SYSTEM AS PYTHON
 
-RUN apk add --no-cache \
-            --update \
-            --virtual .build-deps postgresql-dev git build-base linux-headers openssl-dev
+# Build requirements:
+# 1. Twisted: gcc
+# 2. Postgresql: libpq-dev
+RUN apt update && \
+    apt install --yes --no-install-recommends git gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
+
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --editable git+git://github.com/openwisp/openwisp-controller#egg=openwisp_controller
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --editable git+git://github.com/openwisp/openwisp-radius#egg=openwisp_radius
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --editable git+git://github.com/openwisp/openwisp-network-topology#egg=openwisp_network_topology
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --upgrade https://github.com/openwisp/django-freeradius/tarball/master
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --upgrade https://github.com/openwisp/openwisp-users/tarball/master
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --upgrade https://github.com/openwisp/django-netjsonconfig/tarball/master
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --upgrade https://github.com/openwisp/django-x509/tarball/master
-RUN pip install --prefix='/install' \
-                --no-warn-script-location \
-                --editable git+git://github.com/openwisp/openwisp-utils#egg=openwisp_utils
+RUN pip install --editable git+git://github.com/openwisp/openwisp-controller#egg=openwisp_controller \
+                --prefix='/install'
+RUN pip install --editable git+git://github.com/openwisp/openwisp-radius#egg=openwisp_radius \
+                --prefix='/install'
+RUN pip install --editable git+git://github.com/openwisp/openwisp-network-topology#egg=openwisp_network_topology \
+                --prefix='/install'
+RUN pip install --upgrade https://github.com/openwisp/django-freeradius/tarball/master \
+                --prefix='/install'
+RUN pip install --upgrade https://github.com/openwisp/openwisp-users/tarball/master \
+                --prefix='/install'
+RUN pip install --upgrade https://github.com/openwisp/django-netjsonconfig/tarball/master \
+                --prefix='/install'
+RUN pip install --upgrade https://github.com/openwisp/django-x509/tarball/master \
+                --prefix='/install'
+RUN pip install --editable git+git://github.com/openwisp/openwisp-utils#egg=openwisp_utils \
+                --prefix='/install'
 RUN pip install --prefix='/install' asgi_redis service_identity django-redis psycopg2 uwsgi \
                                     sentry-sdk supervisor celery django-celery-beat redis
 

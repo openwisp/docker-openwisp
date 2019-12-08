@@ -6,7 +6,7 @@ COPY ./openwisp_controller/urls.py \
     ./openwisp_controller/module_settings.py \
     /opt/openwisp/openwisp/
 
-CMD ["sh", "init_command.sh"]
+CMD ["bash", "init_command.sh"]
 
 ARG CONTROLLER_APP_PORT=8001
 ENV MODULE_NAME=controller \

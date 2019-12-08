@@ -14,7 +14,7 @@ COPY ./openwisp_dashboard/module_settings.py \
     ./openwisp_dashboard/urls.py \
     /opt/openwisp/openwisp/
 
-CMD ["sh", "init_command.sh"]
+CMD ["bash", "init_command.sh"]
 
 ARG DASHBOARD_APP_PORT=8000
 ARG WEBSOCKET_APP_PORT=8004
