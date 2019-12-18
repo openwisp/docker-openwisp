@@ -6,7 +6,7 @@ COPY ./openwisp_topology/urls.py \
     ./openwisp_topology/module_settings.py \
     /opt/openwisp/openwisp/
 
-CMD ["sh", "init_command.sh"]
+CMD ["bash", "init_command.sh"]
 
 ARG TOPOLOGY_APP_PORT=8003
 ENV MODULE_NAME=topology \
