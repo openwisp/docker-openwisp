@@ -92,7 +92,14 @@ NOTE: Containers will take a little while to start their work. You can see the s
 
 Installing on docker-compose is relatively less resource and time consuming.
 
-1. Install docker-compose: `pip install docker-compose`
+**Notes:**
+
+- If you want to build images, please read [here](#build-development).
+- If you want to preform actions like building images or cleaning `docker-openwisp`, please use the [makefile options](#makefile-options).
+- If you are installing for trying out `docker-openwisp`, please read the [notes](#notes) below.
+
+
+1. Install docker & docker-compose.
 
 2. Change the following options in `.env` file according to your system: `DJANGO_SECRET_KEY`, `DB_USER`, `DB_PASS`, `EMAIL_DJANGO_DEFAULT`, `DASHBOARD_DOMAIN`, `CONTROLLER_DOMAIN`, `RADIUS_DOMAIN`, `TOPOLOGY_DOMAIN`. Optionally, you may change any other setting as well. A detailed document of the available variables can be found [here](docs/ENV.md).
 
@@ -113,8 +120,6 @@ docker pull openwisp/openwisp-websocket:latest
 
 5. When the containers are ready, you can test them out by going to the domain name that you've set for the modules.
 
-**Note:** If you are installing for testing, please read the [notes](#notes) below.
-
 ## Disabling Services
 
 To disable an openwisp service container and plug your own service like database, SMTP or nginx:
@@ -122,8 +127,8 @@ To disable an openwisp service container and plug your own service like database
 - You cannot disable the openwisp-dashboard container. It is the heart of OpenWISP and performs core functionalities.
 - Disabling the openwisp-daphne & openwisp-websocket containers will cause some functions to fail.
 - You can remove the openwisp-openvpn incase you do not want an OpenVPN server.
-- To disable openwisp-topology set the `SET_TOPOLOGY_TASKS` variable to `False`. Then, remove any instance of openwisp-radius in the same docker network.
-- To disable openwisp-radius set the `SET_RADIUS_TASKS` variable to `False`. Then, remove any instance of openwisp-topology in the same docker network.
+- To disable openwisp-topology set the `SET_TOPOLOGY_TASKS` variable to `False`. Then, remove any instance of openwisp-topology in the same docker network.
+- To disable openwisp-radius set the `SET_RADIUS_TASKS` variable to `False`. Then, remove any instance of openwisp-radius in the same docker network.
 - If you do not need openwisp-controller, remove any instance of openwisp-controller in the same docker network.
 - Disabling openwisp-postgres:
    - Ensure your database instance reachable by the OpenWISP containers.
@@ -135,7 +140,7 @@ To disable an openwisp service container and plug your own service like database
 - Disabling openwisp-nginx:
    - Configurations in `build/openwisp_nginx/` are helpful to replicate in your own instance.
 - Disabling openwisp-freeradius:
-   - Ensure your freeradius service is reachable on port 1812/udp and 1813/udp otherwise openwisp-radius services will fail to work properly.
+   - Ensure your freeradius service is reachable on port `1812/udp` and `1813/udp` otherwise openwisp-radius services will fail to work properly.
 
 ## Build (Development)
 
@@ -148,8 +153,9 @@ Now you'll need to do steps (2) everytime you make a changes and want to build t
 
 #### Notes:
    - Default username & password are `admin`.
-   - Default domains are: dashboard.openwisp.org, controller.openwisp.org, radius.openwisp.org and topology.openwisp.org.
-   - `To reach the dashboard` you should add the domains in `/etc/hosts` file by command 
+   - Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
+   - To reach the dashboard you should add the openwisp domains set in your `.env` to your hosts file, example:
+
    ```bash
    bash -c 'echo "127.0.0.1 <your-dashboard-domain> <your-controller-domain> <your-radius-domain> <your-topology-domain>" >> /etc/hosts'
    ```
