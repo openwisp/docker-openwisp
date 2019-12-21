@@ -3,7 +3,6 @@
 import os
 import time
 import sys
-import socket
 from utils import uwsgi_curl
 
 

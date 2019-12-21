@@ -11,7 +11,6 @@ import json
 import os
 import django
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
@@ -35,6 +34,7 @@ def get_vpn_organization(vpnOrg):
     '''
     return Organization.objects.get(slug=vpnOrg)
 
+
 def create_default_CA(vpnOrg, x509NameCA):
     '''
     Create default certificate authority
@@ -44,8 +44,8 @@ def create_default_CA(vpnOrg, x509NameCA):
         defaultCa.organization = vpnOrg
         defaultCa.name = x509NameCA
         defaultCa.country_code = os.environ['X509_COUNTRY_CODE']
-        defaultCa.state =  os.environ['X509_STATE']
-        defaultCa.city =  os.environ['X509_CITY']
+        defaultCa.state = os.environ['X509_STATE']
+        defaultCa.city = os.environ['X509_CITY']
         defaultCa.organization_name = os.environ['X509_ORGANIZATION_NAME']
         defaultCa.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
         defaultCa.email = os.environ['X509_EMAIL']
@@ -57,6 +57,7 @@ def create_default_CA(vpnOrg, x509NameCA):
         return defaultCa
     return Ca.objects.get(name=x509NameCA)
 
+
 def create_default_cert(vpnOrg, defaultCa, x509NameCert):
     '''
     Create default certificate
@@ -67,14 +68,15 @@ def create_default_cert(vpnOrg, defaultCa, x509NameCert):
         defaultCert.organization = vpnOrg
         defaultCert.name = x509NameCert
         defaultCert.country_code = os.environ['X509_COUNTRY_CODE']
-        defaultCert.state =  os.environ['X509_STATE']
-        defaultCert.city =  os.environ['X509_CITY']
+        defaultCert.state = os.environ['X509_STATE']
+        defaultCert.city = os.environ['X509_CITY']
         defaultCert.organization_name = os.environ['X509_ORGANIZATION_NAME']
         defaultCert.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
         defaultCert.email = os.environ['X509_EMAIL']
         defaultCert.common_name = os.environ['X509_COMMON_NAME']
-        defaultCert.notes = 'This certificate was created during the setup, it is used for' \
-                            'the default management VPN. Please do not rename it.'
+        defaultCert.notes = 'This certificate was created during the setup.' \
+                            'It is used for the default management VPN.' \
+                            'Please do not rename it.'
         defaultCert.full_clean()
         defaultCert.save()
         return defaultCert
@@ -124,7 +126,6 @@ def create_default_vpn_template(defaultVpnClient, vpnOrg, defaultVpn):
 
 
 if __name__ == "__main__":
-    from openwisp_radius.models import OrganizationRadiusSettings
     from openwisp_users.models import Organization
     from openwisp_controller.config.models import Vpn, Template
     from openwisp_controller.pki.models import Ca, Cert
@@ -133,7 +134,11 @@ if __name__ == "__main__":
     # required objects (CA, Certificate, VPN Server).
     vpnOrg = get_vpn_organization(os.environ['VPN_ORG'])
     defaultCa = create_default_CA(vpnOrg, os.environ['X509_NAME_CA'])
-    defaultCert = create_default_cert(vpnOrg, defaultCa, os.environ['X509_NAME_CERT'])
-    defaultVpn = create_default_vpn(os.environ['VPN_NAME'], vpnOrg,
-                                    defaultCa, defaultCert)
-    create_default_vpn_template(os.environ['VPN_CLIENT_NAME'], vpnOrg, defaultVpn)
+    defaultCert = create_default_cert(vpnOrg,
+                                      defaultCa,
+                                      os.environ['X509_NAME_CERT'])
+    defaultVpn = create_default_vpn(os.environ['VPN_NAME'],
+                                    vpnOrg, defaultCa,
+                                    defaultCert)
+    create_default_vpn_template(os.environ['VPN_CLIENT_NAME'],
+                                vpnOrg, defaultVpn)
