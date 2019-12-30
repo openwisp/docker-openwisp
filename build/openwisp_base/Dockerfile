@@ -3,8 +3,10 @@ FROM python:3.7.5-slim-buster AS SYSTEM
 # System requirements:
 # 1. Pillow: zlib1g-dev libjpeg-dev
 # 2. gettext: Required by envsubst used in scripts
+# 3. django-freeradius/weasyprint: libcairo2 libpangocairo-1.0
 RUN apt update && \
-    apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev gdal-bin gettext && \
+    apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev \
+                libcairo2 libpangocairo-1.0 gdal-bin gettext && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 FROM SYSTEM AS PYTHON
@@ -13,18 +15,18 @@ FROM SYSTEM AS PYTHON
 # 1. Twisted: gcc
 # 2. Postgresql: libpq-dev
 RUN apt update && \
-    apt install --yes --no-install-recommends git gcc libpq-dev && \
+    apt install --yes --no-install-recommends gcc libpq-dev && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
-RUN pip install --editable git+git://github.com/openwisp/openwisp-controller#egg=openwisp_controller \
+RUN pip install --upgrade https://github.com/openwisp/openwisp-controller/tarball/master \
                 --prefix='/install'
-RUN pip install --editable git+git://github.com/openwisp/openwisp-radius#egg=openwisp_radius \
-                --prefix='/install'
-RUN pip install --editable git+git://github.com/openwisp/openwisp-network-topology#egg=openwisp_network_topology \
+RUN pip install --upgrade https://github.com/openwisp/openwisp-network-topology/tarball/master \
                 --prefix='/install'
 RUN pip install --upgrade https://github.com/openwisp/django-freeradius/tarball/master \
+                --prefix='/install'
+RUN pip install --upgrade https://github.com/openwisp/openwisp-radius/tarball/master \
                 --prefix='/install'
 RUN pip install --upgrade https://github.com/openwisp/openwisp-users/tarball/master \
                 --prefix='/install'
@@ -32,14 +34,13 @@ RUN pip install --upgrade https://github.com/openwisp/django-netjsonconfig/tarba
                 --prefix='/install'
 RUN pip install --upgrade https://github.com/openwisp/django-x509/tarball/master \
                 --prefix='/install'
-RUN pip install --editable git+git://github.com/openwisp/openwisp-utils#egg=openwisp_utils \
+RUN pip install --upgrade https://github.com/openwisp/openwisp-utils/tarball/master \
                 --prefix='/install'
 RUN pip install --prefix='/install' asgi_redis service_identity django-redis psycopg2 uwsgi \
-                                    sentry-sdk supervisor celery django-celery-beat redis
+                                    sentry-sdk supervisor celery django-celery-beat redis==2.10.6
 
 FROM SYSTEM
 
-COPY --from=PYTHON /src /src
 COPY --from=PYTHON /install /usr/local
 COPY ./common/ /opt/openwisp/
 
