@@ -13,4 +13,9 @@ jobs:
   include:
     - stage: tests
       script:
-      - make travis-runtests
+      - |
+        if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
+          make travis-publish
+        else
+          make travis-runtests
+        fi

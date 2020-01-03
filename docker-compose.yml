@@ -2,12 +2,13 @@ version: "3"
 
 services:
   dashboard:
-    image: openwisp/openwisp-dashboard:latest
+    image: ${REGISTRY:-openwisp}/openwisp-dashboard:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_dashboard/Dockerfile
       args:
         DASHBOARD_APP_PORT: $DASHBOARD_APP_PORT
+        IMAGE_BASE: ${REGISTRY:-openwisp}/openwisp-base:${TAG:-latest}
     deploy:
       replicas: 1
     env_file:
@@ -22,12 +23,13 @@ services:
       - postfix
 
   controller:
-    image:  openwisp/openwisp-controller:latest
+    image: ${REGISTRY:-openwisp}/openwisp-controller:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_controller/Dockerfile
       args:
         CONTROLLER_APP_PORT: $CONTROLLER_APP_PORT
+        IMAGE_BASE: ${REGISTRY:-openwisp}/openwisp-base:${TAG:-latest}
     deploy:
       replicas: 1
     env_file:
@@ -41,12 +43,13 @@ services:
       - dashboard
 
   radius:
-    image: openwisp/openwisp-radius:latest
+    image: ${REGISTRY:-openwisp}/openwisp-radius:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_radius/Dockerfile
       args:
         RADIUS_APP_PORT: $RADIUS_APP_PORT
+        IMAGE_BASE: ${REGISTRY:-openwisp}/openwisp-base:${TAG:-latest}
     deploy:
       replicas: 1
     env_file:
@@ -56,12 +59,13 @@ services:
       - dashboard
 
   topology:
-    image: openwisp/openwisp-topology:latest
+    image: ${REGISTRY:-openwisp}/openwisp-topology:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_topology/Dockerfile
       args:
         TOPOLOGY_APP_PORT: $TOPOLOGY_APP_PORT
+        IMAGE_BASE: ${REGISTRY:-openwisp}/openwisp-base:${TAG:-latest}
     deploy:
       replicas: 1
     env_file:
@@ -72,7 +76,7 @@ services:
 
   websocket:
     command: /opt/openwisp/worker.conf
-    image: openwisp/openwisp-websocket:latest
+    image: ${REGISTRY:-openwisp}/openwisp-websocket:${TAG:-latest}
     deploy:
       replicas: 1
     env_file:
@@ -82,12 +86,13 @@ services:
 
   daphne:
     command: /opt/openwisp/daphne.conf
-    image: openwisp/openwisp-websocket:latest
+    image: ${REGISTRY:-openwisp}/openwisp-websocket:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_websocket/Dockerfile
       args:
         WEBSOCKET_APP_PORT: $WEBSOCKET_APP_PORT
+        IMAGE_BASE: ${REGISTRY:-openwisp}/openwisp-base:${TAG:-latest}
     deploy:
       replicas: 1
     environment:
@@ -100,7 +105,7 @@ services:
       - dashboard
 
   nginx:
-    image: openwisp/openwisp-nginx:latest
+    image: ${REGISTRY:-openwisp}/openwisp-nginx:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_nginx/Dockerfile
@@ -128,7 +133,7 @@ services:
       - daphne
 
   celery:
-    image: openwisp/openwisp-dashboard:latest
+    image: ${REGISTRY:-openwisp}/openwisp-dashboard:${TAG:-latest}
     deploy:
       replicas: 1
     environment:
@@ -141,7 +146,7 @@ services:
       - dashboard
 
   celery:
-    image: openwisp/openwisp-dashboard:latest
+    image: ${REGISTRY:-openwisp}/openwisp-dashboard:${TAG:-latest}
     deploy:
       replicas: 1
     environment:
@@ -154,7 +159,7 @@ services:
       - dashboard
 
   celerybeat:
-    image: openwisp/openwisp-dashboard:latest
+    image: ${REGISTRY:-openwisp}/openwisp-dashboard:${TAG:-latest}
     deploy:
       replicas: 1
     environment:
@@ -167,7 +172,7 @@ services:
       - dashboard
 
   postfix:
-    image: openwisp/openwisp-postfix:latest
+    image: ${REGISTRY:-openwisp}/openwisp-postfix:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_postfix/Dockerfile
@@ -179,7 +184,7 @@ services:
       - openwisp_certs:/etc/ssl/mail
 
   freeradius:
-    image: openwisp/openwisp-freeradius:latest
+    image: ${REGISTRY:-openwisp}/openwisp-freeradius:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_freeradius/Dockerfile
@@ -209,7 +214,7 @@ services:
     cap_add:
       - NET_ADMIN
     privileged: true
-    image: openwisp/openwisp-openvpn:latest
+    image: ${REGISTRY:-openwisp}/openwisp-openvpn:${TAG:-latest}
     build:
       context: build
       dockerfile: openwisp_openvpn/Dockerfile

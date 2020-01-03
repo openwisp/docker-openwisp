@@ -152,6 +152,7 @@ Guide to build images again with modification or with different environment vari
 Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 
 #### Notes:
+   - Default image's registry is `openwisp`. You can build into another registry by changing `REGISTRY` to your own image's registry.
    - Default username & password are `admin`.
    - Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
    - To reach the dashboard you should add the openwisp domains set in your `.env` to your hosts file, example:
@@ -172,6 +173,7 @@ The Makefile has following options, that are useful for developers & users. Defa
 - `runtests`: Run testcases to ensure all the services are working.
 - `develop-runtests`: Similar to `runtests`, it runs the testcases except doesn't stop the containers after running the tests which maybe desired for debugging & analyzing failing container's logs.
 - `travis-runtests`: Similar to `runtests`, it runs the testcases except used in travis builds because it doesn't clean up after running the tests and prints all the container's logs when an error occurs in the tests.
-- `clean`: Purge everything produced during building the images.
+- `clean`: Purge everything produced during building the images. Aggressively purge all the containers, images, volumes & networks related to `docker-openwisp`.
 - `develop`: Useful for development. Bundles all the commands required to build the images and run containers during development. With this option, you can interact with the interface and APIs and the logs will be printed on the terminal for debugging on the debugging level you select from the `.env` file.
-- `publish`: Build, test and publish the latest Official images.
+- `publish [REGISTRY=<your-image-registry>]`: Build, test and publish the latest official images to specified registry (default is `openwisp`). The images will be tagged as `VERSION` and `latest`. If you want to publish to another registry, be sure to use the correct format (For example, GitHub Packages use `docker.pkg.github.com/<github-username>/docker-openwisp` format).
+- `travis-publish`: Similar to `publish`, except creates and pushes `nightly` images to Docker Hub and GitHub Packages.

@@ -1,4 +1,5 @@
-FROM openwisp/openwisp-base:latest
+ARG IMAGE_BASE=openwisp/openwisp-base:latest
+FROM $IMAGE_BASE
 
 WORKDIR /opt/openwisp/
 
