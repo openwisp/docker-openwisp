@@ -74,7 +74,48 @@ If you want to disable a service, you can simply remove the container for that s
 - `openwisp-postfix`:
    - Ensure your SMTP instance reachable by the OpenWISP containers.
    - Change the [email configuration variables](docs/ENV.md) to point to your instances.
-- `openwisp-freeradius`: Ensure your freeradius service is reachable on port `1812/udp` and `1813/udp`.
+
+## Build (Development)
+
+Guide to build images again with modification or with different environment variables.
+
+1. Install docker-compose.
+2. In the root of the repository, run `make develop`, when the containers are ready, you can test them out by going to the domain name of the modules.
+
+Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
+
+#### Notes:
+   - Default username & password are `admin`.
+   - Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
+   - To reach the dashboard you should add the openwisp domains set in your `.env` to your hosts file, example:
+
+   ```bash
+   bash -c 'echo "127.0.0.1 <your-dashboard-domain> <your-controller-domain> <your-radius-domain> <your-topology-domain>" >> /etc/hosts'
+   ```
+
+## How to run selenium tests
+
+   **Step 1**: Install chrome browser:
+
+   Install chrome browser (example for linux debian/ubuntu systems):
+
+      sudo apt-get install google-chrome-stable
+
+   **Step 2**: Install chromedriver:
+
+   1. Check version of chrome browser by going to `chrome://settings/help` on your chrome browser
+   2. Download compatible chromedriver for example from: https://chromedriver.chromium.org/downloads
+   3. Extract chromedriver to one of directories from your `$PATH`
+
+   **Step 3**: Install selenium using pip:
+
+      pip install selenium
+
+   **Step 4**: Run tests with:
+
+      python tests/selenium_tests.py --headless
+
+   Alternatively you can run script without `--headless` argument in order to see operations done in UI
 
 ### Makefile Options
 
