@@ -83,20 +83,7 @@ function test_freeradius {
 }
 
 function test_websocket {
-    # This test ensures that wesocket service is running
-    # correctly by trying to reach \ws location in nginx.
-    $CURL_BIN -I -X GET --include \
-                        --no-buffer \
-                        --header "Connection: Upgrade" \
-                        --header "Upgrade: websocket" \
-                        --header "Origin: ${APP_URL}" \
-                        --header "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" \
-                        --header "Sec-WebSocket-Version: 13" \
-               ${APP_URL}/ws/ | \
-        grep -q "101 Switching Protocols" && \
-        { echo "SUCCESS: Websocket service is working!"; } || \
-        { echo "ERROR: Websocket service did not respond!" \
-               "(You may want to increase test timeout)"; FAILURE=1; }
+    python $PWD/tests/selenium_tests.py --headless || FAILURE=1
 }
 
 function test_celery {
@@ -149,7 +136,6 @@ function init_tests {
     test_admin_login
     test_celery
     test_dashboard_login
-    test_websocket
     test_freeradius
     if [[ $FAILURE = 1 ]] && [[ $1 = logs ]]; then
         print_services_logs
@@ -158,4 +144,5 @@ function init_tests {
     if [[ $FAILURE = 1 ]]; then
         exit $FAILURE
     fi
+    test_websocket
 }

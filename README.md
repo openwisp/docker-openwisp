@@ -160,6 +160,30 @@ Now you'll need to do steps (2) everytime you make a changes and want to build t
    bash -c 'echo "127.0.0.1 <your-dashboard-domain> <your-controller-domain> <your-radius-domain> <your-topology-domain>" >> /etc/hosts'
    ```
 
+## How to run selenium tests
+
+   **Step 1**: Install chrome browser:
+
+   Install chrome browser (example for linux debian/ubuntu systems):
+
+      sudo apt-get install google-chrome-stable
+
+   **Step 2**: Install chromedriver:
+
+   1. Check version of chrome browser by going to `chrome://settings/help` on your chrome browser
+   2. Download compatible chromedriver for example from: https://chromedriver.chromium.org/downloads
+   3. Extract chromedriver to one of directories from your `$PATH`
+
+   **Step 3**: Install selenium using pip:
+
+      pip install selenium
+
+   **Step 4**: Run tests with:
+
+      python tests/selenium_tests.py --headless
+
+   Alternatively you can run script without `--headless` argument in order to see operations done in UI
+
 # Makefile Options
 
 **Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge).**
