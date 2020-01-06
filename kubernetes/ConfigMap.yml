@@ -16,10 +16,10 @@ metadata:
   name: common-config
 data:
   DJANGO_SECRET_KEY: MY_COMPANY_SECRET_KEY
-  DASHBOARD_DOMAIN: dashboard.openwisp.org openwisp-dashboard.2stacks.net
-  CONTROLLER_DOMAIN: controller.openwisp.org openwisp-controller.2stacks.net
-  RADIUS_DOMAIN: radius.openwisp.org openwisp-radius.2stacks.net
-  TOPOLOGY_DOMAIN: topology.openwisp.org openwisp-topology.2stacks.net
+  DASHBOARD_DOMAIN: DASHBOARD_DOMAIN
+  CONTROLLER_DOMAIN: CONTROLLER_DOMAIN
+  RADIUS_DOMAIN: RADIUS_DOMAIN
+  TOPOLOGY_DOMAIN: TOPOLOGY_DOMAIN
   NGINX_SERVER_NAME_HASH_BUCKET: "64"
   SSL_CERT_MODE: "False"
   DJANGO_DEFAULT_FROM_EMAIL: postmaster@example.com

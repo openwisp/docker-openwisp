@@ -49,7 +49,7 @@ The following assumes the reader knows basics of kubernetes.
 
    2.2 `ingress` in `Ingress.yml` should to be your cluster's loadbalancer IPs.
 
-   2.3 `<SERVICE-NAME>_DOMAIN` variables in `ConfigMap.yml` should to be your domain names.
+   2.3 `<SERVICE-NAME>_DOMAIN` variables in `.env` should to be your domain names.
 
 3. If you are doing bare-metal setup, follow the steps below to setup nfs-provisioner. If you are using a provider like GKE or Amazon EKS your provider may have this ready out-of-the-box (If your provider doesn't provide it and you can't make these changes you need to alter the `PersistentVolumeClaim.yml` file):
 
@@ -78,12 +78,12 @@ The following assumes the reader knows basics of kubernetes.
 6. Apply to Kubernetes Cluster: You need to apply all the files in the `kubernetes/` directory to your cluster. Some `ReplicationControllers` are dependant on other components, so it'll be helpful to apply them at last. This is the recommended order:
 
 ```bash
-kubectl apply -f ConfigMap.yml
-kubectl apply -f ClusterIssuer.yml
-kubectl apply -f PersistentVolumeClaim.yml
-kubectl apply -f Service.yml
-kubectl apply -f Ingress.yml
-kubectl apply -f ReplicationController.yml
+kubapply -f ConfigMap.yml
+kubapply -f ClusterIssuer.yml
+kubapply -f PersistentVolumeClaim.yml
+kubapply -f Service.yml
+kubapply -f Ingress.yml
+kubapply -f ReplicationController.yml
 ```
 
 NOTE: Containers will take a little while to start their work. You can see the status on the Web UI or on CLI by `kubectl get all` command.

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [ ! -f ".env" ]; then
+   echo ".env file does not exist. Please create .env file containing the variables."
+   exit
+fi
+
+FILE=${1}
+
+if [ ! $FILE ]; then
+   echo "Please Provide a file"
+   exit
+fi
+
+
+if [ ! -f $FILE ]; then
+   echo "File $FILE does not exist"
+   exit
+fi
+
+
+COM="cat $FILE | sed \""
+
+for var in $(cat .env); do
+   COM="$COM;s/${var/=//}/g"
+done
+
+COM="$COM\" | kubectl apply -f -"
+
+
+eval "$COM"

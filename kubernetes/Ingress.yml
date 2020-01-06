@@ -8,25 +8,25 @@ metadata:
   name: openwisp
 spec:
   rules:
-  - host: openwisp-dashboard.2stacks.net
+  - host: DASHBOARD_DOMAIN
     http: &https_rules
       paths:
       - backend:
           serviceName: openwisp-nginx
           servicePort: 80
         path: /
-  - host: openwisp-controller.2stacks.net
+  - host: CONTROLLER_DOMAIN
     http: *https_rules
-  - host: openwisp-radius.2stacks.net
+  - host: RADIUS_DOMAIN
     http: *https_rules
-  - host: openwisp-topology.2stacks.net
+  - host: TOPOLOGY_DOMAIN
     http: *https_rules
   tls:
   - hosts:
-    - openwisp-dashboard.2stacks.net
-    - openwisp-controller.2stacks.net
-    - openwisp-radius.2stacks.net
-    - openwisp-topology.2stacks.net
+    - DASHBOARD_DOMAIN
+    - CONTROLLER_DOMAIN
+    - RADIUS_DOMAIN
+    - TOPOLOGY_DOMAIN
     secretName: openwisp-2stacks-crt
 status:
   loadBalancer:
