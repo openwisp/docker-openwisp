@@ -1,5 +1,6 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
+-include .makerc
 
 SHELL := /bin/bash
 
@@ -10,12 +11,24 @@ python-build: build.py
 	python build.py change-secret-key
 
 build-base:
+	# Build Intermedia Image with System Packages
 	docker build --tag openwisp/openwisp-base:intermedia-system \
 	             --file ./build/openwisp_base/Dockerfile \
 	             --target SYSTEM ./build/
+	# Build Intermedia Image with Python Packages
 	docker build --tag openwisp/openwisp-base:intermedia-python \
 	             --file ./build/openwisp_base/Dockerfile \
-	             --target PYTHON ./build/
+	             --target PYTHON ./build/ \
+	             --build-arg OPENWISP_CONTROLLER_SOURCE=${OPENWISP_CONTROLLER_SOURCE} \
+	             --build-arg OPENWISP_TOPOLOGY_SOURCE=${OPENWISP_TOPOLOGY_SOURCE} \
+	             --build-arg DJANGO_FREERADIUS_SOURCE=${DJANGO_FREERADIUS_SOURCE} \
+	             --build-arg OPENWISP_RADIUS_SOURCE=${OPENWISP_RADIUS_SOURCE} \
+	             --build-arg OPENWISP_USERS_SOURCE=${OPENWISP_USERS_SOURCE} \
+	             --build-arg DJANGO_NETJSONCONFIG_SOURCE=${DJANGO_NETJSONCONFIG_SOURCE} \
+	             --build-arg DJANGO_NETJSONGRAPH_SOURCE=${DJANGO_NETJSONGRAPH_SOURCE} \
+	             --build-arg DJANGO_X509_SOURCE=${DJANGO_X509_SOURCE} \
+	             --build-arg OPENWISP_UTILS_SOURCE=${OPENWISP_UTILS_SOURCE}
+	# Build Final Image
 	docker build --tag openwisp/openwisp-base:latest \
 	             --file ./build/openwisp_base/Dockerfile ./build/
 

@@ -1,0 +1,9 @@
+OPENWISP_CONTROLLER_SOURCE:=https://github.com/openwisp/openwisp-controller/tarball/74600dc85f3ff0d4383c96c54bc00db122292a22
+OPENWISP_TOPOLOGY_SOURCE:=https://github.com/openwisp/openwisp-network-topology/tarball/417ebec33ee38885501d0915cb7e37a415ed413d
+DJANGO_FREERADIUS_SOURCE:=https://github.com/openwisp/django-freeradius/tarball/4fbf6ca98cea726d22dae54a0684c9468fc752a1
+OPENWISP_RADIUS_SOURCE:=https://github.com/openwisp/openwisp-radius/tarball/af89345626076e27c81168c20daaa98f922223a0
+OPENWISP_USERS_SOURCE:=https://github.com/openwisp/openwisp-users/tarball/e484aecf2963ad29ef72f1f387fcecf4a046e201
+DJANGO_NETJSONCONFIG_SOURCE:=https://github.com/openwisp/django-netjsonconfig/tarball/ce0a694f1917f8c65baf0b88bb4f8ed014a577a9
+DJANGO_NETJSONGRAPH_SOURCE:=https://github.com/openwisp/django-netjsongraph/tarball/e18e5245724e58f0ef5310f0c57ba5347b8e32e7
+DJANGO_X509_SOURCE:=https://github.com/openwisp/django-x509/archive/0.5.1.tar.gz
+OPENWISP_UTILS_SOURCE:=https://github.com/openwisp/openwisp-utils/tarball/cdcacf5855b423ec75b7a3e37e1b97b88a052043
