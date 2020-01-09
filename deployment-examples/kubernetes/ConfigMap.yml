@@ -19,10 +19,10 @@ metadata:
   name: common-config
 data:
   DJANGO_SECRET_KEY: MY_COMPANY_SECRET_KEY
-  DASHBOARD_DOMAIN: dashboard.openwisp.org
-  CONTROLLER_DOMAIN: controller.openwisp.org
-  RADIUS_DOMAIN: radius.openwisp.org
-  TOPOLOGY_DOMAIN: topology.openwisp.org
+  DASHBOARD_DOMAIN: {{DASHBOARD_DOMAIN}}
+  CONTROLLER_DOMAIN: {{CONTROLLER_DOMAIN}}
+  RADIUS_DOMAIN: {{RADIUS_DOMAIN}}
+  TOPOLOGY_DOMAIN: {{TOPOLOGY_DOMAIN}}
   NGINX_SERVER_NAME_HASH_BUCKET: "64"
   SSL_CERT_MODE: "False"
   DEBUG_MODE: "False"

@@ -39,10 +39,10 @@ The steps where performed on master version-1.13.
 
     3.2 Install NFS Server: `helm install nfs-server-provisioner stable/nfs-server-provisioner`
 
-5. In `GooglePersistentVolume.yml`: Change storage size according to your needs and create Persistent Volumes for OpenWISP:
+5. In `deployment-examples/kubernetes/.env`: Change storage size according to your needs and create Persistent Volumes for OpenWISP:
 
 ```bash
-kubectl create -f BarePersistentVolume.yml
+kubeapply --create BarePersistentVolume.yml
 ```
 
 6. Your system is ready, now you can move to the installation of OpenWISP on kubernetes [here](KUBERNETES.md).

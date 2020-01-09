@@ -4,28 +4,28 @@ kind: Ingress
 metadata:
   name: openwisp-http-ingress
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: openwisp-http-loadbalancer-ip
+    kubernetes.io/ingress.global-static-ip-name: {{LOAD_BALANCER_IP}}
   labels:
     app: openwisp-nginx
 spec:
   rules:
-  - host: dashboard.openwisp.org
+  - host: {{DASHBOARD_DOMAIN}}
     http: &https_rules
       paths:
       - path: /*
         backend:
           serviceName: openwisp-nginx
           servicePort: 80
-  - host: controller.openwisp.org
+  - host: {{CONTROLLER_DOMAIN}}
     http: *https_rules
-  - host: radius.openwisp.org
+  - host: {{RADIUS_DOMAIN}}
     http: *https_rules
-  - host: topology.openwisp.org
+  - host: {{TOPOLOGY_DOMAIN}}
     http: *https_rules
   tls:
   - hosts:
-    - dashboard.openwisp.org
-    - controller.openwisp.org
-    - radius.openwisp.org
-    - topology.openwisp.org
+    - {{DASHBOARD_DOMAIN}}
+    - {{CONTROLLER_DOMAIN}}
+    - {{RADIUS_DOMAIN}}
+    - {{TOPOLOGY_DOMAIN}}
     secretName: openwisp-tls-secret

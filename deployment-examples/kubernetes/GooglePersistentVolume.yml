@@ -39,7 +39,7 @@ kind: Service
 metadata:
   name: nfs-server
 spec:
-  clusterIP: 10.0.10.240
+  clusterIP: {{CLUSTER_IP}}
   ports:
     - name: nfs
       port: 2049
@@ -60,7 +60,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.0.10.240
+    server: {{NFS_SERVER_IP}}
     path: "/postgres/"
 ---
 apiVersion: v1
@@ -73,7 +73,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.0.10.240
+    server: {{NFS_SERVER_IP}}
     path: "/media/"
 ---
 apiVersion: v1
@@ -86,7 +86,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.0.10.240
+    server: {{NFS_SERVER_IP}}
     path: "/static/"
 ---
 apiVersion: v1
@@ -99,7 +99,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.0.10.240
+    server: {{NFS_SERVER_IP}}
     path: "/html/"
 ---
 apiVersion: v1
@@ -112,7 +112,7 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    server: 10.0.10.240
+    server: {{NFS_SERVER_IP}}
     path: "/postfix/"
 ---
 kind: PersistentVolumeClaim

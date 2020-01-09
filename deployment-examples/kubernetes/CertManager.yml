@@ -9,7 +9,7 @@ metadata:
 spec:
   acme:
     server: https://acme-staging-v02.api.letsencrypt.org/directory
-    email: example@example.com
+    email: {{EMAIL}}
     privateKeySecretRef:
       name: letsencrypt-staging
     solvers:
@@ -26,7 +26,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: example@example.com
+    email: {{EMAIL}}
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
@@ -44,10 +44,10 @@ spec:
   secretName: openwisp-tls-secret
   renewBefore: 12h
   dnsNames:
-  - dashboard.openwisp.org
-  - controller.openwisp.org
-  - topology.openwisp.org
-  - radius.openwisp.org
+  - {{DASHBOARD_DOMAIN}}
+  - {{CONTROLLER_DOMAIN}}
+  - {{RADIUS_DOMAIN}}
+  - {{TOPOLOGY_DOMAIN}}
   issuerRef:
-    name: letsencrypt-prod
+    name: {{ISSUE_REF_NAME}}
     kind: ClusterIssuer

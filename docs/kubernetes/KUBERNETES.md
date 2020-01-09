@@ -25,22 +25,18 @@ kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/relea
 
 4. Customization:
 
-    4.1 In `ConfigMap.yml`: You need to change the values according to your cluster. You can set any of the variables from the [list here](docs/ENV.md) to trailor setup to your requirements.
+    4.1 In `deployment-examples/kubernetes/.env`: Change the email address and the domain name to your domain.
 
-    4.2 In `Service.yml`: Change the domain name to your domain and the set the external IP addresses for `openvpn` & `freeradius` services.
-
-    4.3 In `Ingress.yml`: Change the domain name to your domain and the set the load-balaner IP address.
-
-    4.4 In `CertManager.yml`: Change the email address & the domain name to your domains.
+    4.2 In `ConfigMap.yml`: You need to change the values according to your cluster. You can set any of the variables from the [list here](docs/ENV.md) to trailor setup to your requirements.
 
 5. Apply to Kubernetes Cluster: You need to apply all the files in the `deployment-examples/kubernetes/` directory to your cluster. Some `Deployments` are dependant on other components, so it'll be helpful to apply them at last. This is the recommended order (let the services in the previous step be ready before applying the next YAML file.):
 
 ```bash
-kubectl apply -f ConfigMap.yml
-kubectl apply -f Service.yml
-kubectl apply -f Deployment.yml
-kubectl apply -f Ingress.yml
-kubectl apply -f CertManager.yml
+kubeapply ConfigMap.yml
+kubeapply Service.yml
+kubeapply Deployment.yml
+kubeapply Ingress.yml
+kubeapply CertManager.yml
 ```
 
 **NOTE: Containers will take a little while to start working. You can see the status on the Web UI or on CLI by `kubectl get all` command.**

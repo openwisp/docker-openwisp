@@ -13,7 +13,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: openwisp-dashboard
-        image: openwisp/openwisp-dashboard:latest
+        image: {{DASHBOARD_IMAGE}}
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
@@ -57,7 +57,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: openwisp-controller
-        image: openwisp/openwisp-controller:latest
+        image: {{CONTROLLER_IMAGE}}
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
@@ -101,7 +101,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: openwisp-radius
-        image: openwisp/openwisp-radius:latest
+        image: {{RADIUS_IMAGE}}
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
@@ -140,7 +140,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: openwisp-topology
-        image: openwisp/openwisp-topology:latest
+        image: {{TOPOLOGY_IMAGE}}
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
@@ -179,7 +179,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: openwisp-daphne
-          image: openwisp/openwisp-websocket:latest
+          image: {{WEBSOCKET_IMAGE}}
           args: ["/opt/openwisp/daphne.conf"]
           imagePullPolicy: Always
           envFrom:
@@ -200,7 +200,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: openwisp-websocket
-          image: openwisp/openwisp-websocket:latest
+          image: {{WEBSOCKET_IMAGE}}
           args: ["/opt/openwisp/worker.conf"]
           imagePullPolicy: Always
           envFrom:
@@ -221,7 +221,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: openwisp-nginx
-        image: openwisp/openwisp-nginx:latest
+        image: {{NGINX_IMAGE}}
         ports:
           - containerPort: 443
           - containerPort: 80
@@ -269,7 +269,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: openwisp-postgres
-          image: mdillon/postgis:10-alpine
+          image: {{POSTGRES_IMAGE}}
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -296,7 +296,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: openwisp-postfix
-          image: openwisp/openwisp-postfix:latest
+          image: {{POSTFIX_IMAGE}}
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -323,7 +323,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: openwisp-freeradius
-          image: openwisp/openwisp-freeradius:latest
+          image: {{FREERADIUS_IMAGE}}
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -343,7 +343,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: openwisp-openvpn
-          image: openwisp/openwisp-openvpn:latest
+          image: {{OPENVPN_IMAGE}}
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -366,7 +366,7 @@ spec:
     spec:
       containers:
         - name: openwisp-celery
-          image: openwisp/openwisp-dashboard:latest
+          image: {{DASHBOARD_IMAGE}}
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -388,7 +388,7 @@ spec:
     spec:
       containers:
         - name: openwisp-celerybeat
-          image: openwisp/openwisp-dashboard:latest
+          image: {{DASHBOARD_IMAGE}}
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -411,5 +411,5 @@ spec:
       restartPolicy: Always
       containers:
       - name: redis
-        image: redis:alpine
+        image: {{REDIS_IMAGE}}
         imagePullPolicy: Always

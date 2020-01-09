@@ -137,7 +137,7 @@ kind: Service
 metadata:
   name: openvpn
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: openvpn.openwisp.org
+    external-dns.alpha.kubernetes.io/hostname: {{OPENVPN_DOMAIN}}
 spec:
   type: LoadBalancer
   selector:
@@ -154,7 +154,7 @@ kind: Service
 metadata:
   name: freeradius
   annotations:
-    external-dns.alpha.kubernetes.io/hostname: freeradius.openwisp.org
+    external-dns.alpha.kubernetes.io/hostname: {{FREERADIUS_DOMAIN}}
 spec:
   type: LoadBalancer
   selector:

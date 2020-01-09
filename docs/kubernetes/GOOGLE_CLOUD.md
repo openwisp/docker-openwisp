@@ -18,7 +18,7 @@ The steps where performed on master version-1.13.
 5. In `GooglePersistentVolume.yml`: Change storage size according to your needs and create Persistent Volumes for OpenWISP:
 
 ```bash
-kubectl create -f GooglePersistentVolume.yml
+kubeapply --create GooglePersistentVolume.yml
 ```
 
 6. Exec into the nfs-server container and execute the following command:

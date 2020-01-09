@@ -11,7 +11,7 @@ spec:
   storageClassName: "nfs"
   resources:
     requests:
-      storage: 10Gi
+      storage: {{POSTGRES_STORAGE}}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -23,7 +23,7 @@ spec:
   storageClassName: "nfs"
   resources:
     requests:
-      storage: 20Gi
+      storage: {{MEDIA_STORAGE}}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -35,7 +35,7 @@ spec:
   storageClassName: "nfs"
   resources:
     requests:
-      storage: 300Mi
+      storage: {{STATIC_STORAGE}}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -47,7 +47,7 @@ spec:
   storageClassName: "nfs"
   resources:
     requests:
-      storage: 50Mi
+      storage: {{HTML_STORAGE}}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -59,4 +59,4 @@ spec:
   storageClassName: "nfs"
   resources:
     requests:
-      storage: 5Gi
+      storage: {{POSTFIX_STORAGE}}
