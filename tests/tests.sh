@@ -4,7 +4,6 @@ This script will ensure that the following services are running:
 - Django (dashboard)
 - Redis
 - Postfix
-- Websocket
 - Freeradius
 - Celery
 """
@@ -83,7 +82,8 @@ function test_freeradius {
 }
 
 function test_websocket {
-    python $PWD/tests/selenium_tests.py --headless || FAILURE=1
+    # This test ensures that wesocket service is running.
+    python3 $PWD/tests/test_websocket.py || FAILURE=1
 }
 
 function test_celery {
@@ -137,6 +137,7 @@ function init_tests {
     test_celery
     test_dashboard_login
     test_freeradius
+    test_websocket
     if [[ $FAILURE = 1 ]] && [[ $1 = logs ]]; then
         print_services_logs
     fi
@@ -144,5 +145,4 @@ function init_tests {
     if [[ $FAILURE = 1 ]]; then
         exit $FAILURE
     fi
-    test_websocket
 }
