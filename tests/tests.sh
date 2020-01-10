@@ -142,5 +142,4 @@ function init_tests {
     if [[ $FAILURE = 1 ]]; then
         exit $FAILURE
     fi
-    test_websocket
 }

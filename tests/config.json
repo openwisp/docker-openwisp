@@ -1,0 +1,6 @@
+{
+    "headless": true,
+    "app_url": "http://dashboard.openwisp.org",
+    "username": "admin",
+    "password": "admin"
+}
