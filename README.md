@@ -93,29 +93,41 @@ Now you'll need to do steps (2) everytime you make a changes and want to build t
    bash -c 'echo "127.0.0.1 <your-dashboard-domain> <your-controller-domain> <your-radius-domain> <your-topology-domain>" >> /etc/hosts'
    ```
 
-## How to run selenium tests
+## Runtests
 
-   **Step 1**: Install chrome browser:
 
-   Install chrome browser (example for linux debian/ubuntu systems):
+1. Install chrome browser:
 
+   ```bash
       sudo apt-get install google-chrome-stable
+   ```
 
-   **Step 2**: Install chromedriver:
+2. Install chromedriver:
 
-   1. Check version of chrome browser by going to `chrome://settings/help` on your chrome browser
-   2. Download compatible chromedriver for example from: https://chromedriver.chromium.org/downloads
-   3. Extract chromedriver to one of directories from your `$PATH`
+   - Check version of chrome browser by going to `chrome://settings/help` on your chrome browser
+   - Download compatible chromedriver for example from: `https://chromedriver.chromium.org/downloads`
+   - Extract chromedriver to one of directories from your `$PATH`
 
-   **Step 3**: Install selenium using pip:
+3. Install selenium using pip:
 
+   ```bash
       pip install selenium
+   ```
 
-   **Step 4**: Run tests with:
+4. (Optional) Configure: open `tests/runtests.py` and configure variables as per your requirement, options are:
 
-      python tests/selenium_tests.py --headless
+   ```yaml
+      headless: Run selenium chrome driver in headless mode
+      app_url: URL to reach the admin dashboard
+      username: username for logging in admin dashboard
+      password: password for logging in admin dashboard
+   ```
 
-   Alternatively you can run script without `--headless` argument in order to see operations done in UI
+5. Run tests:
+
+   ```bash
+      python test_websocket.py
+   ```
 
 ### Makefile Options
 
