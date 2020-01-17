@@ -18,30 +18,31 @@ RUN apt update && \
     apt install --yes --no-install-recommends gcc libpq-dev && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
-ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller
-ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology
-ARG DJANGO_FREERADIUS_SOURCE=django-freeradius
-ARG OPENWISP_RADIUS_SOURCE=openwisp-radius
-ARG OPENWISP_USERS_SOURCE=openwisp-users
-ARG DJANGO_NETJSONCONFIG_SOURCE=openwisp-users
-ARG DJANGO_NETJSONGRAPH_SOURCE=django-netjsongraph
-ARG DJANGO_X509_SOURCE=django-x509
-ARG OPENWISP_UTILS_SOURCE=openwisp-utils
-
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
+ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.4
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_CONTROLLER_SOURCE}
+ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.2
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_TOPOLOGY_SOURCE}
+ARG DJANGO_FREERADIUS_SOURCE=https://github.com/openwisp/django-freeradius/tarball/79f96a13e65bc95b81d41e643d4f8280bf357caa
 RUN pip install --upgrade --prefix='/install' ${DJANGO_FREERADIUS_SOURCE}
+ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/7150e28ffa985120accac1f47afbae9263c8c140
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_RADIUS_SOURCE}
+ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.1
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_USERS_SOURCE}
+ARG DJANGO_NETJSONCONFIG_SOURCE=django-netjsonconfig~=0.9
 RUN pip install --upgrade --prefix='/install' ${DJANGO_NETJSONCONFIG_SOURCE}
+ARG DJANGO_NETJSONGRAPH_SOURCE=django-netjsongraph~=0.5
 RUN pip install --upgrade --prefix='/install' ${DJANGO_NETJSONGRAPH_SOURCE}
+ARG DJANGO_X509_SOURCE=django-x509~=0.5
 RUN pip install --upgrade --prefix='/install' ${DJANGO_X509_SOURCE}
+ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.4
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_UTILS_SOURCE}
 RUN pip install asgi_redis service_identity django-redis psycopg2 uwsgi sentry-sdk \
-                supervisor celery django-celery-beat redis==2.10.6 \
+                supervisor celery django-celery-beat \
                 --prefix='/install'
+ARG DJANGO_SOURCE=django==2.1
+RUN pip install --upgrade --prefix='/install' ${DJANGO_SOURCE}
 
 FROM SYSTEM
 
