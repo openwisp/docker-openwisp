@@ -151,6 +151,28 @@ Guide to build images again with modification or with different environment vari
 
 Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 
+### Building with your python packages
+
+You can build with your own package by creating a file named `.build.env` in the root of the repository, then set the variables inside `.build.env` file in `<variable>=<value>` format. Multiple variable should be separated in newline. These are the variables that can be changed:
+
+- `OPENWISP_CONTROLLER_SOURCE`
+- `OPENWISP_TOPOLOGY_SOURCE`
+- `OPENWISP_RADIUS_SOURCE`
+- `OPENWISP_USERS_SOURCE`
+- `OPENWISP_UTILS_SOURCE`
+- `DJANGO_SOURCE`
+- `DJANGO_NETJSONCONFIG_SOURCE`
+- `DJANGO_NETJSONGRAPH_SOURCE`
+- `DJANGO_X509_SOURCE`
+- `DJANGO_FREERADIUS_SOURCE`
+
+For example, if you want to supply your own django and openwisp-controller source, your `.build.env` should be written like this:
+
+```
+DJANGO_SOURCE=<your-django-source>
+OPENWISP_CONTROLLER_SOURCE=<your-openwisp-controller-source>
+```
+
 #### Notes:
    - Default username & password are `admin`.
    - Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.

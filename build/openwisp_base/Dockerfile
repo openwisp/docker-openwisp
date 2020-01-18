@@ -20,23 +20,29 @@ RUN apt update && \
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
-RUN pip install https://github.com/openwisp/openwisp-controller/tarball/74600dc85f3ff0d4383c96c54bc00db122292a22 \
-                --upgrade --prefix='/install'
-RUN pip install https://github.com/openwisp/openwisp-network-topology/tarball/417ebec33ee38885501d0915cb7e37a415ed413d \
-                --upgrade --prefix='/install'
-RUN pip install https://github.com/openwisp/django-freeradius/tarball/4fbf6ca98cea726d22dae54a0684c9468fc752a1 \
-                --upgrade --prefix='/install'
-RUN pip install https://github.com/openwisp/openwisp-radius/tarball/af89345626076e27c81168c20daaa98f922223a0 \
-                --upgrade --prefix='/install'
-RUN pip install https://github.com/openwisp/django-netjsonconfig/tarball/ce0a694f1917f8c65baf0b88bb4f8ed014a577a9 \
-                --upgrade --prefix='/install'
-RUN pip install https://github.com/openwisp/django-netjsongraph/tarball/e18e5245724e58f0ef5310f0c57ba5347b8e32e7 \
-                --upgrade --prefix='/install'
-RUN pip install --prefix='/install' --upgrade openwisp-users~=0.1
-RUN pip install --prefix='/install' --upgrade django-x509~=0.5
-RUN pip install --prefix='/install' --upgrade openwisp-utils~=0.3
-RUN pip install --prefix='/install' asgi_redis service_identity django-redis psycopg2 uwsgi sentry-sdk \
-                                    supervisor celery django-celery-beat redis==2.10.6
+ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.4
+RUN pip install --upgrade --prefix='/install' ${OPENWISP_CONTROLLER_SOURCE}
+ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.2
+RUN pip install --upgrade --prefix='/install' ${OPENWISP_TOPOLOGY_SOURCE}
+ARG DJANGO_FREERADIUS_SOURCE=https://github.com/openwisp/django-freeradius/tarball/79f96a13e65bc95b81d41e643d4f8280bf357caa
+RUN pip install --upgrade --prefix='/install' ${DJANGO_FREERADIUS_SOURCE}
+ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/7150e28ffa985120accac1f47afbae9263c8c140
+RUN pip install --upgrade --prefix='/install' ${OPENWISP_RADIUS_SOURCE}
+ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.1
+RUN pip install --upgrade --prefix='/install' ${OPENWISP_USERS_SOURCE}
+ARG DJANGO_NETJSONCONFIG_SOURCE=django-netjsonconfig~=0.9
+RUN pip install --upgrade --prefix='/install' ${DJANGO_NETJSONCONFIG_SOURCE}
+ARG DJANGO_NETJSONGRAPH_SOURCE=django-netjsongraph~=0.5
+RUN pip install --upgrade --prefix='/install' ${DJANGO_NETJSONGRAPH_SOURCE}
+ARG DJANGO_X509_SOURCE=django-x509~=0.5
+RUN pip install --upgrade --prefix='/install' ${DJANGO_X509_SOURCE}
+ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.4
+RUN pip install --upgrade --prefix='/install' ${OPENWISP_UTILS_SOURCE}
+RUN pip install asgi_redis service_identity django-redis psycopg2 uwsgi sentry-sdk \
+                supervisor celery django-celery-beat \
+                --prefix='/install'
+ARG DJANGO_SOURCE=django==2.1
+RUN pip install --upgrade --prefix='/install' ${DJANGO_SOURCE}
 
 FROM SYSTEM
 

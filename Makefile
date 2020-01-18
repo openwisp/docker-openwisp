@@ -10,14 +10,20 @@ python-build: build.py
 	python build.py change-secret-key
 
 build-base:
+	BUILD_ARGS_FILE=$$(cat .build.env 2>/dev/null); \
+	for build_arg in $$BUILD_ARGS_FILE; do \
+		BUILD_ARGS+="--build-arg $$build_arg "; \
+	done; \
 	docker build --tag openwisp/openwisp-base:intermedia-system \
 	             --file ./build/openwisp_base/Dockerfile \
-	             --target SYSTEM ./build/
+	             --target SYSTEM ./build/; \
 	docker build --tag openwisp/openwisp-base:intermedia-python \
 	             --file ./build/openwisp_base/Dockerfile \
-	             --target PYTHON ./build/
+	             --target PYTHON ./build/ \
+	             $$BUILD_ARGS; \
 	docker build --tag openwisp/openwisp-base:latest \
-	             --file ./build/openwisp_base/Dockerfile ./build/
+	             --file ./build/openwisp_base/Dockerfile ./build/ \
+	             $$BUILD_ARGS
 
 compose-build: python-build build-base
 	docker-compose build --parallel
