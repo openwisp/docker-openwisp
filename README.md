@@ -108,25 +108,27 @@ Now you'll need to do steps (2) everytime you make a changes and want to build t
    - Download compatible chromedriver for example from: `https://chromedriver.chromium.org/downloads`
    - Extract chromedriver to one of directories from your `$PATH`
 
-3. Install selenium using pip:
+3. Install test requirements using pip:
 
    ```bash
       pip install selenium
    ```
 
-4. (Optional) Configure: open `tests/runtests.py` and configure variables as per your requirement, options are:
+4. (Optional) Configure: open `tests/config.json` and configure variables as per your requirement, options are:
 
    ```yaml
       headless: Run selenium chrome driver in headless mode
       app_url: URL to reach the admin dashboard
       username: username for logging in admin dashboard
       password: password for logging in admin dashboard
+      services_max_retries: Maximum number of retries to check if services are running
+      services_delay_retries: Delay time (in seconds) to each retries for checking if services are running
    ```
 
 5. Run tests:
 
    ```bash
-      python test_websocket.py
+      python tests/tests.py
    ```
 
 ### Makefile Options

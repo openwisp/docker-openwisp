@@ -20,7 +20,7 @@ before_script:
   - unzip chromedriver_linux64.zip -d /home/travis/bin
 
 install:
-  - pip install selenium
+  - pip install -r requirements-test.txt
 
 jobs:
   include:

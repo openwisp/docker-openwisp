@@ -40,15 +40,7 @@ function print_services_logs {
 
 function test_admin_login {
     # This function is used to login into django-admin
-    # It creates the cookie.txt file that containes CSRF
-    # token and session ID.
-    $CURL_BIN ${APP_URL}/admin/login/ > /dev/null
-    DJANGO_TOKEN="csrfmiddlewaretoken=$(grep csrftoken $COOKIES | \
-                    sed 's/^.*csrftoken[[:blank:]]*//')"
-    $CURL_BIN -d "$DJANGO_TOKEN;username=$USERNAME;password=$PASSWORD" \
-                -X POST --dump-header - ${APP_URL}/admin/login/ | grep -q "302 Found" && \
-                { echo "SUCCESS: Login request acknowledgement received!"; } || \
-                { echo "ERROR: Login request acknowledgement not received!"; FAILURE=1; }
+    python3 $PWD/tests/tests.py TestServices.test_admin_login || FAILURE=1
 }
 
 function test_dashboard_login {
@@ -92,19 +84,7 @@ function test_celery {
 function wait_for_services {
     # Wait for services to start up and then check
     # if the openwisp-dashboard is reachable.
-    FAILURE=1
-    for ((i=1;i<=10;i++)); do
-        curl -s --head ${APP_URL}/admin/login/ | grep -q "200 OK"
-        if [[ $? = "0" ]]; then
-            echo "SUCCESS: openwisp-dashboard login page reachable!"
-            FAILURE=0
-            break
-        fi
-        sleep 5
-    done
-    if [[ $FAILURE = 1 ]]; then
-        echo "ERROR: openwisp-dashboard login page not reachable!"
-    fi
+    python3 $PWD/tests/tests.py Pretest || FAILURE=1
 }
 
 function pre_tests {

@@ -1,8 +1,25 @@
+import os
+import json
 import unittest
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 
 
 class TestUtilities(unittest.TestCase):
+    def setUp(self):
+        config_file = os.path.join(os.path.dirname(__file__), "config.json")
+        with open(config_file) as json_file:
+            self.config = json.load(json_file)
+        self.chrome_options = Options()
+        self.chrome_options.add_argument('--ignore-certificate-errors')
+        if self.config['headless']:
+            self.chrome_options.add_argument("--headless")
+        self.base_driver = webdriver.Chrome(options=self.chrome_options)
+
+    def cleanUp(self):
+        self.base_driver.close()
+
     def log_in(self, driver, app_url, username, password):
         """
         Log in to the admin dashboard
