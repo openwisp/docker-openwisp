@@ -2,5 +2,7 @@
     "headless": true,
     "app_url": "http://dashboard.openwisp.org",
     "username": "admin",
-    "password": "admin"
+    "password": "admin",
+    "services_max_retries": 10,
+    "services_delay_retries": 5
 }
