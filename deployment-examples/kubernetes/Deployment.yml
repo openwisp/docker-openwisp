@@ -19,22 +19,24 @@ spec:
           - configMapRef:
               name: common-config
         volumeMounts:
-          - mountPath: /opt/openwisp/static
-            name: openwisp-dashboard-static
-          - mountPath: /opt/openwisp/media
-            name: openwisp-media-data
-          - mountPath: /opt/openwisp/public_html
-            name: openwisp-html-data
+          - name: openwisp-static-data
+            mountPath: /opt/openwisp/static
+          - name: openwisp-media-data
+            mountPath: /opt/openwisp/media
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
       volumes:
         - name: openwisp-media-data
           persistentVolumeClaim:
             claimName: media-pv-claim
-        - name: openwisp-dashboard-static
+        - name: openwisp-static-data
           persistentVolumeClaim:
             claimName: static-pv-claim
-        - name: openwisp-html-data
-          persistentVolumeClaim:
-            claimName: html-pv-claim
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -55,23 +57,13 @@ spec:
         envFrom:
           - configMapRef:
               name: common-config
-        volumeMounts:
-          - mountPath: /opt/openwisp/static
-            name: openwisp-controller-static
-          - mountPath: /opt/openwisp/media
-            name: openwisp-media-data
-          - mountPath: /opt/openwisp/public_html
-            name: openwisp-html-data
-      volumes:
-        - name: openwisp-media-data
-          persistentVolumeClaim:
-            claimName: media-pv-claim
-        - name: openwisp-controller-static
-          persistentVolumeClaim:
-            claimName: static-pv-claim
-        - name: openwisp-html-data
-          persistentVolumeClaim:
-            claimName: html-pv-claim
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -92,18 +84,13 @@ spec:
         envFrom:
           - configMapRef:
               name: common-config
-        volumeMounts:
-          - mountPath: /opt/openwisp/static
-            name: openwisp-radius-static
-          - mountPath: /opt/openwisp/public_html
-            name: openwisp-html-data
-      volumes:
-        - name: openwisp-radius-static
-          persistentVolumeClaim:
-            claimName: static-pv-claim
-        - name: openwisp-html-data
-          persistentVolumeClaim:
-            claimName: html-pv-claim
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -125,17 +112,19 @@ spec:
           - configMapRef:
               name: common-config
         volumeMounts:
-          - mountPath: /opt/openwisp/static
-            name: openwisp-topology-static
-          - mountPath: /opt/openwisp/public_html
-            name: openwisp-html-data
+          - name: openwisp-static-data
+            mountPath: /opt/openwisp/static
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /opt/openwisp/uwsgi.pid
+          initialDelaySeconds: 60
+          periodSeconds: 30
       volumes:
-        - name: openwisp-topology-static
+        - name: openwisp-static-data
           persistentVolumeClaim:
             claimName: static-pv-claim
-        - name: openwisp-html-data
-          persistentVolumeClaim:
-            claimName: html-pv-claim
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -194,19 +183,32 @@ spec:
       containers:
       - name: openwisp-nginx
         image: openwisp/openwisp-nginx:latest
+        ports:
+          - containerPort: 443
+          - containerPort: 80
         imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: common-config
         volumeMounts:
-          - mountPath: /opt/openwisp/static
-            name: openwisp-nginx-static
-          - mountPath: /opt/openwisp/media
-            name: openwisp-media-data
-          - mountPath: /opt/openwisp/public_html
-            name: openwisp-html-data
+          - name: openwisp-static-data
+            mountPath: /opt/openwisp/static
+            readOnly: true
+          - name: openwisp-media-data
+            mountPath: /opt/openwisp/media
+            readOnly: true
+          - name: openwisp-html-data
+            mountPath: /opt/openwisp/public_html
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          failureThreshold: 2
+          successThreshold: 2
       volumes:
-        - name: openwisp-nginx-static
+        - name: openwisp-static-data
           persistentVolumeClaim:
             claimName: static-pv-claim
         - name: openwisp-media-data
@@ -264,11 +266,11 @@ spec:
                 name: common-config
           volumeMounts:
             - mountPath: /etc/ssl/mail
-              name: openwisp-postfix-data
+              name: openwisp-certs-data
       volumes:
-        - name: openwisp-postfix-data
+        - name: openwisp-certs-data
           persistentVolumeClaim:
-            claimName: postfix-pv-claim
+            claimName: certs-pv-claim
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment

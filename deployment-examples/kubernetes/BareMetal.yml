@@ -1,0 +1,48 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nfs-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: nfs-server
+  template:
+    metadata:
+      labels:
+        role: nfs-server
+    spec:
+      nodeSelector:
+        volume: nfs-server
+      containers:
+      - name: nfs-server
+        image: openwisp/openwisp-nfs:latest
+        envFrom:
+          - configMapRef:
+              name: nfs-config
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /exports/
+            name: persistent-disk
+      volumes:
+      - name: persistent-disk
+        hostPath:
+          path: /exports/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openwisp-nginx
+  labels:
+    app: openwisp-nginx
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+    - name: https
+      port: 443
+  selector:
+   app: openwisp-nginx
