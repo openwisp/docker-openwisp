@@ -13,7 +13,8 @@ jobs:
   include:
     - stage: tests
       script:
-      - export hosts="127.0.0.1 dashboard.openwisp.org controller.openwisp.org \
+      - export hosts="127.0.0.1 dashboard.openwisp.org controller.openwisp.org
                                 radius.openwisp.org topology.openwisp.org"
       - sudo bash -c 'echo "${hosts}" >> /etc/hosts'
+      - make compose-build
       - make develop-runtests
