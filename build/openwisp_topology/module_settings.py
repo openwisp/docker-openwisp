@@ -10,6 +10,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'corsheaders',
     # openwisp modules
     'openwisp_users',
     'openwisp_network_topology',

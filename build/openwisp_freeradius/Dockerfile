@@ -25,5 +25,6 @@ ENV TZ=UTC \
     FREERADIUS_KEY=testing123 \
     FREERADIUS_CLIENTS=0.0.0.0/0 \
     FREERADIUS_ORGANIZATION=default \
-    DASHBOARD_URI=http://dashboard-internal \
+    DASHBOARD_INTERNAL=dashboard.internal \
+    RADIUS_INTERNAL=radius.internal \
     DEBUG_MODE=False

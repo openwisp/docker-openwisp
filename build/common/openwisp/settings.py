@@ -2,15 +2,18 @@ import os
 import sys
 import json
 
-from openwisp.utils import env_bool
+from openwisp.utils import env_bool, request_scheme
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
+
 ALLOWED_HOSTS = [
     'localhost',
-    'dashboard-internal',
-    'controller-internal',
+    os.environ['DASHBOARD_INTERNAL'],
+    os.environ['CONTROLLER_INTERNAL'],
+    os.environ['RADIUS_INTERNAL'],
+    os.environ['TOPOLOGY_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 AUTH_USER_MODEL = 'openwisp_users.User'
@@ -18,7 +21,14 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = 'admin:index'
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
 ROOT_URLCONF = 'openwisp.urls'
-CORS_ORIGIN_ALLOW_ALL = env_bool(os.environ['DJANGO_CORS_ORIGIN_ALLOW_ALL'])
+
+# CORS
+CORS_ORIGIN_WHITELIST = [
+    f'{request_scheme()}://{os.environ["DASHBOARD_DOMAIN"]}',
+    f'{request_scheme()}://{os.environ["CONTROLLER_DOMAIN"]}',
+    f'{request_scheme()}://{os.environ["RADIUS_DOMAIN"]}',
+    f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}',
+] + os.environ['DJANGO_CORS_HOSTS'].split(',')
 
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -27,6 +37,7 @@ STATICFILES_FINDERS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -53,11 +64,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'openwisp_utils.admin_theme.context_processor.menu_items'
             ],
         },
     },
 ]
+
+if 'MODULE_NAME' == 'dashboard':
+    TEMPLATES[0]['OPTIONS']['context_processors'] \
+        .append('openwisp_utils.admin_theme.context_processor.menu_items')
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
@@ -181,7 +195,8 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '\n[%(host)s] - %(levelname)s, time: [%(asctime)s], process: %(process)d, thread: %(thread)d\n%(message)s'
+            'format': ('\n[%(host)s] - %(levelname)s, time: [%(asctime)s],'
+                       'process: %(process)d, thread: %(thread)d\n%(message)s')
         },
     },
     'handlers': {

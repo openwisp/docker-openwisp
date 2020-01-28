@@ -1,6 +1,6 @@
 rest {
     tls = {}
-    connect_uri = "$ENV{DASHBOARD_URI}"
+    connect_uri = "http://$ENV{RADIUS_INTERNAL}"
     authorize {
         uri = "${..connect_uri}/api/v1/authorize/"
         method = 'post'

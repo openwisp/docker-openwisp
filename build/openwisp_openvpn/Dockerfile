@@ -7,7 +7,8 @@ EXPOSE 1194
 
 ENV MODULE_NAME=openvpn \
     DASHBOARD_APP_SERVICE=dashboard \
-    DASHBOARD_URI=http://dashboard-internal \
+    DASHBOARD_INTERNAL=dashboard.internal \
+    CONTROLLER_INTERNAL=controller.internal \
     DB_NAME=openwisp_db \
     TZ=UTC \
     DB_USER=admin \

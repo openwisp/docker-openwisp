@@ -11,6 +11,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'corsheaders',
     'openwisp_users',
     # admin
     'django.contrib.admin',
