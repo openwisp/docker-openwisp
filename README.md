@@ -122,7 +122,7 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 Most commonly used:
 - `develop`: Bundles all the commands required to build the images and run containers.
 - `runtests`: Run testcases to ensure all the services are working.
-- `publish`: Build, test and publish the latest official images.
+- `publish` <USER=docker-username> <TAG=image-tag>: Build, test and publish images.
 - `clean`: Aggressively purge all the containers, images, volumes & networks related to `docker-openwisp`.
 
 Other options:
