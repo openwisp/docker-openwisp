@@ -11,25 +11,28 @@ class HostFilter(logging.Filter):
         record.host = socket.gethostname()
         return True
 
+
 def env_bool(env):
     return env in ["True", "true", "TRUE"]
 
-# Setting correct urlpatterns for the
-# modules -- used in urls.py
+
 def openwisp_topology_urls():
-    from openwisp_network_topology.urls import urlpatterns as network_topology_urls
+    # Setting correct urlpatterns for the
+    # modules -- used in urls.py
+    from openwisp_network_topology.urls import urlpatterns as nt_urls
     exclude = ["openwisp_users.accounts.urls"]
-    for url in network_topology_urls[:]:
+    for url in nt_urls[:]:
         if url.urlconf_module.__name__ in exclude:
-            network_topology_urls.remove(url)
-    return network_topology_urls
+            nt_urls.remove(url)
+    return nt_urls
 
 
 def openwisp_controller_urls():
+    # Setting correct urlpatterns for the
+    # modules -- used in urls.py
     from openwisp_controller.urls import urlpatterns as controller_urls
     exclude = ["openwisp_users.accounts.urls"]
     for url in controller_urls[:]:
         if url.urlconf_module.__name__ in exclude:
             controller_urls.remove(url)
     return controller_urls
-

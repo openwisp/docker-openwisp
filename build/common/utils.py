@@ -1,7 +1,4 @@
 import socket
-import sys
-from http.server import BaseHTTPRequestHandler
-from socketserver import TCPServer
 from urllib.parse import urlsplit
 import ctypes
 
@@ -125,7 +122,8 @@ def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
     return b''.join(response).decode('utf8')
 
 
-def uwsgi_curl(uwsgi_addr, url='localhost', method='GET', body='', timeout=0, headers=(),
+def uwsgi_curl(uwsgi_addr, url='localhost', method='GET',
+               body='', timeout=0, headers=(),
                udp=False):
     host, uri = get_host_from_url(url)
     parts_uri = urlsplit(uri)

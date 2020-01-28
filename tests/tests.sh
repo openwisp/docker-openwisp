@@ -127,8 +127,11 @@ function wait_for_services {
 
 function pre_tests {
     # Functions need to performed before tests.
-    docker pull 2stacks/radtest &>> $PRE_LOGS
-    docker-compose run --rm -v $PWD/tests/pre_tests.py:/opt/openwisp/pre_tests.py dashboard python pre_tests.py &>> $PRE_LOGS
+    docker pull 2stacks/radtest:latest &>> $PRE_LOGS
+    docker-compose run --rm \
+                       --entrypoint 'python manage.py shell --command="import pre_tests; pre_tests.setup()"' \
+                       --volume $PWD/tests/pre_tests.py:/opt/openwisp/pre_tests.py \
+                       dashboard &>> $PRE_LOGS
     docker-compose up -d freeradius &>> $PRE_LOGS
 }
 

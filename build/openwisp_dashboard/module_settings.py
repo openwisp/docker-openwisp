@@ -1,4 +1,3 @@
-import os
 from openwisp.controller_settings import *
 from openwisp.radius_settings import *
 from openwisp.topology_settings import *

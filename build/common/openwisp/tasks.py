@@ -17,9 +17,11 @@ def radius_tasks():
     management.call_command("delete_old_users",
                             older_than_months=int(os.environ['CRON_DELETE_OLD_USERS']))
 
+
 @shared_task
 def save_snapshot():
     management.call_command("save_snapshot")
+
 
 @shared_task
 def update_topology():

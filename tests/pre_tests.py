@@ -1,14 +1,8 @@
 # Initial data for running the tests
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
-
-import os
-import django
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
-django.setup()
-User = get_user_model()
+from openwisp_radius.models import (OrganizationRadiusSettings, RadiusGroup,
+                                    RadiusUserGroup)
+from openwisp_users.models import Organization, OrganizationUser, User
 
 
 def get_organization():
@@ -76,12 +70,14 @@ def create_default_radiusUser(admin, radGroup):
     return radiusUser
 
 
-if __name__ == "__main__":
-    from openwisp_users.models import OrganizationUser, Organization
-    from openwisp_radius.models import RadiusUserGroup, RadiusGroup, OrganizationRadiusSettings
+def setup():
     defOrg = get_organization()
     admin = get_admin()
     radGroup = get_default_radius_group()
     create_default_organizationUser(defOrg, admin)
     create_default_radiusUser(admin, radGroup)
     set_default_radius_token(defOrg)
+
+
+if __name__ == "__main__":
+    setup()
