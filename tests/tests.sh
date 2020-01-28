@@ -151,7 +151,7 @@ function init_tests {
     test_dashboard_login
     test_websocket
     test_freeradius
-    if [[ $FAILURE = 1 ]] && [[ $1 = logs ]]; then
+    if [[ $FAILURE = 1 ]] && [[ $TRAVIS ]]; then
         print_services_logs
     fi
     rm $COOKIES $PRE_LOGS

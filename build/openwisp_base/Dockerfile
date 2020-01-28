@@ -20,23 +20,23 @@ RUN apt update && \
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
-ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.4
+ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.4.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_CONTROLLER_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.2
+ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.2.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_TOPOLOGY_SOURCE}
 ARG DJANGO_FREERADIUS_SOURCE=https://github.com/openwisp/django-freeradius/tarball/79f96a13e65bc95b81d41e643d4f8280bf357caa
 RUN pip install --upgrade --prefix='/install' ${DJANGO_FREERADIUS_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/7150e28ffa985120accac1f47afbae9263c8c140
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_RADIUS_SOURCE}
-ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.1
+ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.1.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_USERS_SOURCE}
-ARG DJANGO_NETJSONCONFIG_SOURCE=django-netjsonconfig~=0.9
+ARG DJANGO_NETJSONCONFIG_SOURCE=django-netjsonconfig~=0.9.0
 RUN pip install --upgrade --prefix='/install' ${DJANGO_NETJSONCONFIG_SOURCE}
-ARG DJANGO_NETJSONGRAPH_SOURCE=django-netjsongraph~=0.5
+ARG DJANGO_NETJSONGRAPH_SOURCE=django-netjsongraph~=0.5.0
 RUN pip install --upgrade --prefix='/install' ${DJANGO_NETJSONGRAPH_SOURCE}
-ARG DJANGO_X509_SOURCE=django-x509~=0.5
+ARG DJANGO_X509_SOURCE=django-x509~=0.5.0
 RUN pip install --upgrade --prefix='/install' ${DJANGO_X509_SOURCE}
-ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.4
+ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.4.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_UTILS_SOURCE}
 RUN pip install asgi_redis service_identity django-redis psycopg2 uwsgi sentry-sdk \
                 supervisor celery django-celery-beat \

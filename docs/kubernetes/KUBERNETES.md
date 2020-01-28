@@ -5,10 +5,12 @@
 
 1. Configure your domain with following A records, point your static IP to:
 
-  - dashboard.<your.domain>
-  - controller.<your.domain>
-  - radius.<your.domain>
-  - topology.<your.domain>
+```
+  dashboard.<your.domain>    --Public-IP--
+  controller.<your.domain>   --Public-IP--
+  radius.<your.domain>       --Public-IP--
+  topology.<your.domain>     --Public-IP--
+```
 
 2. (Optional) Postfix mail relay server (Example: Mailjet, Pepipost, Sendgrid, Mandrill)
 
@@ -23,7 +25,6 @@ kubectl apply -f ConfigMap.yml
 kubectl apply -f Storage.yml
 kubectl apply -f Service.yml
 kubectl apply -f Deployment.yml
-kubectl apply -f CertManager.yml
 ```
 
 5. Each Loadbalancer creates/assigns an IP address, add it to your DNS:
