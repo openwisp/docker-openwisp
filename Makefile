@@ -57,7 +57,13 @@ clean:
 				`docker images -f "dangling=true" -q`
 
 # Publish
+USER = openwisp
+TAG  = latest
 publish: compose-build runtests nfs-build
-	docker push openwisp/openwisp-nfs:latest
-	docker push openwisp/openwisp-base:latest
-	docker-compose push
+	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-controller' 'openwisp-dashboard' \
+				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
+				 'openwisp-radius' 'openwisp-topology' 'openwisp-websocket' ; do \
+		docker tag openwisp/$${image}:latest  $(USER)/$${image}:$(TAG); \
+		docker push $(USER)/$${image}:$(TAG); \
+		docker push $(USER)/$${image}:latest; \
+	done
