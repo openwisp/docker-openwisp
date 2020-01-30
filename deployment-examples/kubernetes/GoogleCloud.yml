@@ -37,7 +37,7 @@ metadata:
   labels:
     app: openwisp-nginx
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - name: http
       port: 80
