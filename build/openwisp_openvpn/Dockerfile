@@ -1,17 +1,15 @@
 FROM kylemanna/openvpn:latest
 
-RUN apk add --no-cache postgresql-client supervisor && \
+RUN apk add --no-cache tzdata postgresql-client supervisor && \
     rm -rf /var/cache/apk/* /tmp/*
 CMD ["sh", "init_command.sh"]
-
-COPY ./common/init_command.sh \
-    ./common/utils.sh \
-    ./openwisp_openvpn/ ./
+EXPOSE 1194
 
 ENV MODULE_NAME=openvpn \
     DASHBOARD_APP_SERVICE=dashboard \
     DASHBOARD_URI=http://dashboard-internal \
     DB_NAME=openwisp_db \
+    TZ=UTC \
     DB_USER=admin \
     DB_PASS=admin \
     DB_HOST=postgres \
@@ -20,4 +18,6 @@ ENV MODULE_NAME=openvpn \
     VPN_NAME=default \
     VPN_ORG=default
 
-EXPOSE 1194
+COPY ./common/init_command.sh \
+    ./common/utils.sh \
+    ./openwisp_openvpn/ ./

@@ -18,6 +18,8 @@ spec:
         image: openwisp/openwisp-nfs:latest
         envFrom:
           - configMapRef:
+              name: common-config
+          - configMapRef:
               name: nfs-config
         securityContext:
           privileged: true

@@ -13,8 +13,7 @@ data:
   POSTGRES_USER: admin
   POSTGRES_PASSWORD: admin
 ---
-# Pass the environment variables to all the openwisp containers
-# where the values are applicable except the postgres instance.
+# Pass the environment variables to all the openwisp containers.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,6 +24,7 @@ data:
   CONTROLLER_DOMAIN: controller.openwisp.org
   RADIUS_DOMAIN: radius.openwisp.org
   TOPOLOGY_DOMAIN: topology.openwisp.org
+  VPN_DOMAIN: openvpn.openwisp.org
   NGINX_SERVER_NAME_HASH_BUCKET: "64"
   SSL_CERT_MODE: "False"
   DEBUG_MODE: "False"

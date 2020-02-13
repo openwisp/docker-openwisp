@@ -6,9 +6,6 @@
 
 set -ex
 
-: ${EXPORT_DIR:="/exports"}
-: ${EXPORT_OPTS:="10.0.0.0/8(rw,fsid=0,insecure,no_root_squash,no_subtree_check,sync)"}
-
 mkdir -p $EXPORT_DIR/postfix $EXPORT_DIR/postgres $EXPORT_DIR/static $EXPORT_DIR/media $EXPORT_DIR/html
 echo "$EXPORT_DIR   $EXPORT_OPTS" > /etc/exports
 

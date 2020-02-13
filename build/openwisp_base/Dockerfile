@@ -89,9 +89,10 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     FREERADIUS_ORGANIZATION=default \
     DASHBOARD_URI=http://dashboard-internal \
     # VPN Configurations
+    VPN_DOMAIN=openvpn.example.com \
     VPN_NAME=default \
     VPN_ORG=default \
-    VPN_CLIENT_NAME="Default Management Vpn" \
+    VPN_CLIENT_NAME=default-management-vpn \
     X509_NAME_CA=default \
     X509_NAME_CERT=default \
     X509_COUNTRY_CODE=IN \
@@ -101,7 +102,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     X509_ORGANIZATION_UNIT_NAME=OpenWISP \
     X509_EMAIL=certificate@example.com \
     X509_COMMON_NAME=OpenWISP \
-    # Celery-beat cron Configurations
+    # Celery-beat Configurations
     CRON_DELETE_OLD_RADACCT=365 \
     CRON_DELETE_OLD_POSTAUTH=365 \
     CRON_CLEANUP_STALE_RADACCT=365 \
