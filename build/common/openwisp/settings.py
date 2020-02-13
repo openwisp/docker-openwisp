@@ -4,21 +4,16 @@ import json
 
 from openwisp.utils import env_bool
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
-
-ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS'].split(",")
+ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 AUTH_USER_MODEL = 'openwisp_users.User'
 SITE_ID = 1
 LOGIN_REDIRECT_URL = 'admin:index'
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
+ROOT_URLCONF = 'openwisp.urls'
 CORS_ORIGIN_ALLOW_ALL = env_bool(os.environ['DJANGO_CORS_ORIGIN_ALLOW_ALL'])
 
 STATICFILES_FINDERS = [
@@ -36,8 +31,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-ROOT_URLCONF = 'openwisp.urls'
 
 TEMPLATES = [
     {
@@ -64,11 +57,11 @@ TEMPLATES = [
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
-ASGI_APPLICATION = 'openwisp.asgi.channel_layer'
+ASGI_APPLICATION = 'openwisp_controller.geo.channels.routing.channel_routing'
 
 REDIS_HOST = os.environ['REDIS_HOST']
 CELERY_BROKER_URL = 'redis://'+REDIS_HOST+':6379/1'
@@ -93,9 +86,8 @@ DATABASES = {
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'asgi_redis.RedisChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {'hosts': [(REDIS_HOST, 6379)]},
-        'ROUTING': 'openwisp_controller.geo.channels.routing.channel_routing',
     },
 }
 
@@ -103,11 +95,11 @@ CHANNEL_LAYERS = {
 # https://docs.djangoproject.com/en/2.2/ref/settings/#caches
 
 CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://"+REDIS_HOST+":6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://'+REDIS_HOST+':6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
     }
 }
@@ -116,11 +108,11 @@ CACHES = {
 # https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration
 
 LEAFLET_CONFIG = {
-    "DEFAULT_CENTER": [
+    'DEFAULT_CENTER': [
         int(os.environ['DJANGO_LEAFET_CENTER_X_AXIS']),
         int(os.environ['DJANGO_LEAFET_CENTER_Y_AXIS']),
     ],
-    "DEFAULT_ZOOM": int(os.environ['DJANGO_LEAFET_ZOOM']),
+    'DEFAULT_ZOOM': int(os.environ['DJANGO_LEAFET_ZOOM']),
 }
 
 # Password validation
