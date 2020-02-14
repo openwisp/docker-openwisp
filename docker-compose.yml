@@ -28,9 +28,6 @@ services:
         CONTROLLER_APP_PORT: $CONTROLLER_APP_PORT
     env_file:
       - .env
-    volumes:
-      - openwisp_media:/opt/openwisp/media
-      - public_html:/opt/openwisp/public_html
     depends_on:
       - postgres
       - redis
@@ -63,28 +60,15 @@ services:
       - dashboard
 
   websocket:
-    command: /opt/openwisp/worker.conf
-    image: openwisp/openwisp-websocket:latest
-    env_file:
-      - .env
-    depends_on:
-      - daphne
-
-  daphne:
-    command: /opt/openwisp/daphne.conf
     image: openwisp/openwisp-websocket:latest
     build:
       context: build
       dockerfile: openwisp_websocket/Dockerfile
       args:
         WEBSOCKET_APP_PORT: $WEBSOCKET_APP_PORT
-    environment:
-      - MODULE_NAME=daphne
     env_file:
       - .env
     depends_on:
-      - redis
-      - postgres
       - dashboard
 
   nginx:
@@ -111,7 +95,7 @@ services:
       - controller
       - radius
       - topology
-      - daphne
+      - websocket
 
   celery:
     image: openwisp/openwisp-dashboard:latest

@@ -12,7 +12,7 @@ python-build: build.py
 base-build:
 	BUILD_ARGS_FILE=$$(cat .build.env 2>/dev/null); \
 	for build_arg in $$BUILD_ARGS_FILE; do \
-	    BUILD_ARGS+="--build-arg $$build_arg "; \
+	    BUILD_ARGS+=" --build-arg $$build_arg"; \
 	done; \
 	docker build --tag openwisp/openwisp-base:intermedia-system \
 	             --file ./build/openwisp_base/Dockerfile \

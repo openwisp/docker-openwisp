@@ -82,23 +82,6 @@ function test_freeradius {
             { echo "ERROR: Freeradius service did not respond!"; FAILURE=1; }
 }
 
-function test_websocket {
-    # This test ensures that wesocket service is running
-    # correctly by trying to reach \ws location in nginx.
-    $CURL_BIN -I -X GET --include \
-                        --no-buffer \
-                        --header "Connection: Upgrade" \
-                        --header "Upgrade: websocket" \
-                        --header "Origin: ${APP_URL}" \
-                        --header "Sec-WebSocket-Key: x3JJHMbDL1EzLkh9GBhXDw==" \
-                        --header "Sec-WebSocket-Version: 13" \
-               ${APP_URL}/ws/ | \
-        grep -q "101 Switching Protocols" && \
-        { echo "SUCCESS: Websocket service is working!"; } || \
-        { echo "ERROR: Websocket service did not respond!" \
-               "(You may want to increase test timeout)"; FAILURE=1; }
-}
-
 function test_celery {
     # This test ensures that celery status returns "OK".
     echo `docker-compose run --rm celery celery -A openwisp status 2> /dev/null` | \
