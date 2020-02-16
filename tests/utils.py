@@ -1,137 +1,180 @@
-import os
 import json
-import unittest
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException
+import os
 
 
-class TestUtilities(unittest.TestCase):
-    def setUp(self):
-        config_file = os.path.join(os.path.dirname(__file__), "config.json")
-        with open(config_file) as json_file:
-            self.config = json.load(json_file)
-        self.chrome_options = Options()
-        self.chrome_options.add_argument('--ignore-certificate-errors')
-        if self.config['headless']:
-            self.chrome_options.add_argument("--headless")
-        self.base_driver = webdriver.Chrome(options=self.chrome_options)
+class TestConfig(object):
+    """
+    Get the configurations that are to be used for all the tests.
+    """
+    config_file = os.path.join(os.path.dirname(__file__), "config.json")
+    root_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
+    with open(config_file) as json_file:
+        config = json.load(json_file)
 
-    def cleanUp(self):
-        self.base_driver.close()
 
-    def log_in(self, driver, app_url, username, password):
+class TestUtilities(TestConfig):
+    """
+    Utility functions that are used during testing.
+    """
+
+    objects_to_delete = []
+
+    def login(self, username=None, password=None, driver=None):
         """
         Log in to the admin dashboard
         Argument:
-            driver: selenium driver
-            app_url: domain to reach admin dashboard
-                        example: http://dashboard.openwisp.org
-            username: username to be used for login
-            password: password to be used for login
+            driver: selenium driver (default: cls.base_driver)
+            username: username to be used for login (default: cls.config['username'])
+            password: password to be used for login (default: cls.config['password'])
         """
-        driver.get(app_url + '/admin/login/')
-        if 'admin/login' not in driver.current_url:
-            return
-        username_input = driver.find_element_by_name('username')
-        password_input = driver.find_element_by_name('password')
-        username_input.send_keys(username)
-        password_input.send_keys(password)
-        log_in_button = \
-            (driver.find_element_by_class_name('submit-row')
-                   .find_element_by_xpath('//input[@type="submit"]'))
-        log_in_button.click()
-        try:
-            driver.find_element_by_class_name('logout')
-        except NoSuchElementException:
-            message = 'Login failed. Credentials used were username:' \
-                      '{} & Password: {}'.format(username, password)
+        if not driver:
+            driver = self.base_driver
+        if not username:
+            username = self.config['username']
+        if not password:
+            password = self.config['password']
+        driver.get(self.config['app_url'] + '/admin/login/')
+        if 'admin/login' in driver.current_url:
+            driver.find_element_by_name('username').send_keys(username)
+            driver.find_element_by_name('password').send_keys(password)
+            driver.find_element_by_xpath("//input[@type='submit']").click()
 
-            self.fail(message)
+    def create_superuser(self, email='test@user.com',
+                         username='test_superuser',
+                         password='randomPassword01!',
+                         driver=None):
+        """
+        Create new superuser
+        Argument:
+            email: password for user (default: randomPassword01!)
+            username: username for user (default: test_superuser)
+            password: password for user (default: randomPassword01!)
+            driver: selenium driver (default: cls.base_driver)
+        """
+        if not driver:
+            driver = self.base_driver
+        driver.get(self.config['app_url'] + '/admin/openwisp_users/user/add/')
+        driver.find_element_by_name('username').send_keys(username)
+        driver.find_element_by_name('email').send_keys(email)
+        driver.find_element_by_name('password1').send_keys(password)
+        driver.find_element_by_name('password2').send_keys(password)
+        driver.find_element_by_name('is_superuser').click()
+        driver.find_element_by_name('_save').click()
+        self.objects_to_delete.append(driver.current_url)
+        driver.find_element_by_name('_save').click()
 
-    def get_error_js_logs(self, driver):
+    def get_resource(self, resource_name, path,
+                     select_field='field-name', driver=None):
+        """
+        Redirect to resource's change form page.
+        Argument:
+            resource_name: username of user to use for operation (example: 'users')
+            path: path to the resource. (example: '/admin/openwisp_users/user/')
+            select_field: field used to select the resource. (default: 'field-name')
+            driver: selenium driver (default: cls.base_driver)
+        """
+        if not driver:
+            driver = self.base_driver
+        driver.get('{}{}'.format(self.config['app_url'], path))
+        resources = driver.find_elements_by_class_name(select_field)
+        for resource in resources:
+            if len(resource.find_elements_by_link_text(resource_name)):
+                resource.find_element_by_link_text(resource_name).click()
+                break
+
+    def select_resource(self, name, driver=None):
+        """
+        Select checkbox of a resource with resource name.
+        Argument:
+            name: name of the resource to select
+            driver: selenium driver (default: cls.base_driver)
+        """
+        if not driver:
+            driver = self.base_driver
+        path = '//a[contains(text(), "{}")]/../../' \
+               '/input[@name="_selected_action"]'.format(name)
+        driver.find_element_by_xpath(path).click()
+
+    def action_on_resource(self, name, path, option, driver=None):
+        """
+        Perform action on resource:
+        Arguement:
+            name: name of the resource to select
+            path: path to reach the list page
+            option: value of option to be deleted
+            driver: selenium driver (default: cls.base_driver)
+        """
+        if not driver:
+            driver = self.base_driver
+        driver.get('{}{}'.format(self.config['app_url'], path))
+        self.select_resource(name)
+        driver.find_element_by_name('action') \
+              .find_element_by_xpath('//option[@value="{}"]'.format(option)) \
+              .click()
+        driver.find_element_by_name('index').click()
+
+    def console_error_check(self, driver=None):
         """
         Return all js errors that occured
+        Firefox doesn't support it yet, read here:
+        https://github.com/mozilla/geckodriver/issues/284
         Argument:
-            driver: selenium driver
+            driver: selenium driver (default: cls.base_driver)
         """
-        logs = driver.get_log('browser')
-        js_errors = [logentry['message']
-                     for logentry in logs if logentry['level'] == 'SEVERE']
-        if js_errors:
-            return js_errors
-        else:
-            return []
+        if not driver:
+            driver = self.base_driver
+        console_logs = []
+        if self.config['driver'] == "chromium":
+            logs = driver.get_log('browser')
+            for logentry in logs:
+                if logentry['level'] in ['SEVERE']:
+                    console_logs.append(logentry['message'])
+        return console_logs
 
-    def create_mobile_location(self, driver, app_url, location_name):
+    def create_mobile_location(self, location_name, driver=None):
         """
         Create a new location with `location_name`
         Argument:
-            driver: selenium driver
-            app_url: domain to reach admin dashboard
-                        example: http://dashboard.openwisp.org
             location_name: location to use for operation
+            driver: selenium driver (default: cls.base_driver)
         """
-        driver.get(app_url + '/admin/geo/location/add/')
-        organization_default = \
-            (driver.find_element_by_name('organization')
-                   .find_element_by_xpath('//option[text()="default"]'))
-        organization_default.click()
-        name = driver.find_element_by_name('name')
-        name.send_keys(location_name)
-        type_outdoor = \
-            (driver.find_element_by_name('type')
-                   .find_element_by_xpath('//option[@value="outdoor"]'))
-        type_outdoor.click()
-        is_mobile = driver.find_element_by_name('is_mobile')
-        is_mobile.click()
-        save_button = driver.find_element_by_name('_save')
-        save_button.click()
+        if not driver:
+            driver = self.base_driver
+        driver.get('{}/admin/geo/location/add/'.format(self.config['app_url']))
+        driver.find_element_by_name('organization') \
+              .find_element_by_xpath('//option[text()="default"]').click()
+        driver.find_element_by_name('name').send_keys(location_name)
+        driver.find_element_by_name('type') \
+              .find_element_by_xpath('//option[@value="outdoor"]').click()
+        driver.find_element_by_name('is_mobile').click()
+        driver.find_element_by_name('_save').click()
+        # Add to delete list
+        self.get_resource(location_name, '/admin/geo/location/', driver=driver)
+        self.objects_to_delete.append(driver.current_url)
+        driver.get('{}/admin/geo/location/'.format(self.config['app_url']))
 
-    def get_location(self, driver, app_url, location_name):
+    def create_network_topology(self, label='automated-selenium-test-01',
+                                topology_url="https://pastebin.com/raw/ZMHRRYss",
+                                driver=None):
         """
-        Redirect to `location_name` form page
+        Create a new fetch type network-toplogy resource.
         Argument:
-            driver: selenium driver
-            app_url: domain to reach admin dashboard
-                        example: http://dashboard.openwisp.org
+            topology_url: fetch link of the topology
+            label: name of the topology (default: 'default')
             location_name: location to use for operation
+            driver: selenium driver (default: cls.base_driver)
         """
-        driver.get(app_url + '/admin/geo/location/')
-        location = driver.find_element_by_class_name('field-name')
-        try:
-            location.find_element_by_link_text(location_name).click()
-        except NoSuchElementException:
-            message = 'There is no location with {} name'.format(location_name)
-            self.fail(message)
-
-    def set_location_marker(self, driver, location_name):
-        """
-        Set marker on map on location object with location_name
-        Argument:
-            driver: selenium driver
-            location_name: location to use for operation
-        """
-        marker_button = \
-            driver.find_element_by_class_name('leaflet-draw-draw-marker')
-        marker_button.click()
-        geo_map = driver.find_element_by_id('id_geometry-map')
-        geo_map.click()
-        save_button = driver.find_element_by_name('_save')
-        save_button.click()
-
-    def delete_location(self, driver, app_url, location_name):
-        """
-        Delete the location element with location_name
-        Argument:
-            driver: selenium driver
-            location_name: location to use for operation
-        """
-        self.get_location(driver, app_url, location_name)
-        delete_button = \
-            (driver.find_element_by_class_name('submit-row')
-                   .find_element_by_class_name('deletelink-box'))
-        delete_button.click()
-        confirm_delete_button = \
-            driver.find_element_by_xpath('//input[@type="submit"]')
-        confirm_delete_button.click()
+        if not driver:
+            driver = self.base_driver
+        driver.get(self.config['app_url'] + '/admin/topology/topology/add/')
+        driver.find_element_by_name('label').send_keys(label)
+        driver.find_element_by_name('organization') \
+              .find_element_by_xpath('//option[text()="default"]').click()
+        driver.find_element_by_name('parser') \
+              .find_element_by_xpath('//option[text()="NetJSON NetworkGraph"]').click()
+        driver.find_element_by_name('url').send_keys(topology_url)
+        driver.find_element_by_name('_save').click()
+        self.get_resource(label, '/admin/topology/topology/',
+                          'field-label', driver=driver)
+        self.objects_to_delete.append(driver.current_url)
+        driver.get(self.config['app_url'] + '/admin/topology/topology/')
