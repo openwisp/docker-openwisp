@@ -4,7 +4,6 @@ This script will ensure that the following services are running:
 - Django (dashboard)
 - Redis
 - Postfix
-- Websocket
 - Freeradius
 - Celery
 """
@@ -135,7 +134,6 @@ function init_tests {
     test_admin_login
     test_celery
     test_dashboard_login
-    test_websocket
     test_freeradius
     if [[ $FAILURE = 1 ]] && [[ $TRAVIS ]]; then
         print_services_logs

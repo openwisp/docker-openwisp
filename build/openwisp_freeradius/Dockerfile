@@ -1,6 +1,6 @@
 FROM freeradius/freeradius-server:3.0.19-alpine
 
-RUN apk add --no-cache --update postgresql-dev postgresql-client jq && \
+RUN apk add --no-cache --update tzdata postgresql-dev postgresql-client jq && \
     rm -rf /var/cache/apk/* /tmp/*
 
 CMD ["sh", "init_command.sh"]
@@ -10,7 +10,8 @@ COPY ./common/init_command.sh \
     ./common/utils.sh ./
 COPY --chown=root:root ./openwisp_freeradius/raddb/ /etc/raddb/
 
-ENV MODULE_NAME=freeradius \
+ENV TZ=UTC \
+    MODULE_NAME=freeradius \
     DB_NAME=openwisp_db \
     DB_USER=admin \
     DB_PASS=admin \

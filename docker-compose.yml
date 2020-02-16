@@ -149,13 +149,13 @@ services:
       - POSTGRES_DB=$DB_NAME
       - POSTGRES_USER=$DB_USER
       - POSTGRES_PASSWORD=$DB_PASS
+      - TZ=$TZ
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   openvpn:
     cap_add:
       - NET_ADMIN
-    privileged: true
     image: openwisp/openwisp-openvpn:latest
     build:
       context: build
@@ -164,15 +164,12 @@ services:
       - "1194:1194/udp"
     env_file:
       - .env
-    volumes:
-      - openvpn_data:/etc/openvpn
 
   redis:
     image: redis:alpine
 
 volumes:
   postgres_data: {}
-  openvpn_data: {}
   openwisp_certs: {}
   openwisp_media: {}
   openwisp_static: {}

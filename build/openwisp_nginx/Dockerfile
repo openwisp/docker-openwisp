@@ -32,7 +32,7 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_MIN_LENGTH=1000 \
     NGINX_GZIP_TYPES=* \
     NGINX_CUSTOM_FILE=False \
-    NINGX_REAL_REMOTE_ADDR='$http_x_forwarded_for' \
+    NINGX_REAL_REMOTE_ADDR='$real_ip' \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     CONTROLLER_APP_PORT=8001 \
@@ -44,7 +44,7 @@ ENV MODULE_NAME=nginx \
     CONTROLLER_APP_SERVICE=controller \
     RADIUS_APP_SERVICE=radius \
     TOPOLOGY_APP_SERVICE=topology \
-    WEBSOCKET_APP_SERVICE=daphne \
+    WEBSOCKET_APP_SERVICE=websocket \
     # Listen domains
     DASHBOARD_DOMAIN=dashboard.example.com \
     CONTROLLER_DOMAIN=controller.example.com \

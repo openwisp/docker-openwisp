@@ -83,7 +83,7 @@ def create_default_cert(vpnOrg, defaultCa, x509NameCert):
     return Cert.objects.get(name=x509NameCert)
 
 
-def create_default_vpn(vpnName, vpnOrg, defaultCa, defaultCert):
+def create_default_vpn(vpnName, vpnOrg, vpnDomain, defaultCa, defaultCert):
     '''
     Create default vpn
     '''
@@ -96,7 +96,7 @@ def create_default_vpn(vpnName, vpnOrg, defaultCa, defaultCert):
         defaultVpn.notes = 'This is the default management VPN created during setup, ' \
                            'you may modify these settings and they will soon reflect ' \
                            'in your OpenVPN Server instance.'
-        defaultVpn.host = 'openvpn'
+        defaultVpn.host = vpnDomain
         defaultVpn.backend = 'django_netjsonconfig.vpn_backends.OpenVpn'
         with open('openvpn.json', 'r') as json_file:
             json_data = json.load(json_file)
@@ -138,7 +138,10 @@ if __name__ == "__main__":
                                       defaultCa,
                                       os.environ['X509_NAME_CERT'])
     defaultVpn = create_default_vpn(os.environ['VPN_NAME'],
-                                    vpnOrg, defaultCa,
+                                    vpnOrg,
+                                    os.environ['VPN_DOMAIN'],
+                                    defaultCa,
                                     defaultCert)
     create_default_vpn_template(os.environ['VPN_CLIENT_NAME'],
-                                vpnOrg, defaultVpn)
+                                vpnOrg,
+                                defaultVpn)

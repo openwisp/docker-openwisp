@@ -7,7 +7,11 @@ from openwisp.utils import env_bool
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
-ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
+ALLOWED_HOSTS = [
+    'localhost',
+    'dashboard-internal',
+    'controller-internal',
+] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 AUTH_USER_MODEL = 'openwisp_users.User'
 SITE_ID = 1
@@ -180,13 +184,13 @@ LOGGING = {
             'stream': sys.stdout,
         },
         'mail_admins': {
-            'level': 'ERROR',
+            'level': os.environ['DJANGO_LOG_LEVEL'],
             'class': 'django.utils.log.AdminEmailHandler',
             'filters': ['require_debug_false', 'user_filter'],
         },
     },
     'root': {
-        'level': 'INFO',
+        'level': os.environ['DJANGO_LOG_LEVEL'],
         'handlers': [
             'console',
             'mail_admins',

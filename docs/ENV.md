@@ -50,25 +50,31 @@ Additionally, you can search for the following:
 
 - **Explaination:** Domain on which you want to access OpenWISP dashboard.
 - **Valid Values:** Domain
-- **Default:** dashboard.openwisp.org
+- **Default:** dashboard.example.com
 
 ### `CONTROLLER_DOMAIN`
 
 - **Explaination:** Domain on which you want to access OpenWISP controller API.
 - **Valid Values:** Domain
-- **Default:** controller.openwisp.org
+- **Default:** controller.example.com
 
 ### `RADIUS_DOMAIN`
 
 - **Explaination:** Domain on which you want to access OpenWISP radius API.
 - **Valid Values:** Domain
-- **Default:** radius.openwisp.org
+- **Default:** radius.example.com
 
 ### `TOPOLOGY_DOMAIN`
 
 - **Explaination:** Domain on which you want to access OpenWISP network topology API.
 - **Valid Values:** Domain
-- **Default:** topology.openwisp.org
+- **Default:** topology.example.com
+
+### `VPN_DOMAIN`
+
+- **Explaination:** Valid domain / IP address to reach the OpenVPN server.
+- **Valid Values:** Domain | IP address
+- **Default:** openvpn.example.com
 
 ### `EMAIL_DJANGO_DEFAULT`
 
@@ -209,6 +215,11 @@ Additionally, you can search for the following:
 - **Explaination:**  Default zoom for leaflet. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
 - **Valid Values:** INT (1-16)
 - **Default:**  1
+
+### `DJANGO_WEBSOCKET_HOST`
+- **Explaination:**  Host on which daphne should listen for websocket connections.
+- **Valid Values:** Domain | IP Address
+- **Default:**  0.0.0.0
 
 ## Email
 
@@ -434,9 +445,9 @@ Additionally, you can search for the following:
 
 ### `NINGX_REAL_REMOTE_ADDR`
 
-- **Explaination:** The nginx header to get the value of the real IP address of Access points. Example if a reverse proxy is used in your cluster (Example if you are using an Ingress), then the real IP of the AP is most likely the `$http_x_forwarded_for`.
-- **Valid Values:** `$remote_addr` | `$http_x_forwarded_for` | `$realip_remote_addr`
-- **Default:** `$remote_addr`
+- **Explaination:** The nginx header to get the value of the real IP address of Access points. Example if a reverse proxy is used in your cluster (Example if you are using an Ingress), then the real IP of the AP is most likely the `$http_x_forwarded_for`. If `$http_x_forwarded_for` returns a list, you can use `$real_ip` for getting first element of the list.
+- **Valid Values:** `$remote_addr` | `$http_x_forwarded_for` | `$realip_remote_addr` | `$real_ip`
+- **Default:** `$real_ip`
 
 ## VPN
 
