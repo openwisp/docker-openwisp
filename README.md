@@ -27,11 +27,12 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 2. In the root of the repository, run `make develop`, when the containers are ready, you can test them out by going to the domain name of the modules.
 
 #### Notes:
-   - Default username & password are `admin`.
-   - Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
-   - To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file, example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" >> /etc/hosts'`
-   - Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
-   - If you want to perform actions like cleaning everything produced by `docker-openwisp`, please use the [makefile options](#makefile-options).
+
+- Default username & password are `admin`.
+- Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
+- To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file, example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" >> /etc/hosts'`
+- Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
+- If you want to perform actions like cleaning everything produced by `docker-openwisp`, please use the [makefile options](#makefile-options).
 
 
 ### Changing Python Packages
@@ -75,61 +76,44 @@ If you want to disable a service, you can simply remove the container for that s
    - Ensure your SMTP instance reachable by the OpenWISP containers.
    - Change the [email configuration variables](docs/ENV.md) to point to your instances.
 
-## Build (Development)
+### Runtests
 
-Guide to build images again with modification or with different environment variables.
+You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromium). Chromium is preferred as it checks for console log errors as well.
 
-1. Install docker-compose.
-2. In the root of the repository, run `make develop`, when the containers are ready, you can test them out by going to the domain name of the modules.
+1. Setup driver for selenium:
 
-Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
+   - Setup chromedriver
 
-#### Notes:
-   - Default username & password are `admin`.
-   - Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
-   - To reach the dashboard you should add the openwisp domains set in your `.env` to your hosts file, example:
+      1. Install: `sudo apt --yes install chromium`
+      2. Check version: `chromium --version`
+      3. Install Driver for your version: `https://chromedriver.chromium.org/downloads`
+      4. Extract chromedriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
 
-   ```bash
-   bash -c 'echo "127.0.0.1 <your-dashboard-domain> <your-controller-domain> <your-radius-domain> <your-topology-domain>" >> /etc/hosts'
-   ```
+   - Setup geckodriver
 
-## Runtests
+      1. Install: `sudo apt --yes install firefox`
+      2. Check version: `firefox --version`
+      3. Install Driver for your version: `https://github.com/mozilla/geckodriver/releases`
+      4. Extract geckodriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
 
+2. Install selenium: `python3 -m pip install selenium`
 
-1. Install chrome browser:
-
-   ```bash
-      sudo apt-get install google-chrome-stable
-   ```
-
-2. Install chromedriver:
-
-   - Check version of chrome browser by going to `chrome://settings/help` on your chrome browser
-   - Download compatible chromedriver for example from: `https://chromedriver.chromium.org/downloads`
-   - Extract chromedriver to one of directories from your `$PATH`
-
-3. Install test requirements using pip:
-
-   ```bash
-      pip install selenium
-   ```
-
-4. (Optional) Configure: open `tests/config.json` and configure variables as per your requirement, options are:
+3. (Optional) Configure: open `tests/config.json` and configure variables as per your requirement, options are:
 
    ```yaml
-      headless: Run selenium chrome driver in headless mode
-      app_url: URL to reach the admin dashboard
-      username: username for logging in admin dashboard
-      password: password for logging in admin dashboard
-      services_max_retries: Maximum number of retries to check if services are running
-      services_delay_retries: Delay time (in seconds) to each retries for checking if services are running
+      driver                 : Name of driver to use for tests, "chromium" or "firefox"
+      logs                   : print container's logs if an error occurs.
+      logs_file              : Location of the log file for saving logs generated for tests.
+      headless               : Run selenium chrome driver in headless mode
+      load_init_data         : Flag for running tests/data.py, only needs to be done once after database creation
+      app_url                : URL to reach the admin dashboard
+      username               : username for logging in admin dashboard
+      password               : password for logging in admin dashboard
+      services_max_retries   : Maximum number of retries to check if services are running
+      services_delay_retries : Delay time (in seconds) to each retries for checking if services are running
    ```
 
-5. Run tests:
-
-   ```bash
-      python tests/tests.py
-   ```
+4. Run tests: `make runtests`
 
 ### Makefile Options
 
