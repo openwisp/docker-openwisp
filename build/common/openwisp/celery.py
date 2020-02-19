@@ -13,7 +13,7 @@ app.autodiscover_tasks()
 
 radius_schedule, topology_schedule = {}, {}
 
-if env_bool(os.environ['SET_RADIUS_TASKS']):
+if env_bool(os.environ['USE_OPENWISP_RADIUS']):
     radius_schedule = {
         'radius-periodic-tasks': {
             'task': 'openwisp.tasks.radius_tasks',
@@ -22,7 +22,7 @@ if env_bool(os.environ['SET_RADIUS_TASKS']):
         },
     }
 
-if env_bool(os.environ['SET_TOPOLOGY_TASKS']):
+if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
     topology_schedule = {
         'topology-snapshot-tasks': {
             'task': 'openwisp.tasks.save_snapshot',

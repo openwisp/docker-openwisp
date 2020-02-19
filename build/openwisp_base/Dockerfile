@@ -51,8 +51,8 @@ COPY ./common/ /opt/openwisp/
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \
     TZ=UTC \
-    SET_RADIUS_TASKS=True \
-    SET_TOPOLOGY_TASKS=True \
+    USE_OPENWISP_RADIUS=True \
+    USE_OPENWISP_TOPOLOGY=True \
     DEBUG_MODE=False \
     REDIS_HOST=redis \
     DB_ENGINE=django.contrib.gis.db.backends.postgis \

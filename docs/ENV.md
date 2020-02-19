@@ -14,6 +14,7 @@ Following are the options that can be changed. The list is divided in following 
 
 - [Essential](#Essential): You need to change these values to get the containers working for your system.
 - [Security](#Security): You should change these values for security reasons.
+- [Enable Modules](#Enable-Modules): Enable / Disable optional openwisp modules.
 - [Additional](#Additional): You might want to look into these options before using images in production.
 - [Database](#Database): Database settings. Database host setting is in "Host" section.
 - [Django](#Django): Additional django settings.
@@ -109,6 +110,20 @@ Additionally, you can search for the following:
 - **Default:** .openwisp.org
 - **Example:** .openwisp.org,.example.org,www.exmaple.com
 
+## Enable Modules
+
+### `USE_OPENWISP_TOPOLOGY`
+
+- **Explaination:** Use the openwisp-network-topology module.
+- **Valid Values:** True | False
+- **Default:** True
+
+### `USE_OPENWISP_RADIUS`
+
+- **Explaination:** Use the openwisp-radius module.
+- **Valid Values:** True | False
+- **Default:** True
+
 ## Additional
 
 ### `TZ`
@@ -127,18 +142,6 @@ Additionally, you can search for the following:
 - **Explaination:** Flag to enable or disable HTTPs. If it is set to `Yes`, letsencrypt certificates are automatically fetched with the help of certbot and a cronjob to ensure they stay updated is added. If it is set to `Develop`, self-signed certificates are used and cronjob for the certificates is set. If set to `No`, site is accessiable via HTTP, if set if `EXTERNAL`, it tells HTTPs is used but managed by external tool like loadbalancer / provider.
 - **Valid Values:** External | Yes | Develop | No
 - **Default:** Yes
-
-### `SET_RADIUS_TASKS`
-
-- **Explaination:** Set radius celery tasks, if you are not planning to use openwisp-radius container, set this to `False`.
-- **Valid Values:** True | False
-- **Default:** True
-
-### `SET_TOPOLOGY_TASKS`
-
-- **Explaination:** Set topology celery tasks, if you are not planning to use openwisp-topology container, set this to `False`.
-- **Valid Values:** True | False
-- **Default:** False
 
 ## Database
 
