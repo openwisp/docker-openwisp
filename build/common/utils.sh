@@ -14,6 +14,10 @@ function default_psql_vars {
     export PGUSER=$DB_USER
     export PGPASSWORD=$DB_PASS
     export PGDATABASE=$DB_NAME
+    export PGSSLMODE=$DB_SSLMODE
+    export PGSSLCERT=$DB_SSLCERT
+    export PGSSLKEY=$DB_SSLKEY
+    export PGSSLROOTCERT=$DB_SSLROOTCERT
 }
 
 function start_uwsgi {
@@ -117,10 +121,6 @@ function wait_nginx_services {
 }
 
 function pre_radius_conf {
-    export DB_SSLMODE=`echo "$DB_OPTIONS" | jq -r '.sslmode'`
-    if [ "$DB_SSLMODE" == "null" ]; then
-        export DB_SSLMODE=disable
-    fi
     export QUERY="select id from openwisp_users_organization where name='${FREERADIUS_ORGANIZATION}';"
     export ORG_UUID=`psql -Atc "${QUERY}"`
     export QUERY="select token from openwisp_radius_organizationradiussettings where organization_id='${ORG_UUID}';"

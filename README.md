@@ -68,10 +68,12 @@ If you want to disable a service, you can simply remove the container for that s
 
 - `openwisp-topology`: Set the `SET_TOPOLOGY_TASKS` variable to `False`.
 - `openwisp-radius` : Set the `SET_RADIUS_TASKS` variable to `False`.
-- `openwisp-postgres`:
-   - Ensure your database instance reachable by the OpenWISP containers.
-   - Ensure your database server supports GeoDjango.
-   - Change the [database configuration variables](docs/ENV.md) to point to your instances.
+- `openwisp-postgres`: If you are using a seperate database instance,
+   - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `topology`, `radius`, `controller`, `dashboard`.
+   - Ensure your database server supports GeoDjango. (Install PostGIS for PostgreSQL)
+   - Change the [database configuration variables](docs/ENV.md) to point to your instances, if you are using SSL, remember to set `DB_SSLMODE`, `DB_SSLKEY`, `DB_SSLCERT`, `DB_SSLROOTCERT`.
+   - If you are using SSL, remember to mount volume containing the certificates and key in all the containers which contact the database server and make sure that the private key permission is `600` and owned by `root:root`.
+   - In your database, create database with name `<DB_NAME>`.
 - `openwisp-postfix`:
    - Ensure your SMTP instance reachable by the OpenWISP containers.
    - Change the [email configuration variables](docs/ENV.md) to point to your instances.

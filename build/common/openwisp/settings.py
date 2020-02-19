@@ -73,6 +73,15 @@ CELERY_BROKER_URL = 'redis://'+REDIS_HOST+':6379/1'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
+
+DB_OPTIONS = {
+    "sslmode": os.environ['DB_SSLMODE'],
+    'sslkey': os.environ['DB_SSLKEY'],
+    'sslcert': os.environ['DB_SSLCERT'],
+    'sslrootcert': os.environ['DB_SSLROOTCERT']
+}
+DB_OPTIONS.update(json.loads(os.environ['DB_OPTIONS']))
+
 DATABASES = {
     'default': {
         'ENGINE': os.environ['DB_ENGINE'],
@@ -81,7 +90,7 @@ DATABASES = {
         'PASSWORD': os.environ['DB_PASS'],
         'HOST': os.environ['DB_HOST'],
         'PORT': os.environ['DB_PORT'],
-        'OPTIONS': json.loads(os.environ['DB_OPTIONS']),
+        'OPTIONS': DB_OPTIONS
     },
 }
 
