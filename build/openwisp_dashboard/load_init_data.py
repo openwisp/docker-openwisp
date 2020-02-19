@@ -125,7 +125,7 @@ def create_default_vpn_template(defaultVpnClient, vpnOrg, defaultVpn):
         defaultTp.save()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     from openwisp_users.models import Organization
     from openwisp_controller.config.models import Vpn, Template
     from openwisp_controller.pki.models import Ca, Cert
