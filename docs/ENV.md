@@ -159,11 +159,34 @@ Additionally, you can search for the following:
 - **Valid Values:** INTEGER
 - **Default:** 5432
 
+### `DB_SSLMODE`
+
+- **Explaination:** Postgresql sslmode option: https://www.postgresql.org/docs/9.1/libpq-ssl.html
+- **Valid Values:** STRING
+- **Default:** disable
+
+### `DB_SSLCERT`
+
+- **Explaination:** Path inside container to valid client certificate.
+- **Valid Values:** STRING
+- **Default:** None
+
+### `DB_SSLKEY`
+
+- **Explaination:** Path inside container to valid client private key.
+- **Valid Values:** STRING
+- **Default:** None
+
+### `DB_SSLROOTCERT`
+
+- **Explaination:** Path inside container to database server certificate.
+- **Valid Values:** STRING
+- **Default:** None
+
 ### `DB_OPTIONS`
 
 - **Explaination:** Additional database options to connect to the database. These options must be supported by your `DB_ENGINE`.
 - **Valid Values:** JSON
-- **Example:** {"sslmode": "disable", "sslrootcert": ""}
 - **Default:** {}
 
 ## Django

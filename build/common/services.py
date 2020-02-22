@@ -14,6 +14,10 @@ def database_status():
             password=os.environ['DB_PASS'],
             host=os.environ['DB_HOST'],
             port=os.environ['DB_PORT'],
+            sslmode=os.environ['DB_SSLMODE'],
+            sslcert=os.environ['DB_SSLCERT'],
+            sslkey=os.environ['DB_SSLKEY'],
+            sslrootcert=os.environ['DB_SSLROOTCERT']
         )
     except psycopg2.OperationalError:
         time.sleep(3)

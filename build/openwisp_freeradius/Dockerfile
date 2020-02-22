@@ -1,6 +1,6 @@
 FROM freeradius/freeradius-server:3.0.19-alpine
 
-RUN apk add --no-cache --update tzdata postgresql-dev postgresql-client jq && \
+RUN apk add --no-cache --update tzdata postgresql-dev postgresql-client && \
     rm -rf /var/cache/apk/* /tmp/*
 
 CMD ["sh", "init_command.sh"]
@@ -17,6 +17,10 @@ ENV TZ=UTC \
     DB_PASS=admin \
     DB_HOST=postgres \
     DB_PORT=5432 \
+    DB_SSLMODE=disable \
+    DB_SSLKEY=None \
+    DB_SSLCERT=None \
+    DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
     FREERADIUS_KEY=testing123 \
     FREERADIUS_CLIENTS=0.0.0.0/0 \

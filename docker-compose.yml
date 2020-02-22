@@ -144,7 +144,7 @@ services:
       - radius
 
   postgres:
-    image: mdillon/postgis:10-alpine
+    image: mdillon/postgis:11-alpine
     environment:
       - POSTGRES_DB=$DB_NAME
       - POSTGRES_USER=$DB_USER
@@ -154,8 +154,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   openvpn:
-    cap_add:
-      - NET_ADMIN
     image: openwisp/openwisp-openvpn:latest
     build:
       context: build
@@ -164,6 +162,10 @@ services:
       - "1194:1194/udp"
     env_file:
       - .env
+    depends_on:
+      - postgres
+    cap_add:
+      - NET_ADMIN
 
   redis:
     image: redis:alpine
