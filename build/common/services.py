@@ -24,8 +24,7 @@ def database_status():
 
 def dashboard_status():
     try:
-        uwsgi_curl(os.environ['DASHBOARD_APP_SERVICE'] +
-                   ":" + os.environ['DASHBOARD_APP_PORT'])
+        uwsgi_curl(f'{os.environ['DASHBOARD_APP_SERVICE']}:{os.environ['DASHBOARD_APP_PORT']}')
     except OSError:
         time.sleep(3)
         return False

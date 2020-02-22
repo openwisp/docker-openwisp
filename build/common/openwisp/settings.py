@@ -68,7 +68,7 @@ WSGI_APPLICATION = 'openwisp.wsgi.application'
 ASGI_APPLICATION = 'openwisp_controller.geo.channels.routing.channel_routing'
 
 REDIS_HOST = os.environ['REDIS_HOST']
-CELERY_BROKER_URL = 'redis://'+REDIS_HOST+':6379/1'
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/1'
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -101,7 +101,7 @@ CHANNEL_LAYERS = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://'+REDIS_HOST+':6379/1',
+        'LOCATION': f'redis://{REDIS_HOST}:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
@@ -141,8 +141,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_ROOT = '%s/static' % BASE_DIR
-MEDIA_ROOT = '%s/media' % BASE_DIR
+STATIC_ROOT = f'{BASE_DIR}/static'
+MEDIA_ROOT = f'{BASE_DIR}/media'
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
@@ -172,7 +172,7 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '\n[%(host)s] - %(levelname)s, time: [%(asctime)s], process: %(process)d, thread: %(thread)d\n%(message)s'
+            'format': f'\n[{host}] - {levelname}, time: [{asctime}], process: {process}, thread: {thread}\n{message}'
         },
     },
     'handlers': {
