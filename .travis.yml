@@ -1,21 +1,26 @@
 ---
 os: linux
 dist: xenial
+services: docker
 language: python
 python: 3.7
-services: docker
 
 branches:
   only:
   - master
   - travis
 
+before_script:
+  - sudo apt update
+  - sudo apt --yes install google-chrome-stable=73.0.3683.86-1
+  - wget https://chromedriver.storage.googleapis.com/73.0.3683.68/chromedriver_linux64.zip
+  - unzip chromedriver_linux64.zip -d /home/travis/bin
+
 jobs:
   include:
     - stage: tests
       script:
-      # Common OpenWISP QA
-      - pip install openwisp-utils[qa]>=0.4.1
+      - pip install selenium openwisp-utils[qa]>=0.4.1
       - openwisp-utils-qa-checks --skip-checkmigrations
       # Setup for Test
       - export hosts="127.0.0.1 dashboard.openwisp.org controller.openwisp.org

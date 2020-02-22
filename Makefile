@@ -38,7 +38,7 @@ runtests: develop-runtests
 
 develop-runtests:
 	docker-compose up -d
-	source ./tests/tests.sh && init_tests
+	python3 tests/runtests.py
 
 # Development
 develop: compose-build

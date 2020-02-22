@@ -109,3 +109,4 @@ venv.bak/
 media/
 /.idea/
 local/
+*.log

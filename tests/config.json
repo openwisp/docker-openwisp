@@ -1,0 +1,12 @@
+{
+    "driver": "chromium",
+    "headless": true,
+    "app_url": "http://dashboard.openwisp.org",
+    "load_init_data": true,
+    "logs": false,
+    "logs_file": "/tmp/odocker.log",
+    "username": "admin",
+    "password": "admin",
+    "services_max_retries": 10,
+    "services_delay_retries": 5
+}
