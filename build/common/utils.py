@@ -74,7 +74,7 @@ def parse_addr(addr, default_port=3030):
         if addr.isdigit():
             port = addr
         else:
-            parts = urlsplit('//' + addr)
+            parts = urlsplit(f'//{addr}')
             host = parts.hostname
             port = parts.port
     elif isinstance(addr, (list, tuple, set)):
