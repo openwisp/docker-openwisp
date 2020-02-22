@@ -80,7 +80,7 @@ def create_default_cert(vpnOrg, defaultCa, x509NameCert):
         defaultCert.full_clean()
         defaultCert.save()
         return defaultCert
-    return Cert.objects.get(name=x509NameCert)
+    return Cert.objects.filter(name=x509NameCert).distinct()
 
 
 def create_default_vpn(vpnName, vpnOrg, vpnDomain, defaultCa, defaultCert):
