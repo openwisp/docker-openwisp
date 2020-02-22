@@ -88,7 +88,7 @@ def get_host_from_url(url):
 
     if url and url[0] != '/':
         host, _, url = url.partition('/')
-        return (host, '/' + url)
+        return (host, f'/{url}')
 
     return '', url
 
@@ -146,7 +146,7 @@ def uwsgi_curl(uwsgi_addr, url='localhost', method='GET',
     }
     for header in headers or ():
         key, _, value = header.partition(':')
-        var['HTTP_' + key.strip().upper().replace('-', '_')] = value.strip()
+        var[f"HTTP_{key.strip().upper().replace('-', '_')}"] = value.strip()
     var['SERVER_NAME'] = var['HTTP_HOST']
     if port:
         var['SERVER_PORT'] = str(port)

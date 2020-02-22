@@ -20,7 +20,7 @@ def change_secret_key(keygen):
     if file_string[-1] != "\n":
         file_string += "\n"
     if "DJANGO_SECRET_KEY" not in file_string:
-        file_string += "DJANGO_SECRET_KEY=" + keygen
+        file_string += f"DJANGO_SECRET_KEY={keygen}"
     file_handle = open(".env", 'w')
     file_handle.write(file_string)
     file_handle.close()
