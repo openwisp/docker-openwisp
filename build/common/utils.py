@@ -64,7 +64,7 @@ def pack_uwsgi_vars(var):
         for k, v in encoded_vars
     )
     packet_header = bytes(UwsgiPacketHeader(0, len(packed_vars), 0))
-    return packet_header + packed_vars
+    return f'{packet_header}{packed_vars}'
 
 
 def parse_addr(addr, default_port=3030):
