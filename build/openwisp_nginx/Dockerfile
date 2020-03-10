@@ -3,6 +3,9 @@ FROM nginx:alpine
 RUN apk add --update --no-cache certbot openssl && \
     rm -rf /var/cache/apk/* /tmp/*
 
+RUN adduser -u 8877 openwisp --disabled-password
+USER openwisp
+
 WORKDIR /etc/nginx/
 CMD ["sh", "init_command.sh"]
 EXPOSE 80 443

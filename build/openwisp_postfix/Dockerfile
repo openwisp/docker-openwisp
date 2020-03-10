@@ -5,6 +5,9 @@ RUN apk add --no-cache --upgrade openssl cyrus-sasl cyrus-sasl-plain cyrus-sasl-
     apk add --no-cache postfix rsyslog tzdata && \
     rm -rf /tmp/* /var/cache/apk/*
 
+RUN adduser -u 8877 openwisp --disabled-password
+USER openwisp
+
 CMD ["sh", "init_command.sh"]
 EXPOSE 25
 

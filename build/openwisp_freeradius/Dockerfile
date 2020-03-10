@@ -3,6 +3,9 @@ FROM freeradius/freeradius-server:3.0.19-alpine
 RUN apk add --no-cache --update tzdata postgresql-dev postgresql-client && \
     rm -rf /var/cache/apk/* /tmp/*
 
+RUN adduser -u 8877 openwisp --disabled-password
+USER openwisp
+
 CMD ["sh", "init_command.sh"]
 EXPOSE 1812/udp 1813/udp
 

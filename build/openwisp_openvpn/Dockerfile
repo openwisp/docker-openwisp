@@ -2,6 +2,10 @@ FROM kylemanna/openvpn:latest
 
 RUN apk add --no-cache tzdata postgresql-client supervisor && \
     rm -rf /var/cache/apk/* /tmp/*
+
+RUN adduser -u 8877 openwisp --disabled-password
+USER openwisp
+
 CMD ["sh", "init_command.sh"]
 EXPOSE 1194
 

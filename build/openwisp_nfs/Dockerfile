@@ -3,6 +3,9 @@ FROM alpine:3.11
 RUN apk add --no-cache --update --verbose tzdata nfs-utils && \
     rm -rf /var/cache/apk/* /tmp/*
 
+RUN adduser -u 8877 openwisp --disabled-password
+USER openwisp
+
 COPY ./openwisp_nfs/init_command.sh /init_command.sh
 
 EXPOSE 111 111/udp 2049 2049/udp \

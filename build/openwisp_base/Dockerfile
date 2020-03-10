@@ -43,6 +43,9 @@ RUN pip install channels_redis service_identity django-redis psycopg2 uwsgi \
 ARG DJANGO_SOURCE=django==2.2
 RUN pip install --upgrade --prefix='/install' ${DJANGO_SOURCE}
 
+RUN useradd -u 8877 openwisp
+USER openwisp
+
 FROM SYSTEM
 
 COPY --from=PYTHON /install /usr/local
