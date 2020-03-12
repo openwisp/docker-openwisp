@@ -139,7 +139,7 @@ class TestServices(TestUtilities, unittest.TestCase):
     def test_topology_graph(self):
         path = '/admin/topology/topology'
         label = 'automated-selenium-test-02'
-        self.login()
+        self.login(username='openwisp')
         self.create_network_topology(label)
         self.action_on_resource(label, path, 'delete_selected')
         self.assertNotIn('Nodes', self.base_driver.page_source)
@@ -148,7 +148,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.assertIn('Nodes', self.base_driver.page_source)
 
     def test_admin_login(self):
-        self.login()
+        self.login(username='openwisp')
         self.login(driver=self.second_driver)
         try:
             self.base_driver.find_element_by_class_name('logout')
@@ -185,7 +185,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             ['default', '/admin/openwisp_users/organization/'],
             ['test_superuser2', '/admin/openwisp_users/user/'],
         ]
-        self.login()
+        self.login(username='openwisp')
         self.create_mobile_location('automated-selenium-location01')
         self.create_superuser('sample@email.com', 'test_superuser2')
         # url_list tests
@@ -206,7 +206,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         and checking if the location changed on a second window.
         """
         location_name = 'automated-websocket-selenium-loc01'
-        self.login()
+        self.login(username='openwisp')
         self.login(driver=self.second_driver)
         self.create_mobile_location(location_name)
         self.get_resource(location_name, '/admin/geo/location/')
@@ -226,7 +226,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         Create new user to ensure a new user
         can be added.
         """
-        self.login()
+        self.login(username='openwisp')
         self.create_superuser()
         self.assertEqual('The user "test_superuser" was changed successfully.',
                          self.base_driver
