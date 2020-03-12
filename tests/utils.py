@@ -35,6 +35,7 @@ class TestUtilities(TestConfig):
             password = self.config['password']
         driver.get(self.config['app_url'] + '/admin/login/')
         if 'admin/login' in driver.current_url:
+            driver.implicitly_wait(5)
             driver.find_element_by_name('username').send_keys(username)
             driver.find_element_by_name('password').send_keys(password)
             driver.find_element_by_xpath("//input[@type='submit']").click()
@@ -54,6 +55,7 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         driver.get(self.config['app_url'] + '/admin/openwisp_users/user/add/')
+        driver.implicitly_wait(5)
         driver.find_element_by_name('username').send_keys(username)
         driver.find_element_by_name('email').send_keys(email)
         driver.find_element_by_name('password1').send_keys(password)
@@ -76,6 +78,7 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         driver.get('{}{}'.format(self.config['app_url'], path))
+        driver.implicitly_wait(5)
         resources = driver.find_elements_by_class_name(select_field)
         for resource in resources:
             if len(resource.find_elements_by_link_text(resource_name)):
