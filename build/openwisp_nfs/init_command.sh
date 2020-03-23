@@ -6,7 +6,7 @@
 
 set -ex
 
-mkdir -p $EXPORT_DIR/postfix $EXPORT_DIR/postgres $EXPORT_DIR/static $EXPORT_DIR/media $EXPORT_DIR/html
+mkdir -p $EXPORT_DIR/certs $EXPORT_DIR/postgres $EXPORT_DIR/static $EXPORT_DIR/media $EXPORT_DIR/html
 echo "$EXPORT_DIR   $EXPORT_OPTS" > /etc/exports
 
 
