@@ -1,3 +1,6 @@
-from openwisp.utils import openwisp_topology_urls
+from django.urls import include, path
+from openwisp_network_topology.api import urls as api
 
-urlpatterns = openwisp_topology_urls()
+urlpatterns = [
+    path('api/', include(api)),
+]

@@ -2,6 +2,7 @@
 # that are used in multiple openwisp modules
 import logging
 import socket
+import os
 
 
 class HostFilter(logging.Filter):
@@ -16,15 +17,10 @@ def env_bool(env):
     return env in ["True", "true", "TRUE"]
 
 
-def openwisp_topology_urls():
-    # Setting correct urlpatterns for the
-    # modules -- used in urls.py
-    from openwisp_network_topology.urls import urlpatterns as nt_urls
-    exclude = ["openwisp_users.accounts.urls"]
-    for url in nt_urls[:]:
-        if url.urlconf_module.__name__ in exclude:
-            nt_urls.remove(url)
-    return nt_urls
+def request_scheme():
+    if os.environ['SSL_CERT_MODE'] in ["No", "no", "NO"]:
+        return 'http'
+    return 'https'
 
 
 def openwisp_controller_urls():

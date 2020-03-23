@@ -86,7 +86,7 @@ function create_dev_certs {
 }
 
 function nginx_dev {
-    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
+    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https DOMAIN
     ssl_http_behaviour
     create_dev_certs
     CMD="source /etc/nginx/utils.sh && create_dev_certs && nginx -s reload"
@@ -97,7 +97,7 @@ function nginx_dev {
 function nginx_prod {
     create_prod_certs
     ssl_http_behaviour
-    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https
+    envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https DOMAIN
     echo "0 3 * * 7 certbot renew &>> /etc/nginx/log/crontab.log" | crontab -
 }
 
@@ -109,7 +109,7 @@ function wait_nginx_services {
     # error report by `wget` is received.
     set +e
     while :; do
-        wget -qS ${DASHBOARD_URI}/admin/login/ 2>&1 | grep -q "200 OK"
+        wget -qS ${DASHBOARD_INTERNAL}/admin/login/ 2>&1 | grep -q "200 OK"
         if [[ $? = "0" ]]; then
             FAILURE=0
             echo "Connection with dashboard established."
@@ -133,7 +133,7 @@ function pre_radius_conf {
 
 function ssl_http_behaviour {
     if [ "$NGINX_HTTP_ALLOW" == "True" ]; then
-        envsubst_create_config /etc/nginx/openwisp.template.conf http
+        envsubst_create_config /etc/nginx/openwisp.template.conf http DOMAIN
     else
         envsubst < /etc/nginx/openwisp.ssl.80.template.conf > /etc/nginx/conf.d/openwisp.http.conf
     fi
@@ -143,9 +143,9 @@ function envsubst_create_config {
     # Creates nginx configurations files for dashboard,
     # controller, radius and network-topology instances.
     for application in DASHBOARD CONTROLLER RADIUS TOPOLOGY; do
-        eval export APP_SERVICE=\$$application\_APP_SERVICE
-        eval export APP_PORT=\$$application\_APP_PORT
-        eval export DOMAIN=\$$application\_DOMAIN
+        eval export APP_SERVICE=\$${application}_APP_SERVICE
+        eval export APP_PORT=\$${application}_APP_PORT
+        eval export DOMAIN=\$${application}_${3}
         application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
         envsubst < ${1} > /etc/nginx/conf.d/${application}.${2}.conf
     done
@@ -253,20 +253,20 @@ function openvpn_config {
 
 function openvpn_config_checksum {
     export OFILE=`wget -qO - --no-check-certificate \
-    ${DASHBOARD_URI}/controller/vpn/checksum/$UUID/?key=$KEY`
+    ${CONTROLLER_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY`
     export NFILE=`cat checksum`
 }
 
 function openvpn_config_download {
     wget -qO vpn.tar.gz --no-check-certificate \
-    ${DASHBOARD_URI}/controller/vpn/download-config/$UUID/?key=$KEY
+    ${CONTROLLER_INTERNAL}/controller/vpn/download-config/$UUID/?key=$KEY
     wget -qO checksum --no-check-certificate \
-    ${DASHBOARD_URI}/controller/vpn/checksum/$UUID/?key=$KEY
+    ${CONTROLLER_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
     tar xzf vpn.tar.gz
     chmod 600 *.pem
 }
 
 function crl_download {
     export CAid=`psql -qAtc "SELECT ca_id FROM config_vpn where name='${VPN_NAME}';"`
-    wget -qO revoked.crl --no-check-certificate ${DASHBOARD_URI}/admin/pki/ca/${CAid}.crl
+    wget -qO revoked.crl --no-check-certificate ${DASHBOARD_INTERNAL}/admin/pki/ca/${CAid}.crl
 }

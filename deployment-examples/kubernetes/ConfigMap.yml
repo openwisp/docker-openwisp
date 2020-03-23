@@ -25,8 +25,12 @@ data:
   RADIUS_DOMAIN: radius.openwisp.org
   TOPOLOGY_DOMAIN: topology.openwisp.org
   VPN_DOMAIN: openvpn.openwisp.org
+  DASHBOARD_INTERNAL: dashboard-internal
+  CONTROLLER_INTERNAL: controller-internal
+  RADIUS_INTERNAL: radius-internal
+  TOPOLOGY_INTERNAL: topology-internal
   NGINX_SERVER_NAME_HASH_BUCKET: "64"
-  SSL_CERT_MODE: "False"
+  SSL_CERT_MODE: "External"
   DEBUG_MODE: "False"
   TZ: "Asia/Kolkata"
   POSTFIX_RELAYHOST: "[smtp.gmail.com]:587"

@@ -105,8 +105,9 @@ Additionally, you can search for the following:
 ### `DJANGO_ALLOWED_HOSTS`
 
 - **Explaination:** Used validate a request's HTTP Host header. The default value `*` means all domains. It can be `.mydomain.com`. For security allow only trusted domains.
-- **Valid Values:** Valid domain | IP adress | *
-- **Default:** *
+- **Valid Values:** List(Valid domain) | List(IP adress) | *
+- **Default:** .openwisp.org
+- **Example:** .openwisp.org,.example.org,www.exmaple.com
 
 ## Additional
 
@@ -123,9 +124,9 @@ Additionally, you can search for the following:
 
 ### `SSL_CERT_MODE`
 
-- **Explaination:** Flag to enable or disable HTTPs. If it is set to true, letsencrypt certificates are automatically fetched with the help of certbot and a cronjob to ensure they stay updated is added. If it is set to `Develop`, self-signed certificates are used and cronjob for the certificates is set. If set to False, site is accessiable via HTTP.
-- **Valid Values:** True | Develop | False
-- **Default:** True
+- **Explaination:** Flag to enable or disable HTTPs. If it is set to `Yes`, letsencrypt certificates are automatically fetched with the help of certbot and a cronjob to ensure they stay updated is added. If it is set to `Develop`, self-signed certificates are used and cronjob for the certificates is set. If set to `No`, site is accessiable via HTTP, if set if `EXTERNAL`, it tells HTTPs is used but managed by external tool like loadbalancer / provider.
+- **Valid Values:** External | Yes | Develop | No
+- **Default:** Yes
 
 ### `SET_RADIUS_TASKS`
 
@@ -203,11 +204,13 @@ Additionally, you can search for the following:
 - **Valid Values:** INT
 - **Default:** 3650
 
-### `DJANGO_CORS_ORIGIN_ALLOW_ALL`
+### `DJANGO_CORS_HOSTS`
 
-- **Explaination:** Allow CORS. [See here](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
-- **Valid Values:** True | False
-- **Default:** True
+- **Explaination:** Hosts for which CORS is whitelisted. [See here](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+- **Valid Values:** List(Valid domain)
+- **Default:** http://localhost
+- **Example:** https://www.openwisp.org,openwisp.example.org
+
 
 ### `DJANGO_LANGUAGE_CODE`
 
@@ -406,7 +409,7 @@ Additionally, you can search for the following:
 
 ### `NGINX_SSL_CONFIG`
 
-- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example `index` option is configured. You may add options to this string or leave this variable blank. This variable is only applicable when `SSL_CERT_MODE` is `True` or `Develop`.
+- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example `index` option is configured. You may add options to this string or leave this variable blank. This variable is only applicable when `SSL_CERT_MODE` is `Yes` or `Develop`.
 - **Example:** `index index.html index.htm;`
 - **Default:** --BLANK--
 
@@ -449,14 +452,14 @@ Additionally, you can search for the following:
 
 ### `NGINX_HTTPS_ALLOWED_IPS`
 
-- **Explaination:** Allow these IP addresses to access the website over http when `SSL_CERT_MODE` is set to `True` .
+- **Explaination:** Allow these IP addresses to access the website over http when `SSL_CERT_MODE` is set to `Yes` .
 - **Valid Values:** all | IP address
 - **Example:** `12.213.43.54/16`
 - **Default:** all
 
 ### `NGINX_HTTP_ALLOW`
 
-- **Explaination:** Allow http access with https access. Valid only when `SSL_CERT_MODE` is set to `True` or `Develop`.
+- **Explaination:** Allow http access with https access. Valid only when `SSL_CERT_MODE` is set to `Yes` or `Develop`.
 - **Valid Values:** True | False
 - **Default:** True
 
@@ -490,7 +493,7 @@ Additionally, you can search for the following:
 
 - **Explaination:** Name of the VPN client template that will be visible on the OpenWISP dashboard.
 - **Valid Values:** STRING
-- **Default:** default
+- **Default:** default-management-vpn
 
 ## X509
 
@@ -625,11 +628,29 @@ Additionally, you can search for the following:
 - **Valid Values:** INTEGER
 - **Default:** 8003
 
-### `DASHBOARD_URI`
+### `DASHBOARD_INTERNAL`
 
-- **Explaination:** Internal dashboard URI to reach dashboard from other containers. This is not exposed to the outside world.
+- **Explaination:** Internal dashboard domain to reach dashboard from other containers.
 - **Valid Values:** STRING
-- **Default:** dashboard-internal
+- **Default:** dashboard.internal
+
+### `CONTROLLER_INTERNAL`
+
+- **Explaination:** Internal controller domain to reach controller from other containers.
+- **Valid Values:** STRING
+- **Default:** controller.internal
+
+### `RADIUS_INTERNAL`
+
+- **Explaination:** Internal radius domain to reach radius from other containers.
+- **Valid Values:** STRING
+- **Default:** radius.internal
+
+### `TOPOLOGY_INTERNAL`
+
+- **Explaination:** Internal topology domain to reach topology from other containers.
+- **Valid Values:** STRING
+- **Default:** topology.internal
 
 ### `POSTFIX_DEBUG_MYNETWORKS`
 - **Explaination:** Set debug_peer_list for given list of networks.

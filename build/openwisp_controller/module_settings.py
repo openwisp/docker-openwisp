@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'django_extensions',
+    'corsheaders',
     # openwisp modules
     'openwisp_users',
     'openwisp_controller.pki',

@@ -13,7 +13,6 @@ services:
     volumes:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
-      - public_html:/opt/openwisp/public_html
     depends_on:
       - postgres
       - redis
@@ -86,7 +85,10 @@ services:
     networks:
       default:
         aliases:
-         - dashboard-internal
+         - dashboard.internal
+         - controller.internal
+         - radius.internal
+         - topology.internal
     ports:
       - "80:80"
       - "443:443"
@@ -142,6 +144,7 @@ services:
     depends_on:
       - postgres
       - radius
+      - dashboard
 
   postgres:
     image: mdillon/postgis:11-alpine

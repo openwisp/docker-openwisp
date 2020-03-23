@@ -1,6 +1,7 @@
 from openwisp.controller_settings import *
 from openwisp.radius_settings import *
 from openwisp.topology_settings import *
+from openwisp.utils import request_scheme
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -17,6 +18,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'corsheaders',
     # openwisp modules
     'openwisp_users',
     # openwisp-controller
@@ -55,3 +57,6 @@ EXTENDED_APPS = ['django_freeradius',
                  'django_netjsonconfig',
                  'django_x509',
                  'django_loci']
+
+TOPOLOGY_API_URLCONF='openwisp_network_topology.urls'
+TOPOLOGY_API_BASEURL=f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}'
