@@ -1,6 +1,8 @@
-from openwisp.controller_settings import *
+import os
+from openwisp.utils import env_bool
 from openwisp.radius_settings import *
 from openwisp.topology_settings import *
+from openwisp.controller_settings import *
 from openwisp.utils import request_scheme
 
 INSTALLED_APPS = [
@@ -60,3 +62,10 @@ EXTENDED_APPS = ['django_freeradius',
 
 TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
 TOPOLOGY_API_BASEURL = f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}'
+
+if not env_bool(os.environ['USE_OPENWISP_RADIUS']):
+    EXTENDED_APPS.remove('django_freeradius')
+    INSTALLED_APPS.remove('openwisp_radius')
+if not env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
+    EXTENDED_APPS.remove('django_netjsongraph')
+    INSTALLED_APPS.remove('openwisp_network_topology')
