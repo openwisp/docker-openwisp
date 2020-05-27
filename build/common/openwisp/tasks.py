@@ -7,15 +7,19 @@ import os
 
 @shared_task
 def radius_tasks():
-    management.call_command("delete_old_radacct",
-                            int(os.environ['CRON_DELETE_OLD_RADACCT']))
-    management.call_command("delete_old_postauth",
-                            int(os.environ['CRON_DELETE_OLD_POSTAUTH']))
-    management.call_command("cleanup_stale_radacct",
-                            int(os.environ['CRON_CLEANUP_STALE_RADACCT']))
+    management.call_command(
+        "delete_old_radacct", int(os.environ['CRON_DELETE_OLD_RADACCT'])
+    )
+    management.call_command(
+        "delete_old_postauth", int(os.environ['CRON_DELETE_OLD_POSTAUTH'])
+    )
+    management.call_command(
+        "cleanup_stale_radacct", int(os.environ['CRON_CLEANUP_STALE_RADACCT'])
+    )
     management.call_command("deactivate_expired_users")
-    management.call_command("delete_old_users",
-                            older_than_months=int(os.environ['CRON_DELETE_OLD_USERS']))
+    management.call_command(
+        "delete_old_users", older_than_months=int(os.environ['CRON_DELETE_OLD_USERS'])
+    )
 
 
 @shared_task

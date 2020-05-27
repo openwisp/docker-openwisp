@@ -23,8 +23,9 @@ def create_admin():
     '''
     Creates superuser `admin` if it does not exist.
     '''
-    User.objects.filter(is_superuser=True).exists() or \
-        User.objects.create_superuser("admin", "admin@example.com", "admin")
+    User.objects.filter(is_superuser=True).exists() or User.objects.create_superuser(
+        "admin", "admin@example.com", "admin"
+    )
 
 
 def get_vpn_organization(vpnOrg):
@@ -50,8 +51,10 @@ def create_default_CA(vpnOrg, x509NameCA):
         defaultCa.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
         defaultCa.email = os.environ['X509_EMAIL']
         defaultCa.common_name = os.environ['X509_COMMON_NAME']
-        defaultCa.notes = 'This CA was created during the setup, it is used for ' \
-                          'the default management VPN. Please do not rename it.'
+        defaultCa.notes = (
+            'This CA was created during the setup, it is used for '
+            'the default management VPN. Please do not rename it.'
+        )
         defaultCa.full_clean()
         defaultCa.save()
         return defaultCa
@@ -74,9 +77,11 @@ def create_default_cert(vpnOrg, defaultCa, x509NameCert):
         defaultCert.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
         defaultCert.email = os.environ['X509_EMAIL']
         defaultCert.common_name = os.environ['X509_COMMON_NAME']
-        defaultCert.notes = 'This certificate was created during the setup.' \
-                            'It is used for the default management VPN.' \
-                            'Please do not rename it.'
+        defaultCert.notes = (
+            'This certificate was created during the setup.'
+            'It is used for the default management VPN.'
+            'Please do not rename it.'
+        )
         defaultCert.full_clean()
         defaultCert.save()
         return defaultCert
@@ -93,9 +98,11 @@ def create_default_vpn(vpnName, vpnOrg, vpnDomain, defaultCa, defaultCert):
         defaultVpn.ca = defaultCa
         defaultVpn.cert = defaultCert
         defaultVpn.name = vpnName
-        defaultVpn.notes = 'This is the default management VPN created during setup, ' \
-                           'you may modify these settings and they will soon reflect ' \
-                           'in your OpenVPN Server instance.'
+        defaultVpn.notes = (
+            'This is the default management VPN created during setup, '
+            'you may modify these settings and they will soon reflect '
+            'in your OpenVPN Server instance.'
+        )
         defaultVpn.host = vpnDomain
         defaultVpn.backend = 'django_netjsonconfig.vpn_backends.OpenVpn'
         with open('openvpn.json', 'r') as json_file:
@@ -129,19 +136,14 @@ if __name__ == '__main__':
     from openwisp_users.models import Organization
     from openwisp_controller.config.models import Vpn, Template
     from openwisp_controller.pki.models import Ca, Cert
+
     create_admin()
     # Steps for creating new vpn client template with all the
     # required objects (CA, Certificate, VPN Server).
     vpnOrg = get_vpn_organization(os.environ['VPN_ORG'])
     defaultCa = create_default_CA(vpnOrg, os.environ['X509_NAME_CA'])
-    defaultCert = create_default_cert(vpnOrg,
-                                      defaultCa,
-                                      os.environ['X509_NAME_CERT'])
-    defaultVpn = create_default_vpn(os.environ['VPN_NAME'],
-                                    vpnOrg,
-                                    os.environ['VPN_DOMAIN'],
-                                    defaultCa,
-                                    defaultCert)
-    create_default_vpn_template(os.environ['VPN_CLIENT_NAME'],
-                                vpnOrg,
-                                defaultVpn)
+    defaultCert = create_default_cert(vpnOrg, defaultCa, os.environ['X509_NAME_CERT'])
+    defaultVpn = create_default_vpn(
+        os.environ['VPN_NAME'], vpnOrg, os.environ['VPN_DOMAIN'], defaultCa, defaultCert
+    )
+    create_default_vpn_template(os.environ['VPN_CLIENT_NAME'], vpnOrg, defaultVpn)

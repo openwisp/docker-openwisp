@@ -39,11 +39,10 @@ class Pretest(TestConfig, unittest.TestCase):
                 # login page after delay_retries second(s)
                 time.sleep(delay_retries)
         if not isServiceReachable:
-            self.fail("ERROR: openwisp-dashboard login page not reachable!")
+            self.fail('ERROR: openwisp-dashboard login page not reachable!')
 
 
 class TestServices(TestUtilities, unittest.TestCase):
-
     @property
     def failureException(self):
         TestServices.failed_test = True
@@ -54,27 +53,38 @@ class TestServices(TestUtilities, unittest.TestCase):
         cls.failed_test = False
         # Django Test Setup
         if cls.config['load_init_data']:
-            test_data_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                          'data.py')
+            test_data_file = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), 'data.py'
+            )
             entrypoint = "python manage.py shell --command='import data; data.setup()'"
-            cmd = subprocess.Popen(['docker-compose', 'run', '--rm',
-                                    '--entrypoint', entrypoint, '--volume',
-                                    test_data_file + ':/opt/openwisp/data.py',
-                                    'dashboard'],
-                                   universal_newlines=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   cwd=cls.root_location)
+            cmd = subprocess.Popen(
+                [
+                    'docker-compose',
+                    'run',
+                    '--rm',
+                    '--entrypoint',
+                    entrypoint,
+                    '--volume',
+                    test_data_file + ':/opt/openwisp/data.py',
+                    'dashboard',
+                ],
+                universal_newlines=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=cls.root_location,
+            )
             output, error = map(str, cmd.communicate())
             with open(cls.config['logs_file'], 'w') as logs_file:
                 logs_file.write(output)
                 logs_file.write(error)
-            subprocess.run(['docker-compose', 'up', '--detach'],
-                           stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL,
-                           cwd=cls.root_location)
+            subprocess.run(
+                ['docker-compose', 'up', '--detach'],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd=cls.root_location,
+            )
         # Create base drivers (Firefox)
-        if cls.config['driver'] == "firefox":
+        if cls.config['driver'] == 'firefox':
             profile = webdriver.FirefoxProfile()
             profile.accept_untrusted_certs = True
             options = webdriver.FirefoxOptions()
@@ -83,25 +93,31 @@ class TestServices(TestUtilities, unittest.TestCase):
             if cls.config['headless']:
                 options.add_argument('-headless')
             cls.base_driver = webdriver.Firefox(
-                options=options, capabilities=capabilities,
+                options=options,
+                capabilities=capabilities,
                 service_log_path='/tmp/geckodriver.log',
-                firefox_profile=profile)
+                firefox_profile=profile,
+            )
             cls.second_driver = webdriver.Firefox(
-                options=options, capabilities=capabilities,
+                options=options,
+                capabilities=capabilities,
                 service_log_path='/tmp/geckodriver.log',
-                firefox_profile=profile)
+                firefox_profile=profile,
+            )
         # Create base drivers (Chromium)
-        if cls.config['driver'] == "chromium":
+        if cls.config['driver'] == 'chromium':
             chrome_options = ChromiumOptions()
             chrome_options.add_argument('--ignore-certificate-errors')
             capabilities = DesiredCapabilities.CHROME
             capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
             if cls.config['headless']:
-                chrome_options.add_argument("--headless")
-            cls.base_driver = webdriver.Chrome(options=chrome_options,
-                                               desired_capabilities=capabilities)
-            cls.second_driver = webdriver.Chrome(options=chrome_options,
-                                                 desired_capabilities=capabilities)
+                chrome_options.add_argument('--headless')
+            cls.base_driver = webdriver.Chrome(
+                options=chrome_options, desired_capabilities=capabilities
+            )
+            cls.second_driver = webdriver.Chrome(
+                options=chrome_options, desired_capabilities=capabilities
+            )
         cls.base_driver.set_window_size(1366, 768)
         cls.second_driver.set_window_size(1366, 768)
 
@@ -111,19 +127,19 @@ class TestServices(TestUtilities, unittest.TestCase):
             try:
                 cls._delete_object(resource_link)
             except NoSuchElementException:
-                print("Unable to delete resource at: " +
-                      resource_link)
+                print('Unable to delete resource at: ' + resource_link)
         cls.second_driver.close()
         cls.base_driver.close()
         if cls.failed_test and cls.config['logs']:
-            cmd = subprocess.Popen(['docker-compose', 'logs'],
-                                   universal_newlines=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   cwd=cls.root_location)
+            cmd = subprocess.Popen(
+                ['docker-compose', 'logs'],
+                universal_newlines=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=cls.root_location,
+            )
             output, _ = map(str, cmd.communicate())
-            print("One of the containers are down!\nOutput:\n" +
-                  output)
+            print('One of the containers are down!\nOutput:\n' + output)
 
     @classmethod
     def _delete_object(cls, resource_link):
@@ -131,9 +147,9 @@ class TestServices(TestUtilities, unittest.TestCase):
         Takes URL for location to delete.
         """
         cls.base_driver.get(resource_link)
-        cls.base_driver.find_element_by_class_name('submit-row') \
-                       .find_element_by_class_name('deletelink-box') \
-                       .click()
+        cls.base_driver.find_element_by_class_name(
+            'submit-row'
+        ).find_element_by_class_name('deletelink-box').click()
         cls.base_driver.find_element_by_xpath('//input[@type="submit"]').click()
 
     def test_topology_graph(self):
@@ -154,9 +170,12 @@ class TestServices(TestUtilities, unittest.TestCase):
             self.base_driver.find_element_by_class_name('logout')
             self.second_driver.find_element_by_class_name('logout')
         except NoSuchElementException:
-            message = 'Login failed. Credentials used were username: ' \
-                      '{} & Password: {}'.format(self.config['username'],
-                                                 self.config['password'])
+            message = (
+                'Login failed. Credentials used were username: '
+                '{} & Password: {}'.format(
+                    self.config['username'], self.config['password']
+                )
+            )
             self.fail(message)
 
     def test_console_errors(self):
@@ -210,12 +229,14 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.login(driver=self.second_driver)
         self.create_mobile_location(location_name)
         self.get_resource(location_name, '/admin/geo/location/')
-        self.get_resource(location_name, '/admin/geo/location/',
-                          driver=self.second_driver)
+        self.get_resource(
+            location_name, '/admin/geo/location/', driver=self.second_driver
+        )
         mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
         self.assertEqual(mark, 0)
-        self.second_driver \
-            .find_element_by_class_name('leaflet-draw-draw-marker').click()
+        self.second_driver.find_element_by_class_name(
+            'leaflet-draw-draw-marker'
+        ).click()
         self.second_driver.find_element_by_id('id_geometry-map').click()
         self.second_driver.find_element_by_name('_save').click()
         mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
@@ -228,9 +249,10 @@ class TestServices(TestUtilities, unittest.TestCase):
         """
         self.login()
         self.create_superuser()
-        self.assertEqual('The user "test_superuser" was changed successfully.',
-                         self.base_driver
-                             .find_elements_by_class_name('success')[0].text)
+        self.assertEqual(
+            'The user "test_superuser" was changed successfully.',
+            self.base_driver.find_elements_by_class_name('success')[0].text,
+        )
 
     def test_forgot_password(self):
         """
@@ -240,60 +262,98 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.base_driver.get(self.config['app_url'] + '/accounts/password/reset/')
         self.base_driver.find_element_by_name('email').send_keys('admin@example.com')
         self.base_driver.find_element_by_xpath('//input[@type="submit"]').click()
-        self.assertIn('We have sent you an e-mail. Please contact us if you '
-                      'do not receive it within a few minutes.',
-                      self.base_driver.page_source)
+        self.assertIn(
+            'We have sent you an e-mail. Please contact us if you '
+            'do not receive it within a few minutes.',
+            self.base_driver.page_source,
+        )
 
     def test_celery(self):
-        '''
+        """
         Ensure celery and celery-beat tasks are registered.
-        '''
-        cmd = subprocess.Popen(['docker-compose', 'run', '--rm',
-                                'celery', 'celery', '-A', 'openwisp',
-                                'inspect', 'registered'],
-                               universal_newlines=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               cwd=self.root_location)
+        """
+        cmd = subprocess.Popen(
+            [
+                'docker-compose',
+                'run',
+                '--rm',
+                'celery',
+                'celery',
+                '-A',
+                'openwisp',
+                'inspect',
+                'registered',
+            ],
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.root_location,
+        )
         output, error = map(str, cmd.communicate())
-        if (('openwisp.tasks.radius_tasks' not in output) or
-                ('openwisp.tasks.save_snapshot' not in output) or
-                ('openwisp.tasks.update_topology' not in output) or
-                ('openwisp_controller.connection.tasks.update_config' not in output)):
-            self.fail("Not all celery / celery-beat tasks are registered\nOutput:\n" +
-                      output + "\nError:\n" + error)
+        if (
+            ('openwisp.tasks.radius_tasks' not in output)
+            or ('openwisp.tasks.save_snapshot' not in output)
+            or ('openwisp.tasks.update_topology' not in output)
+            or ('openwisp_controller.connection.tasks.update_config' not in output)
+        ):
+            self.fail(
+                'Not all celery / celery-beat tasks are registered\nOutput:\n'
+                + output
+                + '\nError:\n'
+                + error
+            )
 
     def test_freeradius(self):
-        '''
+        """
         Ensure freeradius service is working correctly.
-        '''
-        cmd = subprocess.Popen(['docker', 'run', '-it', '--rm',
-                                '--network', 'docker-openwisp_default',
-                                '2stacks/radtest', 'radtest', 'admin',
-                                'admin', 'freeradius', '0', 'testing123'],
-                               universal_newlines=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               cwd=self.root_location)
+        """
+        cmd = subprocess.Popen(
+            [
+                'docker',
+                'run',
+                '-it',
+                '--rm',
+                '--network',
+                'docker-openwisp_default',
+                '2stacks/radtest',
+                'radtest',
+                'admin',
+                'admin',
+                'freeradius',
+                '0',
+                'testing123',
+            ],
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.root_location,
+        )
         output, error = map(str, cmd.communicate())
         if 'Received Access-Accept' not in output:
-            self.fail("Request not Accepted!\nOutput:\n" +
-                      output + "\nError:\n" + error)
+            self.fail(
+                'Request not Accepted!\nOutput:\n' + output + '\nError:\n' + error
+            )
 
     def test_containers_down(self):
-        '''
+        """
         Ensure freeradius service is working correctly.
-        '''
-        cmd = subprocess.Popen(['docker-compose', 'ps'],
-                               universal_newlines=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               cwd=self.root_location)
+        """
+        cmd = subprocess.Popen(
+            ['docker-compose', 'ps'],
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.root_location,
+        )
         output, error = map(str, cmd.communicate())
         if 'Exit' in output:
-            self.fail("One of the containers are down!\nOutput:\n" +
-                      output + "\nError:\n" + error)
+            self.fail(
+                'One of the containers are down!\nOutput:\n'
+                + output
+                + '\nError:\n'
+                + error
+            )
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main(verbosity=3)

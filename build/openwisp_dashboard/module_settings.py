@@ -54,11 +54,13 @@ INSTALLED_APPS = [
     'openwisp_radius',
 ]
 
-EXTENDED_APPS = ['django_freeradius',
-                 'django_netjsongraph',
-                 'django_netjsonconfig',
-                 'django_x509',
-                 'django_loci']
+EXTENDED_APPS = [
+    'django_freeradius',
+    'django_netjsongraph',
+    'django_netjsonconfig',
+    'django_x509',
+    'django_loci',
+]
 
 TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
 TOPOLOGY_API_BASEURL = f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}'

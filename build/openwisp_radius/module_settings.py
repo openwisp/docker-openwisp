@@ -50,27 +50,13 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': ['email', 'public_profile'],
         'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
         'INIT_PARAMS': {'cookie': True},
-        'FIELDS': [
-            'id',
-            'email',
-            'name',
-            'first_name',
-            'last_name',
-            'verified',
-        ],
+        'FIELDS': ['id', 'email', 'name', 'first_name', 'last_name', 'verified'],
         'VERIFIED_EMAIL': True,
     },
     'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    },
 }
 
-DJANGO_FREERADIUS_EXTRA_NAS_TYPES = (
-    ('cisco', 'Cisco Router'),
-)
+DJANGO_FREERADIUS_EXTRA_NAS_TYPES = (('cisco', 'Cisco Router'),)
