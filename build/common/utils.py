@@ -11,6 +11,7 @@ class UwsgiPacketHeader(ctypes.Structure):
         uint8_t modifier2;
     }
     """
+
     _pack_ = 1
     _fields_ = [
         ("modifier1", ctypes.c_int8),
@@ -55,13 +56,9 @@ class UwsgiVar(object):
 
 
 def pack_uwsgi_vars(var):
-    encoded_vars = [
-        (k.encode('utf-8'), v.encode('utf-8'))
-        for k, v in var.items()
-    ]
+    encoded_vars = [(k.encode('utf-8'), v.encode('utf-8')) for k, v in var.items()]
     packed_vars = b''.join(
-        bytes(UwsgiVar(len(k), k, len(v), v))
-        for k, v in encoded_vars
+        bytes(UwsgiVar(len(k), k, len(v), v)) for k, v in encoded_vars
     )
     packet_header = bytes(UwsgiPacketHeader(0, len(packed_vars), 0))
     return packet_header + packed_vars
@@ -79,8 +76,7 @@ def parse_addr(addr, default_port=3030):
             port = parts.port
     elif isinstance(addr, (list, tuple, set)):
         host, port = addr
-    return (host or '127.0.0.1',
-            int(port) if port else default_port)
+    return (host or '127.0.0.1', int(port) if port else default_port)
 
 
 def get_host_from_url(url):
@@ -100,8 +96,7 @@ def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
         s = socket.socket(family=socket.AF_UNIX, type=sock_type)
     else:
         addr = parse_addr(addr=uwsgi_addr)
-        s = socket.socket(*socket.getaddrinfo(
-            addr[0], addr[1], 0, sock_type)[0][:2])
+        s = socket.socket(*socket.getaddrinfo(addr[0], addr[1], 0, sock_type)[0][:2])
 
     if timeout:
         s.settimeout(timeout)
@@ -122,9 +117,9 @@ def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
     return b''.join(response).decode('utf8')
 
 
-def uwsgi_curl(uwsgi_addr, url='localhost', method='GET',
-               body='', timeout=0, headers=(),
-               udp=False):
+def uwsgi_curl(
+    uwsgi_addr, url='localhost', method='GET', body='', timeout=0, headers=(), udp=False
+):
     host, uri = get_host_from_url(url)
     parts_uri = urlsplit(uri)
 
@@ -150,6 +145,7 @@ def uwsgi_curl(uwsgi_addr, url='localhost', method='GET',
     var['SERVER_NAME'] = var['HTTP_HOST']
     if port:
         var['SERVER_PORT'] = str(port)
-    result = ask_uwsgi(uwsgi_addr=uwsgi_addr, var=var, body=body,
-                       timeout=timeout, udp=udp)
+    result = ask_uwsgi(
+        uwsgi_addr=uwsgi_addr, var=var, body=body, timeout=timeout, udp=udp
+    )
     return result

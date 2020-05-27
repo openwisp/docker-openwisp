@@ -17,7 +17,7 @@ def database_status():
             sslmode=os.environ['DB_SSLMODE'],
             sslcert=os.environ['DB_SSLCERT'],
             sslkey=os.environ['DB_SSLKEY'],
-            sslrootcert=os.environ['DB_SSLROOTCERT']
+            sslrootcert=os.environ['DB_SSLROOTCERT'],
         )
     except psycopg2.OperationalError:
         time.sleep(3)
@@ -28,8 +28,9 @@ def database_status():
 
 def dashboard_status():
     try:
-        uwsgi_curl(os.environ['DASHBOARD_APP_SERVICE'] +
-                   ":" + os.environ['DASHBOARD_APP_PORT'])
+        uwsgi_curl(
+            os.environ['DASHBOARD_APP_SERVICE'] + ":" + os.environ['DASHBOARD_APP_PORT']
+        )
     except OSError:
         time.sleep(3)
         return False
@@ -53,6 +54,7 @@ if __name__ == "__main__":
     # Database Connection
     if "database" in arguments:
         import psycopg2
+
         print("Waiting for database to become available...")
         connected = False
         while not connected:
@@ -68,6 +70,7 @@ if __name__ == "__main__":
     # Redis Connection
     if "redis" in arguments:
         import redis
+
         print("Waiting for redis to become available...")
         connected = False
         while not connected:

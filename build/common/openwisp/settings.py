@@ -53,11 +53,14 @@ TEMPLATES = [
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'OPTIONS': {
             'loaders': [
-                ('django.template.loaders.cached.Loader', [
-                    'django.template.loaders.filesystem.Loader',
-                    'django.template.loaders.app_directories.Loader',
-                    'openwisp_utils.loaders.DependencyLoader'
-                ]),
+                (
+                    'django.template.loaders.cached.Loader',
+                    [
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                        'openwisp_utils.loaders.DependencyLoader',
+                    ],
+                ),
             ],
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -70,8 +73,9 @@ TEMPLATES = [
 ]
 
 if 'MODULE_NAME' == 'dashboard':
-    TEMPLATES[0]['OPTIONS']['context_processors'] \
-        .append('openwisp_utils.admin_theme.context_processor.menu_items')
+    TEMPLATES[0]['OPTIONS']['context_processors'].append(
+        'openwisp_utils.admin_theme.context_processor.menu_items'
+    )
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
@@ -82,7 +86,7 @@ WSGI_APPLICATION = 'openwisp.wsgi.application'
 ASGI_APPLICATION = 'openwisp_controller.geo.channels.routing.channel_routing'
 
 REDIS_HOST = os.environ['REDIS_HOST']
-CELERY_BROKER_URL = 'redis://'+REDIS_HOST+':6379/1'
+CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':6379/1'
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -92,7 +96,7 @@ DB_OPTIONS = {
     "sslmode": os.environ['DB_SSLMODE'],
     'sslkey': os.environ['DB_SSLKEY'],
     'sslcert': os.environ['DB_SSLCERT'],
-    'sslrootcert': os.environ['DB_SSLROOTCERT']
+    'sslrootcert': os.environ['DB_SSLROOTCERT'],
 }
 DB_OPTIONS.update(json.loads(os.environ['DB_OPTIONS']))
 
@@ -104,7 +108,7 @@ DATABASES = {
         'PASSWORD': os.environ['DB_PASS'],
         'HOST': os.environ['DB_HOST'],
         'PORT': os.environ['DB_PORT'],
-        'OPTIONS': DB_OPTIONS
+        'OPTIONS': DB_OPTIONS,
     },
 }
 
@@ -124,10 +128,8 @@ CHANNEL_LAYERS = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://'+REDIS_HOST+':6379/1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+        'LOCATION': 'redis://' + REDIS_HOST + ':6379/1',
+        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient',},
     }
 }
 
@@ -146,7 +148,9 @@ LEAFLET_CONFIG = {
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+    },
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
@@ -186,17 +190,15 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {
-        'user_filter': {
-            '()': 'openwisp.utils.HostFilter',
-        },
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
-        },
+        'user_filter': {'()': 'openwisp.utils.HostFilter',},
+        'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse',},
     },
     'formatters': {
         'verbose': {
-            'format': ('\n[%(host)s] - %(levelname)s, time: [%(asctime)s],'
-                       'process: %(process)d, thread: %(thread)d\n%(message)s')
+            'format': (
+                '\n[%(host)s] - %(levelname)s, time: [%(asctime)s],'
+                'process: %(process)d, thread: %(thread)d\n%(message)s'
+            )
         },
     },
     'handlers': {
@@ -215,10 +217,7 @@ LOGGING = {
     },
     'root': {
         'level': os.environ['DJANGO_LOG_LEVEL'],
-        'handlers': [
-            'console',
-            'mail_admins',
-        ]
+        'handlers': ['console', 'mail_admins',],
     },
 }
 
@@ -228,8 +227,10 @@ LOGGING = {
 if os.environ['DJANGO_SENTRY_DSN']:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
-    sentry_sdk.init(dsn=os.environ['DJANGO_SENTRY_DSN'],
-                    integrations=[DjangoIntegration()])
+
+    sentry_sdk.init(
+        dsn=os.environ['DJANGO_SENTRY_DSN'], integrations=[DjangoIntegration()]
+    )
 
 try:
     from openwisp.module_settings import *
