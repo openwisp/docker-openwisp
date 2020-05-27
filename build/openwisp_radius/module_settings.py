@@ -4,8 +4,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # openwisp admin theme
-    'openwisp_utils.admin_theme',
     # all-auth
     'django.contrib.sites',
     'allauth',
@@ -13,8 +11,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'corsheaders',
     'openwisp_users',
-    # admin
-    'django.contrib.admin',
     # rest framework
     'rest_framework',
     'django_filters',
