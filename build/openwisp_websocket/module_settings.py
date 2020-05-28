@@ -34,7 +34,9 @@ INSTALLED_APPS = [
     'channels',
 ]
 
-EXTENDED_APPS = ['django_netjsongraph',
-                 'django_netjsonconfig',
-                 'django_x509',
-                 'django_loci']
+EXTENDED_APPS = [
+    'django_netjsongraph',
+    'django_netjsonconfig',
+    'django_x509',
+    'django_loci',
+]

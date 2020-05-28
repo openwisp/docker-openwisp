@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     # channels
-    'channels'
+    'channels',
 ]
 
 EXTENDED_APPS = [
@@ -42,7 +42,5 @@ EXTENDED_APPS = [
     'django_loci',
 ]
 
-DJANGO_X509_DEFAULT_CERT_VALIDITY = \
-    int(os.environ['DJANGO_X509_DEFAULT_CERT_VALIDITY'])
-DJANGO_X509_DEFAULT_CA_VALIDITY = \
-    int(os.environ['DJANGO_X509_DEFAULT_CA_VALIDITY'])
+DJANGO_X509_DEFAULT_CERT_VALIDITY = int(os.environ['DJANGO_X509_DEFAULT_CERT_VALIDITY'])
+DJANGO_X509_DEFAULT_CA_VALIDITY = int(os.environ['DJANGO_X509_DEFAULT_CA_VALIDITY'])

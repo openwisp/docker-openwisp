@@ -27,6 +27,7 @@ def openwisp_controller_urls():
     # Setting correct urlpatterns for the
     # modules -- used in urls.py
     from openwisp_controller.urls import urlpatterns as controller_urls
+
     exclude = ["openwisp_users.accounts.urls"]
     for url in controller_urls[:]:
         if url.urlconf_module.__name__ in exclude:
