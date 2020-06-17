@@ -25,20 +25,19 @@ INSTALLED_APPS = [
     'openwisp_radius',
 ]
 
-EXTENDED_APPS = ['django_freeradius']
-
 # Swapper model definitions
-DJANGO_FREERADIUS_RADIUSREPLY_MODEL = 'openwisp_radius.RadiusReply'
-DJANGO_FREERADIUS_RADIUSGROUPREPLY_MODEL = 'openwisp_radius.RadiusGroupReply'
-DJANGO_FREERADIUS_RADIUSCHECK_MODEL = 'openwisp_radius.RadiusCheck'
-DJANGO_FREERADIUS_RADIUSGROUPCHECK_MODEL = 'openwisp_radius.RadiusGroupCheck'
-DJANGO_FREERADIUS_RADIUSACCOUNTING_MODEL = 'openwisp_radius.RadiusAccounting'
-DJANGO_FREERADIUS_NAS_MODEL = 'openwisp_radius.Nas'
-DJANGO_FREERADIUS_RADIUSUSERGROUP_MODEL = 'openwisp_radius.RadiusUserGroup'
-DJANGO_FREERADIUS_RADIUSPOSTAUTH_MODEL = 'openwisp_radius.RadiusPostAuth'
-DJANGO_FREERADIUS_RADIUSBATCH_MODEL = 'openwisp_radius.RadiusBatch'
-DJANGO_FREERADIUS_RADIUSGROUP_MODEL = 'openwisp_radius.RadiusGroup'
-DJANGO_FREERADIUS_RADIUSTOKEN_MODEL = 'openwisp_radius.RadiusToken'
+OPENWISP_RADIUS_RADIUSREPLY_MODEL = 'openwisp_radius.RadiusReply'
+OPENWISP_RADIUS_RADIUSGROUPREPLY_MODEL = 'openwisp_radius.RadiusGroupReply'
+OPENWISP_RADIUS_RADIUSCHECK_MODEL = 'openwisp_radius.RadiusCheck'
+OPENWISP_RADIUS_RADIUSGROUPCHECK_MODEL = 'openwisp_radius.RadiusGroupCheck'
+OPENWISP_RADIUS_RADIUSACCOUNTING_MODEL = 'openwisp_radius.RadiusAccounting'
+OPENWISP_RADIUS_NAS_MODEL = 'openwisp_radius.Nas'
+OPENWISP_RADIUS_RADIUSUSERGROUP_MODEL = 'openwisp_radius.RadiusUserGroup'
+OPENWISP_RADIUS_RADIUSPOSTAUTH_MODEL = 'openwisp_radius.RadiusPostAuth'
+OPENWISP_RADIUS_RADIUSBATCH_MODEL = 'openwisp_radius.RadiusBatch'
+OPENWISP_RADIUS_RADIUSGROUP_MODEL = 'openwisp_radius.RadiusGroup'
+OPENWISP_RADIUS_RADIUSTOKEN_MODEL = 'openwisp_radius.RadiusToken'
+OPENWISP_RADIUS_EXTRA_NAS_TYPES = (('cisco', 'Cisco Router'),)
 
 SOCIALACCOUNT_PROVIDERS = {
     'facebook': {
@@ -54,5 +53,3 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {'access_type': 'online'},
     },
 }
-
-DJANGO_FREERADIUS_EXTRA_NAS_TYPES = (('cisco', 'Cisco Router'),)

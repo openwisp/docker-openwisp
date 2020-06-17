@@ -3,7 +3,7 @@ FROM python:3.7.5-slim-buster AS SYSTEM
 # System requirements:
 # 1. Pillow: zlib1g-dev libjpeg-dev
 # 2. gettext: Required by envsubst used in scripts
-# 3. django-freeradius/weasyprint: libcairo2 libpangocairo-1.0
+# 3. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
 RUN apt update && \
     apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev \
                 libcairo2 libpangocairo-1.0 gdal-bin gettext && \
@@ -23,9 +23,7 @@ ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.5.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_CONTROLLER_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.4.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_TOPOLOGY_SOURCE}
-ARG DJANGO_FREERADIUS_SOURCE=https://github.com/openwisp/django-freeradius/tarball/a36d5cd5af8bf552afede6be628f6d439f6eade8
-RUN pip install --upgrade --prefix='/install' ${DJANGO_FREERADIUS_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/529f07f011c6ed33f88cbdf46da344ca70914de4
+ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/1636c0a422acb356ddadcca11d933cb932328c0e
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.2.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_USERS_SOURCE}
