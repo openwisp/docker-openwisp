@@ -56,7 +56,6 @@ INSTALLED_APPS = [
 
 EXTENDED_APPS = [
     'django_freeradius',
-    'django_netjsongraph',
     'django_netjsonconfig',
     'django_x509',
     'django_loci',
@@ -69,5 +68,4 @@ if not env_bool(os.environ['USE_OPENWISP_RADIUS']):
     EXTENDED_APPS.remove('django_freeradius')
     INSTALLED_APPS.remove('openwisp_radius')
 if not env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
-    EXTENDED_APPS.remove('django_netjsongraph')
     INSTALLED_APPS.remove('openwisp_network_topology')

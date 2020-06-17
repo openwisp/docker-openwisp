@@ -52,7 +52,6 @@ You can build with your own python package by creating a file named `.build.env`
 - `OPENWISP_UTILS_SOURCE`
 - `DJANGO_SOURCE`
 - `DJANGO_NETJSONCONFIG_SOURCE`
-- `DJANGO_NETJSONGRAPH_SOURCE`
 - `DJANGO_X509_SOURCE`
 - `DJANGO_FREERADIUS_SOURCE`
 

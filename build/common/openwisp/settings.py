@@ -219,6 +219,13 @@ LOGGING = {
         'level': os.environ['DJANGO_LOG_LEVEL'],
         'handlers': ['console', 'mail_admins',],
     },
+    'loggers': {
+        'pre_django_setup': {
+            'level': os.environ['DJANGO_LOG_LEVEL'],
+            'handlers': ['console'],
+            'propagate': False,
+        }
+    }
 }
 
 # Sentry
