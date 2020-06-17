@@ -16,5 +16,3 @@ INSTALLED_APPS = [
     # rest framework
     'rest_framework',
 ]
-
-EXTENDED_APPS = ['django_netjsongraph']
