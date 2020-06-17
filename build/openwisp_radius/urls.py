@@ -1,5 +1,6 @@
-from django.conf.urls import include, url
+from django.urls import include, path
+from openwisp_radius.api.urls import get_api_urls
 
 urlpatterns = [
-    url(r'^', include('openwisp_radius.urls', namespace='freeradius')),
+    path('api/v1/', include((get_api_urls(), 'radius'), namespace='radius')),
 ]

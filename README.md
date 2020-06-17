@@ -53,7 +53,6 @@ You can build with your own python package by creating a file named `.build.env`
 - `DJANGO_SOURCE`
 - `DJANGO_NETJSONCONFIG_SOURCE`
 - `DJANGO_X509_SOURCE`
-- `DJANGO_FREERADIUS_SOURCE`
 
 For example, if you want to supply your own django and openwisp-controller source, your `.build.env` should be written like this:
 
