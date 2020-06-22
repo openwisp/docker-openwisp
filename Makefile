@@ -2,6 +2,7 @@
 # the heading "Makefile Options".
 
 SHELL := /bin/bash
+.SILENT: start stop
 
 default: compose-build
 
@@ -55,6 +56,27 @@ clean:
 				openwisp/openwisp-base:intermedia-python \
 				openwisp/openwisp-nfs:latest \
 				`docker images -f "dangling=true" -q`
+
+# Production
+start:
+	printf '\e[1;34m%-6s\e[m\n' "Downloading OpenWISP images..."
+	# TODO: Log level has bugs and isn't available on common supported version
+	# but should be used in future
+	# docker-compose --log-level WARNING pull -q
+	docker-compose pull &> /dev/null
+	printf '\e[1;34m%-6s\e[m\n' "Starting Services..."
+	# docker-compose --log-level WARNING up -d
+	docker-compose up -d &> /dev/null
+	printf '\e[1;32m%-6s\e[m\n' "Success: OpenWISP should be available at your dashboard domain in 2 minutes."
+
+stop:
+	printf '\e[1;31m%-6s\e[m\n' "Stopping OpenWISP services..."
+	# TODO: Log level has bugs and isn't available on common supported version
+	# but should be used in future
+	# docker-compose --log-level ERROR stop
+	# docker-compose --log-level ERROR down --remove-orphans
+	docker-compose stop &> /dev/null
+	docker-compose down --remove-orphans &> /dev/null
 
 # Publish
 USER = openwisp
