@@ -14,7 +14,13 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 
 ## Deployment
 
-**Note:** If you are only examining this OpenWISP capabilities, the [workbench setup](#workbench-setup) documentation below might be helpful.
+### Compose:
+
+[Setup on docker-compose](docs/QUICK_SETUP.md) is suitable for single-server setup requirements. It is quicker and requires less prior knowledge about openwisp & networking.
+
+### Kubernetes:
+
+Setup on kubernetes is complex and requires prior knowledge about linux systems, kubernetes, docker & openwisp. However, it provides scalability for very large networks.
 
 - [Bare Metal](docs/kubernetes/BARE_METAL.md)
 - [Google Cloud](docs/kubernetes/GOOGLE_CLOUD.md)
@@ -121,12 +127,14 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 ### Makefile Options
 
 Most commonly used:
+- `start`: Start OpenWISP containers on your server.
+- `stop`: Stop make containers on your server.
 - `develop`: Bundles all the commands required to build the images and run containers.
 - `runtests`: Run testcases to ensure all the services are working.
-- `publish` <USER=docker-username> <TAG=image-tag>: Build, test and publish images.
 - `clean`: Aggressively purge all the containers, images, volumes & networks related to `docker-openwisp`.
 
 Other options:
+- `publish` <USER=docker-username> <TAG=image-tag>: Build, test and publish images.
 - `python-build`: Generate a random django secret and set it in the `.env` file.
 - `nfs-build`: Build openwisp-nfs server image.
 - `base-build`: Build openwisp-base image. The base image is used in other OpenWISP images.
