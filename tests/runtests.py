@@ -27,7 +27,7 @@ class Pretest(TestConfig, unittest.TestCase):
         max_retries = self.config['services_max_retries']
         delay_retries = self.config['services_delay_retries']
         admin_login_page = self.config['app_url'] + '/admin/login/'
-        for i in range(1, max_retries):
+        for _ in range(1, max_retries):
             try:
                 # check if we can reach to admin login page
                 # and the page return 200 OK status code
