@@ -8,7 +8,6 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
 from utils import TestConfig, TestUtilities
 
 
@@ -234,11 +233,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         )
         mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
         self.assertEqual(mark, 0)
-        self.second_driver.find_element_by_class_name(
-            'leaflet-draw-draw-marker'
-        ).click()
-        self.second_driver.find_element_by_id('id_geometry-map').click()
-        self.second_driver.find_element_by_name('_save').click()
+        self.add_mobile_location_point(location_name, driver=self.second_driver)
         mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
         self.assertEqual(mark, 1)
 
