@@ -19,7 +19,7 @@ RUN apt update && \
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
-ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.5.0
+ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_CONTROLLER_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.4.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_TOPOLOGY_SOURCE}
@@ -27,8 +27,6 @@ ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/1
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.2.0
 RUN pip install --upgrade --prefix='/install' ${OPENWISP_USERS_SOURCE}
-ARG DJANGO_NETJSONCONFIG_SOURCE=django-netjsonconfig~=0.10.0
-RUN pip install --upgrade --prefix='/install' ${DJANGO_NETJSONCONFIG_SOURCE}
 ARG DJANGO_X509_SOURCE=django-x509~=0.6.0
 RUN pip install --upgrade --prefix='/install' ${DJANGO_X509_SOURCE}
 ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.4.0

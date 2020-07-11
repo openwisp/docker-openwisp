@@ -104,7 +104,7 @@ def create_default_vpn(vpnName, vpnOrg, vpnDomain, defaultCa, defaultCert):
             'in your OpenVPN Server instance.'
         )
         defaultVpn.host = vpnDomain
-        defaultVpn.backend = 'django_netjsonconfig.vpn_backends.OpenVpn'
+        defaultVpn.backend = 'openwisp_controller.vpn_backends.OpenVpn'
         with open('openvpn.json', 'r') as json_file:
             json_data = json.load(json_file)
         defaultVpn.config = json_data
@@ -125,7 +125,7 @@ def create_default_vpn_template(defaultVpnClient, vpnOrg, defaultVpn):
         defaultTp.name = defaultVpnClient
         defaultTp.type = 'vpn'
         defaultTp.tags = 'Management, VPN'
-        defaultTp.backend = 'netjsonconfig.OpenWrt'
+        defaultTp.backend = 'openwisp_controller.vpn_backends.OpenWrt'
         defaultTp.vpn = defaultVpn
         defaultTp.default = True
         defaultTp.full_clean()
