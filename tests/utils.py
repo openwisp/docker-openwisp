@@ -160,6 +160,23 @@ class TestUtilities(TestConfig):
         self.objects_to_delete.append(driver.current_url)
         driver.get('{}/admin/geo/location/'.format(self.config['app_url']))
 
+    def add_mobile_location_point(self, location_name, driver=None):
+        """
+        Adds a point on map for an existing mobile location.
+        Argument:
+            location_name: location to use for operation
+            driver: selenium driver (default: cls.base_driver)
+        """
+        if not driver:
+            driver = self.base_driver
+        self.get_resource(location_name, '/admin/geo/location/', driver=driver)
+        driver.find_element_by_name('is_mobile').click()
+        driver.find_element_by_class_name('leaflet-draw-draw-marker').click()
+        driver.find_element_by_id('id_geometry-map').click()
+        driver.find_element_by_name('is_mobile').click()
+        driver.find_element_by_name('_save').click()
+        self.get_resource(location_name, '/admin/geo/location/', driver=driver)
+
     def create_network_topology(
         self,
         label='automated-selenium-test-01',

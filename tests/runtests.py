@@ -8,7 +8,6 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-
 from utils import TestConfig, TestUtilities
 
 
@@ -185,7 +184,11 @@ class TestServices(TestUtilities, unittest.TestCase):
             '/accounts/password/reset/',
             '/admin/config/device/add/',
             '/admin/config/template/add/',
+            '/admin/openwisp_radius/radiuscheck/add/',
             '/admin/openwisp_radius/radiusgroup/add/',
+            '/admin/openwisp_radius/radiusbatch/add/',
+            '/admin/openwisp_radius/nas/add/',
+            '/admin/openwisp_radius/radiusreply/',
             '/admin/geo/floorplan/add/',
             '/admin/topology/link/add/',
             '/admin/topology/node/add/',
@@ -232,13 +235,10 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.get_resource(
             location_name, '/admin/geo/location/', driver=self.second_driver
         )
+        self.base_driver.find_element_by_name('is_mobile').click()
         mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
         self.assertEqual(mark, 0)
-        self.second_driver.find_element_by_class_name(
-            'leaflet-draw-draw-marker'
-        ).click()
-        self.second_driver.find_element_by_id('id_geometry-map').click()
-        self.second_driver.find_element_by_name('_save').click()
+        self.add_mobile_location_point(location_name, driver=self.second_driver)
         mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
         self.assertEqual(mark, 1)
 
