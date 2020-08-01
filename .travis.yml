@@ -1,6 +1,6 @@
 ---
 os: linux
-dist: xenial
+dist: bionic
 services: docker
 language: python
 python: 3.7
@@ -12,8 +12,8 @@ branches:
 
 before_script:
   - sudo apt update
-  - sudo apt --yes install google-chrome-stable=73.0.3683.86-1
-  - wget https://chromedriver.storage.googleapis.com/73.0.3683.68/chromedriver_linux64.zip
+  - sudo apt --yes install google-chrome-stable=83.0.4103.116-1
+  - wget https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_linux64.zip
   - unzip chromedriver_linux64.zip -d /home/travis/bin
 
 jobs:
