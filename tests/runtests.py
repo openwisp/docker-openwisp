@@ -25,7 +25,7 @@ class Pretest(TestConfig, unittest.TestCase):
         isServiceReachable = False
         max_retries = self.config['services_max_retries']
         delay_retries = self.config['services_delay_retries']
-        admin_login_page = self.config['app_url'] + '/admin/login/'
+        admin_login_page = f"{self.config['app_url']}/admin/login/"
         for _ in range(1, max_retries):
             try:
                 # check if we can reach to admin login page
@@ -64,7 +64,7 @@ class TestServices(TestUtilities, unittest.TestCase):
                     '--entrypoint',
                     entrypoint,
                     '--volume',
-                    test_data_file + ':/opt/openwisp/data.py',
+                    f'{test_data_file}:/opt/openwisp/data.py',
                     'dashboard',
                 ],
                 universal_newlines=True,
@@ -126,7 +126,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             try:
                 cls._delete_object(resource_link)
             except NoSuchElementException:
-                print('Unable to delete resource at: ' + resource_link)
+                print(f'Unable to delete resource at: {resource_link}')
         cls.second_driver.close()
         cls.base_driver.close()
         if cls.failed_test and cls.config['logs']:
@@ -138,7 +138,7 @@ class TestServices(TestUtilities, unittest.TestCase):
                 cwd=cls.root_location,
             )
             output, _ = map(str, cmd.communicate())
-            print('One of the containers are down!\nOutput:\n' + output)
+            print(f'One of the containers are down!\nOutput:\n{output}')
 
     @classmethod
     def _delete_object(cls, resource_link):
@@ -171,9 +171,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         except NoSuchElementException:
             message = (
                 'Login failed. Credentials used were username: '
-                '{} & Password: {}'.format(
-                    self.config['username'], self.config['password']
-                )
+                f"{self.config['username']} & Password: {self.config['password']}"
             )
             self.fail(message)
 
@@ -259,7 +257,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         Test forgot password to ensure that
         postfix is working properly.
         """
-        self.base_driver.get(self.config['app_url'] + '/accounts/password/reset/')
+        self.base_driver.get(f"{self.config['app_url']}/accounts/password/reset/")
         self.base_driver.find_element_by_name('email').send_keys('admin@example.com')
         self.base_driver.find_element_by_xpath('//input[@type="submit"]').click()
         self.assertIn(
@@ -298,9 +296,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         ):
             self.fail(
                 'Not all celery / celery-beat tasks are registered\nOutput:\n'
-                + output
-                + '\nError:\n'
-                + error
+                f'{output}\nError:\n{error}'
             )
 
     def test_freeradius(self):
@@ -330,9 +326,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         )
         output, error = map(str, cmd.communicate())
         if 'Received Access-Accept' not in output:
-            self.fail(
-                'Request not Accepted!\nOutput:\n' + output + '\nError:\n' + error
-            )
+            self.fail(f'Request not Accepted!\nOutput:\n{output}\nError:\n{error}')
 
     def test_containers_down(self):
         """
@@ -348,10 +342,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         output, error = map(str, cmd.communicate())
         if 'Exit' in output:
             self.fail(
-                'One of the containers are down!\nOutput:\n'
-                + output
-                + '\nError:\n'
-                + error
+                f'One of the containers are down!\nOutput:\n{output}\nError:\n{error}'
             )
 
 
