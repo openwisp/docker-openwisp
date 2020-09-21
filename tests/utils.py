@@ -34,7 +34,7 @@ class TestUtilities(TestConfig):
             username = self.config['username']
         if not password:
             password = self.config['password']
-        driver.get(self.config['app_url'] + '/admin/login/')
+        driver.get(f"{self.config['app_url']}/admin/login/")
         if 'admin/login' in driver.current_url:
             driver.find_element_by_name('username').send_keys(username)
             driver.find_element_by_name('password').send_keys(password)
@@ -57,7 +57,7 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(self.config['app_url'] + '/admin/openwisp_users/user/add/')
+        driver.get(f"{self.config['app_url']}/admin/openwisp_users/user/add/")
         driver.find_element_by_name('username').send_keys(username)
         driver.find_element_by_name('email').send_keys(email)
         driver.find_element_by_name('password1').send_keys(password)
@@ -193,7 +193,7 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(self.config['app_url'] + '/admin/topology/topology/add/')
+        driver.get(f"{self.config['app_url']}/admin/topology/topology/add/")
         driver.find_element_by_name('label').send_keys(label)
         driver.find_element_by_name('organization').find_element_by_xpath(
             '//option[text()="default"]'
@@ -207,4 +207,4 @@ class TestUtilities(TestConfig):
             label, '/admin/topology/topology/', 'field-label', driver=driver
         )
         self.objects_to_delete.append(driver.current_url)
-        driver.get(self.config['app_url'] + '/admin/topology/topology/')
+        driver.get(f"{self.config['app_url']}/admin/topology/topology/")

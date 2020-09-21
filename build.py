@@ -15,12 +15,12 @@ def change_secret_key(keygen):
     file_string = file_handle.read()
     file_handle.close()
     file_string = re.sub(
-        r'DJANGO_SECRET_KEY=.*', r'DJANGO_SECRET_KEY=' + keygen, file_string
+        r'DJANGO_SECRET_KEY=.*', fr'DJANGO_SECRET_KEY={keygen}', file_string
     )
     if file_string[-1] != '\n':
         file_string += '\n'
     if 'DJANGO_SECRET_KEY' not in file_string:
-        file_string += 'DJANGO_SECRET_KEY=' + keygen
+        file_string += 'DJANGO_SECRET_KEY={}'.format(keygen)
     file_handle = open('.env', 'w')
     file_handle.write(file_string)
     file_handle.close()
