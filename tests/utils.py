@@ -34,7 +34,7 @@ class TestUtilities(TestConfig):
             username = self.config['username']
         if not password:
             password = self.config['password']
-        driver.get(self.config['app_url'] + '/admin/login/')
+        driver.get(f"{self.config['app_url']}/admin/login/")
         if 'admin/login' in driver.current_url:
             driver.find_element_by_name('username').send_keys(username)
             driver.find_element_by_name('password').send_keys(password)
@@ -57,7 +57,7 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(self.config['app_url'] + '/admin/openwisp_users/user/add/')
+        driver.get(f"{self.config['app_url']}/admin/openwisp_users/user/add/")
         driver.find_element_by_name('username').send_keys(username)
         driver.find_element_by_name('email').send_keys(email)
         driver.find_element_by_name('password1').send_keys(password)
@@ -78,7 +78,7 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get('{}{}'.format(self.config['app_url'], path))
+        driver.get(f"{self.config['app_url']}{path}")
         resources = driver.find_elements_by_class_name(select_field)
         for resource in resources:
             if len(resource.find_elements_by_link_text(resource_name)):
@@ -95,8 +95,7 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         path = (
-            '//a[contains(text(), "{}")]/../../'
-            '/input[@name="_selected_action"]'.format(name)
+            f'//a[contains(text(), "{name}")]/../../' '/input[@name="_selected_action"]'
         )
         driver.find_element_by_xpath(path).click()
 
@@ -111,10 +110,10 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get('{}{}'.format(self.config['app_url'], path))
+        driver.get(f"{self.config['app_url']}{path}")
         self.select_resource(name)
         driver.find_element_by_name('action').find_element_by_xpath(
-            '//option[@value="{}"]'.format(option)
+            f'//option[@value="{option}"]'
         ).click()
         driver.find_element_by_name('index').click()
 
@@ -145,7 +144,7 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get('{}/admin/geo/location/add/'.format(self.config['app_url']))
+        driver.get(f"{self.config['app_url']}/admin/geo/location/add/")
         driver.find_element_by_name('organization').find_element_by_xpath(
             '//option[text()="default"]'
         ).click()
@@ -158,7 +157,7 @@ class TestUtilities(TestConfig):
         # Add to delete list
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
         self.objects_to_delete.append(driver.current_url)
-        driver.get('{}/admin/geo/location/'.format(self.config['app_url']))
+        driver.get(f"{self.config['app_url']}/admin/geo/location/")
 
     def add_mobile_location_point(self, location_name, driver=None):
         """
@@ -193,7 +192,7 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(self.config['app_url'] + '/admin/topology/topology/add/')
+        driver.get(f"{self.config['app_url']}/admin/topology/topology/add/")
         driver.find_element_by_name('label').send_keys(label)
         driver.find_element_by_name('organization').find_element_by_xpath(
             '//option[text()="default"]'
@@ -207,4 +206,4 @@ class TestUtilities(TestConfig):
             label, '/admin/topology/topology/', 'field-label', driver=driver
         )
         self.objects_to_delete.append(driver.current_url)
-        driver.get(self.config['app_url'] + '/admin/topology/topology/')
+        driver.get(f"{self.config['app_url']}/admin/topology/topology/")
