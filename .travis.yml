@@ -5,6 +5,11 @@ services: docker
 language: python
 python: 3.7
 
+notifications:
+  # Posts a summary comment on Github incase code fails to build
+  webhooks: https://www.travisbuddy.com/
+  on_success: never
+
 branches:
   only:
   - master
