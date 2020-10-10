@@ -2,9 +2,21 @@
 # the heading "Makefile Options".
 
 SHELL := /bin/bash
-.SILENT: start stop
+.SILENT: pull start stop
 
 default: compose-build
+
+# Pull
+USER = registry.gitlab.com/openwisp/docker-openwisp
+TAG  = latest
+pull:
+	printf '\e[1;34m%-6s\e[m\n' "Downloading OpenWISP images..."
+	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-controller' 'openwisp-dashboard' \
+				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
+				 'openwisp-radius' 'openwisp-topology' 'openwisp-websocket' ; do \
+		docker pull --quiet $(USER)/$${image}:$(TAG) &> /dev/null; \
+		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:latest; \
+	done
 
 # Build
 python-build: build.py
@@ -58,13 +70,12 @@ clean:
 				`docker images -f "dangling=true" -q`
 
 # Production
-start:
-	printf '\e[1;34m%-6s\e[m\n' "Downloading OpenWISP images..."
+USER = registry.gitlab.com/openwisp/docker-openwisp
+TAG  = latest
+start: pull
+	printf '\e[1;34m%-6s\e[m\n' "Starting Services..."
 	# TODO: Log level has bugs and isn't available on common supported version
 	# but should be used in future
-	# docker-compose --log-level WARNING pull -q
-	docker-compose pull &> /dev/null
-	printf '\e[1;34m%-6s\e[m\n' "Starting Services..."
 	# docker-compose --log-level WARNING up -d
 	docker-compose up -d &> /dev/null
 	printf '\e[1;32m%-6s\e[m\n' "Success: OpenWISP should be available at your dashboard domain in 2 minutes."
@@ -79,13 +90,13 @@ stop:
 	docker-compose down --remove-orphans &> /dev/null
 
 # Publish
-USER = openwisp
+USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG  = latest
 publish: compose-build runtests nfs-build
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-controller' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-radius' 'openwisp-topology' 'openwisp-websocket' ; do \
-		docker tag openwisp/$${image}:latest  $(USER)/$${image}:$(TAG); \
+		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:latest; \
 	done
