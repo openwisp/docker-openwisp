@@ -1,7 +1,7 @@
 # Docker-OpenWISP
 
 [![Build Status](https://travis-ci.org/openwisp/docker-openwisp.svg?branch=master)](https://travis-ci.org/openwisp/docker-openwisp)
-[![Docker Hub](https://img.shields.io/badge/docker--hub-openwisp-blue.svg)](https://hub.docker.com/u/openwisp)
+[![GitLab Container Registery](https://img.shields.io/badge/registry-openwisp-blue.svg)](https://gitlab.com/openwisp/docker-openwisp/container_registry)
 [![Gitter](https://badges.gitter.im/openwisp/dockerize-openwisp.svg)](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
 [![GitHub license](https://img.shields.io/github/license/openwisp/docker-openwisp.svg)](https://github.com/openwisp/docker-openwisp/blob/master/LICENSE)
@@ -125,7 +125,8 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 ### Makefile Options
 
 Most commonly used:
-- `start`: Start OpenWISP containers on your server.
+- `start`<USER=docker-username> <TAG=image-tag>: Start OpenWISP containers on your server.
+- `pull`<USER=docker-username> <TAG=image-tag>: Pull Images from registry.
 - `stop`: Stop make containers on your server.
 - `develop`: Bundles all the commands required to build the images and run containers.
 - `runtests`: Run testcases to ensure all the services are working.
