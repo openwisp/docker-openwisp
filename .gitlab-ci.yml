@@ -1,0 +1,61 @@
+---
+
+stages:
+  - build
+  - test
+  - release
+
+variables:
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_NAME
+  CONTAINER_DEV_IMAGE: $CI_REGISTRY_IMAGE/develop
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE
+  CONTAINER_ID: '$CI_JOB_NAME-$CI_PROJECT_NAME-Pipeline$CI_PIPELINE_ID-Job$CI_JOB_ID'
+
+.build_template: &docker_build
+  image: docker:latest
+  services:
+    - docker:dind
+  tags:
+   - docker
+  stage: build
+  script:
+    - cd ./build
+    - docker build --pull -t $CONTAINER_TEST_IMAGE:$MODULE -f $BUILD_CONTEXT/Dockerfile .
+    - docker push $CONTAINER_TEST_IMAGE:$MODULE
+  # except:
+  #   - master
+
+
+before_script:
+  - docker info
+  - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token $CI_REGISTRY --password-stdin
+
+openwisp-base:
+  variables:
+    BUILD_CONTEXT: openwisp_base
+    MODULE: openwisp_base
+  <<: *docker_build
+
+.openwisp-controller:
+  variables:
+    BUILD_CONTEXT: openwisp_controller
+    MODULE: openwisp-controller
+  <<: *docker_build
+
+.openwisp-dashboard:
+  variables:
+    BUILD_CONTEXT: openwisp_dashboard
+    MODULE: openwisp-dashboard
+  <<: *docker_build
+
+.openwisp-radius:
+  variables:
+    BUILD_CONTEXT: openwisp_radius
+    MODULE: openwisp-radius
+  <<: *docker_build
+
+.openwisp-topology:
+  variables:
+    BUILD_CONTEXT: openwisp_topology
+    MODULE: openwisp-topology
+  <<: *docker_build
