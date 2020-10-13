@@ -98,5 +98,10 @@ publish: compose-build runtests nfs-build
 				 'openwisp-radius' 'openwisp-topology' 'openwisp-websocket' ; do \
 		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
-		docker push $(USER)/$${image}:latest; \
+		docker rmi $(USER)/$${image}:$(TAG); \
+		if [[ "$(TAG)" != "edge" ]] && [[ "$(TAG)" != "latest" ]]; then \
+			docker tag openwisp/$${image}:latest  $(USER)/$${image}:latest; \
+			docker push $(USER)/$${image}:latest; \
+			docker rmi $(USER)/$${image}:latest; \
+		fi \
 	done
