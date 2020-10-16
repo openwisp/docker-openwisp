@@ -19,7 +19,7 @@ services:
       - postfix
 
   controller:
-    image:  openwisp/openwisp-controller:latest
+    image: openwisp/openwisp-controller:latest
     build:
       context: build
       dockerfile: openwisp_controller/Dockerfile

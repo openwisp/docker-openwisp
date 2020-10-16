@@ -5,33 +5,32 @@ services: docker
 language: python
 python: 3.7
 
-notifications:
-  # Posts a summary comment on Github incase code fails to build
-  webhooks: https://www.travisbuddy.com/
-  on_success: never
-
 branches:
   only:
   - master
   - travis
 
 before_script:
+  - echo "$DOCKER_TOKEN" | docker login registry.gitlab.com --username "$DOCKER_USER" --password-stdin
   - sudo apt update
   - sudo apt --yes install google-chrome-stable=83.0.4103.116-1
   - wget https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_linux64.zip
   - unzip chromedriver_linux64.zip -d /home/travis/bin
+  - pip install selenium
+  - pip install -U https://github.com/openwisp/openwisp-utils/tarball/master#egg=openwisp_utils[qa]
 
 jobs:
   include:
     - stage: tests
       script:
-      - pip install selenium
-      - pip install -U https://github.com/openwisp/openwisp-utils/tarball/master#egg=openwisp_utils[qa]
-      - openwisp-qa-check --skip-checkmigrations
       # Setup for Test
       - export hosts="127.0.0.1 dashboard.openwisp.org controller.openwisp.org
                                 radius.openwisp.org topology.openwisp.org"
       - sudo bash -c 'echo "${hosts}" >> /etc/hosts'
-      - make compose-build
-      # Test
-      - make develop-runtests
+      # Test & Publish
+      - openwisp-qa-check --skip-checkmigrations
+      - make publish TAG=edge
+
+notifications:
+  webhooks: https://www.travisbuddy.com/
+  on_success: never
