@@ -1,4 +1,5 @@
 import os
+import ssl
 import subprocess
 import time
 import unittest
@@ -22,6 +23,10 @@ class Pretest(TestConfig, unittest.TestCase):
         if the openwisp-dashboard login page is reachable.
         Should be called first before calling another test.
         """
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
         isServiceReachable = False
         max_retries = self.config['services_max_retries']
         delay_retries = self.config['services_delay_retries']
@@ -30,7 +35,7 @@ class Pretest(TestConfig, unittest.TestCase):
             try:
                 # check if we can reach to admin login page
                 # and the page return 200 OK status code
-                if request.urlopen(admin_login_page).getcode() == 200:
+                if request.urlopen(admin_login_page, context=ctx).getcode() == 200:
                     isServiceReachable = True
                     break
             except Exception:
@@ -146,9 +151,10 @@ class TestServices(TestUtilities, unittest.TestCase):
         Takes URL for location to delete.
         """
         cls.base_driver.get(resource_link)
-        cls.base_driver.find_element_by_class_name(
-            'submit-row'
-        ).find_element_by_class_name('deletelink-box').click()
+        element = cls.base_driver.find_element_by_class_name('deletelink-box')
+        js = "arguments[0].setAttribute('style', 'display:block')"
+        cls.base_driver.execute_script(js, element)
+        element.find_element_by_class_name('deletelink').click()
         cls.base_driver.find_element_by_xpath('//input[@type="submit"]').click()
 
     def test_topology_graph(self):
@@ -248,7 +254,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.login()
         self.create_superuser()
         self.assertEqual(
-            'The user "test_superuser" was changed successfully.',
+            'The user “test_superuser” was changed successfully.',
             self.base_driver.find_elements_by_class_name('success')[0].text,
         )
 
@@ -288,45 +294,36 @@ class TestServices(TestUtilities, unittest.TestCase):
             cwd=self.root_location,
         )
         output, error = map(str, cmd.communicate())
-        if (
-            ('openwisp.tasks.radius_tasks' not in output)
-            or ('openwisp.tasks.save_snapshot' not in output)
-            or ('openwisp.tasks.update_topology' not in output)
-            or ('openwisp_controller.connection.tasks.update_config' not in output)
-        ):
-            self.fail(
-                'Not all celery / celery-beat tasks are registered\nOutput:\n'
-                f'{output}\nError:\n{error}'
-            )
 
-    def test_freeradius(self):
-        """
-        Ensure freeradius service is working correctly.
-        """
-        cmd = subprocess.Popen(
-            [
-                'docker',
-                'run',
-                '-it',
-                '--rm',
-                '--network',
-                'docker-openwisp_default',
-                '2stacks/radtest',
-                'radtest',
-                'admin',
-                'admin',
-                'freeradius',
-                '0',
-                'testing123',
-            ],
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=self.root_location,
-        )
-        output, error = map(str, cmd.communicate())
-        if 'Received Access-Accept' not in output:
-            self.fail(f'Request not Accepted!\nOutput:\n{output}\nError:\n{error}')
+        expected_output_list = [
+            "openwisp.tasks.radius_tasks",
+            "openwisp.tasks.save_snapshot",
+            "openwisp.tasks.update_topology",
+            "openwisp_controller.config.tasks.create_vpn_dh",
+            "openwisp_controller.config.tasks.update_template_related_config_status",
+            "openwisp_controller.connection.tasks.update_config",
+            "openwisp_notifications.tasks.delete_ignore_object_notification",
+            "openwisp_notifications.tasks.delete_notification",
+            "openwisp_notifications.tasks.delete_obsolete_objects",
+            "openwisp_notifications.tasks.delete_old_notifications",
+            "openwisp_notifications.tasks.ns_organization_created",
+            "openwisp_notifications.tasks.ns_organization_user_added_or_updated",
+            "openwisp_notifications.tasks.ns_organization_user_deleted",
+            "openwisp_notifications.tasks.ns_register_unregister_notification_type",
+            "openwisp_notifications.tasks.ns_user_created",
+            "openwisp_radius.tasks.cleanup_stale_radacct",
+            "openwisp_radius.tasks.deactivate_expired_users",
+            "openwisp_radius.tasks.delete_old_postauth",
+            "openwisp_radius.tasks.delete_old_radacct",
+            "openwisp_radius.tasks.delete_old_users",
+        ]
+
+        for expected_output in expected_output_list:
+            if expected_output not in output:
+                self.fail(
+                    'Not all celery / celery-beat tasks are registered\nOutput:\n'
+                    f'{output}\nError:\n{error}'
+                )
 
     def test_containers_down(self):
         """

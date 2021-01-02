@@ -19,7 +19,6 @@ Following are the options that can be changed. The list is divided in following 
 - [Database](#Database): Database settings. Database host setting is in "Host" section.
 - [Django](#Django): Additional django settings.
 - [Email](#Email): Email & postfix configurations.
-- [Freeradius](#Freeradius): Freeradius related settings.
 - [Cron](#Cron): Settings of the periodic tasks.
 - [Nginx](#Nginx): Nginx configurations.
 - [VPN](#VPN): Default VPN and VPN template related configurations.
@@ -39,7 +38,6 @@ Additionally, you can search for the following:
 - `CONTROLLER_`: All the OpenWISP controller specific settings.
 - `RADIUS_`: All the OpenWISP radius specific settings.
 - `TOPOLOGY_`: All the OpenWISP network topology specific settings.
-- `FREERADIUS_`: All the freeradius related settings.
 - `X509_`: All the configurations related to x509 CA and certificates.
 - `VPN_`: Default VPN and VPN template related configurations.
 - `CRON_`: Periodic tasks configurations
@@ -139,8 +137,8 @@ Additionally, you can search for the following:
 
 ### `SSL_CERT_MODE`
 
-- **Explaination:** Flag to enable or disable HTTPs. If it is set to `Yes`, letsencrypt certificates are automatically fetched with the help of certbot and a cronjob to ensure they stay updated is added. If it is set to `Develop`, self-signed certificates are used and cronjob for the certificates is set. If set to `No`, site is accessiable via HTTP, if set if `EXTERNAL`, it tells HTTPs is used but managed by external tool like loadbalancer / provider.
-- **Valid Values:** External | Yes | Develop | No
+- **Explaination:** Flag to enable or disable HTTPs. If it is set to `Yes`, letsencrypt certificates are automatically fetched with the help of certbot and a cronjob to ensure they stay updated is added. If it is set to `SelfSigned`, self-signed certificates are used and cronjob for the certificates is set. If set to `No`, site is accessiable via HTTP, if set if `EXTERNAL`, it tells HTTPs is used but managed by external tool like loadbalancer / provider. Setting this option as `No` is not recommended and might break some features, only do it when you know what you are doing.
+- **Valid Values:** External | Yes | SelfSigned | No
 - **Default:** Yes
 
 ## Database
@@ -327,23 +325,6 @@ Additionally, you can search for the following:
 - **Default:** null
 - **Example:** example
 
-## Freeradius
-
-### `FREERADIUS_ORGANIZATION`
-- **Explaination:** Organization name for which you want to setup the radius service.
-- **Valid Values:** STRING
-- **Default:** default
-
-### `FREERADIUS_KEY`
-- **Explaination:** This is the shared secret between the Authenticator (the access point) and the Authentication Server (RADIUS). Value of the `secret` parameter of the `client` in `clients.conf`.
-- **Valid Values:** STRING
-- **Default:** testing123
-
-### `FREERADIUS_CLIENTS`
-- **Explaination:** Value of the `ipaddr` parameter of the `client` in `clients.conf`. This is the network that the freeradius instance will serve. `0.0.0.0/0` means allow all.
-- **Valid Values:** STRING
-- **Default:** 0.0.0.0/0
-
 ## Cron
 
 ### `CRON_DELETE_OLD_RADACCT`
@@ -412,7 +393,7 @@ Additionally, you can search for the following:
 
 ### `NGINX_SSL_CONFIG`
 
-- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example `index` option is configured. You may add options to this string or leave this variable blank. This variable is only applicable when `SSL_CERT_MODE` is `Yes` or `Develop`.
+- **Explaination:** Additional nginx configurations. You can add any valid server block element here. As an example `index` option is configured. You may add options to this string or leave this variable blank. This variable is only applicable when `SSL_CERT_MODE` is `Yes` or `SelfSigned`.
 - **Example:** `index index.html index.htm;`
 - **Default:** --BLANK--
 
@@ -462,7 +443,7 @@ Additionally, you can search for the following:
 
 ### `NGINX_HTTP_ALLOW`
 
-- **Explaination:** Allow http access with https access. Valid only when `SSL_CERT_MODE` is set to `Yes` or `Develop`.
+- **Explaination:** Allow http access with https access. Valid only when `SSL_CERT_MODE` is set to `Yes` or `SelfSigned`.
 - **Valid Values:** True | False
 - **Default:** True
 

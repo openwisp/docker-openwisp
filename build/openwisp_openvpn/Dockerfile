@@ -20,5 +20,5 @@ ENV MODULE_NAME=openvpn \
     VPN_ORG=default
 
 COPY ./common/init_command.sh \
-    ./common/utils.sh \
-    ./openwisp_openvpn/ ./
+     ./common/utils.sh \
+     ./openwisp_openvpn/ ./

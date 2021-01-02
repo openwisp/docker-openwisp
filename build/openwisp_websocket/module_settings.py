@@ -5,9 +5,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    # openwisp admin theme
-    # (must be loaded here)
-    'openwisp_utils.admin_theme',
     # all-auth
     'django.contrib.sites',
     'allauth',
@@ -19,6 +16,10 @@ INSTALLED_APPS = [
     'openwisp_controller.pki',
     'openwisp_controller.config',
     'openwisp_controller.geo',
+    'openwisp_controller.connection',
+    'flat_json_widget',
+    'openwisp_notifications',
+    'openwisp_utils.admin_theme',
     # admin
     'django.contrib.admin',
     'django.forms',
@@ -30,12 +31,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'django_filters',
-    # channels
+    # other packages
+    'private_storage',
     'channels',
+    'drf_yasg',
 ]
 
 EXTENDED_APPS = [
-    'django_netjsonconfig',
     'django_x509',
     'django_loci',
 ]

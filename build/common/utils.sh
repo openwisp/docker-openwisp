@@ -120,17 +120,6 @@ function wait_nginx_services {
     set -e # Restore previous error setting.
 }
 
-function pre_radius_conf {
-    export QUERY="select id from openwisp_users_organization where name='${FREERADIUS_ORGANIZATION}';"
-    export ORG_UUID=`psql -Atc "${QUERY}"`
-    export QUERY="select token from openwisp_radius_organizationradiussettings where organization_id='${ORG_UUID}';"
-    export FREERADIUS_TOKEN=`psql -Atc "${QUERY}";`
-    if [ -z "$FREERADIUS_TOKEN" ]; then
-        echo "ERROR: Selected Organization does not have a radius token!";
-        exit 1
-    fi
-}
-
 function ssl_http_behaviour {
     if [ "$NGINX_HTTP_ALLOW" == "True" ]; then
         envsubst_create_config /etc/nginx/openwisp.template.conf http DOMAIN

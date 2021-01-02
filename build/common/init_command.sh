@@ -18,7 +18,6 @@ elif [ "$MODULE_NAME" = 'postfix' ]; then
     rsyslogd -n
 elif [ "$MODULE_NAME" = 'freeradius' ]; then
     wait_nginx_services
-    pre_radius_conf
     if [ "$DEBUG_MODE" = 'False' ]; then
         source docker-entrypoint.sh
     else
@@ -47,7 +46,7 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
     envsubst < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf
     if [ "$SSL_CERT_MODE" = 'Yes' ]; then
         nginx_prod
-    elif [ "$SSL_CERT_MODE" = 'Develop' ]; then
+    elif [ "$SSL_CERT_MODE" = 'SelfSigned' ]; then
         nginx_dev
     else
         envsubst_create_config /etc/nginx/openwisp.template.conf http DOMAIN
@@ -56,11 +55,11 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
     nginx -g 'daemon off;'
 elif [ "$MODULE_NAME" = 'celery' ]; then
     python services.py database redis dashboard
-    celery -A openwisp worker -l info
+    celery -A openwisp worker -l ${DJANGO_LOG_LEVEL}
 elif [ "$MODULE_NAME" = 'celerybeat' ]; then
     rm -rf celerybeat.pid
     python services.py database redis dashboard
-    celery -A openwisp beat -l info
+    celery -A openwisp beat -l ${DJANGO_LOG_LEVEL}
 else
     python services.py database redis dashboard
     start_uwsgi

@@ -16,8 +16,7 @@ before_script:
   - sudo apt --yes install google-chrome-stable=83.0.4103.116-1
   - wget https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_linux64.zip
   - unzip chromedriver_linux64.zip -d /home/travis/bin
-  - pip install selenium
-  - pip install -U https://github.com/openwisp/openwisp-utils/tarball/master#egg=openwisp_utils[qa]
+  - pip install selenium openwisp_utils[qa]
 
 jobs:
   include:

@@ -15,4 +15,7 @@ INSTALLED_APPS = [
     'openwisp_network_topology',
     # rest framework
     'rest_framework',
+    # other packages
+    'private_storage',
+    'drf_yasg',
 ]

@@ -35,4 +35,16 @@ if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
         },
     }
 
-app.conf.beat_schedule = {**radius_schedule, **topology_schedule}
+notification_schedule = {
+    'notification-delete-tasks': {
+        'task': 'openwisp_notifications.tasks.delete_old_notifications',
+        'schedule': crontab(minute=00, hour=23),
+        'args': (90,),
+    },
+}
+
+app.conf.beat_schedule = {
+    **radius_schedule,
+    **topology_schedule,
+    **notification_schedule,
+}
