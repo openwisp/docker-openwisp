@@ -32,9 +32,9 @@ jobs:
     - name: Setup for Testing Images
       run: |
         sudo apt update
-        sudo apt install --yes google-chrome-stable=88.0.4324.96-1
+        sudo apt install --yes google-chrome-stable=88.0.4324.182-1
         wget https://chromedriver.storage.googleapis.com/88.0.4324.27/chromedriver_linux64.zip
-        sudo unzip chromedriver_linux64.zip -d /usr/local/bin/chromedriver
+        sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
         sudo pip install selenium
         echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org" | sudo tee -a /etc/hosts

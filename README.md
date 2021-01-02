@@ -21,6 +21,23 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 
 ## Deployment
 
+### Quick Setup
+
+The `auto-install.sh` script can be used to quickly install a simple instance of openwisp on your server.
+
+![Image](docs/images/auto-install.png)
+
+If you have created a [`.env` file](docs/ENV.md) to configure your instance, then you can use it with the script otherwise.
+
+**It asks 7 questions for application configuration, 5 of them are domain names.** The dashboard, controller, radius, topology & openvpn can be setup on different domain, **please ensure the domains you enter point to your server**. The remaining **2 questions are email id** for site manager email (used by django to send application emails) and letsencrypt (used by [certbot](https://certbot.eff.org/) to issue https certs on this address.)
+
+To get started, run the following command:
+
+```bash
+   curl -L https://tiny.cc/autoinstall-ow-docker -o setup.sh
+   sudo bash setup.sh
+```
+
 ### Compose
 
 [Setup on docker-compose](docs/QUICK_SETUP.md) is suitable for single-server setup requirements. It is quicker and requires less prior knowledge about openwisp & networking.
