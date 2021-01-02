@@ -7,20 +7,18 @@ import re
 import sys
 
 
-def change_secret_key(keygen):
+def randomize_key_value(key, value):
     # Update the generated secret key
     # in the .env file.
 
     file_handle = open('.env', 'r')
     file_string = file_handle.read()
     file_handle.close()
-    file_string = re.sub(
-        r'DJANGO_SECRET_KEY=.*', fr'DJANGO_SECRET_KEY={keygen}', file_string
-    )
+    file_string = re.sub(fr'{key}=.*', fr'{key}={value}', file_string)
     if file_string[-1] != '\n':
         file_string += '\n'
-    if 'DJANGO_SECRET_KEY' not in file_string:
-        file_string += f'DJANGO_SECRET_KEY={keygen}'
+    if f'{key}' not in file_string:
+        file_string += f'{key}={value}'
     file_handle = open('.env', 'w')
     file_handle.write(file_string)
     file_handle.close()
@@ -44,6 +42,11 @@ if __name__ == '__main__':
         get_secret_key()
     if 'change-secret-key' in arguments:
         keygen = get_secret_key()
-        change_secret_key(keygen)
+        randomize_key_value('DJANGO_SECRET_KEY', keygen)
     if 'default-secret-key' in arguments:
-        change_secret_key('default_secret_key')
+        randomize_key_value('DJANGO_SECRET_KEY', 'default_secret_key')
+    if 'change-database-credentials' in arguments:
+        keygen1 = get_secret_key()
+        keygen2 = get_secret_key()
+        randomize_key_value("DB_USER", keygen1)
+        randomize_key_value("DB_PASS", keygen2)
