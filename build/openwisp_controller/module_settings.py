@@ -29,12 +29,14 @@ INSTALLED_APPS = [
     # rest framework
     'rest_framework',
     'rest_framework_gis',
-    # channels
+    'rest_framework.authtoken',
+    'django_filters',
+    'private_storage',
+    'drf_yasg',
     'channels',
 ]
 
 EXTENDED_APPS = [
-    'django_netjsonconfig',
     'django_x509',
     'django_loci',
 ]

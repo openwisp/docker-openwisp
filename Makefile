@@ -2,7 +2,7 @@
 # the heading "Makefile Options".
 
 SHELL := /bin/bash
-.SILENT: pull start stop
+.SILENT: clean pull start stop
 
 default: compose-build
 
@@ -60,14 +60,16 @@ develop: compose-build
 
 # Clean
 clean:
-	docker-compose stop
-	docker-compose down --remove-orphans --volumes --rmi all
-	docker-compose rm -svf
+	printf '\e[1;34m%-6s\e[m\n' "Remove docker-openwisp..."
+	docker-compose stop &> /dev/null
+	docker-compose down --remove-orphans --volumes --rmi all &> /dev/null
+	docker-compose rm -svf &> /dev/null
 	docker rmi --force openwisp/openwisp-base:latest \
 				openwisp/openwisp-base:intermedia-system \
 				openwisp/openwisp-base:intermedia-python \
 				openwisp/openwisp-nfs:latest \
-				`docker images -f "dangling=true" -q`
+				`docker images -f "dangling=true" -q` \
+				`docker images | grep openwisp/docker-openwisp | tr -s ' ' | cut -d ' ' -f 3` &> /dev/null
 
 # Production
 USER = registry.gitlab.com/openwisp/docker-openwisp

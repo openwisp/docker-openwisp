@@ -12,15 +12,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    # openwisp admin theme
-    # (must be loaded here)
-    'openwisp_utils.admin_theme',
     # all-auth
     'django.contrib.sites',
+    'openwisp_users.accounts',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'corsheaders',
+    'django_extensions',
     # openwisp modules
     'openwisp_users',
     # openwisp-controller
@@ -28,6 +27,9 @@ INSTALLED_APPS = [
     'openwisp_controller.config',
     'openwisp_controller.geo',
     'openwisp_controller.connection',
+    'flat_json_widget',
+    'openwisp_notifications',
+    'openwisp_utils.admin_theme',
     # openwisp-network-topology
     'openwisp_network_topology',
     # admin
@@ -41,8 +43,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'django_filters',
-    # channels
-    'channels',
     # registration
     'rest_framework.authtoken',
     'rest_auth',
@@ -52,16 +52,21 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     # openwisp-radius
     'openwisp_radius',
+    # other dependencies
+    'private_storage',
+    'drf_yasg',
+    'channels',
 ]
 
 EXTENDED_APPS = [
-    'django_netjsonconfig',
     'django_x509',
     'django_loci',
 ]
 
-TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
-TOPOLOGY_API_BASEURL = f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}'
+OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
+OPENWISP_NETWORK_TOPOLOGY_API_BASEURL = (
+    f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}'
+)
 
 if not env_bool(os.environ['USE_OPENWISP_RADIUS']):
     INSTALLED_APPS.remove('openwisp_radius')

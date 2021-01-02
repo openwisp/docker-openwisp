@@ -11,14 +11,20 @@ This repository contains official docker images of OpenWISP. Designed with horiz
 ![kubernetes](https://i.ibb.co/rGpLq4y/ss1.png)
 The sample files for deployment on kubernetes are available in the `deployment-examples/kubernetes/` directory.
 
+## Available Images
+
+| Version       | Corresponding Ansible Version |
+| ------------- |:-----------------------------:|
+| 0.1.0a2       | 0.9.0                         |
+| 0.1.0a3       | 0.12.0                        |
 
 ## Deployment
 
-### Compose:
+### Compose
 
 [Setup on docker-compose](docs/QUICK_SETUP.md) is suitable for single-server setup requirements. It is quicker and requires less prior knowledge about openwisp & networking.
 
-### Kubernetes:
+### Kubernetes
 
 Setup on kubernetes is complex and requires prior knowledge about linux systems, kubernetes, docker & openwisp. However, it provides scalability for very large networks.
 
@@ -46,6 +52,7 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 You can build with your own python package by creating a file named `.build.env` in the root of the repository, then set the variables inside `.build.env` file in `<variable>=<value>` format. Multiple variable should be separated in newline. These are the variables that can be changed:
 
 - `OPENWISP_CONTROLLER_SOURCE`
+- `OPENWISP_NOTIFICATION_SOURCE`
 - `OPENWISP_TOPOLOGY_SOURCE`
 - `OPENWISP_RADIUS_SOURCE`
 - `OPENWISP_USERS_SOURCE`

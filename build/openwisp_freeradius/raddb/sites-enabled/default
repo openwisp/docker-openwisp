@@ -1,6 +1,4 @@
 server default {
-    api_token_header = "Authorization: Bearer $ENV{ORG_UUID} $ENV{FREERADIUS_TOKEN}"
-
     listen {
         type = auth
         ipaddr = *
@@ -20,7 +18,6 @@ server default {
     }
 
     authorize {
-        update control { &REST-HTTP-Header += "${...api_token_header}" }
         rest
         sql
         dailycounter
@@ -38,18 +35,15 @@ server default {
     }
 
     accounting {
-        update control { &REST-HTTP-Header += "${...api_token_header}" }
         rest
     }
 
     session {}
 
     post-auth {
-        update control { &REST-HTTP-Header += "${...api_token_header}" }
         rest
 
         Post-Auth-Type REJECT {
-            update control { &REST-HTTP-Header += "${....api_token_header}" }
             rest
         }
     }

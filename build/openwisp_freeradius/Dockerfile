@@ -1,4 +1,4 @@
-FROM freeradius/freeradius-server:3.0.19-alpine
+FROM freeradius/freeradius-server:3.0.21-alpine
 
 RUN apk add --no-cache --update tzdata postgresql-dev postgresql-client && \
     rm -rf /var/cache/apk/* /tmp/*
@@ -22,9 +22,6 @@ ENV TZ=UTC \
     DB_SSLCERT=None \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
-    FREERADIUS_KEY=testing123 \
-    FREERADIUS_CLIENTS=0.0.0.0/0 \
-    FREERADIUS_ORGANIZATION=default \
     DASHBOARD_INTERNAL=dashboard.internal \
     RADIUS_INTERNAL=radius.internal \
     DEBUG_MODE=False

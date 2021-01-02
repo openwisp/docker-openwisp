@@ -22,12 +22,13 @@ LOGIN_REDIRECT_URL = 'admin:index'
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
 ROOT_URLCONF = 'openwisp.urls'
 
+HTTP_SCHEME = request_scheme()
 # CORS
 CORS_ORIGIN_WHITELIST = [
-    f'{request_scheme()}://{os.environ["DASHBOARD_DOMAIN"]}',
-    f'{request_scheme()}://{os.environ["CONTROLLER_DOMAIN"]}',
-    f'{request_scheme()}://{os.environ["RADIUS_DOMAIN"]}',
-    f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}',
+    f'{HTTP_SCHEME}://{os.environ["DASHBOARD_DOMAIN"]}',
+    f'{HTTP_SCHEME}://{os.environ["CONTROLLER_DOMAIN"]}',
+    f'{HTTP_SCHEME}://{os.environ["RADIUS_DOMAIN"]}',
+    f'{HTTP_SCHEME}://{os.environ["TOPOLOGY_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')
 
 STATICFILES_FINDERS = [
@@ -73,20 +74,30 @@ TEMPLATES = [
 ]
 
 if 'MODULE_NAME' == 'dashboard':
-    TEMPLATES[0]['OPTIONS']['context_processors'].append(
-        'openwisp_utils.admin_theme.context_processor.menu_items'
+    TEMPLATES[0]['OPTIONS']['context_processors'].extend(
+        [
+            'openwisp_utils.admin_theme.context_processor.menu_items',
+            'openwisp_utils.admin_theme.context_processor.admin_theme_settings',
+            'openwisp_notifications.context_processors.notification_api_settings',
+        ]
     )
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
+if HTTP_SCHEME == 'https':
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
-ASGI_APPLICATION = 'openwisp_controller.geo.channels.routing.channel_routing'
+ASGI_APPLICATION = 'openwisp.routing.application'
 
 REDIS_HOST = os.environ['REDIS_HOST']
 CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/1'
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_BROKER_TRANSPORT_OPTIONS = {'max_retries': 10}
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -215,6 +226,12 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler',
             'filters': ['require_debug_false', 'user_filter'],
         },
+        'null': {
+            'level': os.environ['DJANGO_LOG_LEVEL'],
+            'class': 'logging.NullHandler',
+            'filters': ['user_filter'],
+            'formatter': 'verbose',
+        },
     },
     'root': {
         'level': os.environ['DJANGO_LOG_LEVEL'],
@@ -226,7 +243,7 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         }
-    }
+    },
 }
 
 # Sentry
