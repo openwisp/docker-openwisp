@@ -31,6 +31,12 @@ CORS_ORIGIN_WHITELIST = [
     f'{HTTP_SCHEME}://{os.environ["TOPOLOGY_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')
 
+if HTTP_SCHEME == 'https':
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+if HTTP_SCHEME == 'http':
+    DJANGO_LOCI_GEOCODE_STRICT_TEST = False
+
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
@@ -86,9 +92,6 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
-if HTTP_SCHEME == 'https':
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
 ASGI_APPLICATION = 'openwisp.routing.application'
