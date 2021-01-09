@@ -20,24 +20,24 @@ RUN apt update && \
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
 ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.3
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_CONTROLLER_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_CONTROLLER_SOURCE}
 ARG OPENWISP_NOTIFICATION_SOURCE=openwisp-notifications~=0.3.0
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_NOTIFICATION_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_NOTIFICATION_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.5.1
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=0.2.1
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_RADIUS_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.5.1
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_USERS_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}
 ARG DJANGO_X509_SOURCE=django-x509~=0.9.2
-RUN pip install --prefix='/install' --upgrade ${DJANGO_X509_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}
 ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.7.2
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_UTILS_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}
 RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
                                     uwsgi sentry-sdk supervisor celery django-celery-beat \
                                     django-cors-headers django-rest-auth
 ARG DJANGO_SOURCE=django==3.1
-RUN pip install --prefix='/install' --upgrade ${DJANGO_SOURCE}
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_SOURCE}
 
 FROM SYSTEM
 

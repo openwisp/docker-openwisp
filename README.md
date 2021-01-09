@@ -1,6 +1,6 @@
 # Docker-OpenWISP
 
-![Automation Tests](https://github.com/openwisp/docker-openwisp/workflows/Automation%20Tests/badge.svg)
+[![Automation Tests](https://github.com/openwisp/docker-openwisp/workflows/Automation%20Tests/badge.svg)](https://github.com/openwisp/docker-openwisp/actions?query=workflow%3A%22Automation+Tests%22)
 [![GitLab Container Registery](https://img.shields.io/badge/registry-openwisp-blue.svg)](https://gitlab.com/openwisp/docker-openwisp/container_registry)
 [![Gitter](https://badges.gitter.im/openwisp/dockerize-openwisp.svg)](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
