@@ -1,0 +1,44 @@
+---
+
+name: Docker OpenWISP (Publish)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: CD Build
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v2
+
+    # echo "$DOCKER_TOKEN" | docker login registry.gitlab.com --username "$DOCKER_USER" --password-stdin
+    - name: Login to GitLab
+      uses: docker/login-action@v1
+      with:
+        registry: registry.gitlab.com
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+
+    - name: Install Linting Requirements
+      run:  sudo pip install selenium openwisp_utils[qa]
+
+    - name: Lint
+      run: openwisp-qa-check --skip-checkmigrations
+
+    - name: Setup for Testing Images
+      run: |
+        echo "$DOCKER_TOKEN" | docker login registry.gitlab.com --username "$DOCKER_USER" --password-stdin
+        sudo apt update
+        sudo apt install --yes google-chrome-stable=88.0.4324.96-1
+        wget https://chromedriver.storage.googleapis.com/88.0.4324.27/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip -d $HOME/bin
+        sudo pip install selenium openwisp_utils[qa]
+        sudo echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org" >> /etc/hosts
+        sudo echo "127.0.0.1 radius.openwisp.org topology.openwisp.org" >> /etc/hosts
+
+    - name: Build & Publish
+      run: make publish TAG=edge
