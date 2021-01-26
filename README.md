@@ -1,6 +1,6 @@
 # Docker-OpenWISP
 
-[![Build Status](https://travis-ci.org/openwisp/docker-openwisp.svg?branch=master)](https://travis-ci.org/openwisp/docker-openwisp)
+![Automation Tests](https://github.com/openwisp/docker-openwisp/workflows/Automation%20Tests/badge.svg)
 [![GitLab Container Registery](https://img.shields.io/badge/registry-openwisp-blue.svg)](https://gitlab.com/openwisp/docker-openwisp/container_registry)
 [![Gitter](https://badges.gitter.im/openwisp/dockerize-openwisp.svg)](https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)

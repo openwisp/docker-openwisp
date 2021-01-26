@@ -1,6 +1,6 @@
 ---
 
-name: Docker OpenWISP (Build)
+name: Merge Tests
 
 on:
   pull_request:
