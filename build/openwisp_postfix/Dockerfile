@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:3.12
 
 WORKDIR /opt/openwisp/
 RUN apk add --no-cache --upgrade openssl cyrus-sasl cyrus-sasl-plain cyrus-sasl-login && \

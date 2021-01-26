@@ -18,7 +18,8 @@ def env_bool(env):
 
 
 def request_scheme():
-    # os.environ['SSL_CERT_MODE'] can have different values: True | False | External | SelfSigned
+    # os.environ['SSL_CERT_MODE'] can have different
+    # values: True | False | External | SelfSigned
     if os.environ['SSL_CERT_MODE'] in ['False', 'false', 'FALSE', 'No', 'no', 'NO']:
         return 'http'
     return 'https'
