@@ -24,7 +24,7 @@ jobs:
         password: ${{ secrets.DOCKER_TOKEN }}
 
     - name: Install Linting Requirements
-      run:  sudo pip install selenium openwisp_utils[qa]
+      run:  sudo pip install openwisp_utils[qa]
 
     - name: Lint
       run: openwisp-qa-check --skip-checkmigrations
@@ -41,4 +41,4 @@ jobs:
         echo "127.0.0.1 radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
 
     - name: Build & Publish
-      run: make publish TAG=edge
+      run: make publish TAG=edge || (docker-compose logs && exit 1)

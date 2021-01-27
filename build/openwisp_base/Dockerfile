@@ -25,9 +25,9 @@ ARG OPENWISP_NOTIFICATION_SOURCE=openwisp-notifications~=0.3.0
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_NOTIFICATION_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.5.1
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=0.2.1
+ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_RADIUS_SOURCE}
-ARG OPENWISP_USERS_SOURCE=openwisp-users~=0.5.1
+ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}
 ARG DJANGO_X509_SOURCE=django-x509~=0.9.2
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}
@@ -72,6 +72,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     DJANGO_LOG_LEVEL=ERROR \
     DJANGO_LANGUAGE_CODE=en-gb \
     DJANGO_ALLOWED_HOSTS=* \
+    DJANGO_FREERADIUS_ALLOWED_HOSTS=172.18.0.0/16 \
     DJANGO_X509_DEFAULT_CERT_VALIDITY=1825 \
     DJANGO_X509_DEFAULT_CA_VALIDITY=3650 \
     DJANGO_SECRET_KEY=DEFAULT_BAD_KEY \

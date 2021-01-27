@@ -16,6 +16,10 @@ ALLOWED_HOSTS = [
     os.environ['TOPOLOGY_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
+OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ[
+    'DJANGO_FREERADIUS_ALLOWED_HOSTS'
+].split(',')
+
 AUTH_USER_MODEL = 'openwisp_users.User'
 SITE_ID = 1
 LOGIN_REDIRECT_URL = 'admin:index'

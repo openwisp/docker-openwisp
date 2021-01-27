@@ -3,6 +3,7 @@ import ssl
 import subprocess
 import time
 import unittest
+from urllib import error as urlerror
 from urllib import request
 
 from selenium import webdriver
@@ -38,7 +39,7 @@ class Pretest(TestConfig, unittest.TestCase):
                 if request.urlopen(admin_login_page, context=ctx).getcode() == 200:
                     isServiceReachable = True
                     break
-            except Exception:
+            except (urlerror.HTTPError, OSError, ConnectionResetError):
                 # if error occured, retry to reach the admin
                 # login page after delay_retries second(s)
                 time.sleep(delay_retries)
@@ -165,6 +166,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.action_on_resource(label, path, 'delete_selected')
         self.assertNotIn('Nodes', self.base_driver.page_source)
         self.action_on_resource(label, path, 'update_selected')
+        time.sleep(4)  # Wait for nodes to be fetched!
         self.action_on_resource(label, path, 'delete_selected')
         self.assertIn('Nodes', self.base_driver.page_source)
 
@@ -324,6 +326,78 @@ class TestServices(TestUtilities, unittest.TestCase):
                     'Not all celery / celery-beat tasks are registered\nOutput:\n'
                     f'{output}\nError:\n{error}'
                 )
+
+    def test_freeradius(self):
+        """
+        Ensure freeradius service is working correctly.
+        """
+        # Get User Auth Token
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        token_page = f"{self.config['radius_url']}/api/v1/default/account/token/"
+        request_body = "username=admin&password=admin".encode('utf-8')
+        request_info = request.Request(token_page, data=request_body)
+        try:
+            response = request.urlopen(request_info, context=ctx)
+        except (urlerror.HTTPError, OSError, ConnectionResetError):
+            self.fail(f"Couldn't get radius-token, check {self.config['radius_url']}")
+        self.assertIn('"is_active":true', response.read().decode())
+
+        # Install Requirements
+        # Should not be required after upgrading to 3.0.22-alpine
+        subprocess.Popen(
+            [
+                'docker',
+                'exec',
+                'docker-openwisp_freeradius_1',
+                'apk',
+                'add',
+                'freeradius',
+                'freeradius-radclient',
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            cwd=self.root_location,
+        ).communicate()
+
+        # Radtest
+        radtest = subprocess.Popen(
+            [
+                'docker',
+                'exec',
+                'docker-openwisp_freeradius_1',
+                'radtest',
+                'admin',
+                'admin',
+                'localhost',
+                '0',
+                'testing123',
+            ],
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.root_location,
+        )
+
+        output, error = map(str, radtest.communicate())
+        if 'Received Access-Accept' not in output:
+            self.fail(f'Request not Accepted!\nOutput:\n{output}\nError:\n{error}')
+
+        # Clean Up
+        # Should not be required after upgrading to 3.0.22-alpine
+        remove_tainted_container = [
+            'docker-compose rm -sf freeradius',
+            'docker-compose up -d freeradius',
+        ]
+        for command in remove_tainted_container:
+            subprocess.Popen(
+                command.split(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                cwd=self.root_location,
+            ).communicate()
 
     def test_containers_down(self):
         """

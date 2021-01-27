@@ -2,7 +2,7 @@
 
 sqlcounter dailycounter {
   sql_module_instance = sql
-  dialect = ${modules.sql.dialect}
+  dialect = postgresql
 
   counter_name = Daily-Session-Time
   check_name = Max-Daily-Session
@@ -10,13 +10,16 @@ sqlcounter dailycounter {
   key = User-Name
   reset = daily
 
-  $INCLUDE ${modconfdir}/sql/counter/${dialect}/${.:instance}.conf
+  query = "SELECT SUM(AcctSessionTime - GREATEST((%%b - EXTRACT(epoch FROM AcctStartTime)), 0)) \
+           FROM radacct \
+           WHERE UserName='%{${key}}' \
+           AND EXTRACT(epoch FROM AcctStartTime) + AcctSessionTime > '%%b'"
 }
 
 # The noresetcounter is included by default in the freeradius conf
 sqlcounter noresetcounter {
   sql_module_instance = sql
-  dialect = ${modules.sql.dialect}
+  dialect = postgresql
 
   counter_name = Max-All-Session-Time
   check_name = Max-All-Session
@@ -33,28 +36,30 @@ sqlcounter dailybandwidthcounter {
   sql_module_instance = sql
   key = 'User-Name'
   reset = daily
-  query = "SELECT SUM(acctinputoctets + acctoutputoctets) \
-          FROM radacct \
-          WHERE UserName='%{${key}}' \
-          AND UNIX_TIMESTAMP(acctstarttime) + acctsessiontime > '%%b'"
+  query = "SELECT SUM(AcctOutputOctets) + SUM(AcctInputOctets) \
+           FROM radacct \
+           WHERE UserName = '%{${key}}' AND \
+           EXTRACT(epoch FROM AcctStartTime) + AcctSessionTime > '%%b'"
 }
 
 sqlcounter monthlycounter {
   sql_module_instance = sql
-  dialect = ${modules.sql.dialect}
+  dialect = postgresql
 
   counter_name = Monthly-Session-Time
   check_name = Max-Monthly-Session
   reply_name = Session-Timeout
   key = User-Name
   reset = monthly
-
-  $INCLUDE ${modconfdir}/sql/counter/${dialect}/${.:instance}.conf
+  query = "SELECT SUM(AcctSessionTime - GREATEST((%%b - EXTRACT(epoch FROM AcctStartTime)), 0)) \
+           FROM radacct \
+           WHERE UserName='%{${key}}' \
+           AND EXTRACT(epoch FROM AcctStartTime) + AcctSessionTime > '%%b'"
 }
 
 sqlcounter expire_on_login {
   sql_module_instance = sql
-  dialect = ${modules.sql.dialect}
+  dialect = postgresql
 
   counter_name = Expire-After-Initial-Login
   check_name = Expire-After
