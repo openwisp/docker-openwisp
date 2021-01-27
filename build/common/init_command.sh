@@ -44,13 +44,13 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
         nginx -g 'daemon off;'
     fi
     envsubst < /etc/nginx/nginx.template.conf > /etc/nginx/nginx.conf
+    envsubst_create_config /etc/nginx/openwisp.internal.template.conf internal INTERNAL
     if [ "$SSL_CERT_MODE" = 'Yes' ]; then
         nginx_prod
     elif [ "$SSL_CERT_MODE" = 'SelfSigned' ]; then
         nginx_dev
     else
         envsubst_create_config /etc/nginx/openwisp.template.conf http DOMAIN
-        envsubst_create_config /etc/nginx/openwisp.internal.template.conf internal INTERNAL
     fi
     nginx -g 'daemon off;'
 elif [ "$MODULE_NAME" = 'celery' ]; then

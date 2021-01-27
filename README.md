@@ -17,6 +17,7 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 | ------------- |:-----------------------------:|
 | 0.1.0a2       | 0.9.0                         |
 | 0.1.0a3       | 0.12.0                        |
+| 0.1.0a4       | 0.12.0                        |
 
 ## Deployment
 

@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 
 class TestConfig(object):
@@ -153,6 +154,7 @@ class TestUtilities(TestConfig):
             '//option[@value="outdoor"]'
         ).click()
         driver.find_element_by_name('is_mobile').click()
+        time.sleep(1)  # Wait for a second for JavaScript to kick-in
         driver.find_element_by_name('_save').click()
         # Add to delete list
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)

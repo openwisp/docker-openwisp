@@ -108,6 +108,13 @@ Additionally, you can search for the following:
 - **Default:** .openwisp.org
 - **Example:** .openwisp.org,.example.org,www.exmaple.com
 
+### `DJANGO_FREERADIUS_ALLOWED_HOSTS`
+
+- **Explaination:** Default IP address or subnet of your freeradius instance.
+- **Valid Values:** List(IP adress) | Subnet
+- **Default:** 172.18.0.0/16
+- **Example:** 127.0.0.1,192.0.2.20,172.18.0.0/16
+
 ## Enable Modules
 
 ### `USE_OPENWISP_TOPOLOGY`
