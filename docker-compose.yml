@@ -7,7 +7,7 @@ services:
       context: build
       dockerfile: openwisp_dashboard/Dockerfile
       args:
-        DASHBOARD_APP_PORT: $DASHBOARD_APP_PORT
+        DASHBOARD_APP_PORT: 8000
     env_file:
       - .env
     volumes:
@@ -24,7 +24,7 @@ services:
       context: build
       dockerfile: openwisp_controller/Dockerfile
       args:
-        CONTROLLER_APP_PORT: $CONTROLLER_APP_PORT
+        CONTROLLER_APP_PORT: 8001
     env_file:
       - .env
     depends_on:
@@ -38,7 +38,7 @@ services:
       context: build
       dockerfile: openwisp_radius/Dockerfile
       args:
-        RADIUS_APP_PORT: $RADIUS_APP_PORT
+        RADIUS_APP_PORT: 8002
     env_file:
       - .env
     depends_on:
@@ -51,7 +51,7 @@ services:
       context: build
       dockerfile: openwisp_topology/Dockerfile
       args:
-        TOPOLOGY_APP_PORT: $TOPOLOGY_APP_PORT
+        TOPOLOGY_APP_PORT: 8003
     env_file:
       - .env
     depends_on:
@@ -64,7 +64,7 @@ services:
       context: build
       dockerfile: openwisp_websocket/Dockerfile
       args:
-        WEBSOCKET_APP_PORT: $WEBSOCKET_APP_PORT
+        WEBSOCKET_APP_PORT: 8004
     env_file:
       - .env
     depends_on:

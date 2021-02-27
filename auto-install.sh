@@ -12,8 +12,12 @@ export NON='\033[0m'
 start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>> $LOG_FILE; }
 report_ok() { echo -e ${GRN}" done"${NON}; }
 report_error() { echo -e ${RED}" error"${NON}; }
-set_env() { sed --in-place "s/$1=.*/$1=$2/g" /opt/openwisp/docker-openwisp/.env; }
 get_env() { grep "$1" /opt/openwisp/docker-openwisp/.env | cut -d'=' -f 2-50; }
+set_env() {
+    grep -q "^$1=" /opt/openwisp/docker-openwisp/.env &&
+    sed --in-place "s/$1=.*/$1=$2/g" /opt/openwisp/docker-openwisp/.env ||
+    echo "$1=$2" >> /opt/openwisp/docker-openwisp/.env
+}
 
 check_status() {
     if [ $1 -eq 0 ]; then
