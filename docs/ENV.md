@@ -106,7 +106,7 @@ Additionally, you can search for the following:
 - **Explaination:** Used validate a request's HTTP Host header. The default value `*` means all domains. It can be `.mydomain.com`. For security allow only trusted domains.
 - **Valid Values:** List(Valid domain) | List(IP adress) | *
 - **Default:** .openwisp.org
-- **Example:** .openwisp.org,.example.org,www.exmaple.com
+- **Example:** .openwisp.org,.example.org,www.example.com
 
 ### `DJANGO_FREERADIUS_ALLOWED_HOSTS`
 
