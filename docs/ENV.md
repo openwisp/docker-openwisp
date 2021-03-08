@@ -103,9 +103,9 @@ Additionally, you can search for the following:
 
 ### `DJANGO_ALLOWED_HOSTS`
 
-- **Explaination:** Used validate a request's HTTP Host header. The default value `*` means all domains. It can be `.mydomain.com`. For security allow only trusted domains.
-- **Valid Values:** List(Valid domain) | List(IP adress) | *
-- **Default:** .openwisp.org
+- **Explaination:** Used validate a request's HTTP Host header. The default value `*` means all domains. It can be `.mydomain.com`. For security allow only trusted domains, when left blank, it defaults to your dashboard's root domain.
+- **Valid Values:** List(Valid domain) | List(IP adress) | * | --BLANK--
+- **Default:** <your-dashboard-domains>
 - **Example:** .openwisp.org,.example.org,www.example.com
 
 ### `DJANGO_FREERADIUS_ALLOWED_HOSTS`
