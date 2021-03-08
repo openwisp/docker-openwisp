@@ -142,7 +142,6 @@ setup_docker_openwisp() {
         fi
         # Other
         hostname=$(echo "$django_default_email" | cut -d @ -f 2)
-        set_env "DJANGO_ALLOWED_HOSTS" ".$hostname"
         set_env "POSTFIX_ALLOWED_SENDER_DOMAINS" "$hostname"
         set_env "POSTFIX_MYHOSTNAME" "$hostname"
         set_env "POSTFIX_MYHOSTNAME" "$hostname"

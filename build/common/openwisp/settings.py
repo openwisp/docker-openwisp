@@ -8,6 +8,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
 
+if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
+    os.environ['DJANGO_ALLOWED_HOSTS'] = f'.{os.environ["DASHBOARD_DOMAIN"].split(".", 1)[1]}'
+
 ALLOWED_HOSTS = [
     'localhost',
     os.environ['DASHBOARD_INTERNAL'],
