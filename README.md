@@ -25,7 +25,7 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 
 The `auto-install.sh` script can be used to quickly install a simple instance of openwisp on your server.
 
-![Image](docs/images/auto-install.png)
+[![Quick Install](docs/images/auto-install.png)](https://www.youtube.com/watch?v=LLbsKP79MzE "Install tutorial")
 
 If you have created a [`.env` file](docs/ENV.md) to configure your instance, then you can use it with the script otherwise.
 
