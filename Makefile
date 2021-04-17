@@ -60,7 +60,7 @@ develop: compose-build
 
 # Clean
 clean:
-	printf '\e[1;34m%-6s\e[m\n' "Remove docker-openwisp..."
+	printf '\e[1;34m%-6s\e[m\n' "Removing docker-openwisp..."
 	docker-compose stop &> /dev/null
 	docker-compose down --remove-orphans --volumes --rmi all &> /dev/null
 	docker-compose rm -svf &> /dev/null
