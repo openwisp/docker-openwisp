@@ -105,6 +105,8 @@ services:
       - MODULE_NAME=celery
     env_file:
       - .env
+    volumes:
+      - openwisp_media:/opt/openwisp/media
     depends_on:
       - postgres
       - redis

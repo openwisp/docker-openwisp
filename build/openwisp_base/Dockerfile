@@ -19,6 +19,8 @@ RUN apt update && \
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
+ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=0.1.1
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_FIRMWARE_SOURCE}
 ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.3
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_CONTROLLER_SOURCE}
 ARG OPENWISP_NOTIFICATION_SOURCE=openwisp-notifications~=0.3.0
@@ -47,8 +49,6 @@ COPY ./common/ /opt/openwisp/
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \
     TZ=UTC \
-    USE_OPENWISP_RADIUS=True \
-    USE_OPENWISP_TOPOLOGY=True \
     DEBUG_MODE=False \
     REDIS_HOST=redis \
     DB_ENGINE=django.contrib.gis.db.backends.postgis \
@@ -103,6 +103,10 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     X509_ORGANIZATION_UNIT_NAME=OpenWISP \
     X509_EMAIL=certificate@example.com \
     X509_COMMON_NAME=OpenWISP \
+    # Modules Enabled
+    USE_OPENWISP_RADIUS=True \
+    USE_OPENWISP_TOPOLOGY=True \
+    USE_OPENWISP_FIRMWARE=True \
     # Celery-beat Configurations
     CRON_DELETE_OLD_RADACCT=365 \
     CRON_DELETE_OLD_POSTAUTH=365 \

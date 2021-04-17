@@ -7,9 +7,13 @@ from openwisp.utils import env_bool, request_scheme
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
+ROOT_DOMAIN = f'.{".".join(os.environ["DASHBOARD_DOMAIN"].split(".")[-2:])}'
 
 if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
     os.environ['DJANGO_ALLOWED_HOSTS'] = f'.{os.environ["DASHBOARD_DOMAIN"].split(".", 1)[1]}'
+
+if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
+    os.environ['DJANGO_ALLOWED_HOSTS'] = ROOT_DOMAIN
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -99,6 +103,7 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_DOMAIN = ROOT_DOMAIN
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
 ASGI_APPLICATION = 'openwisp.routing.application'
