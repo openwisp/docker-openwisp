@@ -6,7 +6,7 @@ FROM python:3.7.9-slim-buster AS SYSTEM
 # 3. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
 RUN apt update && \
     apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev \
-                libcairo2 libpangocairo-1.0 gdal-bin gettext && \
+                libcairo2 libpangocairo-1.0 gdal-bin gettext fping && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 FROM SYSTEM AS PYTHON
@@ -19,7 +19,10 @@ RUN apt update && \
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
-ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.3
+RUN pip install --upgrade pip==20.2.4
+ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring~=0.1.0
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_MONITORING_SOURCE}
+ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.4
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_CONTROLLER_SOURCE}
 ARG OPENWISP_NOTIFICATION_SOURCE=openwisp-notifications~=0.3.0
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_NOTIFICATION_SOURCE}
@@ -29,9 +32,9 @@ ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/d
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}
-ARG DJANGO_X509_SOURCE=django-x509~=0.9.2
+ARG DJANGO_X509_SOURCE=django-x509~=0.9.4
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}
-ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.7.2
+ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.7.4
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}
 RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
                                     uwsgi sentry-sdk supervisor celery django-celery-beat \
@@ -85,10 +88,12 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     RADIUS_APP_PORT=8002 \
     TOPOLOGY_APP_PORT=8003 \
     WEBSOCKET_APP_PORT=8004 \
+    MONITORING_APP_PORT=8005 \
     DASHBOARD_INTERNAL=dashboard.internal \
     CONTROLLER_INTERNAL=controller.internal \
     RADIUS_INTERNAL=radius.internal \
     TOPOLOGY_INTERNAL=topology.internal \
+    MONITORING_INTERNAL=monitoring.internal \
     # VPN Configurations
     VPN_DOMAIN=openvpn.example.com \
     VPN_NAME=default \

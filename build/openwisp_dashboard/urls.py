@@ -15,6 +15,7 @@ urlpatterns = [
     path('', index_redirect_view, name='index'),
     path('admin/', admin.site.urls),
     path('accounts/', include('openwisp_users.accounts.urls')),
+    path('', include('openwisp_monitoring.urls')),
 ]
 
 urlpatterns += openwisp_controller_urls()

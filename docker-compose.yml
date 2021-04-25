@@ -13,10 +13,12 @@ services:
     volumes:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
+      - influxdb_data:/var/lib/influxdb
     depends_on:
       - postgres
       - redis
       - postfix
+      - influxdb
 
   controller:
     image: openwisp/openwisp-controller:latest
@@ -70,6 +72,20 @@ services:
     depends_on:
       - dashboard
 
+  monitoring:
+    image: openwisp/openwisp-monitoring:latest
+    build:
+      context: build
+      dockerfile: openwisp_monitoring/Dockerfile
+      args:
+        MONITORING_APP_PORT: 8005
+    env_file:
+      - .env
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+    depends_on:
+      - dashboard
+
   nginx:
     image: openwisp/openwisp-nginx:latest
     build:
@@ -89,6 +105,7 @@ services:
          - controller.internal
          - radius.internal
          - topology.internal
+         - monitoring.internal
     ports:
       - "80:80"
       - "443:443"
@@ -98,6 +115,7 @@ services:
       - radius
       - topology
       - websocket
+      - monitoring
 
   celery:
     image: openwisp/openwisp-dashboard:latest
@@ -120,6 +138,20 @@ services:
       - postgres
       - redis
       - dashboard
+
+  openvpn:
+    image: openwisp/openwisp-openvpn:latest
+    build:
+      context: build
+      dockerfile: openwisp_openvpn/Dockerfile
+    ports:
+      - "1194:1194/udp"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    cap_add:
+      - NET_ADMIN
 
   postfix:
     image: openwisp/openwisp-postfix:latest
@@ -156,29 +188,25 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  openvpn:
-    image: openwisp/openwisp-openvpn:latest
-    build:
-      context: build
-      dockerfile: openwisp_openvpn/Dockerfile
-    ports:
-      - "1194:1194/udp"
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-    cap_add:
-      - NET_ADMIN
+  influxdb:
+    image: influxdb:1.8-alpine
+    environment:
+      - INFLUXDB_DB=$INFLUXDB_NAME
+      - INFLUXDB_USER=$INFLUXDB_USER
+      - INFLUXDB_USER_PASSWORD=$INFLUXDB_PASS
+    volumes:
+      - influxdb_data:/var/lib/influxdb
 
   redis:
     image: redis:alpine
 
 volumes:
+  public_html: {}
   postgres_data: {}
+  influxdb_data: {}
   openwisp_certs: {}
   openwisp_media: {}
   openwisp_static: {}
-  public_html: {}
 
 networks:
   default:

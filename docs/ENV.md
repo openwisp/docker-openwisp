@@ -69,6 +69,12 @@ Additionally, you can search for the following:
 - **Valid Values:** Domain
 - **Default:** topology.example.com
 
+### `MONITORING_DOMAIN`
+
+- **Explaination:** Domain on which you want to access OpenWISP monitoring API.
+- **Valid Values:** Domain
+- **Default:** monitoring.example.com
+
 ### `VPN_DOMAIN`
 
 - **Explaination:** Valid domain / IP address to reach the OpenVPN server.
@@ -619,6 +625,18 @@ Additionally, you can search for the following:
 - **Valid Values:** INTEGER
 - **Default:** 8003
 
+### `WEBSOCKET_APP_PORT`
+
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP websocket container. DON'T Change unless you know what you are doing.
+- **Valid Values:** INTEGER
+- **Default:** 8004
+
+### `MONITORING_APP_PORT`
+
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP monitoring container. DON'T Change unless you know what you are doing.
+- **Valid Values:** INTEGER
+- **Default:** 8005
+
 ### `DASHBOARD_INTERNAL`
 
 - **Explaination:** Internal dashboard domain to reach dashboard from other containers.
@@ -627,21 +645,27 @@ Additionally, you can search for the following:
 
 ### `CONTROLLER_INTERNAL`
 
-- **Explaination:** Internal controller domain to reach controller from other containers.
+- **Explaination:** Internal controller domain to reach openwisp-controller from other containers.
 - **Valid Values:** STRING
 - **Default:** controller.internal
 
 ### `RADIUS_INTERNAL`
 
-- **Explaination:** Internal radius domain to reach radius from other containers.
+- **Explaination:** Internal radius domain to reach openwisp-radius from other containers.
 - **Valid Values:** STRING
 - **Default:** radius.internal
 
 ### `TOPOLOGY_INTERNAL`
 
-- **Explaination:** Internal topology domain to reach topology from other containers.
+- **Explaination:** Internal topology domain to reach openwisp-network-topology from other containers.
 - **Valid Values:** STRING
 - **Default:** topology.internal
+
+### `MONITORING_INTERNAL`
+
+- **Explaination:** Internal monitoring domain to reach openwisp-monitoring from other containers.
+- **Valid Values:** STRING
+- **Default:** monitoring.internal
 
 ### `POSTFIX_DEBUG_MYNETWORKS`
 - **Explaination:** Set debug_peer_list for given list of networks.
