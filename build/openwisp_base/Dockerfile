@@ -6,7 +6,7 @@ FROM python:3.7.10-slim-buster AS SYSTEM
 # 3. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
 RUN apt update && \
     apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev \
-                libcairo2 libpangocairo-1.0 gdal-bin gettext && \
+                libcairo2 libpangocairo-1.0 gdal-bin gettext fping && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 FROM SYSTEM AS PYTHON
@@ -19,11 +19,17 @@ RUN apt update && \
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
+## TODO: We need to temporarily lock the version of pip to avoid using
+## the new version of the dependency resolver which is not compatible
+## with openwisp modules
+RUN pip install --upgrade pip==20.2.4
+ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/docker-openwisp-usage
+RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_MONITORING_SOURCE}
 ARG OPENWISP_FIRMWARE_SOURCE=https://github.com/openwisp/openwisp-firmware-upgrader/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.4
+ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_CONTROLLER_SOURCE}
-ARG OPENWISP_NOTIFICATION_SOURCE=openwisp-notifications~=0.3.0
+ARG OPENWISP_NOTIFICATION_SOURCE=https://github.com/openwisp/openwisp-notifications/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_NOTIFICATION_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.5.1
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_TOPOLOGY_SOURCE}
@@ -31,9 +37,9 @@ ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/d
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}
-ARG DJANGO_X509_SOURCE=django-x509~=0.9.2
+ARG DJANGO_X509_SOURCE=django-x509~=0.9.4
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}
-ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.7.2
+ARG OPENWISP_UTILS_SOURCE=https://github.com/openwisp/openwisp-utils/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}
 RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
                                     uwsgi sentry-sdk supervisor celery django-celery-beat \
@@ -62,6 +68,11 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     DB_SSLCERT=None \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
+    INFLUXDB_USER=admin \
+    INFLUXDB_PASS=admin \
+    INFLUXDB_NAME=openwisp \
+    INFLUXDB_HOST=influxdb \
+    INFLUXDB_PORT=8086 \
     EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend \
     EMAIL_HOST=postfix \
     EMAIL_HOST_PORT=25 \
@@ -106,6 +117,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     USE_OPENWISP_RADIUS=True \
     USE_OPENWISP_TOPOLOGY=True \
     USE_OPENWISP_FIRMWARE=True \
+    USE_OPENWISP_MONITORING=True \
     # Celery-beat Configurations
     CRON_DELETE_OLD_RADACCT=365 \
     CRON_DELETE_OLD_POSTAUTH=365 \

@@ -12,6 +12,16 @@ if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
 
 if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
     urlpatterns += [
-        path('api/v1/', include('openwisp_firmware_upgrader.api.urls')),
+        path(
+            'api/v1/',
+            include('openwisp_firmware_upgrader.api.urls', namespace='firmware'),
+        ),
         path('', include('openwisp_firmware_upgrader.private_storage.urls')),
+    ]
+
+if env_bool(os.environ['USE_OPENWISP_MONITORING']):
+    urlpatterns += [
+        path(
+            '', include('openwisp_monitoring.device.api.urls', namespace='monitoring'),
+        )
     ]

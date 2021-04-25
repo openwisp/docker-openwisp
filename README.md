@@ -77,6 +77,7 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 
 You can build with your own python package by creating a file named `.build.env` in the root of the repository, then set the variables inside `.build.env` file in `<variable>=<value>` format. Multiple variable should be separated in newline. These are the variables that can be changed:
 
+- `OPENWISP_MONITORING_SOURCE`
 - `OPENWISP_FIRMWARE_SOURCE`
 - `OPENWISP_CONTROLLER_SOURCE`
 - `OPENWISP_NOTIFICATION_SOURCE`
@@ -107,6 +108,7 @@ If you want to disable a service, you can simply remove the container for that s
 
 - `openwisp-network-topology`: Set the `USE_OPENWISP_TOPOLOGY` variable to `False`.
 - `openwisp-firmware-upgrader` : Set the `USE_OPENWISP_FIRMWARE` variable to `False`.
+- `openwisp-monitoring` : Set the `USE_OPENWISP_MONITORING` variable to `False`.
 - `openwisp-radius` : Set the `USE_OPENWISP_RADIUS` variable to `False`.
 - `openwisp-postgres`: If you are using a seperate database instance,
    - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `radius`, `api`, `dashboard`.

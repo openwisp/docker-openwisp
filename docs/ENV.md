@@ -16,8 +16,9 @@ Following are the options that can be changed. The list is divided in following 
 - [Security](#Security): You should change these values for security reasons.
 - [Enable Modules](#Enable-Modules): Enable / Disable optional openwisp modules.
 - [Additional](#Additional): You might want to look into these options before using images in production.
-- [Database](#Database): Database settings. Database host setting is in "Host" section.
-- [OPENWISP](#OpenWISP): OpenWISP Module Configuration.
+- [OpenWISP](#OpenWISP): OpenWISP Module Configuration.
+- [Database](#Database): Database settings.
+- [InfluxDB](#InfluxDB): InfluxDB settings. (Used in OpenWISP-monitoring)
 - [Django](#Django): Additional django settings.
 - [Email](#Email): Email & postfix configurations.
 - [Cron](#Cron): Settings of the periodic tasks.
@@ -30,7 +31,9 @@ Following are the options that can be changed. The list is divided in following 
 
 Additionally, you can search for the following:
 
+- `OPENWISP_`: All the custom openwisp module's settings.
 - `DB_`: All the database settings.
+- `INFLUXDB_`: All the InfluxDB related settings specific settings.
 - `DJANGO_`: All the django settings.
 - `EMAIL__`: All the email settings. (Also see `POSTFIX_`)
 - `POSTFIX_`: All the postfix settings. (Also see `EMAIL_`)
@@ -130,6 +133,12 @@ Additionally, you can search for the following:
 - **Valid Values:** True | False
 - **Default:** True
 
+### `USE_OPENWISP_MONITORING`
+
+- **Explaination:** Use the openwisp-monitoring module.
+- **Valid Values:** True | False
+- **Default:** True
+
 ## Additional
 
 ### `TZ`
@@ -149,6 +158,17 @@ Additionally, you can search for the following:
 - **Valid Values:** External | Yes | SelfSigned | No
 - **Default:** Yes
 
+## OpenWISP
+
+Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supported and can be used as per the documentation in the module. If you want support for a setting that has a more complex datatype, please discuss in the support channel.
+
+### `OPENWISP_CUSTOM_OPENWRT_IMAGES`
+
+- **Explaination:** [JSON of OpenWRT Images as documented in openwisp-firmware-image repository](https://github.com/openwisp/openwisp-firmware-upgrader/#openwisp_custom_openwrt_images).
+- **Valid Values:** JSON
+- **Default:** None
+- **Example:** [{"name": "Name1","label": "Label1","boards": ["TestA", "TestB"]}, {"name": "Name2","label": "Label2","boards": ["TestC", "TestD"]}]
+
 ## Database
 
 ### `DB_NAME`
@@ -162,6 +182,12 @@ Additionally, you can search for the following:
 - **Explaination:** Django database engine compatible with GeoDjango, read more [here](https://docs.djangoproject.com/en/2.2/ref/settings/#engine).
 - **Valid Values:** Valid name from list [here](https://docs.djangoproject.com/en/2.2/ref/settings/#engine).
 - **Default:** django.contrib.gis.db.backends.postgis
+
+### `DB_HOST`
+
+- **Explaination:** Host to be used when connecting to the database. `localhost` or empty string are not allowed.
+- **Valid Values:** STRING | IP adress
+- **Default:** postgres
 
 ### `DB_PORT`
 
@@ -199,16 +225,37 @@ Additionally, you can search for the following:
 - **Valid Values:** JSON
 - **Default:** {}
 
-## OpenWISP
+## InfluxDB
 
-Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supported and can be used as per the documentation in the module. If you want support for a setting that has a more complex datatype, please discuss in the support channel.
+### `INFLUXDB_USER`
 
-### `OPENWISP_CUSTOM_OPENWRT_IMAGES`
+- **Explaination:** Username of InfluxDB user.
+- **Valid Values:** STRING
+- **Default:** admin
 
-- **Explaination:** [JSON of OpenWRT Images as documented in openwisp-firmware-image repository](https://github.com/openwisp/openwisp-firmware-upgrader/#openwisp_custom_openwrt_images).
-- **Valid Values:** JSON
-- **Default:** None
-- **Example:** [{"name": "Name1","label": "Label1","boards": ["TestA", "TestB"]}, {"name": "Name2","label": "Label2","boards": ["TestC", "TestD"]}]
+### `INFLUXDB_PASS`
+
+- **Explaination:** Password for InfluxDB user.
+- **Valid Values:** STRING
+- **Default:** admin
+
+### `INFLUXDB_NAME`
+
+- **Explaination:** Name of InfluxDB database.
+- **Valid Values:** STRING
+- **Default:** openwisp
+
+### `INFLUXDB_HOST`
+
+- **Explaination:** Host to be used when connecting to the influxDB. `localhost` or empty string are not allowed.
+- **Valid Values:** STRING | IP adress
+- **Default:** influxdb
+
+### `INFLUXDB_PORT`
+
+- **Explaination:** Port on which InfluxDB is listening.
+- **Valid Values:** INT
+- **Default:** 8086
 
 ## Django
 
@@ -549,12 +596,6 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Default:** OpenWISP
 
 ## Hosts
-
-### `DB_HOST`
-
-- **Explaination:** Host to be used when connecting to the database. `localhost` or empty string are not allowed.
-- **Valid Values:** STRING | IP adress
-- **Default:** postgres
 
 ### `EMAIL_HOST`
 
