@@ -39,19 +39,23 @@ ENV MODULE_NAME=nginx \
     RADIUS_APP_PORT=8002 \
     TOPOLOGY_APP_PORT=8003 \
     WEBSOCKET_APP_PORT=8004 \
+    MONITORING_APP_PORT=8005 \
     # Application Service Name
     DASHBOARD_APP_SERVICE=dashboard \
     CONTROLLER_APP_SERVICE=controller \
     RADIUS_APP_SERVICE=radius \
     TOPOLOGY_APP_SERVICE=topology \
     WEBSOCKET_APP_SERVICE=websocket \
+    MONITORING_APP_SERVICE=monitoring \
     # Listen domains
     DASHBOARD_DOMAIN=dashboard.example.com \
     CONTROLLER_DOMAIN=controller.example.com \
     RADIUS_DOMAIN=radius.example.com \
     TOPOLOGY_DOMAIN=topology.example.com \
+    MONITORING_DOMAIN=monitoring.example.com \
     # Inter container communication domains
     DASHBOARD_INTERNAL=dashboard.internal \
     CONTROLLER_INTERNAL=controller.internal \
     RADIUS_INTERNAL=radius.internal \
-    TOPOLOGY_INTERNAL=topology.internal
+    TOPOLOGY_INTERNAL=topology.internal \
+    MONITORING_INTERNAL=monitoring.internal

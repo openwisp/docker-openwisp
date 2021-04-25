@@ -69,6 +69,7 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 
 You can build with your own python package by creating a file named `.build.env` in the root of the repository, then set the variables inside `.build.env` file in `<variable>=<value>` format. Multiple variable should be separated in newline. These are the variables that can be changed:
 
+- `OPENWISP_MONITORING_SOURCE`
 - `OPENWISP_CONTROLLER_SOURCE`
 - `OPENWISP_NOTIFICATION_SOURCE`
 - `OPENWISP_TOPOLOGY_SOURCE`

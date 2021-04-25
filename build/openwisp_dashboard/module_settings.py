@@ -28,6 +28,11 @@ INSTALLED_APPS = [
     'openwisp_controller.geo',
     'openwisp_controller.connection',
     'flat_json_widget',
+    # monitoring
+    'openwisp_monitoring.monitoring',
+    'openwisp_monitoring.device',
+    'openwisp_monitoring.check',
+    'nested_admin',
     'openwisp_notifications',
     'openwisp_utils.admin_theme',
     # openwisp-network-topology

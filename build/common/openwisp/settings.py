@@ -17,6 +17,7 @@ ALLOWED_HOSTS = [
     os.environ['CONTROLLER_INTERNAL'],
     os.environ['RADIUS_INTERNAL'],
     os.environ['TOPOLOGY_INTERNAL'],
+    os.environ['MONITORING_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ[
@@ -36,6 +37,7 @@ CORS_ORIGIN_WHITELIST = [
     f'{HTTP_SCHEME}://{os.environ["CONTROLLER_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["RADIUS_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["TOPOLOGY_DOMAIN"]}',
+    f'{HTTP_SCHEME}://{os.environ["MONITORING_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')
 
 if HTTP_SCHEME == 'https':
@@ -131,6 +133,16 @@ DATABASES = {
         'PORT': os.environ['DB_PORT'],
         'OPTIONS': DB_OPTIONS,
     },
+}
+
+
+TIMESERIES_DATABASE = {
+    'BACKEND': 'openwisp_monitoring.db.backends.influxdb',
+    'USER': os.environ['INFLUXDB_USER'],
+    'PASSWORD': os.environ['INFLUXDB_PASS'],
+    'NAME': os.environ['INFLUXDB_NAME'],
+    'HOST': os.environ['INFLUXDB_HOST'],
+    'PORT': os.environ['INFLUXDB_PORT'],
 }
 
 # Channels(Websocket)
@@ -263,9 +275,8 @@ if os.environ['DJANGO_SENTRY_DSN']:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
-    sentry_sdk.init(
-        dsn=os.environ['DJANGO_SENTRY_DSN'], integrations=[DjangoIntegration()]
-    )
+    sentry_sdk.init(dsn=os.environ['DJANGO_SENTRY_DSN'], 
+                    integrations=[DjangoIntegration()])
 
 try:
     from openwisp.module_settings import *
