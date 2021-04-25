@@ -163,6 +163,7 @@ function postfix_config {
 
     postconf -e mynetworks="$POSTFIX_MYNETWORKS"
     postconf -e message_size_limit="$POSTFIX_MESSAGE_SIZE_LIMIT"
+    postconf -e mailbox_size_limit=0
     postconf -e recipient_delimiter=+
     postconf -e inet_protocols=all
 

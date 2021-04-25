@@ -1,5 +1,4 @@
 import os
-from openwisp.utils import env_bool
 from openwisp.radius_settings import *
 from openwisp.api_settings import *
 from openwisp.utils import request_scheme
@@ -26,14 +25,19 @@ INSTALLED_APPS = [
     'openwisp_controller.config',
     'openwisp_controller.geo',
     'openwisp_controller.connection',
-    'flat_json_widget',
+    # openwisp-monitoring
+    'openwisp_monitoring.monitoring',
+    'openwisp_monitoring.device',
+    'openwisp_monitoring.check',
+    'nested_admin',
+    # openwisp-notification
     'openwisp_notifications',
-    'openwisp_utils.admin_theme',
     # openwisp-network-topology
     'openwisp_network_topology',
     # openwisp-firmware-upgrader
     'openwisp_firmware_upgrader',
     # admin
+    'openwisp_utils.admin_theme',
     'django.contrib.admin',
     'django.forms',
     # other dependencies
@@ -54,6 +58,7 @@ INSTALLED_APPS = [
     # openwisp-radius
     'openwisp_radius',
     # other dependencies
+    'flat_json_widget',
     'private_storage',
     'drf_yasg',
     'channels',
@@ -67,5 +72,7 @@ EXTENDED_APPS = [
 API_BASEURL = f'{request_scheme()}://{os.environ["API_DOMAIN"]}'
 
 OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
-OPENWISP_FIRMWARE_API_BASEURL = API_BASEURL
+OPENWISP_MONITORING_API_URLCONF = 'openwisp_monitoring.urls'
 OPENWISP_NETWORK_TOPOLOGY_API_BASEURL = API_BASEURL
+OPENWISP_MONITORING_API_BASEURL = API_BASEURL
+OPENWISP_FIRMWARE_API_BASEURL = API_BASEURL

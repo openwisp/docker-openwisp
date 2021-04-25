@@ -51,14 +51,15 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = 'admin:index'
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
 ROOT_URLCONF = 'openwisp.urls'
-
 HTTP_SCHEME = request_scheme()
+
 # CORS
-CORS_ORIGIN_WHITELIST = [
+CORS_ALLOWED_ORIGINS = [
     f'{HTTP_SCHEME}://{os.environ["DASHBOARD_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["RADIUS_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')
+CORS_ALLOW_CREDENTIALS = True
 
 if HTTP_SCHEME == 'https':
     SESSION_COOKIE_SECURE = True
@@ -156,6 +157,15 @@ DATABASES = {
     },
 }
 
+TIMESERIES_DATABASE = {
+    'BACKEND': 'openwisp_monitoring.db.backends.influxdb',
+    'USER': os.environ['INFLUXDB_USER'],
+    'PASSWORD': os.environ['INFLUXDB_PASS'],
+    'NAME': os.environ['INFLUXDB_NAME'],
+    'HOST': os.environ['INFLUXDB_HOST'],
+    'PORT': os.environ['INFLUXDB_PORT'],
+}
+
 # Channels(Websocket)
 # https://channels.readthedocs.io/en/latest/topics/channel_layers.html#configuration
 
@@ -185,6 +195,7 @@ LEAFLET_CONFIG = {
         int(os.environ['DJANGO_LEAFET_CENTER_X_AXIS']),
         int(os.environ['DJANGO_LEAFET_CENTER_Y_AXIS']),
     ],
+    'RESET_VIEW': False,
     'DEFAULT_ZOOM': int(os.environ['DJANGO_LEAFET_ZOOM']),
 }
 
@@ -311,7 +322,6 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-
 # Add Custom OpenWRT Images for openwisp firmware
 try:
     OPENWRT_IMAGES = json.loads(os.environ['OPENWISP_CUSTOM_OPENWRT_IMAGES'])
@@ -356,3 +366,10 @@ if (
     and 'openwisp_firmware_upgrader' in INSTALLED_APPS
 ):
     INSTALLED_APPS.remove('openwisp_firmware_upgrader')
+if not env_bool(os.environ['USE_OPENWISP_MONITORING']):
+    if 'openwisp_monitoring.monitoring' in INSTALLED_APPS:
+        INSTALLED_APPS.remove('openwisp_monitoring.monitoring')
+    if 'openwisp_monitoring.device' in INSTALLED_APPS:
+        INSTALLED_APPS.remove('openwisp_monitoring.device')
+    if 'openwisp_monitoring.check' in INSTALLED_APPS:
+        INSTALLED_APPS.remove('openwisp_monitoring.check')

@@ -13,10 +13,12 @@ services:
     volumes:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
+      - influxdb_data:/var/lib/influxdb
     depends_on:
       - postgres
       - redis
       - postfix
+      - influxdb
 
   api:
     image: openwisp/openwisp-api:latest
@@ -27,6 +29,8 @@ services:
         API_APP_PORT: 8001
     env_file:
       - .env
+    volumes:
+      - influxdb_data:/var/lib/influxdb
     depends_on:
       - postgres
       - redis
@@ -57,6 +61,30 @@ services:
     depends_on:
       - dashboard
 
+  celery:
+    image: openwisp/openwisp-dashboard:latest
+    environment:
+      - MODULE_NAME=celery
+    volumes:
+      - openwisp_media:/opt/openwisp/media
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
+  celerybeat:
+    image: openwisp/openwisp-dashboard:latest
+    environment:
+      - MODULE_NAME=celerybeat
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
   nginx:
     image: openwisp/openwisp-nginx:latest
     build:
@@ -84,40 +112,6 @@ services:
       - radius
       - websocket
 
-  celery:
-    image: openwisp/openwisp-dashboard:latest
-    environment:
-      - MODULE_NAME=celery
-    volumes:
-      - openwisp_media:/opt/openwisp/media
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - redis
-      - dashboard
-
-  celerybeat:
-    image: openwisp/openwisp-dashboard:latest
-    environment:
-      - MODULE_NAME=celerybeat
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - redis
-      - dashboard
-
-  postfix:
-    image: openwisp/openwisp-postfix:latest
-    build:
-      context: build
-      dockerfile: openwisp_postfix/Dockerfile
-    env_file:
-      - .env
-    volumes:
-      - openwisp_certs:/etc/ssl/mail
-
   freeradius:
     image: openwisp/openwisp-freeradius:latest
     build:
@@ -133,15 +127,15 @@ services:
       - radius
       - dashboard
 
-  postgres:
-    image: mdillon/postgis:11-alpine
-    environment:
-      - POSTGRES_DB=$DB_NAME
-      - POSTGRES_USER=$DB_USER
-      - POSTGRES_PASSWORD=$DB_PASS
-      - TZ=$TZ
+  postfix:
+    image: openwisp/openwisp-postfix:latest
+    build:
+      context: build
+      dockerfile: openwisp_postfix/Dockerfile
+    env_file:
+      - .env
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - openwisp_certs:/etc/ssl/mail
 
   openvpn:
     image: openwisp/openwisp-openvpn:latest
@@ -157,15 +151,35 @@ services:
     cap_add:
       - NET_ADMIN
 
+  postgres:
+    image: mdillon/postgis:11-alpine
+    environment:
+      - POSTGRES_DB=$DB_NAME
+      - POSTGRES_USER=$DB_USER
+      - POSTGRES_PASSWORD=$DB_PASS
+      - TZ=$TZ
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  influxdb:
+    image: influxdb:1.8-alpine
+    environment:
+      - INFLUXDB_DB=$INFLUXDB_NAME
+      - INFLUXDB_USER=$INFLUXDB_USER
+      - INFLUXDB_USER_PASSWORD=$INFLUXDB_PASS
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+
   redis:
     image: redis:alpine
 
 volumes:
+  public_html: {}
+  influxdb_data: {}
   postgres_data: {}
   openwisp_certs: {}
   openwisp_media: {}
   openwisp_static: {}
-  public_html: {}
 
 networks:
   default:
