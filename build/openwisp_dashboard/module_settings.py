@@ -2,7 +2,7 @@ import os
 from openwisp.utils import env_bool
 from openwisp.radius_settings import *
 from openwisp.topology_settings import *
-from openwisp.controller_settings import *
+from openwisp.api_settings import *
 from openwisp.utils import request_scheme
 
 INSTALLED_APPS = [

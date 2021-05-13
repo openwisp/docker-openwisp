@@ -41,18 +41,18 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: openwisp-controller
+  name: openwisp-api
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: openwisp-controller
+        app: openwisp-api
     spec:
       restartPolicy: Always
       containers:
-      - name: openwisp-controller
-        image: openwisp/openwisp-controller:latest
+      - name: openwisp-api
+        image: openwisp/openwisp-api:latest
         imagePullPolicy: Always
         envFrom:
           - configMapRef:

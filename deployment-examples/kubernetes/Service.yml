@@ -15,15 +15,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller
+  name: api
   labels:
-      app: openwisp-controller
+      app: openwisp-api
 spec:
   type: ClusterIP
   ports:
     - port: 8001
   selector:
-    app: openwisp-controller
+    app: openwisp-api
 ---
 apiVersion: v1
 kind: Service
@@ -151,7 +151,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: controller-internal
+  name: api-internal
   labels:
     app: openwisp-nginx
 spec:

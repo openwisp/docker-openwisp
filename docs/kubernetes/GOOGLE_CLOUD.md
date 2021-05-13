@@ -38,7 +38,7 @@ kubectl patch ingress/openwisp-http-ingress \
                 {
                 "hosts": [
                     "dasboard.openwisp.org",
-                    "controller.openwisp.org",
+                    "api.openwisp.org",
                     "radius.openwisp.org",
                     "topology.openwisp.org"
                 ],

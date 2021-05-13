@@ -21,12 +21,12 @@ metadata:
 data:
   DJANGO_SECRET_KEY: MY_COMPANY_SECRET_KEY
   DASHBOARD_DOMAIN: dashboard.openwisp.org
-  CONTROLLER_DOMAIN: controller.openwisp.org
+  API_DOMAIN: api.openwisp.org
   RADIUS_DOMAIN: radius.openwisp.org
   TOPOLOGY_DOMAIN: topology.openwisp.org
   VPN_DOMAIN: openvpn.openwisp.org
   DASHBOARD_INTERNAL: dashboard-internal
-  CONTROLLER_INTERNAL: controller-internal
+  API_INTERNAL: api-internal
   RADIUS_INTERNAL: radius-internal
   TOPOLOGY_INTERNAL: topology-internal
   NGINX_SERVER_NAME_HASH_BUCKET: "64"

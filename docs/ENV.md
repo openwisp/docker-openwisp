@@ -35,7 +35,7 @@ Additionally, you can search for the following:
 - `POSTFIX_`: All the postfix settings. (Also see `EMAIL_`)
 - `NGINX_`: All the nginx settings.
 - `DASHBOARD_`: All the OpenWISP dashboard specific settings.
-- `CONTROLLER_`: All the OpenWISP controller specific settings.
+- `API_`: All the OpenWISP api specific settings.
 - `RADIUS_`: All the OpenWISP radius specific settings.
 - `TOPOLOGY_`: All the OpenWISP network topology specific settings.
 - `X509_`: All the configurations related to x509 CA and certificates.
@@ -51,11 +51,11 @@ Additionally, you can search for the following:
 - **Valid Values:** Domain
 - **Default:** dashboard.example.com
 
-### `CONTROLLER_DOMAIN`
+### `API_DOMAIN`
 
-- **Explaination:** Domain on which you want to access OpenWISP controller API.
+- **Explaination:** Domain on which you want to access OpenWISP controller & topology API.
 - **Valid Values:** Domain
-- **Default:** controller.example.com
+- **Default:** api.example.com
 
 ### `RADIUS_DOMAIN`
 
@@ -569,11 +569,11 @@ Additionally, you can search for the following:
 - **Valid Values:** Domain | IP address
 - **Default:** dashboard
 
-### `CONTROLLER_APP_SERVICE`
+### `API_APP_SERVICE`
 
-- **Explaination:** Host to establish OpenWISP controller connection.
+- **Explaination:** Host to establish OpenWISP api connection.
 - **Valid Values:** Domain | IP address
-- **Default:** controller
+- **Default:** api
 
 ### `RADIUS_APP_SERVICE`
 
@@ -601,9 +601,9 @@ Additionally, you can search for the following:
 - **Valid Values:** INTEGER
 - **Default:** 8000
 
-### `CONTROLLER_APP_PORT`
+### `API_APP_PORT`
 
-- **Explaination:** Change the port on which nginx tries to get the OpenWISP  controller container. DON'T Change unless you know what you are doing.
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP  api container. DON'T Change unless you know what you are doing.
 - **Valid Values:** INTEGER
 - **Default:** 8001
 
@@ -625,11 +625,11 @@ Additionally, you can search for the following:
 - **Valid Values:** STRING
 - **Default:** dashboard.internal
 
-### `CONTROLLER_INTERNAL`
+### `API_INTERNAL`
 
-- **Explaination:** Internal controller domain to reach controller from other containers.
+- **Explaination:** Internal api domain to reach api from other containers.
 - **Valid Values:** STRING
-- **Default:** controller.internal
+- **Default:** api.internal
 
 ### `RADIUS_INTERNAL`
 

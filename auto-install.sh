@@ -85,13 +85,13 @@ setup_docker_openwisp() {
         echo -ne ${GRN}"(1/7) Enter dashboard domain: "${NON}; read dashboard_domain;
         set_env "DASHBOARD_DOMAIN" "$dashboard_domain";
         domain=$(echo "$dashboard_domain" | cut -f2- -d'.')
-        # Controller Domain
-        echo -ne ${GRN}"(2/7) Enter controller domain (blank for controller.${domain}): "${NON};
-        read controller_domain;
-        if [[ -z "$CONTROLLER_DOMAIN" ]]; then
-            set_env "CONTROLLER_DOMAIN" "controller.${domain}";
+        # API Domain
+        echo -ne ${GRN}"(2/7) Enter API domain (blank for api.${domain}): "${NON};
+        read API_DOMAIN;
+        if [[ -z "$API_DOMAIN" ]]; then
+            set_env "API_DOMAIN" "api.${domain}";
         else
-            set_env "CONTROLLER_DOMAIN" "$controller_domain";
+            set_env "API_DOMAIN" "$api";
         fi
         # Radius Domain
         echo -ne ${GRN}"(3/7) Enter radius domain (blank for radius.${domain}, N to disable module): "${NON};

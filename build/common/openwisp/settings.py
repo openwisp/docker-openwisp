@@ -9,12 +9,14 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
 
 if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
-    os.environ['DJANGO_ALLOWED_HOSTS'] = f'.{os.environ["DASHBOARD_DOMAIN"].split(".", 1)[1]}'
+    os.environ[
+        'DJANGO_ALLOWED_HOSTS'
+    ] = f'.{os.environ["DASHBOARD_DOMAIN"].split(".", 1)[1]}'
 
 ALLOWED_HOSTS = [
     'localhost',
     os.environ['DASHBOARD_INTERNAL'],
-    os.environ['CONTROLLER_INTERNAL'],
+    os.environ['API_INTERNAL'],
     os.environ['RADIUS_INTERNAL'],
     os.environ['TOPOLOGY_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
@@ -33,7 +35,7 @@ HTTP_SCHEME = request_scheme()
 # CORS
 CORS_ORIGIN_WHITELIST = [
     f'{HTTP_SCHEME}://{os.environ["DASHBOARD_DOMAIN"]}',
-    f'{HTTP_SCHEME}://{os.environ["CONTROLLER_DOMAIN"]}',
+    f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["RADIUS_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["TOPOLOGY_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')

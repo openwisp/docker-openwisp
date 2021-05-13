@@ -29,7 +29,7 @@ The `auto-install.sh` script can be used to quickly install a simple instance of
 
 If you have created a [`.env` file](docs/ENV.md) to configure your instance, then you can use it with the script otherwise.
 
-**It asks 7 questions for application configuration, 5 of them are domain names.** The dashboard, controller, radius, topology & openvpn can be setup on different domain, **please ensure the domains you enter point to your server**. The remaining **2 questions are email id** for site manager email (used by django to send application emails) and letsencrypt (used by [certbot](https://certbot.eff.org/) to issue https certs on this address.)
+**It asks 7 questions for application configuration, 5 of them are domain names.** The dashboard, api, radius, topology & openvpn can be setup on different domain, **please ensure the domains you enter point to your server**. The remaining **2 questions are email id** for site manager email (used by django to send application emails) and letsencrypt (used by [certbot](https://certbot.eff.org/) to issue https certs on this address.)
 
 To get started, run the following command:
 
@@ -59,8 +59,8 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 #### Notes:
 
 - Default username & password are `admin`.
-- Default domains are: `dashboard.openwisp.org`, `controller.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
-- To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file, example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org controller.openwisp.org radius.openwisp.org topology.openwisp.org" >> /etc/hosts'`
+- Default domains are: `dashboard.openwisp.org`, `api.openwisp.org`, `radius.openwisp.org` and `topology.openwisp.org`.
+- To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file, example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org topology.openwisp.org" >> /etc/hosts'`
 - Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 - If you want to perform actions like cleaning everything produced by `docker-openwisp`, please use the [makefile options](#makefile-options).
 
@@ -83,7 +83,7 @@ For example, if you want to supply your own django and openwisp-controller sourc
 
 ```
 DJANGO_SOURCE=django==2.1
-OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-controller/tarball/master
+OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-api/tarball/master
 ```
 
 ### Disabling Services
@@ -91,7 +91,7 @@ OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-controller/tar
 **Right now, this is only tentative guide. Errata may exist. Please report errors on the [gitter channel](https://gitter.im/openwisp/dockerize-openwisp).**
 
 - `openwisp-dashboard`: You cannot disable the openwisp-dashboard. It is the heart of OpenWISP and performs core functionalities.
-- `openwisp-controller`: You cannot disable the openwisp-controller. It is required for interacting with your devices.
+- `openwisp-api`: You cannot disable the openwisp-api. It is required for interacting with your devices.
 - `openwisp-websocket`: Removing this container will cause the system to not able to update real-time location for mobile devices.
 
 If you want to disable a service, you can simply remove the container for that service, however, there are additional steps for some images:
@@ -99,7 +99,7 @@ If you want to disable a service, you can simply remove the container for that s
 - `openwisp-topology`: Set the `USE_OPENWISP_TOPOLOGY` variable to `False`.
 - `openwisp-radius` : Set the `USE_OPENWISP_RADIUS` variable to `False`.
 - `openwisp-postgres`: If you are using a seperate database instance,
-   - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `topology`, `radius`, `controller`, `dashboard`.
+   - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `topology`, `radius`, `api`, `dashboard`.
    - Ensure your database server supports GeoDjango. (Install PostGIS for PostgreSQL)
    - Change the [database configuration variables](docs/ENV.md) to point to your instances, if you are using SSL, remember to set `DB_SSLMODE`, `DB_SSLKEY`, `DB_SSLCERT`, `DB_SSLROOTCERT`.
    - If you are using SSL, remember to mount volume containing the certificates and key in all the containers which contact the database server and make sure that the private key permission is `600` and owned by `root:root`.

@@ -32,10 +32,10 @@ function create_prod_certs {
                         --domain ${DASHBOARD_DOMAIN} \
                         --email ${CERT_ADMIN_EMAIL}
     fi
-    if [ ! -f /etc/letsencrypt/live/${CONTROLLER_DOMAIN}/privkey.pem ]; then
+    if [ ! -f /etc/letsencrypt/live/${API_DOMAIN}/privkey.pem ]; then
         certbot certonly --standalone --noninteractive --agree-tos \
                         --rsa-key-size 4096 \
-                        --domain ${CONTROLLER_DOMAIN} \
+                        --domain ${API_DOMAIN} \
                         --email ${CERT_ADMIN_EMAIL}
     fi
     if [ ! -f /etc/letsencrypt/live/${RADIUS_DOMAIN}/privkey.pem ]; then
@@ -55,7 +55,7 @@ function create_prod_certs {
 function create_dev_certs {
     # Ensure required directories exist
     mkdir -p /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/
-    mkdir -p /etc/letsencrypt/live/${CONTROLLER_DOMAIN}/
+    mkdir -p /etc/letsencrypt/live/${API_DOMAIN}/
     mkdir -p /etc/letsencrypt/live/${RADIUS_DOMAIN}/
     mkdir -p /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/
     # Create self-signed certificates
@@ -65,10 +65,10 @@ function create_dev_certs {
                     -out /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/fullchain.pem \
                     -days 365 -nodes -subj '/CN=OpenWISP'
     fi
-    if [ ! -f /etc/letsencrypt/live/${CONTROLLER_DOMAIN}/privkey.pem ]; then
+    if [ ! -f /etc/letsencrypt/live/${API_DOMAIN}/privkey.pem ]; then
         openssl req -x509 -newkey rsa:4096 \
-                    -keyout /etc/letsencrypt/live/${CONTROLLER_DOMAIN}/privkey.pem \
-                    -out /etc/letsencrypt/live/${CONTROLLER_DOMAIN}/fullchain.pem \
+                    -keyout /etc/letsencrypt/live/${API_DOMAIN}/privkey.pem \
+                    -out /etc/letsencrypt/live/${API_DOMAIN}/fullchain.pem \
                     -days 365 -nodes -subj '/CN=OpenWISP'
     fi
     if [ ! -f /etc/letsencrypt/live/${RADIUS_DOMAIN}/privkey.pem ]; then
@@ -130,8 +130,8 @@ function ssl_http_behaviour {
 
 function envsubst_create_config {
     # Creates nginx configurations files for dashboard,
-    # controller, radius and network-topology instances.
-    for application in DASHBOARD CONTROLLER RADIUS TOPOLOGY; do
+    # api, radius and network-topology instances.
+    for application in DASHBOARD API RADIUS TOPOLOGY; do
         eval export APP_SERVICE=\$${application}_APP_SERVICE
         eval export APP_PORT=\$${application}_APP_PORT
         eval export DOMAIN=\$${application}_${3}
@@ -242,15 +242,15 @@ function openvpn_config {
 
 function openvpn_config_checksum {
     export OFILE=`wget -qO - --no-check-certificate \
-    ${CONTROLLER_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY`
+    ${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY`
     export NFILE=`cat checksum`
 }
 
 function openvpn_config_download {
     wget -qO vpn.tar.gz --no-check-certificate \
-    ${CONTROLLER_INTERNAL}/controller/vpn/download-config/$UUID/?key=$KEY
+    ${API_INTERNAL}/controller/vpn/download-config/$UUID/?key=$KEY
     wget -qO checksum --no-check-certificate \
-    ${CONTROLLER_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
+    ${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
     tar xzf vpn.tar.gz
     chmod 600 *.pem
 }
