@@ -19,7 +19,7 @@ RUN apt update && \
 
 ENV PYTHONPATH=/install/lib/python3.7/site-packages
 # Python Packages
-ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.3
+ARG OPENWISP_CONTROLLER_SOURCE=openwisp-controller~=0.8.4
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_CONTROLLER_SOURCE}
 ARG OPENWISP_NOTIFICATION_SOURCE=openwisp-notifications~=0.3.0
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_NOTIFICATION_SOURCE}
@@ -35,7 +35,7 @@ ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=0.7.2
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}
 RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
                                     uwsgi sentry-sdk supervisor celery django-celery-beat \
-                                    django-cors-headers django-rest-auth
+                                    django-cors-headers django-rest-auth jinja2~=2.11
 ARG DJANGO_SOURCE=django==3.1
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_SOURCE}
 
@@ -81,12 +81,12 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     DJANGO_LEAFET_CENTER_Y_AXIS=0 \
     DJANGO_LEAFET_ZOOM=1 \
     DASHBOARD_APP_PORT=8000 \
-    CONTROLLER_APP_PORT=8001 \
+    API_APP_PORT=8001 \
     RADIUS_APP_PORT=8002 \
     TOPOLOGY_APP_PORT=8003 \
     WEBSOCKET_APP_PORT=8004 \
     DASHBOARD_INTERNAL=dashboard.internal \
-    CONTROLLER_INTERNAL=controller.internal \
+    API_INTERNAL=api.internal \
     RADIUS_INTERNAL=radius.internal \
     TOPOLOGY_INTERNAL=topology.internal \
     # VPN Configurations

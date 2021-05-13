@@ -11,7 +11,7 @@ USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG  = latest
 pull:
 	printf '\e[1;34m%-6s\e[m\n' "Downloading OpenWISP images..."
-	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-controller' 'openwisp-dashboard' \
+	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-radius' 'openwisp-topology' 'openwisp-websocket' ; do \
 		docker pull --quiet $(USER)/$${image}:$(TAG) &> /dev/null; \
@@ -95,7 +95,7 @@ stop:
 USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG  = latest
 publish: compose-build runtests nfs-build
-	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-controller' 'openwisp-dashboard' \
+	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-radius' 'openwisp-topology' 'openwisp-websocket' ; do \
 		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \

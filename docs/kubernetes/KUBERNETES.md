@@ -7,7 +7,7 @@
 
 ```
   dashboard.<your.domain>    --Public-IP--
-  controller.<your.domain>   --Public-IP--
+  api.<your.domain>          --Public-IP--
   radius.<your.domain>       --Public-IP--
   topology.<your.domain>     --Public-IP--
 ```

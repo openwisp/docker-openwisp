@@ -45,7 +45,7 @@ spec:
   renewBefore: 12h
   dnsNames:
   - dashboard.openwisp.org
-  - controller.openwisp.org
+  - api.openwisp.org
   - topology.openwisp.org
   - radius.openwisp.org
   issuerRef:

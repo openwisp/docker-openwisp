@@ -18,13 +18,13 @@ services:
       - redis
       - postfix
 
-  controller:
-    image: openwisp/openwisp-controller:latest
+  api:
+    image: openwisp/openwisp-api:latest
     build:
       context: build
-      dockerfile: openwisp_controller/Dockerfile
+      dockerfile: openwisp_api/Dockerfile
       args:
-        CONTROLLER_APP_PORT: 8001
+        API_APP_PORT: 8001
     env_file:
       - .env
     depends_on:
@@ -86,7 +86,7 @@ services:
       default:
         aliases:
          - dashboard.internal
-         - controller.internal
+         - api.internal
          - radius.internal
          - topology.internal
     ports:
@@ -94,7 +94,7 @@ services:
       - "443:443"
     depends_on:
       - dashboard
-      - controller
+      - api
       - radius
       - topology
       - websocket
