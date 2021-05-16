@@ -37,8 +37,7 @@ jobs:
         sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
         sudo pip install selenium
-        echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
-        echo "127.0.0.1 radius.openwisp.org topology.openwisp.org" | sudo tee -a /etc/hosts
+        echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" | sudo tee -a /etc/hosts
 
     - name: Build & Publish
       run: make publish TAG=edge || (docker-compose logs && exit 1)

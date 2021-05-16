@@ -83,12 +83,10 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     DASHBOARD_APP_PORT=8000 \
     API_APP_PORT=8001 \
     RADIUS_APP_PORT=8002 \
-    TOPOLOGY_APP_PORT=8003 \
-    WEBSOCKET_APP_PORT=8004 \
+    WEBSOCKET_APP_PORT=8003 \
     DASHBOARD_INTERNAL=dashboard.internal \
     API_INTERNAL=api.internal \
     RADIUS_INTERNAL=radius.internal \
-    TOPOLOGY_INTERNAL=topology.internal \
     # VPN Configurations
     VPN_DOMAIN=openvpn.example.com \
     VPN_NAME=default \

@@ -7,18 +7,16 @@ from openwisp.utils import env_bool, request_scheme
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
+ROOT_DOMAIN = f'.{".".join(os.environ["DASHBOARD_DOMAIN"].split(".")[-2:])}'
 
 if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
-    os.environ[
-        'DJANGO_ALLOWED_HOSTS'
-    ] = f'.{os.environ["DASHBOARD_DOMAIN"].split(".", 1)[1]}'
+    os.environ['DJANGO_ALLOWED_HOSTS'] = ROOT_DOMAIN
 
 ALLOWED_HOSTS = [
     'localhost',
     os.environ['DASHBOARD_INTERNAL'],
     os.environ['API_INTERNAL'],
     os.environ['RADIUS_INTERNAL'],
-    os.environ['TOPOLOGY_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ[
@@ -37,7 +35,6 @@ CORS_ORIGIN_WHITELIST = [
     f'{HTTP_SCHEME}://{os.environ["DASHBOARD_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["RADIUS_DOMAIN"]}',
-    f'{HTTP_SCHEME}://{os.environ["TOPOLOGY_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')
 
 if HTTP_SCHEME == 'https':
@@ -101,6 +98,7 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_DOMAIN = ROOT_DOMAIN
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
 ASGI_APPLICATION = 'openwisp.routing.application'

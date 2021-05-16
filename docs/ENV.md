@@ -63,12 +63,6 @@ Additionally, you can search for the following:
 - **Valid Values:** Domain
 - **Default:** radius.example.com
 
-### `TOPOLOGY_DOMAIN`
-
-- **Explaination:** Domain on which you want to access OpenWISP network topology API.
-- **Valid Values:** Domain
-- **Default:** topology.example.com
-
 ### `VPN_DOMAIN`
 
 - **Explaination:** Valid domain / IP address to reach the OpenVPN server.
@@ -581,12 +575,6 @@ Additionally, you can search for the following:
 - **Valid Values:** Domain | IP address
 - **Default:** radius
 
-### `TOPOLOGY_APP_SERVICE`
-
-- **Explaination:** Host to establish OpenWISP topology connection.
-- **Valid Values:** Domain | IP address
-- **Default:** topology
-
 ## Developer
 
 ### `DEBUG_MODE`
@@ -613,12 +601,6 @@ Additionally, you can search for the following:
 - **Valid Values:** INTEGER
 - **Default:** 8002
 
-### `TOPOLOGY_APP_PORT`
-
-- **Explaination:** Change the port on which nginx tries to get the OpenWISP network topology container. DON'T Change unless you know what you are doing.
-- **Valid Values:** INTEGER
-- **Default:** 8003
-
 ### `DASHBOARD_INTERNAL`
 
 - **Explaination:** Internal dashboard domain to reach dashboard from other containers.
@@ -636,12 +618,6 @@ Additionally, you can search for the following:
 - **Explaination:** Internal radius domain to reach radius from other containers.
 - **Valid Values:** STRING
 - **Default:** radius.internal
-
-### `TOPOLOGY_INTERNAL`
-
-- **Explaination:** Internal topology domain to reach topology from other containers.
-- **Valid Values:** STRING
-- **Default:** topology.internal
 
 ### `POSTFIX_DEBUG_MYNETWORKS`
 - **Explaination:** Set debug_peer_list for given list of networks.

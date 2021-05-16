@@ -9,7 +9,6 @@
   dashboard.<your.domain>    --Public-IP--
   api.<your.domain>          --Public-IP--
   radius.<your.domain>       --Public-IP--
-  topology.<your.domain>     --Public-IP--
 ```
 
 2. (Optional) Postfix mail relay server (Example: Mailjet, Pepipost, Sendgrid, Mandrill)

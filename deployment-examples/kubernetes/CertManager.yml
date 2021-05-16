@@ -46,7 +46,6 @@ spec:
   dnsNames:
   - dashboard.openwisp.org
   - api.openwisp.org
-  - topology.openwisp.org
   - radius.openwisp.org
   issuerRef:
     name: letsencrypt-prod

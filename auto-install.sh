@@ -82,11 +82,11 @@ setup_docker_openwisp() {
     read env_path;
     if [[ ! -f "$env_path" ]]; then
         # Dashboard Domain
-        echo -ne ${GRN}"(1/7) Enter dashboard domain: "${NON}; read dashboard_domain;
+        echo -ne ${GRN}"(1/6) Enter dashboard domain: "${NON}; read dashboard_domain;
         set_env "DASHBOARD_DOMAIN" "$dashboard_domain";
         domain=$(echo "$dashboard_domain" | cut -f2- -d'.')
         # API Domain
-        echo -ne ${GRN}"(2/7) Enter API domain (blank for api.${domain}): "${NON};
+        echo -ne ${GRN}"(2/6) Enter API domain (blank for api.${domain}): "${NON};
         read API_DOMAIN;
         if [[ -z "$API_DOMAIN" ]]; then
             set_env "API_DOMAIN" "api.${domain}";
@@ -94,29 +94,18 @@ setup_docker_openwisp() {
             set_env "API_DOMAIN" "$api";
         fi
         # Radius Domain
-        echo -ne ${GRN}"(3/7) Enter radius domain (blank for radius.${domain}, N to disable module): "${NON};
+        echo -ne ${GRN}"(3/6) Enter radius domain (blank for radius.${domain}, N to disable module): "${NON};
         read radius_domain;
         if [[ -z "$radius_domain" ]]; then
             set_env "RADIUS_DOMAIN" "radius.${domain}";
-        elif [[ "${topology_domain,,}" == "n" ]]; then
+        elif [[ "${radius_domain,,}" == "n" ]]; then
             set_env "USE_OPENWISP_RADIUS" "No";
         else
             set_env "RADIUS_DOMAIN" "$radius_domain";
             set_env "USE_OPENWISP_RADIUS" "Yes";
         fi
-        # Topology Domain
-        echo -ne ${GRN}"(4/7) Enter topology domain (blank for topology.${domain}, N to disable module): "${NON};
-        read topology_domain;
-        if [[ -z "$topology_domain" ]]; then
-            set_env "TOPOLOGY_DOMAIN" "topology.${domain}";
-        elif [[ "${topology_domain,,}" == "n" ]]; then
-            set_env "USE_OPENWISP_TOPOLOGY" "No";
-        else
-            set_env "TOPOLOGY_DOMAIN" "$topology_domain";
-            set_env "USE_OPENWISP_TOPOLOGY" "Yes";
-        fi
         # VPN domain
-        echo -ne ${GRN}"(5/7) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON};
+        echo -ne ${GRN}"(4/6) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON};
         read vpn_domain;
         if [[ -z "$vpn_domain" ]]; then
             set_env "VPN_DOMAIN" "vpn.${domain}";
@@ -126,13 +115,13 @@ setup_docker_openwisp() {
             set_env "VPN_DOMAIN" "$vpn_domain";
         fi
         # Site manager email
-        echo -ne ${GRN}"(6/7) Site manager email: "${NON}; read django_default_email;
+        echo -ne ${GRN}"(5/6) Site manager email: "${NON}; read django_default_email;
         set_env "EMAIL_DJANGO_DEFAULT" "$django_default_email";
         # Set random secret values
         python3 /opt/openwisp/docker-openwisp/build.py change-secret-key > /dev/null
         python3 /opt/openwisp/docker-openwisp/build.py change-database-credentials > /dev/null
         # VPN domain
-        echo -ne ${GRN}"(7/7) Enter letsencrypt email (leave blank for self-signed certificate): "${NON};
+        echo -ne ${GRN}"(6/6) Enter letsencrypt email (leave blank for self-signed certificate): "${NON};
         read letsencrypt_email;
         set_env "CERT_ADMIN_EMAIL" "$letsencrypt_email";
         if [[ -z "$letsencrypt_email" ]]; then

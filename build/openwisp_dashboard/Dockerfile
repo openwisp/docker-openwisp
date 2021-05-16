@@ -8,7 +8,6 @@ COPY ./openwisp_dashboard/load_init_data.py \
     /opt/openwisp/
 # Location: /opt/openwisp/openwisp/
 COPY ./openwisp_api/module_settings.py /opt/openwisp/openwisp/api_settings.py
-COPY ./openwisp_topology/module_settings.py /opt/openwisp/openwisp/topology_settings.py
 COPY ./openwisp_radius/module_settings.py /opt/openwisp/openwisp/radius_settings.py
 COPY ./openwisp_dashboard/module_settings.py \
     ./openwisp_dashboard/urls.py \
