@@ -1,7 +1,6 @@
 import os
 from openwisp.utils import env_bool
 from openwisp.radius_settings import *
-from openwisp.topology_settings import *
 from openwisp.api_settings import *
 from openwisp.utils import request_scheme
 
@@ -65,7 +64,7 @@ EXTENDED_APPS = [
 
 OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
 OPENWISP_NETWORK_TOPOLOGY_API_BASEURL = (
-    f'{request_scheme()}://{os.environ["TOPOLOGY_DOMAIN"]}'
+    f'{request_scheme()}://{os.environ["API_DOMAIN"]}'
 )
 
 if not env_bool(os.environ['USE_OPENWISP_RADIUS']):

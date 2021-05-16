@@ -45,26 +45,13 @@ services:
       - postgres
       - dashboard
 
-  topology:
-    image: openwisp/openwisp-topology:latest
-    build:
-      context: build
-      dockerfile: openwisp_topology/Dockerfile
-      args:
-        TOPOLOGY_APP_PORT: 8003
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - dashboard
-
   websocket:
     image: openwisp/openwisp-websocket:latest
     build:
       context: build
       dockerfile: openwisp_websocket/Dockerfile
       args:
-        WEBSOCKET_APP_PORT: 8004
+        WEBSOCKET_APP_PORT: 8003
     env_file:
       - .env
     depends_on:
@@ -88,7 +75,6 @@ services:
          - dashboard.internal
          - api.internal
          - radius.internal
-         - topology.internal
     ports:
       - "80:80"
       - "443:443"
@@ -96,7 +82,6 @@ services:
       - dashboard
       - api
       - radius
-      - topology
       - websocket
 
   celery:

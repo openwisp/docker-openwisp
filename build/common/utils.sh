@@ -44,12 +44,6 @@ function create_prod_certs {
                         --domain ${RADIUS_DOMAIN} \
                         --email ${CERT_ADMIN_EMAIL}
     fi
-    if [ ! -f /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/privkey.pem  ]; then
-        certbot certonly --standalone --noninteractive --agree-tos \
-                        --rsa-key-size 4096 \
-                        --domain ${TOPOLOGY_DOMAIN} \
-                        --email ${CERT_ADMIN_EMAIL}
-    fi
 }
 
 function create_dev_certs {
@@ -57,7 +51,6 @@ function create_dev_certs {
     mkdir -p /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/
     mkdir -p /etc/letsencrypt/live/${API_DOMAIN}/
     mkdir -p /etc/letsencrypt/live/${RADIUS_DOMAIN}/
-    mkdir -p /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/
     # Create self-signed certificates
     if [ ! -f /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/privkey.pem ]; then
         openssl req -x509 -newkey rsa:4096 \
@@ -75,12 +68,6 @@ function create_dev_certs {
         openssl req -x509 -newkey rsa:4096 \
                     -keyout /etc/letsencrypt/live/${RADIUS_DOMAIN}/privkey.pem \
                     -out /etc/letsencrypt/live/${RADIUS_DOMAIN}/fullchain.pem \
-                    -days 365 -nodes -subj '/CN=OpenWISP'
-    fi
-    if [ ! -f /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/privkey.pem  ]; then
-        openssl req -x509 -newkey rsa:4096 \
-                    -keyout /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/privkey.pem  \
-                    -out /etc/letsencrypt/live/${TOPOLOGY_DOMAIN}/fullchain.pem \
                     -days 365 -nodes -subj '/CN=OpenWISP'
     fi
 }
@@ -130,8 +117,8 @@ function ssl_http_behaviour {
 
 function envsubst_create_config {
     # Creates nginx configurations files for dashboard,
-    # api, radius and network-topology instances.
-    for application in DASHBOARD API RADIUS TOPOLOGY; do
+    # api and radius instances.
+    for application in DASHBOARD API RADIUS; do
         eval export APP_SERVICE=\$${application}_APP_SERVICE
         eval export APP_PORT=\$${application}_APP_PORT
         eval export DOMAIN=\$${application}_${3}

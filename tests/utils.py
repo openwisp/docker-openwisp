@@ -1,6 +1,8 @@
 import json
 import os
 
+from selenium.common.exceptions import NoAlertPresentException
+
 
 class TestConfig(object):
     """
@@ -39,6 +41,22 @@ class TestUtilities(TestConfig):
             driver.find_element_by_name('username').send_keys(username)
             driver.find_element_by_name('password').send_keys(password)
             driver.find_element_by_xpath("//input[@type='submit']").click()
+
+    def _ignore_location_alert(self, driver=None):
+        """
+        Accepts related address to location not found alert
+        Argument:
+            driver: selenium driver (default: cls.base_driver)
+        """
+        expectedMsg = "Could not find any address related to this location."
+        if not driver:
+            driver = self.base_driver
+        try:
+            windowAlert = driver.switch_to.alert
+            if expectedMsg in windowAlert.text:
+                windowAlert.accept()
+        except NoAlertPresentException:
+            pass  # No alert is okay.
 
     def create_superuser(
         self,
@@ -153,12 +171,7 @@ class TestUtilities(TestConfig):
             '//option[@value="outdoor"]'
         ).click()
         driver.find_element_by_name('is_mobile').click()
-        try:
-            driver.switch_to.alert.accept()
-        except Exception:
-            # No alert is okay, following alert did not appear.
-            # "Could not find any address related to this location"
-            pass
+        self._ignore_location_alert(driver)
         driver.find_element_by_name('_save').click()
         # Add to delete list
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
@@ -176,9 +189,11 @@ class TestUtilities(TestConfig):
             driver = self.base_driver
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
         driver.find_element_by_name('is_mobile').click()
+        self._ignore_location_alert(driver)
         driver.find_element_by_class_name('leaflet-draw-draw-marker').click()
         driver.find_element_by_id('id_geometry-map').click()
         driver.find_element_by_name('is_mobile').click()
+        self._ignore_location_alert(driver)
         driver.find_element_by_name('_save').click()
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
 
