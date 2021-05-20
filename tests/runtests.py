@@ -202,6 +202,10 @@ class TestServices(TestUtilities, unittest.TestCase):
             '/admin/pki/ca/add/',
             '/admin/pki/cert/add/',
             '/admin/openwisp_users/user/add/',
+            '/admin/firmware_upgrader/build/',
+            '/admin/firmware_upgrader/build/add/',
+            '/admin/firmware_upgrader/category/',
+            '/admin/firmware_upgrader/category/add/',
         ]
         change_form_list = [
             ['automated-selenium-location01', '/admin/geo/location/'],

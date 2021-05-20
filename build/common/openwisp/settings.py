@@ -8,6 +8,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
 ROOT_DOMAIN = f'.{".".join(os.environ["DASHBOARD_DOMAIN"].split(".")[-2:])}'
+MAX_REQUEST_SIZE = int(os.environ['NGINX_CLIENT_BODY_SIZE']) * 1024 * 1024
+INSTALLED_APPS = []
 
 if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
     os.environ['DJANGO_ALLOWED_HOSTS'] = ROOT_DOMAIN
@@ -267,7 +269,45 @@ if os.environ['DJANGO_SENTRY_DSN']:
         dsn=os.environ['DJANGO_SENTRY_DSN'], integrations=[DjangoIntegration()]
     )
 
+# OpenWISP Modules's configurations
+OPENWISP_FIRMWARE_UPGRADER_MAX_FILE_SIZE = MAX_REQUEST_SIZE
+# TODO: Remove when https://github.com/openwisp/docker-openwisp/issues/156 is fixed
+OPENWISP_NETWORK_TOPOLOGY_API_AUTH_REQUIRED = False
+DJANGO_X509_DEFAULT_CERT_VALIDITY = int(os.environ['DJANGO_X509_DEFAULT_CERT_VALIDITY'])
+DJANGO_X509_DEFAULT_CA_VALIDITY = int(os.environ['DJANGO_X509_DEFAULT_CA_VALIDITY'])
+SOCIALACCOUNT_PROVIDERS = {
+    'facebook': {
+        'METHOD': 'oauth2',
+        'SCOPE': ['email', 'public_profile'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'INIT_PARAMS': {'cookie': True},
+        'FIELDS': ['id', 'email', 'name', 'first_name', 'last_name', 'verified'],
+        'VERIFIED_EMAIL': True,
+    },
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    },
+}
+
+
 try:
     from openwisp.module_settings import *
 except ImportError:
     pass
+
+if (
+    not env_bool(os.environ['USE_OPENWISP_RADIUS'])
+    and 'openwisp_radius' in INSTALLED_APPS
+):
+    INSTALLED_APPS.remove('openwisp_radius')
+if (
+    not env_bool(os.environ['USE_OPENWISP_TOPOLOGY'])
+    and 'openwisp_network_topology' in INSTALLED_APPS
+):
+    INSTALLED_APPS.remove('openwisp_network_topology')
+if (
+    not env_bool(os.environ['USE_OPENWISP_FIRMWARE'])
+    and 'openwisp_firmware_upgrader' in INSTALLED_APPS
+):
+    INSTALLED_APPS.remove('openwisp_firmware_upgrader')

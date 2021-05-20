@@ -1,5 +1,3 @@
-import os
-
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -20,8 +18,11 @@ INSTALLED_APPS = [
     'openwisp_controller.pki',
     'openwisp_controller.config',
     'openwisp_controller.geo',
+    'openwisp_controller.connection',
     # openwisp-network-topology
     'openwisp_network_topology',
+    # openwisp-firmware-upgrader
+    'openwisp_firmware_upgrader',
     # admin
     'django.contrib.admin',
     'django.forms',
@@ -43,9 +44,3 @@ EXTENDED_APPS = [
     'django_x509',
     'django_loci',
 ]
-
-# TODO: Remove when https://github.com/openwisp/docker-openwisp/issues/156 is fixed
-OPENWISP_NETWORK_TOPOLOGY_API_AUTH_REQUIRED = False
-
-DJANGO_X509_DEFAULT_CERT_VALIDITY = int(os.environ['DJANGO_X509_DEFAULT_CERT_VALIDITY'])
-DJANGO_X509_DEFAULT_CA_VALIDITY = int(os.environ['DJANGO_X509_DEFAULT_CA_VALIDITY'])

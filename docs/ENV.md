@@ -123,6 +123,12 @@ Additionally, you can search for the following:
 - **Valid Values:** True | False
 - **Default:** True
 
+### `USE_OPENWISP_FIRMWARE`
+
+- **Explaination:** Use the openwisp-firmware-upgrader module.
+- **Valid Values:** True | False
+- **Default:** True
+
 ## Additional
 
 ### `TZ`
@@ -363,8 +369,8 @@ Additionally, you can search for the following:
 ### `NGINX_CLIENT_BODY_SIZE`
 
 - **Explaination:** Client body size. [See here](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
-- **Valid Values:** STRING
-- **Default:** 5M
+- **Valid Values:** INT
+- **Default:** 30
 
 ### `NGINX_IP6_STRING`
 
