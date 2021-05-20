@@ -9,3 +9,9 @@ if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
     from openwisp_network_topology.utils import get_api_urls as topology_api
 
     urlpatterns += [path('api/v1/', include(topology_api(views)))]
+
+if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
+    urlpatterns += [
+        path('api/v1/', include('openwisp_firmware_upgrader.api.urls')),
+        path('', include('openwisp_firmware_upgrader.private_storage.urls')),
+    ]

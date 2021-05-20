@@ -27,18 +27,3 @@ INSTALLED_APPS = [
     'private_storage',
     'drf_yasg',
 ]
-
-SOCIALACCOUNT_PROVIDERS = {
-    'facebook': {
-        'METHOD': 'oauth2',
-        'SCOPE': ['email', 'public_profile'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
-        'INIT_PARAMS': {'cookie': True},
-        'FIELDS': ['id', 'email', 'name', 'first_name', 'last_name', 'verified'],
-        'VERIFIED_EMAIL': True,
-    },
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-    },
-}

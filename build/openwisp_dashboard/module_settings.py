@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'openwisp_utils.admin_theme',
     # openwisp-network-topology
     'openwisp_network_topology',
+    # openwisp-firmware-upgrader
+    'openwisp_firmware_upgrader',
     # admin
     'django.contrib.admin',
     'django.forms',
@@ -62,12 +64,8 @@ EXTENDED_APPS = [
     'django_loci',
 ]
 
-OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
-OPENWISP_NETWORK_TOPOLOGY_API_BASEURL = (
-    f'{request_scheme()}://{os.environ["API_DOMAIN"]}'
-)
+API_BASEURL = f'{request_scheme()}://{os.environ["API_DOMAIN"]}'
 
-if not env_bool(os.environ['USE_OPENWISP_RADIUS']):
-    INSTALLED_APPS.remove('openwisp_radius')
-if not env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
-    INSTALLED_APPS.remove('openwisp_network_topology')
+OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = 'openwisp_network_topology.urls'
+OPENWISP_FIRMWARE_API_BASEURL = API_BASEURL
+OPENWISP_NETWORK_TOPOLOGY_API_BASEURL = API_BASEURL
