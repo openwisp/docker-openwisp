@@ -1,5 +1,6 @@
 import json
 import os
+import time
 
 from selenium.common.exceptions import NoAlertPresentException
 
@@ -51,6 +52,7 @@ class TestUtilities(TestConfig):
         expectedMsg = "Could not find any address related to this location."
         if not driver:
             driver = self.base_driver
+        time.sleep(2)  # Wait for two seconds for alert to come up
         try:
             windowAlert = driver.switch_to.alert
             if expectedMsg in windowAlert.text:

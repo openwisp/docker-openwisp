@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export DEBIAN_FRONTEND=noninteractive
+export INSTALL_PATH=/opt/openwisp/docker-openwisp
 export LOG_FILE=/opt/openwisp/autoinstall.log
 # Terminal colors
 export RED='\033[1;31m'
@@ -12,11 +13,11 @@ export NON='\033[0m'
 start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>> $LOG_FILE; }
 report_ok() { echo -e ${GRN}" done"${NON}; }
 report_error() { echo -e ${RED}" error"${NON}; }
-get_env() { grep "$1" /opt/openwisp/docker-openwisp/.env | cut -d'=' -f 2-50; }
+get_env() { grep "$1" $INSTALL_PATH/.env | cut -d'=' -f 2-50; }
 set_env() {
-    grep -q "^$1=" /opt/openwisp/docker-openwisp/.env &&
-    sed --in-place "s/$1=.*/$1=$2/g" /opt/openwisp/docker-openwisp/.env ||
-    echo "$1=$2" >> /opt/openwisp/docker-openwisp/.env
+    grep -q "^$1=" $INSTALL_PATH/.env &&
+    sed --in-place "s/$1=.*/$1=$2/g" $INSTALL_PATH/.env ||
+    echo "$1=$2" >> $INSTALL_PATH/.env
 }
 
 check_status() {
@@ -70,32 +71,64 @@ setup_docker_compose() {
 }
 
 setup_docker_openwisp() {
-    start_step "Downloading docker-openwisp...";
-    git clone https://github.com/openwisp/docker-openwisp.git /opt/openwisp/docker-openwisp &>> $LOG_FILE;
-    cd /opt/openwisp/docker-openwisp &>> $LOG_FILE;
-    check_status $? "docker-openwisp download failed.";
+    git_path="https://github.com/openwisp/docker-openwisp.git";
+    env_user="/opt/openwisp/config.env";
     echo -e ${GRN}"\nOpenWISP Configuration:"${NON};
     echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}; read openwisp_version;
     if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
-    echo $openwisp_version > /opt/openwisp/docker-openwisp/VERSION
     echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON};
     read env_path;
     if [[ ! -f "$env_path" ]]; then
         # Dashboard Domain
-        echo -ne ${GRN}"(1/6) Enter dashboard domain: "${NON}; read dashboard_domain;
-        set_env "DASHBOARD_DOMAIN" "$dashboard_domain";
+        echo -ne ${GRN}"(1/6) Enter dashboard domain: "${NON};
+        read dashboard_domain;
         domain=$(echo "$dashboard_domain" | cut -f2- -d'.')
         # API Domain
         echo -ne ${GRN}"(2/6) Enter API domain (blank for api.${domain}): "${NON};
         read API_DOMAIN;
+        # Radius Domain
+        echo -ne ${GRN}"(3/6) Enter radius domain (blank for radius.${domain}, N to disable module): "${NON};
+        read radius_domain;
+        # VPN domain
+        echo -ne ${GRN}"(4/6) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON};
+        read vpn_domain;
+        # Site manager email
+        echo -ne ${GRN}"(5/6) Site manager email: "${NON};
+        read django_default_email;
+        # VPN domain
+        echo -ne ${GRN}"(6/6) Enter letsencrypt email (leave blank for self-signed certificate): "${NON};
+        read letsencrypt_email;
+    else
+        cp $env_path $env_user &>> $LOG_FILE;
+    fi
+    echo "";
+
+    start_step "Downloading docker-openwisp...";
+    if [[ -f $INSTALL_PATH/.env ]]; then
+        mv $INSTALL_PATH/.env /opt/openwisp/docker.env &>> $LOG_FILE;
+        rm -rf $INSTALL_PATH &>> $LOG_FILE;
+    fi
+
+    if [[ $openwisp_version -ne "edge" ]]; then
+        git clone $git_path $INSTALL_PATH --depth 1 --branch $openwisp_version &>> $LOG_FILE;
+    else
+        git clone $git_path $INSTALL_PATH --depth 1 &>> $LOG_FILE;
+    fi
+
+    cd $INSTALL_PATH &>> $LOG_FILE;
+    echo $openwisp_version > $INSTALL_PATH/VERSION
+    check_status $? "docker-openwisp download failed.";
+
+    if [[ ! -f "$env_path" ]]; then
+        # Dashboard Domain
+        set_env "DASHBOARD_DOMAIN" "$dashboard_domain";
+        # API Domain
         if [[ -z "$API_DOMAIN" ]]; then
             set_env "API_DOMAIN" "api.${domain}";
         else
             set_env "API_DOMAIN" "$api";
         fi
         # Radius Domain
-        echo -ne ${GRN}"(3/6) Enter radius domain (blank for radius.${domain}, N to disable module): "${NON};
-        read radius_domain;
         if [[ -z "$radius_domain" ]]; then
             set_env "RADIUS_DOMAIN" "radius.${domain}";
         elif [[ "${radius_domain,,}" == "n" ]]; then
@@ -105,8 +138,6 @@ setup_docker_openwisp() {
             set_env "USE_OPENWISP_RADIUS" "Yes";
         fi
         # VPN domain
-        echo -ne ${GRN}"(4/6) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON};
-        read vpn_domain;
         if [[ -z "$vpn_domain" ]]; then
             set_env "VPN_DOMAIN" "vpn.${domain}";
         elif [[ "${vpn_domain,,}" == "n" ]]; then
@@ -115,14 +146,11 @@ setup_docker_openwisp() {
             set_env "VPN_DOMAIN" "$vpn_domain";
         fi
         # Site manager email
-        echo -ne ${GRN}"(5/6) Site manager email: "${NON}; read django_default_email;
         set_env "EMAIL_DJANGO_DEFAULT" "$django_default_email";
         # Set random secret values
-        python3 /opt/openwisp/docker-openwisp/build.py change-secret-key > /dev/null
-        python3 /opt/openwisp/docker-openwisp/build.py change-database-credentials > /dev/null
+        python3 $INSTALL_PATH/build.py change-secret-key > /dev/null
+        python3 $INSTALL_PATH/build.py change-database-credentials > /dev/null
         # VPN domain
-        echo -ne ${GRN}"(6/6) Enter letsencrypt email (leave blank for self-signed certificate): "${NON};
-        read letsencrypt_email;
         set_env "CERT_ADMIN_EMAIL" "$letsencrypt_email";
         if [[ -z "$letsencrypt_email" ]]; then
             set_env "SSL_CERT_MODE" "SelfSigned";
@@ -135,13 +163,14 @@ setup_docker_openwisp() {
         set_env "POSTFIX_MYHOSTNAME" "$hostname"
         set_env "POSTFIX_MYHOSTNAME" "$hostname"
     else
-        mv $env_path /opt/openwisp/docker-openwisp/.env &>> $LOG_FILE;
+        mv $env_user $INSTALL_PATH/.env &>> $LOG_FILE;
+        rm -rf $env_user &>> $LOG_FILE;
     fi
-    echo "";
+
     start_step "Configuring docker-openwisp...";
     report_ok
     start_step "Starting images docker-openwisp (this will take a while)...";
-    make start TAG=$(cat /opt/openwisp/docker-openwisp/VERSION) -C /opt/openwisp/docker-openwisp/ &>> $LOG_FILE
+    make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>> $LOG_FILE
     check_status $? "Starting openwisp failed.";
 }
 
