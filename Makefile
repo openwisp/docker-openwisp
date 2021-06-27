@@ -76,19 +76,13 @@ USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG  = latest
 start: pull
 	printf '\e[1;34m%-6s\e[m\n' "Starting Services..."
-	# TODO: Log level has bugs and isn't available on common supported version
-	# but should be used in future
-	# docker-compose --log-level WARNING up -d
-	docker-compose up -d &> /dev/null
+	docker-compose --log-level WARNING up -d
 	printf '\e[1;32m%-6s\e[m\n' "Success: OpenWISP should be available at your dashboard domain in 2 minutes."
 
 stop:
 	printf '\e[1;31m%-6s\e[m\n' "Stopping OpenWISP services..."
-	# TODO: Log level has bugs and isn't available on common supported version
-	# but should be used in future
-	# docker-compose --log-level ERROR stop
-	# docker-compose --log-level ERROR down --remove-orphans
-	docker-compose stop &> /dev/null
+	docker-compose --log-level ERROR stop
+	docker-compose --log-level ERROR down --remove-orphans
 	docker-compose down --remove-orphans &> /dev/null
 
 # Publish

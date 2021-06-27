@@ -26,8 +26,8 @@ jobs:
     - name: Setup for Testing Images
       run: |
         sudo apt update
-        sudo apt install --yes google-chrome-stable=90.0.4430.212-1
-        wget https://chromedriver.storage.googleapis.com/90.0.4430.24/chromedriver_linux64.zip
+        sudo apt install --yes google-chrome-stable=91.0.4472.101-1
+        wget https://chromedriver.storage.googleapis.com/91.0.4472.101/chromedriver_linux64.zip
         sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
         sudo pip install selenium
