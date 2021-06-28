@@ -29,3 +29,5 @@ Remember to change the values for [essential](ENV.md#Essential) and [security](E
 4. Deploy: `make start`
 
 **Note: If you want to shutdown services for maintenance or any other purposes, please use `make stop`.**
+
+**Note:** Facing errors while installation? Please [read the FAQ](FAQ.md).
