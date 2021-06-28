@@ -41,6 +41,8 @@ To get started, run the following command:
    sudo bash setup.sh
 ```
 
+**Note:** Facing errors while installation? Please [read the FAQ](docs/FAQ.md).
+
 ### Compose
 
 [Setup on docker-compose](docs/QUICK_SETUP.md) is suitable for single-server setup requirements. It is quicker and requires less prior knowledge about openwisp & networking.
