@@ -19,6 +19,7 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 | 0.1.0a3       | 0.12.0                         |
 | 0.1.0a4       | 0.12.0+                        |
 | 0.1.0a5       | 0.13.1                         |
+| 0.1.0a6       | 0.13.2+                        |
 
 \* Roughly the same features would be available but it's not an exact one-to-one mapping.
 
