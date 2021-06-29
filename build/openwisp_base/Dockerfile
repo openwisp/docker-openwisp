@@ -1,4 +1,4 @@
-FROM python:3.7.9-slim-buster AS SYSTEM
+FROM python:3.7.10-slim-buster AS SYSTEM
 
 # System requirements:
 # 1. Pillow: zlib1g-dev libjpeg-dev
