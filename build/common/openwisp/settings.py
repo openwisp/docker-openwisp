@@ -1,8 +1,29 @@
 import os
 import sys
+import logging
 import json
 
-from openwisp.utils import env_bool, request_scheme
+from openwisp.utils import (
+    env_bool,
+    is_string_env_bool,
+    is_string_env_json,
+    request_scheme,
+)
+
+# Read all the env variables and set them as django configuration.
+for config in os.environ:
+    if 'OPENWISP_' in config:
+        value = os.environ[config]
+        if value.isdigit():
+            globals()[config] = int(value)
+        elif is_string_env_bool(value):
+            globals()[config] = env_bool(value)
+        elif value == 'None':
+            globals()[config] = None
+        elif is_string_env_json(value):
+            globals()[config] = json.loads(value)
+        else:
+            globals()[config] = value
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
@@ -116,7 +137,7 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {'max_retries': 10}
 
 
 DB_OPTIONS = {
-    "sslmode": os.environ['DB_SSLMODE'],
+    'sslmode': os.environ['DB_SSLMODE'],
     'sslkey': os.environ['DB_SSLKEY'],
     'sslcert': os.environ['DB_SSLCERT'],
     'sslrootcert': os.environ['DB_SSLROOTCERT'],
@@ -290,6 +311,30 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
+
+# Add Custom OpenWRT Images for openwisp firmware
+try:
+    OPENWRT_IMAGES = json.loads(os.environ['OPENWISP_CUSTOM_OPENWRT_IMAGES'])
+except (json.decoder.JSONDecodeError, TypeError):
+    OPENWISP_CUSTOM_OPENWRT_IMAGES = None
+    # Key is defined but it's not a proper JSON, probably user
+    # needs to read the docs, so let's imform them.
+    logging.warning(
+        'Could not load "OPENWISP_CUSTOM_OPENWRT_IMAGES" please read '
+        'the docs to configure it properly, continuing without it.'
+    )
+except KeyError:
+    # Key is not defined, that's okay, default is None.
+    pass
+else:
+    OPENWISP_CUSTOM_OPENWRT_IMAGES = list()
+    for image in OPENWRT_IMAGES:
+        OPENWISP_CUSTOM_OPENWRT_IMAGES += (
+            (
+                image['name'],
+                {'label': image['label'], 'boards': tuple(image['boards'])},
+            ),
+        )
 
 try:
     from openwisp.module_settings import *

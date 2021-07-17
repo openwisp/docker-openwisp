@@ -2,6 +2,7 @@
 # that are used in multiple openwisp modules
 import logging
 import socket
+import json
 import os
 
 
@@ -13,8 +14,20 @@ class HostFilter(logging.Filter):
         return True
 
 
+def is_string_env_json(env_json):
+    try:
+        json.loads(env_json)
+    except ValueError:
+        return False
+    return True
+
+
+def is_string_env_bool(env):
+    return env.lower() in ['true', 'yes', 'false', 'no']
+
+
 def env_bool(env):
-    return env in ['True', 'true', 'TRUE', 'Yes', 'yes', 'YES']
+    return env.lower() in ['true', 'yes']
 
 
 def request_scheme():

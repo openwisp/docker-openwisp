@@ -17,6 +17,7 @@ Following are the options that can be changed. The list is divided in following 
 - [Enable Modules](#Enable-Modules): Enable / Disable optional openwisp modules.
 - [Additional](#Additional): You might want to look into these options before using images in production.
 - [Database](#Database): Database settings. Database host setting is in "Host" section.
+- [OPENWISP](#OpenWISP): OpenWISP Module Configuration.
 - [Django](#Django): Additional django settings.
 - [Email](#Email): Email & postfix configurations.
 - [Cron](#Cron): Settings of the periodic tasks.
@@ -158,7 +159,7 @@ Additionally, you can search for the following:
 
 ### `DB_ENGINE`
 
-- **Explaination:** Django database engine compatible with GeoDjango, read more [here](https://docs.djangoproject.com/en/2.2/ref/settings/#engine)
+- **Explaination:** Django database engine compatible with GeoDjango, read more [here](https://docs.djangoproject.com/en/2.2/ref/settings/#engine).
 - **Valid Values:** Valid name from list [here](https://docs.djangoproject.com/en/2.2/ref/settings/#engine).
 - **Default:** django.contrib.gis.db.backends.postgis
 
@@ -170,7 +171,7 @@ Additionally, you can search for the following:
 
 ### `DB_SSLMODE`
 
-- **Explaination:** Postgresql sslmode option: https://www.postgresql.org/docs/9.1/libpq-ssl.html
+- **Explaination:** [Postgresql SSLMode option](https://www.postgresql.org/docs/9.1/libpq-ssl.html).
 - **Valid Values:** STRING
 - **Default:** disable
 
@@ -197,6 +198,17 @@ Additionally, you can search for the following:
 - **Explaination:** Additional database options to connect to the database. These options must be supported by your `DB_ENGINE`.
 - **Valid Values:** JSON
 - **Default:** {}
+
+## OpenWISP
+
+Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supported and can be used as per the documentation in the module. If you want support for a setting that has a more complex datatype, please discuss in the support channel.
+
+### `OPENWISP_CUSTOM_OPENWRT_IMAGES`
+
+- **Explaination:** [JSON of OpenWRT Images as documented in openwisp-firmware-image repository](https://github.com/openwisp/openwisp-firmware-upgrader/#openwisp_custom_openwrt_images).
+- **Valid Values:** JSON
+- **Default:** None
+- **Example:** [{"name": "Name1","label": "Label1","boards": ["TestA", "TestB"]}, {"name": "Name2","label": "Label2","boards": ["TestC", "TestD"]}]
 
 ## Django
 
