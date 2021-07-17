@@ -32,7 +32,7 @@ jobs:
     - name: Setup for Testing Images
       run: |
         sudo apt update
-        sudo apt install --yes google-chrome-stable=91.0.4472.101-1
+        sudo apt install --yes google-chrome-stable
         wget https://chromedriver.storage.googleapis.com/91.0.4472.101/chromedriver_linux64.zip
         sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
