@@ -92,7 +92,6 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     # VPN Configurations
     VPN_DOMAIN=openvpn.example.com \
     VPN_NAME=default \
-    VPN_ORG=default \
     VPN_CLIENT_NAME=default-management-vpn \
     X509_NAME_CA=default \
     X509_NAME_CERT=default \
