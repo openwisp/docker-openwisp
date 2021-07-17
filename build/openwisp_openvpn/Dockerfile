@@ -20,8 +20,7 @@ ENV MODULE_NAME=openvpn \
     DB_SSLCERT=None \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
-    VPN_NAME=default \
-    VPN_ORG=default
+    VPN_NAME=default
 
 COPY ./common/init_command.sh \
      ./common/utils.sh \

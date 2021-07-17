@@ -480,12 +480,6 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 ## VPN
 
-### `VPN_ORG`
-
-- **Explaination:** Name of the organization for which the VPN client template needs to be created.
-- **Valid Values:** STRING
-- **Default:** default
-
 ### `VPN_NAME`
 
 - **Explaination:** Name of the VPN Server that will be visible on the OpenWISP dashboard.

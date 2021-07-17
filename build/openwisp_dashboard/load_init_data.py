@@ -8,7 +8,6 @@ Load initial data before starting the server.
 '''
 
 import json
-import logging
 import os
 
 import django
@@ -29,24 +28,12 @@ def create_admin():
     )
 
 
-def get_vpn_organization(vpnOrg):
-    """
-    Get organization for which VPN server and template
-    needs to be made
-    """
-    if Organization.objects.filter(slug=vpnOrg).exists():
-        return Organization.objects.get(slug=vpnOrg)
-    logging.info('VPN organization given in .env not found, skipping VPN creation.')
-    return None
-
-
-def create_default_CA(vpnOrg, x509NameCA):
+def create_default_CA(x509NameCA):
     """
     Create default certificate authority
     """
     if not Ca.objects.filter(name=x509NameCA).exists():
         defaultCa = Ca()
-        defaultCa.organization = vpnOrg
         defaultCa.name = x509NameCA
         defaultCa.country_code = os.environ['X509_COUNTRY_CODE']
         defaultCa.state = os.environ['X509_STATE']
@@ -65,14 +52,13 @@ def create_default_CA(vpnOrg, x509NameCA):
     return Ca.objects.get(name=x509NameCA)
 
 
-def create_default_cert(vpnOrg, defaultCa, x509NameCert):
+def create_default_cert(defaultCa, x509NameCert):
     """
     Create default certificate
     """
     if not Cert.objects.filter(name=x509NameCert).exists():
         defaultCert = Cert()
         defaultCert.ca = defaultCa
-        defaultCert.organization = vpnOrg
         defaultCert.name = x509NameCert
         defaultCert.country_code = os.environ['X509_COUNTRY_CODE']
         defaultCert.state = os.environ['X509_STATE']
@@ -92,13 +78,12 @@ def create_default_cert(vpnOrg, defaultCa, x509NameCert):
     return Cert.objects.get(name=x509NameCert)
 
 
-def create_default_vpn(vpnName, vpnOrg, vpnDomain, defaultCa, defaultCert):
+def create_default_vpn(vpnName, vpnDomain, defaultCa, defaultCert):
     """
     Create default vpn
     """
     if not Vpn.objects.filter(name=vpnName).exists():
         defaultVpn = Vpn()
-        defaultVpn.organization = vpnOrg
         defaultVpn.ca = defaultCa
         defaultVpn.cert = defaultCert
         defaultVpn.name = vpnName
@@ -118,13 +103,12 @@ def create_default_vpn(vpnName, vpnOrg, vpnDomain, defaultCa, defaultCert):
     return Vpn.objects.get(name=vpnName)
 
 
-def create_default_vpn_template(defaultVpnClient, vpnOrg, defaultVpn):
+def create_default_vpn_template(defaultVpnClient, defaultVpn):
     """
     Create default vpn client template
     """
     if not Template.objects.filter(name=defaultVpnClient).exists():
         defaultTp = Template()
-        defaultTp.organization = vpnOrg
         defaultTp.auto_cert = True
         defaultTp.name = defaultVpnClient
         defaultTp.type = 'vpn'
@@ -139,22 +123,13 @@ def create_default_vpn_template(defaultVpnClient, vpnOrg, defaultVpn):
 if __name__ == '__main__':
     from openwisp_controller.config.models import Template, Vpn
     from openwisp_controller.pki.models import Ca, Cert
-    from openwisp_users.models import Organization
 
     create_admin()
     # Steps for creating new vpn client template with all the
     # required objects (CA, Certificate, VPN Server).
-    vpnOrg = get_vpn_organization(os.environ['VPN_ORG'])
-    if vpnOrg:
-        defaultCa = create_default_CA(vpnOrg, os.environ['X509_NAME_CA'])
-        defaultCert = create_default_cert(
-            vpnOrg, defaultCa, os.environ['X509_NAME_CERT']
-        )
-        defaultVpn = create_default_vpn(
-            os.environ['VPN_NAME'],
-            vpnOrg,
-            os.environ['VPN_DOMAIN'],
-            defaultCa,
-            defaultCert,
-        )
-        create_default_vpn_template(os.environ['VPN_CLIENT_NAME'], vpnOrg, defaultVpn)
+    defaultCa = create_default_CA(os.environ['X509_NAME_CA'])
+    defaultCert = create_default_cert(defaultCa, os.environ['X509_NAME_CERT'])
+    defaultVpn = create_default_vpn(
+        os.environ['VPN_NAME'], os.environ['VPN_DOMAIN'], defaultCa, defaultCert,
+    )
+    create_default_vpn_template(os.environ['VPN_CLIENT_NAME'], defaultVpn)
