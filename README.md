@@ -23,6 +23,31 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 
 \* Roughly the same features would be available but it's not an exact one-to-one mapping.
 
+## Architecture
+
+![Architecture](docs/images/architecture.jpg)
+
+- **openwisp-dashboard**: Your OpenWISP device administration dashboard.
+- **openwisp-api**: HTTP API from various openwisp modules which can be scaled simply by having multiple
+                    API containers as per requirement.
+- **openwisp-radius**: HTTP API for interacting with openwisp-radius. Separated from the rest of APIs as it
+                       can have different scalability requirements in large deployments.
+- **openwisp-websocket**: Dedicated container for handling websocket requests, eg. for updating location of
+                          mobile network devices.
+- **openwisp-celery**: Runs all the background tasks for OpenWISP, eg. updating configurations of your device.
+- **openwisp-celerybeat**: Runs periodic background tasks. eg. revoking all the expired certificates.
+- **openwisp-nginx**: Internet facing container that facilitates all the HTTP and Websocket communication
+                      between the outside world and the service containers.
+- **openwisp-freeradius**: Freeradius container for OpenWISP.
+- **openwisp-openvpn**: OpenVPN container for out-of-the-box management VPN.
+- **openwisp-postfix**: Mail server for sending mails to MTA.
+- **openwisp-nfs**: NFS server that allows shared storage between different machines. It does not run
+                    in single server machines but provided for K8s setup.
+- **openwisp-base**: It is the base image which does not run on your server, but openwisp-radius,
+                     openwisp-api & openwisp-dashboard use it as a base.
+- **Redis**: data caching service (required for actions like login).
+- **PostgreSQL**: SQL database container for OpenWISP.
+
 ## Deployment
 
 ### Quick Setup
