@@ -1,5 +1,4 @@
 import os
-import ssl
 import subprocess
 import time
 import unittest
@@ -24,9 +23,6 @@ class Pretest(TestConfig, unittest.TestCase):
         if the openwisp-dashboard login page is reachable.
         Should be called first before calling another test.
         """
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
 
         isServiceReachable = False
         max_retries = self.config['services_max_retries']
@@ -36,7 +32,7 @@ class Pretest(TestConfig, unittest.TestCase):
             try:
                 # check if we can reach to admin login page
                 # and the page return 200 OK status code
-                if request.urlopen(admin_login_page, context=ctx).getcode() == 200:
+                if request.urlopen(admin_login_page, context=self.ctx).getcode() == 200:
                     isServiceReachable = True
                     break
             except (urlerror.HTTPError, OSError, ConnectionResetError):
@@ -175,6 +171,40 @@ class TestServices(TestUtilities, unittest.TestCase):
             )
             self.fail(message)
 
+    def test_create_prefix_users(self):
+        self.login()
+        prefix_objname = 'automated-prefix-test-01'
+        # Create prefix users
+        self.base_driver.get(
+            f"{self.config['app_url']}/admin/openwisp_radius/radiusbatch/add/"
+        )
+        self.base_driver.find_element_by_name('strategy').find_element_by_xpath(
+            '//option[@value="prefix"]'
+        ).click()
+        self.base_driver.find_element_by_name('organization').find_element_by_xpath(
+            '//option[text()="default"]'
+        ).click()
+        self.base_driver.find_element_by_name('name').send_keys(prefix_objname)
+        self.base_driver.find_element_by_name('prefix').send_keys('automated-prefix')
+        self.base_driver.find_element_by_name('number_of_users').send_keys('1')
+        self.base_driver.find_element_by_name('_save').click()
+        # Check PDF available
+        self.get_resource(prefix_objname, '/admin/openwisp_radius/radiusbatch/')
+        self.objects_to_delete.append(self.base_driver.current_url)
+        prefix_pdf_file_path = self.base_driver.find_element_by_xpath(
+            '//a[text()="Download User Credentials"]'
+        ).get_property('href')
+        reqHeader = {
+            'Cookie': f"sessionid={self.base_driver.get_cookies()[0]['value']}"
+        }
+        curlRequest = request.Request(prefix_pdf_file_path, headers=reqHeader)
+
+        try:
+            if request.urlopen(curlRequest, context=self.ctx).getcode() != 200:
+                raise ValueError
+        except (urlerror.HTTPError, OSError, ConnectionResetError, ValueError) as error:
+            self.fail(f'Cannot download PDF file: {error}')
+
     def test_console_errors(self):
         url_list = [
             '/admin/',
@@ -253,7 +283,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.create_superuser()
         self.assertEqual(
             'The user “test_superuser” was changed successfully.',
-            self.base_driver.find_elements(By.CLASS_NAME, 'success')[0].text,
+            self.base_driver.find_element(By.CLASS_NAME, 'success').text,
         )
 
     def test_forgot_password(self):
@@ -335,19 +365,14 @@ class TestServices(TestUtilities, unittest.TestCase):
         """
         Ensure freeradius service is working correctly.
         """
-        # Get User Auth Token
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-
         token_page = (
-            f"{self.config['radius_url']}"
-            "/api/v1/radius/organization/default/account/token/"
+            f"{self.config['radius_url']}/api/v1/radius/"
+            "organization/default/account/token/"
         )
         request_body = "username=admin&password=admin".encode('utf-8')
         request_info = request.Request(token_page, data=request_body)
         try:
-            response = request.urlopen(request_info, context=ctx)
+            response = request.urlopen(request_info, context=self.ctx)
         except (urlerror.HTTPError, OSError, ConnectionResetError):
             self.fail(f"Couldn't get radius-token, check {self.config['radius_url']}")
         self.assertIn('"is_active":true', response.read().decode())

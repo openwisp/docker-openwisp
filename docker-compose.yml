@@ -31,6 +31,7 @@ services:
       - .env
     volumes:
       - influxdb_data:/var/lib/influxdb
+      - openwisp_media:/opt/openwisp/media
     depends_on:
       - postgres
       - redis
@@ -45,6 +46,8 @@ services:
         RADIUS_APP_PORT: 8002
     env_file:
       - .env
+    volumes:
+      - openwisp_media:/opt/openwisp/media
     depends_on:
       - postgres
       - dashboard
