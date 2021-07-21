@@ -1,5 +1,6 @@
 import json
 import os
+import ssl
 import subprocess
 import time
 
@@ -18,6 +19,10 @@ class TestConfig(object):
         return None
 
     docker_client = docker.from_env()
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     root_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
     with open(config_file) as json_file:
