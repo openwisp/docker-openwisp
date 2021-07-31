@@ -126,7 +126,7 @@ setup_docker_openwisp() {
         if [[ -z "$API_DOMAIN" ]]; then
             set_env "API_DOMAIN" "api.${domain}";
         else
-            set_env "API_DOMAIN" "$api";
+            set_env "API_DOMAIN" "$API_DOMAIN";
         fi
         # Radius Domain
         if [[ -z "$radius_domain" ]]; then
