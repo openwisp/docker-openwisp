@@ -48,6 +48,8 @@ apt_dependenices_setup() {
     start_step "Setting up dependencies...";
     apt --yes install python3 python3-pip git python3-dev libffi-dev libssl-dev gcc make &>> $LOG_FILE
     check_status $? "Python dependencies installation failed."
+    pip3 install --upgrade pip &>> $LOG_FILE
+    check_status $? "pip upgrade failed."
 }
 
 setup_docker() {
