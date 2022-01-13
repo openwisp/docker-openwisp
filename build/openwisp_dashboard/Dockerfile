@@ -7,8 +7,6 @@ COPY ./openwisp_dashboard/load_init_data.py \
     ./openwisp_dashboard/openvpn.json \
     /opt/openwisp/
 # Location: /opt/openwisp/openwisp/
-COPY ./openwisp_api/module_settings.py /opt/openwisp/openwisp/api_settings.py
-COPY ./openwisp_radius/module_settings.py /opt/openwisp/openwisp/radius_settings.py
 COPY ./openwisp_dashboard/module_settings.py \
     ./openwisp_dashboard/urls.py \
     /opt/openwisp/openwisp/

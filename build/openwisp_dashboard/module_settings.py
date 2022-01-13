@@ -1,6 +1,4 @@
 import os
-from openwisp.radius_settings import *
-from openwisp.api_settings import *
 from openwisp.utils import request_scheme
 
 INSTALLED_APPS = [
@@ -36,6 +34,8 @@ INSTALLED_APPS = [
     'openwisp_network_topology',
     # openwisp-firmware-upgrader
     'openwisp_firmware_upgrader',
+    # openwisp-radius
+    'openwisp_radius',
     # admin
     'openwisp_utils.admin_theme',
     'django.contrib.admin',
@@ -55,8 +55,6 @@ INSTALLED_APPS = [
     # social login
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.google',
-    # openwisp-radius
-    'openwisp_radius',
     # other dependencies
     'flat_json_widget',
     'private_storage',

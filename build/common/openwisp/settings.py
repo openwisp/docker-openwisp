@@ -100,7 +100,6 @@ TEMPLATES = [
                 ),
             ],
             'context_processors': [
-                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -109,10 +108,15 @@ TEMPLATES = [
     },
 ]
 
-if 'MODULE_NAME' == 'dashboard':
+if DEBUG:
+    TEMPLATES[0]['OPTIONS']['context_processors'].insert(
+        0, 'django.template.context_processors.debug'
+    )
+
+if os.environ['MODULE_NAME'] == 'dashboard':
     TEMPLATES[0]['OPTIONS']['context_processors'].extend(
         [
-            'openwisp_utils.admin_theme.context_processor.menu_items',
+            'openwisp_utils.admin_theme.context_processor.menu_groups',
             'openwisp_utils.admin_theme.context_processor.admin_theme_settings',
             'openwisp_notifications.context_processors.notification_api_settings',
         ]
@@ -125,7 +129,7 @@ SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_DOMAIN = ROOT_DOMAIN
 
 WSGI_APPLICATION = 'openwisp.wsgi.application'
-ASGI_APPLICATION = 'openwisp.routing.application'
+ASGI_APPLICATION = 'openwisp.asgi.application'
 
 REDIS_HOST = os.environ['REDIS_HOST']
 CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/1'
@@ -183,7 +187,9 @@ CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': f'redis://{REDIS_HOST}:6379/1',
-        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient',},
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
     }
 }
 
@@ -246,8 +252,12 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {
-        'user_filter': {'()': 'openwisp.utils.HostFilter',},
-        'require_debug_false': {'()': 'django.utils.log.RequireDebugFalse',},
+        'user_filter': {
+            '()': 'openwisp.utils.HostFilter',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
     },
     'formatters': {
         'verbose': {
@@ -279,7 +289,10 @@ LOGGING = {
     },
     'root': {
         'level': os.environ['DJANGO_LOG_LEVEL'],
-        'handlers': ['console', 'mail_admins',],
+        'handlers': [
+            'console',
+            'mail_admins',
+        ],
     },
     'loggers': {
         'pre_django_setup': {
