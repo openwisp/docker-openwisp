@@ -1,23 +1,21 @@
-FROM python:3.7.10-slim-buster AS SYSTEM
+FROM python:3.10-slim-bullseye AS SYSTEM
 
 # System requirements:
-# 1. Pillow: zlib1g-dev libjpeg-dev
-# 2. gettext: Required by envsubst used in scripts
-# 3. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
+# 1. gettext: Required by envsubst used in scripts
+# 2. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
+# 3. openwisp-monitoring: fping gdal-bin
 RUN apt update && \
-    apt install --yes --no-install-recommends zlib1g-dev libjpeg-dev \
-                libcairo2 libpangocairo-1.0 gdal-bin gettext fping && \
-    rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
+    apt install --yes --no-install-recommends libcairo2 libpangocairo-1.0-0 gdal-bin \
+                                              gettext fping \
+    && rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 FROM SYSTEM AS PYTHON
 
-# Build requirements:
-# 1. Twisted: gcc
-# 2. Postgresql: libpq-dev
 RUN apt update && \
-    apt install --yes --no-install-recommends gcc libpq-dev
+    apt install --yes --no-install-recommends gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
+                                              python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
 
-ENV PYTHONPATH=/install/lib/python3.7/site-packages
+ENV PYTHONPATH=/install/lib/python3.10/site-packages
 # Python Packages
 ## TODO: We need to temporarily lock the version of pip to avoid using
 ## the new version of the dependency resolver which is not compatible
@@ -31,20 +29,20 @@ ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/t
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_CONTROLLER_SOURCE}
 ARG OPENWISP_NOTIFICATION_SOURCE=https://github.com/openwisp/openwisp-notifications/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_NOTIFICATION_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=0.5.1
+ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topology/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}
-ARG DJANGO_X509_SOURCE=django-x509~=0.9.4
+ARG DJANGO_X509_SOURCE=https://github.com/openwisp/django-x509/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}
 ARG OPENWISP_UTILS_SOURCE=https://github.com/openwisp/openwisp-utils/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}
 RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
                                     uwsgi sentry-sdk supervisor celery django-celery-beat \
-                                    django-cors-headers django-rest-auth jinja2~=2.11
-ARG DJANGO_SOURCE=django==3.1
+                                    django-cors-headers django-rest-auth jinja2
+ARG DJANGO_SOURCE=django~=4.0.0
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_SOURCE}
 
 FROM SYSTEM
