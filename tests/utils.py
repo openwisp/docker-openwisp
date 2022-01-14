@@ -3,6 +3,7 @@ import os
 import time
 
 from selenium.common.exceptions import NoAlertPresentException
+from selenium.webdriver.common.by import By
 
 
 class TestConfig(object):
@@ -39,9 +40,9 @@ class TestUtilities(TestConfig):
             password = self.config['password']
         driver.get(f"{self.config['app_url']}/admin/login/")
         if 'admin/login' in driver.current_url:
-            driver.find_element_by_name('username').send_keys(username)
-            driver.find_element_by_name('password').send_keys(password)
-            driver.find_element_by_xpath("//input[@type='submit']").click()
+            driver.find_element(By.NAME, 'username').send_keys(username)
+            driver.find_element(By.NAME, 'password').send_keys(password)
+            driver.find_element(By.XPATH, "//input[@type='submit']").click()
 
     def _ignore_location_alert(self, driver=None):
         """
@@ -78,14 +79,14 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}/admin/openwisp_users/user/add/")
-        driver.find_element_by_name('username').send_keys(username)
-        driver.find_element_by_name('email').send_keys(email)
-        driver.find_element_by_name('password1').send_keys(password)
-        driver.find_element_by_name('password2').send_keys(password)
-        driver.find_element_by_name('is_superuser').click()
-        driver.find_element_by_name('_save').click()
+        driver.find_element(By.NAME, 'username').send_keys(username)
+        driver.find_element(By.NAME, 'email').send_keys(email)
+        driver.find_element(By.NAME, 'password1').send_keys(password)
+        driver.find_element(By.NAME, 'password2').send_keys(password)
+        driver.find_element(By.NAME, 'is_superuser').click()
+        driver.find_element(By.NAME, '_save').click()
         self.objects_to_delete.append(driver.current_url)
-        driver.find_element_by_name('_save').click()
+        driver.find_element(By.NAME, '_save').click()
 
     def get_resource(self, resource_name, path, select_field='field-name', driver=None):
         """
@@ -99,10 +100,10 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}{path}")
-        resources = driver.find_elements_by_class_name(select_field)
+        resources = driver.find_elements(By.CLASS_NAME, select_field)
         for resource in resources:
-            if len(resource.find_elements_by_link_text(resource_name)):
-                resource.find_element_by_link_text(resource_name).click()
+            if len(resource.find_elements(By.LINK_TEXT, resource_name)):
+                resource.find_element(By.LINK_TEXT, resource_name).click()
                 break
 
     def select_resource(self, name, driver=None):
@@ -117,7 +118,7 @@ class TestUtilities(TestConfig):
         path = (
             f'//a[contains(text(), "{name}")]/../../' '/input[@name="_selected_action"]'
         )
-        driver.find_element_by_xpath(path).click()
+        driver.find_element(By.XPATH, path).click()
 
     def action_on_resource(self, name, path, option, driver=None):
         """
@@ -132,10 +133,10 @@ class TestUtilities(TestConfig):
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}{path}")
         self.select_resource(name)
-        driver.find_element_by_name('action').find_element_by_xpath(
-            f'//option[@value="{option}"]'
+        driver.find_element(By.NAME, 'action').find_element(
+            By.XPATH, f'//option[@value="{option}"]'
         ).click()
-        driver.find_element_by_name('index').click()
+        driver.find_element(By.NAME, 'index').click()
 
     def console_error_check(self, driver=None):
         """
@@ -165,16 +166,16 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}/admin/geo/location/add/")
-        driver.find_element_by_name('organization').find_element_by_xpath(
-            '//option[text()="default"]'
+        driver.find_element(By.NAME, 'organization').find_element(
+            By.XPATH, '//option[text()="default"]'
         ).click()
-        driver.find_element_by_name('name').send_keys(location_name)
-        driver.find_element_by_name('type').find_element_by_xpath(
-            '//option[@value="outdoor"]'
+        driver.find_element(By.NAME, 'name').send_keys(location_name)
+        driver.find_element(By.NAME, 'type').find_element(
+            By.XPATH, '//option[@value="outdoor"]'
         ).click()
-        driver.find_element_by_name('is_mobile').click()
+        driver.find_element(By.NAME, 'is_mobile').click()
         self._ignore_location_alert(driver)
-        driver.find_element_by_name('_save').click()
+        driver.find_element(By.NAME, '_save').click()
         # Add to delete list
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
         self.objects_to_delete.append(driver.current_url)
@@ -190,13 +191,13 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
-        driver.find_element_by_name('is_mobile').click()
+        driver.find_element(By.NAME, 'is_mobile').click()
         self._ignore_location_alert(driver)
-        driver.find_element_by_class_name('leaflet-draw-draw-marker').click()
-        driver.find_element_by_id('id_geometry-map').click()
-        driver.find_element_by_name('is_mobile').click()
+        driver.find_element(By.CLASS_NAME, 'leaflet-draw-draw-marker').click()
+        driver.find_element(By.ID, 'id_geometry-map').click()
+        driver.find_element(By.NAME, 'is_mobile').click()
         self._ignore_location_alert(driver)
-        driver.find_element_by_name('_save').click()
+        driver.find_element(By.NAME, '_save').click()
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
 
     def create_network_topology(
@@ -216,15 +217,15 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}/admin/topology/topology/add/")
-        driver.find_element_by_name('label').send_keys(label)
-        driver.find_element_by_name('organization').find_element_by_xpath(
-            '//option[text()="default"]'
+        driver.find_element(By.NAME, 'label').send_keys(label)
+        driver.find_element(By.NAME, 'organization').find_element(
+            By.XPATH, '//option[text()="default"]'
         ).click()
-        driver.find_element_by_name('parser').find_element_by_xpath(
-            '//option[text()="NetJSON NetworkGraph"]'
+        driver.find_element(By.NAME, 'parser').find_element(
+            By.XPATH, '//option[text()="NetJSON NetworkGraph"]'
         ).click()
-        driver.find_element_by_name('url').send_keys(topology_url)
-        driver.find_element_by_name('_save').click()
+        driver.find_element(By.NAME, 'url').send_keys(topology_url)
+        driver.find_element(By.NAME, '_save').click()
         self.get_resource(
             label, '/admin/topology/topology/', 'field-label', driver=driver
         )

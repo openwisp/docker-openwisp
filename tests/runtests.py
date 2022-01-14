@@ -9,7 +9,7 @@ from urllib import request
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.by import By
 from utils import TestConfig, TestUtilities
 
 
@@ -93,36 +93,28 @@ class TestServices(TestUtilities, unittest.TestCase):
             profile = webdriver.FirefoxProfile()
             profile.accept_untrusted_certs = True
             options = webdriver.FirefoxOptions()
-            capabilities = DesiredCapabilities.FIREFOX
-            capabilities['loggingPrefs'] = {'browser': 'ALL'}
+            options.set_capability("loggingPrefs", {'browser': 'ALL'})
             if cls.config['headless']:
                 options.add_argument('-headless')
             cls.base_driver = webdriver.Firefox(
                 options=options,
-                capabilities=capabilities,
-                service_log_path='/tmp/geckodriver.log',
+                service_log_path='/tmp/geckodriver_base_driver.log',
                 firefox_profile=profile,
             )
             cls.second_driver = webdriver.Firefox(
                 options=options,
-                capabilities=capabilities,
-                service_log_path='/tmp/geckodriver.log',
+                service_log_path='/tmp/geckodriver_second_driver.log',
                 firefox_profile=profile,
             )
         # Create base drivers (Chromium)
         if cls.config['driver'] == 'chromium':
             chrome_options = ChromiumOptions()
+            chrome_options.set_capability("goog:loggingPrefs", {'browser': 'ALL'})
             chrome_options.add_argument('--ignore-certificate-errors')
-            capabilities = DesiredCapabilities.CHROME
-            capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
             if cls.config['headless']:
                 chrome_options.add_argument('--headless')
-            cls.base_driver = webdriver.Chrome(
-                options=chrome_options, desired_capabilities=capabilities
-            )
-            cls.second_driver = webdriver.Chrome(
-                options=chrome_options, desired_capabilities=capabilities
-            )
+            cls.base_driver = webdriver.Chrome(options=chrome_options)
+            cls.second_driver = webdriver.Chrome(options=chrome_options)
         cls.base_driver.set_window_size(1366, 768)
         cls.second_driver.set_window_size(1366, 768)
 
@@ -152,11 +144,11 @@ class TestServices(TestUtilities, unittest.TestCase):
         Takes URL for location to delete.
         """
         cls.base_driver.get(resource_link)
-        element = cls.base_driver.find_element_by_class_name('deletelink-box')
+        element = cls.base_driver.find_element(By.CLASS_NAME, 'deletelink-box')
         js = "arguments[0].setAttribute('style', 'display:block')"
         cls.base_driver.execute_script(js, element)
-        element.find_element_by_class_name('deletelink').click()
-        cls.base_driver.find_element_by_xpath('//input[@type="submit"]').click()
+        element.find_element(By.CLASS_NAME, 'deletelink').click()
+        cls.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
 
     def test_topology_graph(self):
         path = '/admin/topology/topology'
@@ -174,8 +166,8 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.login()
         self.login(driver=self.second_driver)
         try:
-            self.base_driver.find_element_by_class_name('logout')
-            self.second_driver.find_element_by_class_name('logout')
+            self.base_driver.find_element(By.CLASS_NAME, 'logout')
+            self.second_driver.find_element(By.CLASS_NAME, 'logout')
         except NoSuchElementException:
             message = (
                 'Login failed. Credentials used were username: '
@@ -245,11 +237,11 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.get_resource(
             location_name, '/admin/geo/location/', driver=self.second_driver
         )
-        self.base_driver.find_element_by_name('is_mobile').click()
-        mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
+        self.base_driver.find_element(By.NAME, 'is_mobile').click()
+        mark = len(self.base_driver.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
         self.assertEqual(mark, 0)
         self.add_mobile_location_point(location_name, driver=self.second_driver)
-        mark = len(self.base_driver.find_elements_by_class_name('leaflet-marker-icon'))
+        mark = len(self.base_driver.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
         self.assertEqual(mark, 1)
 
     def test_add_superuser(self):
@@ -261,7 +253,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.create_superuser()
         self.assertEqual(
             'The user “test_superuser” was changed successfully.',
-            self.base_driver.find_elements_by_class_name('success')[0].text,
+            self.base_driver.find_elements(By.CLASS_NAME, 'success')[0].text,
         )
 
     def test_forgot_password(self):
@@ -270,8 +262,8 @@ class TestServices(TestUtilities, unittest.TestCase):
         postfix is working properly.
         """
         self.base_driver.get(f"{self.config['app_url']}/accounts/password/reset/")
-        self.base_driver.find_element_by_name('email').send_keys('admin@example.com')
-        self.base_driver.find_element_by_xpath('//input[@type="submit"]').click()
+        self.base_driver.find_element(By.NAME, 'email').send_keys('admin@example.com')
+        self.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
         self.assertIn(
             'We have sent you an e-mail. Please contact us if you '
             'do not receive it within a few minutes.',
