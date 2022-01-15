@@ -22,7 +22,6 @@ if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
 if env_bool(os.environ['USE_OPENWISP_MONITORING']):
     urlpatterns += [
         path(
-            '',
-            include('openwisp_monitoring.device.api.urls', namespace='monitoring'),
+            '', include('openwisp_monitoring.device.api.urls', namespace='monitoring'),
         )
     ]

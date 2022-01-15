@@ -30,9 +30,8 @@ INSTALLED_APPS = [
     'openwisp_network_topology',
     # openwisp-firmware-upgrader
     'openwisp_firmware_upgrader',
-    # Admin theme required for
-    # the templates stored in
-    # openwisp_utils/admin_theme
+    # Admin theme required for the templates
+    # stored in openwisp_utils/admin_theme
     'openwisp_utils.admin_theme',
     # admin
     'django.contrib.admin',
