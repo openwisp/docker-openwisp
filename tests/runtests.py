@@ -156,11 +156,11 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.login()
         self.create_network_topology(label)
         self.action_on_resource(label, path, 'delete_selected')
-        self.assertNotIn('Nodes', self.base_driver.page_source)
+        self.assertNotIn('<li>Nodes: ', self.base_driver.page_source)
         self.action_on_resource(label, path, 'update_selected')
         time.sleep(4)  # Wait for nodes to be fetched!
         self.action_on_resource(label, path, 'delete_selected')
-        self.assertIn('Nodes', self.base_driver.page_source)
+        self.assertIn('<li>Nodes: ', self.base_driver.page_source)
 
     def test_admin_login(self):
         self.login()
@@ -274,53 +274,57 @@ class TestServices(TestUtilities, unittest.TestCase):
         """
         Ensure celery and celery-beat tasks are registered.
         """
-        cmd = subprocess.Popen(
-            [
-                'docker-compose',
-                'run',
-                '--rm',
-                'celery',
-                'celery',
-                '-A',
-                'openwisp',
-                'inspect',
-                'registered',
-            ],
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=self.root_location,
-        )
-        output, error = map(str, cmd.communicate())
+        container_id = self.docker_compose_get_container_id('celery')
+        celery_container = self.docker_client.containers.get(container_id)
+        result = celery_container.exec_run('celery -A openwisp inspect registered')
+        self.assertEqual(result.exit_code, 0)
 
         expected_output_list = [
             "openwisp.tasks.radius_tasks",
             "openwisp.tasks.save_snapshot",
             "openwisp.tasks.update_topology",
             "openwisp_controller.config.tasks.create_vpn_dh",
+            "openwisp_controller.config.tasks.invalidate_devicegroup_cache_change",
+            "openwisp_controller.config.tasks.invalidate_devicegroup_cache_delete",
             "openwisp_controller.config.tasks.update_template_related_config_status",
+            "openwisp_controller.connection.tasks.auto_add_credentials_to_devices",
+            "openwisp_controller.connection.tasks.launch_command",
             "openwisp_controller.connection.tasks.update_config",
+            "openwisp_firmware_upgrader.tasks.batch_upgrade_operation",
+            "openwisp_firmware_upgrader.tasks.create_all_device_firmwares",
+            "openwisp_firmware_upgrader.tasks.create_device_firmware",
+            "openwisp_firmware_upgrader.tasks.upgrade_firmware",
+            "openwisp_monitoring.check.tasks.auto_create_config_check",
+            "openwisp_monitoring.check.tasks.auto_create_ping",
+            "openwisp_monitoring.check.tasks.perform_check",
+            "openwisp_monitoring.check.tasks.run_checks",
+            "openwisp_monitoring.device.tasks.trigger_device_checks",
+            "openwisp_monitoring.monitoring.tasks.timeseries_write",
             "openwisp_notifications.tasks.delete_ignore_object_notification",
             "openwisp_notifications.tasks.delete_notification",
             "openwisp_notifications.tasks.delete_obsolete_objects",
             "openwisp_notifications.tasks.delete_old_notifications",
             "openwisp_notifications.tasks.ns_organization_created",
-            "openwisp_notifications.tasks.ns_organization_user_added_or_updated",
             "openwisp_notifications.tasks.ns_organization_user_deleted",
             "openwisp_notifications.tasks.ns_register_unregister_notification_type",
-            "openwisp_notifications.tasks.ns_user_created",
+            "openwisp_notifications.tasks.update_org_user_notificationsetting",
+            "openwisp_notifications.tasks.update_superuser_notification_settings",
             "openwisp_radius.tasks.cleanup_stale_radacct",
+            "openwisp_radius.tasks.convert_called_station_id",
             "openwisp_radius.tasks.deactivate_expired_users",
             "openwisp_radius.tasks.delete_old_postauth",
             "openwisp_radius.tasks.delete_old_radacct",
             "openwisp_radius.tasks.delete_old_users",
+            "openwisp_radius.tasks.delete_unverified_users",
+            "openwisp_radius.tasks.send_login_email",
         ]
 
+        output = result.output.decode('utf-8')
         for expected_output in expected_output_list:
             if expected_output not in output:
                 self.fail(
-                    'Not all celery / celery-beat tasks are registered\nOutput:\n'
-                    f'{output}\nError:\n{error}'
+                    'Not all celery / celery-beat tasks are registered\n'
+                    f'Output:\n{output}\n'
                 )
 
     def test_freeradius(self):
@@ -332,7 +336,10 @@ class TestServices(TestUtilities, unittest.TestCase):
         ctx.check_hostname = False
         ctx.verify_mode = ssl.CERT_NONE
 
-        token_page = f"{self.config['radius_url']}/api/v1/default/account/token/"
+        token_page = (
+            f"{self.config['radius_url']}"
+            "/api/v1/radius/organization/default/account/token/"
+        )
         request_body = "username=admin&password=admin".encode('utf-8')
         request_info = request.Request(token_page, data=request_body)
         try:
@@ -341,48 +348,15 @@ class TestServices(TestUtilities, unittest.TestCase):
             self.fail(f"Couldn't get radius-token, check {self.config['radius_url']}")
         self.assertIn('"is_active":true', response.read().decode())
 
-        # Install Requirements
-        # Should not be required after upgrading to 3.0.22-alpine
-        subprocess.Popen(
-            [
-                'docker',
-                'exec',
-                'docker-openwisp_freeradius_1',
-                'apk',
-                'add',
-                'freeradius',
-                'freeradius-radclient',
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            cwd=self.root_location,
-        ).communicate()
-
-        # Radtest
-        radtest = subprocess.Popen(
-            [
-                'docker',
-                'exec',
-                'docker-openwisp_freeradius_1',
-                'radtest',
-                'admin',
-                'admin',
-                'localhost',
-                '0',
-                'testing123',
-            ],
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=self.root_location,
+        container_id = self.docker_compose_get_container_id('freeradius')
+        freeradius_container = self.docker_client.containers.get(container_id)
+        freeradius_container.exec_run('apk add freeradius freeradius-radclient')
+        result = freeradius_container.exec_run(
+            'radtest admin admin localhost 0 testing123'
         )
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn('Received Access-Accept', result.output.decode('utf-8'))
 
-        output, error = map(str, radtest.communicate())
-        if 'Received Access-Accept' not in output:
-            self.fail(f'Request not Accepted!\nOutput:\n{output}\nError:\n{error}')
-
-        # Clean Up
-        # Should not be required after upgrading to 3.0.22-alpine
         remove_tainted_container = [
             'docker-compose rm -sf freeradius',
             'docker-compose up -d freeradius',
@@ -414,4 +388,4 @@ class TestServices(TestUtilities, unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=3)
+    unittest.main(verbosity=2)

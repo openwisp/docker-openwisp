@@ -1,8 +1,11 @@
 import json
 import os
+import subprocess
 import time
 
+import docker
 from selenium.common.exceptions import NoAlertPresentException
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
 
@@ -11,6 +14,10 @@ class TestConfig(object):
     Get the configurations that are to be used for all the tests.
     """
 
+    def shortDescription(self):
+        return None
+
+    docker_client = docker.from_env()
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
     root_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
     with open(config_file) as json_file:
@@ -61,6 +68,11 @@ class TestUtilities(TestConfig):
         except NoAlertPresentException:
             pass  # No alert is okay.
 
+    def _click_save_btn(self, driver=None):
+        saveBtn = driver.find_element(By.NAME, '_save')
+        actions = ActionChains(driver)
+        actions.move_to_element(saveBtn).click().perform()
+
     def create_superuser(
         self,
         email='test@user.com',
@@ -84,9 +96,9 @@ class TestUtilities(TestConfig):
         driver.find_element(By.NAME, 'password1').send_keys(password)
         driver.find_element(By.NAME, 'password2').send_keys(password)
         driver.find_element(By.NAME, 'is_superuser').click()
-        driver.find_element(By.NAME, '_save').click()
+        self._click_save_btn(driver)
         self.objects_to_delete.append(driver.current_url)
-        driver.find_element(By.NAME, '_save').click()
+        self._click_save_btn(driver)
 
     def get_resource(self, resource_name, path, select_field='field-name', driver=None):
         """
@@ -175,7 +187,7 @@ class TestUtilities(TestConfig):
         ).click()
         driver.find_element(By.NAME, 'is_mobile').click()
         self._ignore_location_alert(driver)
-        driver.find_element(By.NAME, '_save').click()
+        self._click_save_btn(driver)
         # Add to delete list
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
         self.objects_to_delete.append(driver.current_url)
@@ -197,8 +209,18 @@ class TestUtilities(TestConfig):
         driver.find_element(By.ID, 'id_geometry-map').click()
         driver.find_element(By.NAME, 'is_mobile').click()
         self._ignore_location_alert(driver)
-        driver.find_element(By.NAME, '_save').click()
+        self._click_save_btn(driver)
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
+
+    def docker_compose_get_container_id(self, container_name):
+        services_output = subprocess.Popen(
+            ['docker-compose', 'ps', '--quiet', container_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.root_location,
+        )
+        output, _ = services_output.communicate()
+        return output.rstrip().decode('utf-8')
 
     def create_network_topology(
         self,
@@ -225,7 +247,7 @@ class TestUtilities(TestConfig):
             By.XPATH, '//option[text()="NetJSON NetworkGraph"]'
         ).click()
         driver.find_element(By.NAME, 'url').send_keys(topology_url)
-        driver.find_element(By.NAME, '_save').click()
+        self._click_save_btn(driver)
         self.get_resource(
             label, '/admin/topology/topology/', 'field-label', driver=driver
         )

@@ -13,13 +13,13 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 
 ## Available Images
 
-| Version       | Corresponding Ansible Version* |
-| ------------- |:------------------------------:|
-| 0.1.0a2       | 0.9.0                          |
-| 0.1.0a3       | 0.12.0                         |
-| 0.1.0a4       | 0.12.0+                        |
-| 0.1.0a5       | 0.13.1                         |
-| 0.1.0a6       | 0.13.2+                        |
+| Version | Corresponding Ansible Version |
+| ------- | :---------------------------: |
+| 0.1.0a2 |             0.9.0             |
+| 0.1.0a3 |            0.12.0             |
+| 0.1.0a4 |            0.12.0+            |
+| 0.1.0a5 |            0.13.1             |
+| 0.1.0a6 |            0.13.2+            |
 
 \* Roughly the same features would be available but it's not an exact one-to-one mapping.
 
@@ -29,22 +29,22 @@ The sample files for deployment on kubernetes are available in the `deployment-e
 
 - **openwisp-dashboard**: Your OpenWISP device administration dashboard.
 - **openwisp-api**: HTTP API from various openwisp modules which can be scaled simply by having multiple
-                    API containers as per requirement.
+  API containers as per requirement.
 - **openwisp-radius**: HTTP API for interacting with openwisp-radius. Separated from the rest of APIs as it
-                       can have different scalability requirements in large deployments.
+  can have different scalability requirements in large deployments.
 - **openwisp-websocket**: Dedicated container for handling websocket requests, eg. for updating location of
-                          mobile network devices.
+  mobile network devices.
 - **openwisp-celery**: Runs all the background tasks for OpenWISP, eg. updating configurations of your device.
 - **openwisp-celerybeat**: Runs periodic background tasks. eg. revoking all the expired certificates.
 - **openwisp-nginx**: Internet facing container that facilitates all the HTTP and Websocket communication
-                      between the outside world and the service containers.
+  between the outside world and the service containers.
 - **openwisp-freeradius**: Freeradius container for OpenWISP.
 - **openwisp-openvpn**: OpenVPN container for out-of-the-box management VPN.
 - **openwisp-postfix**: Mail server for sending mails to MTA.
 - **openwisp-nfs**: NFS server that allows shared storage between different machines. It does not run
-                    in single server machines but provided for K8s setup.
+  in single server machines but provided for K8s setup.
 - **openwisp-base**: It is the base image which does not run on your server, but openwisp-radius,
-                     openwisp-api & openwisp-dashboard use it as a base.
+  openwisp-api & openwisp-dashboard use it as a base.
 - **Redis**: data caching service (required for actions like login).
 - **PostgreSQL**: SQL database container for OpenWISP.
 
@@ -97,7 +97,6 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 - If you want to perform actions like cleaning everything produced by `docker-openwisp`,
   please use the [makefile options](#makefile-options).
 
-
 ### Changing Python Packages
 
 You can build with your own python package by creating a file named `.build.env` in the root of the repository, then set the variables inside `.build.env` file in `<variable>=<value>` format. Multiple variable should be separated in newline. These are the variables that can be changed:
@@ -117,7 +116,7 @@ You can build with your own python package by creating a file named `.build.env`
 For example, if you want to supply your own django and openwisp-controller source, your `.build.env` should be written like this:
 
 ```
-DJANGO_SOURCE=django==2.1
+DJANGO_SOURCE=django==3.2
 OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-api/tarball/master
 ```
 
@@ -136,14 +135,14 @@ If you want to disable a service, you can simply remove the container for that s
 - `openwisp-monitoring` : Set the `USE_OPENWISP_MONITORING` variable to `False`.
 - `openwisp-radius` : Set the `USE_OPENWISP_RADIUS` variable to `False`.
 - `openwisp-postgres`: If you are using a seperate database instance,
-   - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `radius`, `api`, `dashboard`.
-   - Ensure your database server supports GeoDjango. (Install PostGIS for PostgreSQL)
-   - Change the [database configuration variables](docs/ENV.md) to point to your instances, if you are using SSL, remember to set `DB_SSLMODE`, `DB_SSLKEY`, `DB_SSLCERT`, `DB_SSLROOTCERT`.
-   - If you are using SSL, remember to mount volume containing the certificates and key in all the containers which contact the database server and make sure that the private key permission is `600` and owned by `root:root`.
-   - In your database, create database with name `<DB_NAME>`.
+  - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `radius`, `api`, `dashboard`.
+  - Ensure your database server supports GeoDjango. (Install PostGIS for PostgreSQL)
+  - Change the [database configuration variables](docs/ENV.md) to point to your instances, if you are using SSL, remember to set `DB_SSLMODE`, `DB_SSLKEY`, `DB_SSLCERT`, `DB_SSLROOTCERT`.
+  - If you are using SSL, remember to mount volume containing the certificates and key in all the containers which contact the database server and make sure that the private key permission is `600` and owned by `root:root`.
+  - In your database, create database with name `<DB_NAME>`.
 - `openwisp-postfix`:
-   - Ensure your SMTP instance reachable by the OpenWISP containers.
-   - Change the [email configuration variables](docs/ENV.md) to point to your instances.
+  - Ensure your SMTP instance reachable by the OpenWISP containers.
+  - Change the [email configuration variables](docs/ENV.md) to point to your instances.
 
 ### Runtests
 
@@ -153,40 +152,48 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 
    - Setup chromedriver
 
-      1. Install: `sudo apt --yes install chromium`
-      2. Check version: `chromium --version`
-      3. Install Driver for your version: `https://chromedriver.chromium.org/downloads`
-      4. Extract chromedriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
+     1. Install: `sudo apt --yes install chromium`
+     2. Check version: `chromium --version`
+     3. Install Driver for your version: `https://chromedriver.chromium.org/downloads`
+     4. Extract chromedriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
 
    - Setup geckodriver
 
-      1. Install: `sudo apt --yes install firefox`
-      2. Check version: `firefox --version`
-      3. Install Driver for your version: `https://github.com/mozilla/geckodriver/releases`
-      4. Extract geckodriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
+     1. Install: `sudo apt --yes install firefox`
+     2. Check version: `firefox --version`
+     3. Install Driver for your version: `https://github.com/mozilla/geckodriver/releases`
+     4. Extract geckodriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
 
 2. Install selenium: `python3 -m pip install selenium`
 
 3. (Optional) Configure: open `tests/config.json` and configure variables as per your requirement, options are:
 
    ```yaml
-      driver                 : Name of driver to use for tests, "chromium" or "firefox"
-      logs                   : print container's logs if an error occurs.
-      logs_file              : Location of the log file for saving logs generated for tests.
-      headless               : Run selenium chrome driver in headless mode
-      load_init_data         : Flag for running tests/data.py, only needs to be done once after database creation
-      app_url                : URL to reach the admin dashboard
-      username               : username for logging in admin dashboard
-      password               : password for logging in admin dashboard
-      services_max_retries   : Maximum number of retries to check if services are running
-      services_delay_retries : Delay time (in seconds) to each retries for checking if services are running
+   driver: Name of driver to use for tests, "chromium" or "firefox"
+   logs: print container's logs if an error occurs.
+   logs_file: Location of the log file for saving logs generated for tests.
+   headless: Run selenium chrome driver in headless mode
+   load_init_data: Flag for running tests/data.py, only needs to be done once after database creation
+   app_url: URL to reach the admin dashboard
+   username: username for logging in admin dashboard
+   password: password for logging in admin dashboard
+   services_max_retries: Maximum number of retries to check if services are running
+   services_delay_retries: Delay time (in seconds) to each retries for checking if services are running
    ```
 
 4. Run tests: `make runtests`
 
+**Note:** To run a single test use the following command
+
+```bash
+python3 tests/runtests.py <TestSuite>.<TestCase>
+# python3 tests/runtests.py TestServices.test_celery
+```
+
 ### Makefile Options
 
 Most commonly used:
+
 - `start`<USER=docker-username> <TAG=image-tag>: Start OpenWISP containers on your server.
 - `pull`<USER=docker-username> <TAG=image-tag>: Pull Images from registry.
 - `stop`: Stop make containers on your server.
@@ -195,6 +202,7 @@ Most commonly used:
 - `clean`: Aggressively purge all the containers, images, volumes & networks related to `docker-openwisp`.
 
 Other options:
+
 - `publish` <USER=docker-username> <TAG=image-tag>: Build, test and publish images.
 - `python-build`: Generate a random django secret and set it in the `.env` file.
 - `nfs-build`: Build openwisp-nfs server image.

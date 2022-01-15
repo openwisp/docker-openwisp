@@ -1,5 +1,4 @@
 ---
-
 name: Automation Tests
 
 on:
@@ -23,8 +22,8 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
 
-    - name: Install Linting Requirements
-      run:  sudo pip install openwisp_utils[qa]
+    - name: Install Testing Requirements
+      run: sudo pip install -r requirements-test.txt
 
     - name: Lint
       run: openwisp-qa-check --skip-checkmigrations
@@ -36,7 +35,6 @@ jobs:
         wget https://chromedriver.storage.googleapis.com/97.0.4692.20/chromedriver_linux64.zip
         sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
-        sudo pip install selenium
         echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" | sudo tee -a /etc/hosts
 
     - name: Build & Publish
