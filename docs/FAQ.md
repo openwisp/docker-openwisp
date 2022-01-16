@@ -7,16 +7,16 @@
 
 Answer: The setup requires following ports and destinations to be unblocked, if you are using a firewall or any external control to block traffic, please whitelist:
 
-|   | UserId | Protocol |   DstPort  | Destination            | Process                           |
-|:-:|--------|:--------:|:----------:|------------------------|-----------------------------------|
-| 1 | 0      |  tcp,udp |   443,53   | gitlab.com             | /usr/bin/dockerd                  |
-| 2 | 0      |  tcp,udp |   443,53   | registry.gitlab.com    | /usr/bin/dockerd                  |
-| 3 | 0      |  tcp,udp |   443,53   | storage.googleapis.com | /usr/bin/dockerd                  |
-| 4 | 0      |    udp   |     53     | registry.gitlab.com    | /usr/bin/docker                   |
-| 5 | 0      |  tcp,udp |   443,53   | github.com             | /usr/lib/git-core/git-remote-http |
-| 6 | 0      |    tcp   |   443,80   | 172.18.0.0/16          | /usr/bin/docker-proxy             |
-| 7 | 0      |    udp   | 1812, 1813 | 172.18.0.0/16          | /usr/bin/docker-proxy             |
-| 8 | 0      |    tcp   |     25     | 172.18.0.0/16          | /usr/bin/docker-proxy             |
+|     | UserId | Protocol |  DstPort   | Destination            | Process                           |
+| :-: | ------ | :------: | :--------: | ---------------------- | --------------------------------- |
+|  1  | 0      | tcp,udp  |   443,53   | gitlab.com             | /usr/bin/dockerd                  |
+|  2  | 0      | tcp,udp  |   443,53   | registry.gitlab.com    | /usr/bin/dockerd                  |
+|  3  | 0      | tcp,udp  |   443,53   | storage.googleapis.com | /usr/bin/dockerd                  |
+|  4  | 0      |   udp    |     53     | registry.gitlab.com    | /usr/bin/docker                   |
+|  5  | 0      | tcp,udp  |   443,53   | github.com             | /usr/lib/git-core/git-remote-http |
+|  6  | 0      |   tcp    |   443,80   | 172.18.0.0/16          | /usr/bin/docker-proxy             |
+|  7  | 0      |   udp    | 1812, 1813 | 172.18.0.0/16          | /usr/bin/docker-proxy             |
+|  8  | 0      |   tcp    |     25     | 172.18.0.0/16          | /usr/bin/docker-proxy             |
 
 2. Makefile failed without any information, what's wrong?
 

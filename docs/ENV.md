@@ -8,7 +8,7 @@
 The OpenWISP docker images are created with customization in mind. You can simply change the environment variables to change the containers and trailer them to your needs.
 
 - `docker-compose`: You can simply change the values in `.env` file.
-- `kubernetes`: You need to create `ConfigMap` to change the environment variables. An example is present in `deployment-examples/kubernetes/` directory.
+- `kubernetes`: You need to create `ConfigMap` to change the environment variables. An example is present in `deploy/examples/kubernetes/` directory.
 
 Following are the options that can be changed. The list is divided in following sections:
 
@@ -102,7 +102,7 @@ Additionally, you can search for the following:
 ### `DJANGO_ALLOWED_HOSTS`
 
 - **Explaination:** Used validate a request's HTTP Host header. The default value `*` means all domains. It can be `.mydomain.com`. For security allow only trusted domains, when left blank, it defaults to your dashboard's root domain.
-- **Valid Values:** List(Valid domain) | List(IP adress) | * | --BLANK--
+- **Valid Values:** List(Valid domain) | List(IP adress) | \* | --BLANK--
 - **Default:** <your-dashboard-domains>
 - **Example:** .openwisp.org,.example.org,www.example.com
 
@@ -142,6 +142,7 @@ Additionally, you can search for the following:
 ## Additional
 
 ### `TZ`
+
 - **Explaination:** Sets the timezone for the OpenWISP containers.
 - **Valid Values:** Find list of timezone database [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 - **Default:** UTC
@@ -278,114 +279,131 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Default:** http://localhost
 - **Example:** https://www.openwisp.org,openwisp.example.org
 
-
 ### `DJANGO_LANGUAGE_CODE`
 
-- **Explaination:**  Language for your OpenWISP application.
+- **Explaination:** Language for your OpenWISP application.
 - **Valid Values:** List of available options can be found [here](https://github.com/django/django/blob/fcbc502af93f0ee75522c45ae6ec2925da9f2145/django/conf/global_settings.py#L51-L145)
-- **Default:**  en-gb
+- **Default:** en-gb
 
 ### `DJANGO_SENTRY_DSN`
 
-- **Explaination:**  Sentry DSN. [See here](https://sentry.io/for/django/).
+- **Explaination:** Sentry DSN. [See here](https://sentry.io/for/django/).
 - **Valid Values:** Your DSN value provided by sentry.
 - **Example:** https://example@sentry.io/example
-- **Default:**  --BLANK--
+- **Default:** --BLANK--
 
 ### `DJANGO_LEAFET_CENTER_X_AXIS`
-- **Explaination:**  x-axis co-ordinate of the leaflet default center property. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
+
+- **Explaination:** x-axis co-ordinate of the leaflet default center property. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
 - **Valid Values:** FLOAT
 - **Example:** 26.357896
-- **Default:**  0
+- **Default:** 0
 
 ### `DJANGO_LEAFET_CENTER_Y_AXIS`
-- **Explaination:**  y-axis co-ordinate of the leaflet default center property. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
+
+- **Explaination:** y-axis co-ordinate of the leaflet default center property. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
 - **Valid Values:** FLOAT
 - **Example:** 127.783809
-- **Default:**  0
+- **Default:** 0
 
 ### `DJANGO_LEAFET_ZOOM`
-- **Explaination:**  Default zoom for leaflet. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
+
+- **Explaination:** Default zoom for leaflet. [See here](https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration).
 - **Valid Values:** INT (1-16)
-- **Default:**  1
+- **Default:** 1
 
 ### `DJANGO_WEBSOCKET_HOST`
-- **Explaination:**  Host on which daphne should listen for websocket connections.
+
+- **Explaination:** Host on which daphne should listen for websocket connections.
 - **Valid Values:** Domain | IP Address
-- **Default:**  0.0.0.0
+- **Default:** 0.0.0.0
 
 ## Email
 
 ### `EMAIL_BACKEND`
+
 - **Explaination:** Email will be sent using this backend.
 - **Valid Values:** [See list](https://docs.djangoproject.com/en/2.2/topics/email/#obtaining-an-instance-of-an-email-backend)
 - **Default:** django.core.mail.backends.smtp.EmailBackend
 
 ### `EMAIL_HOST_PORT`
+
 - **Explaination:** Port to use for the SMTP server defined in `EMAIL_HOST`.
 - **Valid Values:** INTEGER
 - **Default:** 25
 
 ### `EMAIL_HOST_USER`
+
 - **Explaination:** Username to use for the SMTP server defined in EMAIL_HOST. If empty, Django won’t attempt authentication.
 - **Valid Values:** STRING
 - **Default:** --BLANK--
 - **Example:** example@example.com
 
 ### `EMAIL_HOST_PASSWORD`
+
 - **Explaination:** Username to use for the SMTP server defined in EMAIL_HOST. If empty, Django won’t attempt authentication.
 - **Valid Values:** STRING
 - **Default:** --BLANK--
 
 ### `EMAIL_HOST_TLS`
+
 - **Explaination:** Whether to use a TLS (secure) connection when talking to the SMTP server. This is used for explicit TLS connections, generally on port 587.
 - **Valid Values:** True | False
 - **Default:** False
 
 ### `POSTFIX_ALLOWED_SENDER_DOMAINS`
+
 - **Explaination:** Due to in-built spam protection in Postfix you will need to specify sender domains.
 - **Valid Values:** Domain
 - **Default:** example.org
 
 ### `POSTFIX_MYHOSTNAME`
+
 - **Explaination:** You may configure a specific hostname that the SMTP server will use to identify itself.
 - **Valid Values:** STRING
 - **Default:** example.org
 
 ### `POSTFIX_DESTINATION`
+
 - **Explaination:** Destinations of the postfix service.
 - **Valid Values:** Domain
 - **Default:** $myhostname
 
 ### `POSTFIX_MESSAGE_SIZE_LIMIT`
+
 - **Explaination:** By default, this limit is set to 0 (zero), which means unlimited. Why would you want to set this? Well, this is especially useful in relation with RELAYHOST setting.
 - **Valid Values:**
 - **Default:** 0
 - **Example:** 26214400
 
 ### `POSTFIX_MYNETWORKS`
+
 - **Explaination:** Postfix is exposed only in mynetworks to prevent any issues with this postfix being inadvertently exposed on the internet.
 - **Valid Values:** IP Addresses
 - **Default:** 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 
 ### `POSTFIX_RELAYHOST_TLS_LEVEL`
+
 - **Explaination:** Define relay host TLS connection level.
 - **Valid Values:** [See list](http://www.postfix.org/postconf.5.html#smtp_tls_security_level).
 - **Default:** may
 
 ### `POSTFIX_RELAYHOST`
+
 - **Explaination:** Host that relays your mails.
 - **Valid Values:** IP address | Domain
 - **Default:** null
 - **Example:** [smtp.gmail.com]:587
 
 ### `POSTFIX_RELAYHOST_USERNAME`
+
 - **Explaination:** Username for the relay server.
 - **Valid Values:** STRING
 - **Default:** null
 - **Example:** example@example.com
 
 ### `POSTFIX_RELAYHOST_PASSWORD`
+
 - **Explaination:** Login password for the relay server.
 - **Valid Values:** STRING
 - **Default:** null
@@ -421,7 +439,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 ### `NGINX_HTTP2`
 
-- **Explaination:** Options:  or http2. Used by nginx to enable http2. [See here](https://www.nginx.com/blog/http2-module-nginx/#overview)
+- **Explaination:** Options: or http2. Used by nginx to enable http2. [See here](https://www.nginx.com/blog/http2-module-nginx/#overview)
 - **Valid Values:** --BLANK-- | http2
 - **Default:** http2
 
@@ -449,7 +467,6 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** all | IP address
 - **Example:** `12.213.43.54/16`
 - **Default:** all
-
 
 ### `NGINX_SERVER_NAME_HASH_BUCKET`
 
@@ -495,10 +512,10 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 ### `NGINX_GZIP_TYPES`
 
-- **Explaination:** Enables gzipping of responses for the specified MIME types in addition to “text/html”. The special value “*” matches any MIME type. Responses with the “text/html” type are always compressed.
+- **Explaination:** Enables gzipping of responses for the specified MIME types in addition to “text/html”. The special value “\*” matches any MIME type. Responses with the “text/html” type are always compressed.
 - **Valid Values:** MIME type
 - **Example:** `text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype`
-- **Default:** *
+- **Default:** \*
 
 ### `NGINX_HTTPS_ALLOWED_IPS`
 
@@ -638,19 +655,19 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 ### `DASHBOARD_APP_PORT`
 
-- **Explaination:** Change the port on which nginx tries to get the OpenWISP  dashboard container. DON'T Change unless you know what you are doing.
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP dashboard container. DON'T Change unless you know what you are doing.
 - **Valid Values:** INTEGER
 - **Default:** 8000
 
 ### `API_APP_PORT`
 
-- **Explaination:** Change the port on which nginx tries to get the OpenWISP  api container. DON'T Change unless you know what you are doing.
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP api container. DON'T Change unless you know what you are doing.
 - **Valid Values:** INTEGER
 - **Default:** 8001
 
 ### `RADIUS_APP_PORT`
 
-- **Explaination:** Change the port on which nginx tries to get the OpenWISP  radius container. DON'T Change unless you know what you are doing.
+- **Explaination:** Change the port on which nginx tries to get the OpenWISP radius container. DON'T Change unless you know what you are doing.
 - **Valid Values:** INTEGER
 - **Default:** 8002
 
@@ -673,6 +690,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Default:** radius.internal
 
 ### `POSTFIX_DEBUG_MYNETWORKS`
+
 - **Explaination:** Set debug_peer_list for given list of networks.
 - **Valid Values:** STRING
 - **Default:** null
@@ -687,6 +705,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Default:** /exports
 
 ### `EXPORT_OPTS`
+
 - **Explaination:** NFS export options for the directory in `EXPORT_DIR` variable.
 - **Valid Values:** STRING
 - **Default:** 10.0.0.0/8(rw,fsid=0,insecure,no_root_squash,no_subtree_check,sync)

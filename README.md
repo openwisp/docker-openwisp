@@ -9,7 +9,7 @@
 This repository contains official docker images of OpenWISP. Designed with horizontal scaling, easily replicable deployments and user customization in mind.
 
 ![kubernetes](https://i.ibb.co/rGpLq4y/ss1.png)
-The sample files for deployment on kubernetes are available in the `deployment-examples/kubernetes/` directory.
+The sample files for deployment on kubernetes are available in the `deploy/examples/kubernetes/` directory.
 
 ## Available Images
 

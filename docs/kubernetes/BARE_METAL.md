@@ -3,7 +3,7 @@
 [![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/dockerize-openwisp)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
 
-The following are steps of a sample deployment on a kubernetes cluster. All the files are present in `deployment-examples/kubernetes/` directory of this repository.
+The following are steps of a sample deployment on a kubernetes cluster. All the files are present in `deploy/examples/kubernetes/` directory of this repository.
 The following assumes the reader knows basics of kubernetes & docker.
 The steps where performed on master version-1.14.
 
