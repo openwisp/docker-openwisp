@@ -1,8 +1,12 @@
 import os
 from django.urls import include, path
+from openwisp_users.api.urls import get_api_urls
 from openwisp.utils import env_bool, openwisp_controller_urls
 
-urlpatterns = openwisp_controller_urls()
+urlpatterns = openwisp_controller_urls() + [
+    path('api/v1/', include((get_api_urls(), 'users'), namespace='users')),
+    path('api/v1/', include('openwisp_utils.api.urls')),
+]
 
 if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
     from openwisp_network_topology.api import views
