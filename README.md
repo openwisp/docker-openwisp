@@ -63,7 +63,7 @@ If you have created a [`.env` file](docs/ENV.md) to configure your instance, the
 To get started, run the following command:
 
 ```bash
-   curl -L https://tiny.cc/autoinstall-ow-docker -o setup.sh
+   curl -L https://bit.do/auto-install -o setup.sh
    sudo bash setup.sh
 ```
 
