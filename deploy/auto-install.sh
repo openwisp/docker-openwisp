@@ -13,7 +13,7 @@ export NON='\033[0m'
 start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>> $LOG_FILE; }
 report_ok() { echo -e ${GRN}" done"${NON}; }
 report_error() { echo -e ${RED}" error"${NON}; }
-get_env() { grep "$1" $INSTALL_PATH/.env | cut -d'=' -f 2-50; }
+get_env() { grep "^$1" $INSTALL_PATH/.env | cut -d'=' -f 2-50; }
 set_env() {
     grep -q "^$1=" $INSTALL_PATH/.env &&
     sed --in-place "s/$1=.*/$1=$2/g" $INSTALL_PATH/.env ||
@@ -47,9 +47,8 @@ error_msg_with_continue() {
 apt_dependenices_setup() {
     start_step "Setting up dependencies...";
     apt --yes install python3 python3-pip git python3-dev libffi-dev libssl-dev gcc make &>> $LOG_FILE
-    check_status $? "Python dependencies installation failed."
     pip3 install --upgrade pip &>> $LOG_FILE
-    check_status $? "pip upgrade failed."
+    check_status $? "Python dependencies installation failed."
 }
 
 setup_docker() {
@@ -118,8 +117,8 @@ setup_docker_openwisp() {
     fi
 
     cd $INSTALL_PATH &>> $LOG_FILE;
-    echo $openwisp_version > $INSTALL_PATH/VERSION
     check_status $? "docker-openwisp download failed.";
+    echo $openwisp_version > $INSTALL_PATH/VERSION
 
     if [[ ! -f "$env_path" ]]; then
         # Dashboard Domain
@@ -180,29 +179,27 @@ give_information_to_user() {
     dashboard_domain=$(get_env "DASHBOARD_DOMAIN");
     db_user=$(get_env "DB_USER");
     db_pass=$(get_env "DB_PASS");
+
     echo -e ${GRN}"
 Your setup is ready, your dashboard should be avaiable on https://$dashboard_domain in 2 minutes.
 You can login on the dashboard with
     username: admin
     password: admin
 Please remember to change these credentials.
+
 Random database user and password generate by the script:
-   username: $db_user
-   password: $db_pass
+    username: ${db_user}
+    password: ${db_pass}
 Please note them, might be helpful for accessing postgresql data in future.
 "${NON}
 }
 
-prep_debian() {
+install_debian() {
     apt_dependenices_setup
     setup_docker
     setup_docker_compose
     setup_docker_openwisp
     give_information_to_user
-}
-
-prep_debian_10() {
-    prep_debian
 }
 
 init_setup() {
@@ -211,43 +208,39 @@ Welcome to OpenWISP auto-installation script.
 Please ensure following requirements:
 - Fresh instance
 - 2GB RAM (Min)
-- Debian 10 / Ubuntu 18.04
+- Debian 10 and 11 are supported
+- Ubuntu 18.04 and 20.04 are supported
 - Root privileges\n"${NON}
+
 
     if [ "$EUID" -ne 0 ]; then
         echo -e ${RED}"Please run with root privileges."${NON};
         exit 1;
     fi
 
+
     mkdir -p /opt/openwisp;
     echo "" > $LOG_FILE;
 
     start_step "Checking your system capabilities...";
-    apt --yes update &>> $LOG_FILE
+    apt update &>> $LOG_FILE
     apt -qq --yes install lsb-release &>> $LOG_FILE
     system_id=$(lsb_release --id --short)
     system_release=$(lsb_release --release --short)
     incompatible_message="$system_id $system_release is not support. Installation might fail, continue anyway? (Y/n): "
 
-    if [ "$system_id" == "Debian" ]; then
+    if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
         case "$system_release" in
-            10) report_ok && prep_debian_10;;
+            10|11) report_ok && install_debian;;
+            18.04|20.04) report_ok && install_debian;;
             *)
                 error_msg_with_continue "$incompatible_message"
-                prep_debian
-                ;;
-        esac
-    elif [ "$system_id" == "Ubuntu" ]; then
-        case "$system_release" in
-            18.04) report_ok && prep_debian;;
-            *)
-                error_msg_with_continue "$incompatible_message"
-                prep_debian
+                install_debian
                 ;;
         esac
     else
         error_msg_with_continue "$incompatible_message"
-        prep_debian
+        install_debian
     fi
 }
 
