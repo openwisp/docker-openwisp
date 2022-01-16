@@ -57,7 +57,7 @@ For some of the images, if you want additional customization options, you can mo
 
 ## Freeradius
 
-Note: `/etc/raddb/clients.conf`, `/etc/raddb/radiusd.conf`, `/etc/raddb/sites-enabled/default`, `/etc/raddb/mods-enabled/`, `/etc/raddb/mods-available/` are the default files you may want to overwrite and you can find all of default files in `build/openwisp_freeradius/raddb`. The following are examples for including custom `radiusd.conf` and  `sites-enabled/default` files.
+Note: `/etc/raddb/clients.conf`, `/etc/raddb/radiusd.conf`, `/etc/raddb/sites-enabled/default`, `/etc/raddb/mods-enabled/`, `/etc/raddb/mods-available/` are the default files you may want to overwrite and you can find all of default files in `build/openwisp_freeradius/raddb`. The following are examples for including custom `radiusd.conf` and `sites-enabled/default` files.
 
 ### Docker
 

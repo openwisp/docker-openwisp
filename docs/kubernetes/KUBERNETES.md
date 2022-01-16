@@ -15,7 +15,7 @@
 
 3. Customization:
 
-    - In `ConfigMap.yml`: You need to change the values according to your cluster. You can set any of the variables from the [list here](docs/ENV.md) to trailor setup to your requirements.
+   - In `ConfigMap.yml`: You need to change the values according to your cluster. You can set any of the variables from the [list here](docs/ENV.md) to trailor setup to your requirements.
 
 4. Apply to Kubernetes Cluster:
 
