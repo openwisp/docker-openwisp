@@ -3,6 +3,10 @@
 export DEBIAN_FRONTEND=noninteractive
 export INSTALL_PATH=/opt/openwisp/docker-openwisp
 export LOG_FILE=/opt/openwisp/autoinstall.log
+export GIT_PATH=https://github.com/openwisp/docker-openwisp.git
+export ENV_USER=/opt/openwisp/config.env
+export ENV_BACKUP=/opt/openwisp/backup.env
+
 # Terminal colors
 export RED='\033[1;31m'
 export GRN='\033[1;32m'
@@ -13,11 +17,16 @@ export NON='\033[0m'
 start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>> $LOG_FILE; }
 report_ok() { echo -e ${GRN}" done"${NON}; }
 report_error() { echo -e ${RED}" error"${NON}; }
-get_env() { grep "^$1" $INSTALL_PATH/.env | cut -d'=' -f 2-50; }
+get_env() { grep "^$1" "$2" | cut -d'=' -f 2-50; }
 set_env() {
-    grep -q "^$1=" $INSTALL_PATH/.env &&
-    sed --in-place "s/$1=.*/$1=$2/g" $INSTALL_PATH/.env ||
-    echo "$1=$2" >> $INSTALL_PATH/.env
+    line=$(grep -n "^$1=" $INSTALL_PATH/.env)
+    if [ -z "$line" ]
+    then
+        echo "$1=$2" >> $INSTALL_PATH/.env
+    else
+        line_number=$(echo $line | cut -f1 -d:)
+        eval $(echo "awk -i inplace 'NR=="${line_number}" {\$0=\"${1}=${2}\"}1' $INSTALL_PATH/.env")
+    fi
 }
 
 check_status() {
@@ -72,8 +81,6 @@ setup_docker_compose() {
 }
 
 setup_docker_openwisp() {
-    git_path="https://github.com/openwisp/docker-openwisp.git";
-    env_user="/opt/openwisp/config.env";
     echo -e ${GRN}"\nOpenWISP Configuration:"${NON};
     echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}; read openwisp_version;
     if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
@@ -96,24 +103,24 @@ setup_docker_openwisp() {
         # Site manager email
         echo -ne ${GRN}"(5/6) Site manager email: "${NON};
         read django_default_email;
-        # VPN domain
+        # SSL Configuration
         echo -ne ${GRN}"(6/6) Enter letsencrypt email (leave blank for self-signed certificate): "${NON};
         read letsencrypt_email;
     else
-        cp $env_path $env_user &>> $LOG_FILE;
+        cp $env_path $ENV_USER &>> $LOG_FILE;
     fi
     echo "";
 
     start_step "Downloading docker-openwisp...";
     if [[ -f $INSTALL_PATH/.env ]]; then
-        mv $INSTALL_PATH/.env /opt/openwisp/docker.env &>> $LOG_FILE;
+        mv $INSTALL_PATH/.env $ENV_BACKUP &>> $LOG_FILE;
         rm -rf $INSTALL_PATH &>> $LOG_FILE;
     fi
 
     if [[ $openwisp_version -ne "edge" ]]; then
-        git clone $git_path $INSTALL_PATH --depth 1 --branch $openwisp_version &>> $LOG_FILE;
+        git clone $GIT_PATH $INSTALL_PATH --depth 1 --branch $openwisp_version &>> $LOG_FILE;
     else
-        git clone $git_path $INSTALL_PATH --depth 1 &>> $LOG_FILE;
+        git clone $GIT_PATH $INSTALL_PATH --depth 1 &>> $LOG_FILE;
     fi
 
     cd $INSTALL_PATH &>> $LOG_FILE;
@@ -151,7 +158,7 @@ setup_docker_openwisp() {
         # Set random secret values
         python3 $INSTALL_PATH/build.py change-secret-key > /dev/null
         python3 $INSTALL_PATH/build.py change-database-credentials > /dev/null
-        # VPN domain
+        # SSL Configuration
         set_env "CERT_ADMIN_EMAIL" "$letsencrypt_email";
         if [[ -z "$letsencrypt_email" ]]; then
             set_env "SSL_CERT_MODE" "SelfSigned";
@@ -162,10 +169,9 @@ setup_docker_openwisp() {
         hostname=$(echo "$django_default_email" | cut -d @ -f 2)
         set_env "POSTFIX_ALLOWED_SENDER_DOMAINS" "$hostname"
         set_env "POSTFIX_MYHOSTNAME" "$hostname"
-        set_env "POSTFIX_MYHOSTNAME" "$hostname"
     else
-        mv $env_user $INSTALL_PATH/.env &>> $LOG_FILE;
-        rm -rf $env_user &>> $LOG_FILE;
+        mv $ENV_USER $INSTALL_PATH/.env &>> $LOG_FILE;
+        rm -rf $ENV_USER &>> $LOG_FILE;
     fi
 
     start_step "Configuring docker-openwisp...";
@@ -175,23 +181,62 @@ setup_docker_openwisp() {
     check_status $? "Starting openwisp failed.";
 }
 
+upgrade_docker_openwisp() {
+    echo -e ${GRN}"\nOpenWISP Configuration:"${NON};
+    echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}; read openwisp_version;
+    if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
+    echo "";
+
+    start_step "Downloading docker-openwisp...";
+    cp $INSTALL_PATH/.env $ENV_BACKUP &>> $LOG_FILE;
+    rm -rf $INSTALL_PATH &>> $LOG_FILE;
+
+    if [[ $openwisp_version -ne "edge" ]]; then
+        git clone $GIT_PATH $INSTALL_PATH --depth 1 --branch $openwisp_version &>> $LOG_FILE;
+    else
+        git clone $GIT_PATH $INSTALL_PATH --depth 1 &>> $LOG_FILE;
+    fi
+
+    cd $INSTALL_PATH &>> $LOG_FILE;
+    check_status $? "docker-openwisp download failed.";
+    echo $openwisp_version > $INSTALL_PATH/VERSION
+
+    start_step "Configuring docker-openwisp...";
+    for config in $(grep '=' $ENV_BACKUP | cut -f1 -d'=')
+    do
+        value=$(get_env "$config" "$ENV_BACKUP");
+        set_env "$config" "$value";
+    done
+    report_ok
+
+    start_step "Starting images docker-openwisp (this will take a while)...";
+    make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>> $LOG_FILE
+    check_status $? "Starting openwisp failed.";
+}
+
+
 give_information_to_user() {
-    dashboard_domain=$(get_env "DASHBOARD_DOMAIN");
-    db_user=$(get_env "DB_USER");
-    db_pass=$(get_env "DB_PASS");
+    dashboard_domain=$(get_env "DASHBOARD_DOMAIN" "$INSTALL_PATH/.env")
+    db_user=$(get_env "DB_USER" "$INSTALL_PATH/.env")
+    db_pass=$(get_env "DB_PASS" "$INSTALL_PATH/.env")
 
-    echo -e ${GRN}"
-Your setup is ready, your dashboard should be avaiable on https://$dashboard_domain in 2 minutes.
-You can login on the dashboard with
-    username: admin
-    password: admin
-Please remember to change these credentials.
+    echo -e ${GRN}"\nYour setup is ready, your dashboard should be available on https://${dashboard_domain} in 2 minutes.\n"
+    echo -e       "You can login on the dashboard with"
+    echo -e       "    username: admin"
+    echo -e       "    password: admin"
+    echo -e       "Please remember to change these credentials.\n"
+    echo -e       "Random database user and password generate by the script:"
+    echo -e       "    username: ${db_user}"
+    echo -e       "    password: ${db_pass}"
+    echo -e       "Please note them, might be helpful for accessing postgresql data in future.\n"${NON}
+}
 
-Random database user and password generate by the script:
-    username: ${db_user}
-    password: ${db_pass}
-Please note them, might be helpful for accessing postgresql data in future.
-"${NON}
+upgrade_debian() {
+    apt_dependenices_setup
+    upgrade_docker_openwisp
+    dashboard_domain=$(get_env "DASHBOARD_DOMAIN" "$INSTALL_PATH/.env")
+    echo -e ${GRN}"\nYour upgrade was successfully done."
+    echo -e       "Your dashboard should be available on https://${dashboard_domain} in 2 minutes.\n"${NON}
 }
 
 install_debian() {
@@ -203,21 +248,26 @@ install_debian() {
 }
 
 init_setup() {
-    echo -e ${GRN}"
-Welcome to OpenWISP auto-installation script.
-Please ensure following requirements:
-- Fresh instance
-- 2GB RAM (Min)
-- Debian 10 and 11 are supported
-- Ubuntu 18.04 and 20.04 are supported
-- Root privileges\n"${NON}
-
+    if [[ "$1" == "upgrade" ]]; then
+        echo -e ${GRN}"Welcome to OpenWISP auto-upgradation script."
+        echo -e       "You are running the upgrade option to change version of"
+        echo -e       "OpenWISP already setup with this script.\n"${NON}
+    else
+        echo -e ${GRN}"Welcome to OpenWISP auto-installation script."
+        echo -e       "Please ensure following requirements:"
+        echo -e       "  - Fresh instance"
+        echo -e       "  - 2GB RAM (Minimum)"
+        echo -e       "  - Root privileges"
+        echo -e       "  - Supported systems"
+        echo -e       "    - Debian: 10 & 11"
+        echo -e       "    - Ubuntu 18.04, 18.10 & 20.04"
+        echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
+    fi
 
     if [ "$EUID" -ne 0 ]; then
         echo -e ${RED}"Please run with root privileges."${NON};
         exit 1;
     fi
-
 
     mkdir -p /opt/openwisp;
     echo "" > $LOG_FILE;
@@ -231,8 +281,13 @@ Please ensure following requirements:
 
     if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
         case "$system_release" in
-            10|11) report_ok && install_debian;;
-            18.04|20.04) report_ok && install_debian;;
+            18.04|20.04|10|11)
+                if [[ "$1" == "upgrade" ]]; then
+                    report_ok && upgrade_debian
+                else
+                    report_ok && install_debian
+                fi
+                ;;
             *)
                 error_msg_with_continue "$incompatible_message"
                 install_debian
@@ -244,4 +299,39 @@ Please ensure following requirements:
     fi
 }
 
-init_setup
+init_help() {
+    echo -e ${GRN}"Welcome to OpenWISP auto-installation script.\n"
+
+    echo -e       "Please ensure following requirements:"
+    echo -e       "  - Fresh instance"
+    echo -e       "  - 2GB RAM (Minimum)"
+    echo -e       "  - Root privileges"
+    echo -e       "  - Supported systems"
+    echo -e       "    - Debian: 10 & 11"
+    echo -e       "    - Ubuntu 18.04, 18.10 & 20.04\n"
+    echo -e       "  -i\--install : (default) Install OpenWISP"
+    echo -e       "  -u\--upgrade : Change OpenWISP version already setup with this script"
+    echo -e       "  -h\--help    : See this help message"
+    echo -e       ${NON}
+}
+
+## Parse command line arguements
+while test $# != 0
+do
+    case "$1" in
+    -i|--install) action='install';;
+    -u|--upgrade) action='upgrade';;
+    -h|--help) action='help';;
+    *) action='help';;
+    esac
+    shift
+done
+
+## Init script
+if [[ "$action" == "help" ]]; then
+    init_help
+elif [[ "$action" == "upgrade" ]]; then
+    init_setup upgrade
+else
+    init_setup
+fi

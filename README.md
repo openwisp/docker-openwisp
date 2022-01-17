@@ -65,6 +65,10 @@ To get started, run the following command:
 ```bash
    curl -L https://bit.do/auto-install -o setup.sh
    sudo bash setup.sh
+   # If you are upgrading from an older version setup by this script use
+   # sudo bash setup.sh --upgrade
+   # For more information
+   # sudo bash setup.sh --help
 ```
 
 **Note:** Facing errors while installation? Please [read the FAQ](docs/FAQ.md).
