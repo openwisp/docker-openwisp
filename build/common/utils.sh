@@ -85,7 +85,8 @@ function nginx_prod {
     create_prod_certs
     ssl_http_behaviour
     envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https DOMAIN
-    echo "0 3 * * 7 certbot renew &>> /etc/nginx/log/crontab.log" | crontab -
+    CMD="certbot --nginx renew && nginx -s reload"
+    echo "0 3 * * 7 ${CMD} &>> /etc/nginx/log/crontab.log" | crontab -
 }
 
 function wait_nginx_services {

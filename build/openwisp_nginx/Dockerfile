@@ -1,6 +1,6 @@
 FROM nginx:alpine
 
-RUN apk add --update --no-cache certbot openssl && \
+RUN apk add --update --no-cache certbot openssl certbot-nginx && \
     rm -rf /var/cache/apk/* /tmp/*
 
 WORKDIR /etc/nginx/
