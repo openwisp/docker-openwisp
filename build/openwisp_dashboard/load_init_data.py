@@ -68,8 +68,8 @@ def create_default_cert(defaultCa, x509NameCert):
         defaultCert.email = os.environ['X509_EMAIL']
         defaultCert.common_name = os.environ['X509_COMMON_NAME']
         defaultCert.notes = (
-            'This certificate was created during the setup.'
-            'It is used for the default management VPN.'
+            'This certificate was created during the setup. '
+            'It is used for the default management VPN. '
             'Please do not rename it.'
         )
         defaultCert.full_clean()

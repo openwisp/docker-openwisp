@@ -11,31 +11,31 @@ jobs:
     name: CD Build
     runs-on: ubuntu-20.04
     steps:
-    - name: Git Checkout
-      uses: actions/checkout@v2
+      - name: Git Checkout
+        uses: actions/checkout@v2
 
-    # echo "$DOCKER_TOKEN" | docker login registry.gitlab.com --username "$DOCKER_USER" --password-stdin
-    - name: Login to GitLab
-      uses: docker/login-action@v1
-      with:
-        registry: registry.gitlab.com
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_TOKEN }}
+      # echo "$DOCKER_TOKEN" | docker login registry.gitlab.com --username "$DOCKER_USER" --password-stdin
+      - name: Login to GitLab
+        uses: docker/login-action@v1
+        with:
+          registry: registry.gitlab.com
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
-    - name: Install Testing Requirements
-      run: sudo pip install -r requirements-test.txt
+      - name: Install Testing Requirements
+        run: sudo pip install -r requirements-test.txt
 
-    - name: Lint
-      run: openwisp-qa-check --skip-checkmigrations
+      - name: Lint
+        run: openwisp-qa-check --skip-checkmigrations
 
-    - name: Setup for Testing Images
-      run: |
-        sudo apt update
-        sudo apt install --yes google-chrome-stable
-        wget https://chromedriver.storage.googleapis.com/97.0.4692.20/chromedriver_linux64.zip
-        sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
-        echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" | sudo tee -a /etc/hosts
+      - name: Setup for Testing Images
+        run: |
+          sudo apt update
+          sudo apt install --yes google-chrome-stable
+          wget https://chromedriver.storage.googleapis.com/97.0.4692.20/chromedriver_linux64.zip
+          sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+          echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" | sudo tee -a /etc/hosts
 
-    - name: Build & Publish
-      run: make publish TAG=edge || (docker-compose logs && exit 1)
+      - name: Build & Publish
+        run: make publish TAG=edge || (docker-compose logs && exit 1)

@@ -290,6 +290,10 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_controller.connection.tasks.auto_add_credentials_to_devices",
             "openwisp_controller.connection.tasks.launch_command",
             "openwisp_controller.connection.tasks.update_config",
+            "openwisp_controller.subnet_division.tasks.provision_extra_ips",
+            "openwisp_controller.subnet_division.tasks.provision_subnet_ip_for_existing_devices",  # noqa: E501
+            "openwisp_controller.subnet_division.tasks.update_subnet_division_index",
+            "openwisp_controller.subnet_division.tasks.update_subnet_name_description",
             "openwisp_firmware_upgrader.tasks.batch_upgrade_operation",
             "openwisp_firmware_upgrader.tasks.create_all_device_firmwares",
             "openwisp_firmware_upgrader.tasks.create_device_firmware",

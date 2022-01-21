@@ -17,8 +17,11 @@ INSTALLED_APPS = [
     'openwisp_controller.config',
     'openwisp_controller.geo',
     'openwisp_controller.connection',
+    'openwisp_controller.subnet_division',
     'flat_json_widget',
     'openwisp_notifications',
+    # openwisp-ipam
+    'openwisp_ipam',
     'openwisp_utils.admin_theme',
     # admin
     'django.contrib.admin',
