@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'openwisp_controller.config',
     'openwisp_controller.geo',
     'openwisp_controller.connection',
+    'openwisp_controller.subnet_division',
     # openwisp-monitoring
     'openwisp_monitoring.monitoring',
     'openwisp_monitoring.device',
@@ -26,6 +27,8 @@ INSTALLED_APPS = [
     'nested_admin',
     # openwisp-notification
     'openwisp_notifications',
+    # openwisp-ipam
+    'openwisp_ipam',
     # openwisp-network-topology
     'openwisp_network_topology',
     # openwisp-firmware-upgrader
