@@ -113,6 +113,7 @@ You can build with your own python package by creating a file named `.build.env`
 - `OPENWISP_RADIUS_SOURCE`
 - `OPENWISP_USERS_SOURCE`
 - `OPENWISP_UTILS_SOURCE`
+- `OPENWISP_IPAM_SOURCE`
 - `DJANGO_SOURCE`
 - `DJANGO_NETJSONCONFIG_SOURCE`
 - `DJANGO_X509_SOURCE`
