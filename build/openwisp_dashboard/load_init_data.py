@@ -11,12 +11,9 @@ import json
 import os
 
 import django
-from django.contrib.auth import get_user_model
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 django.setup()
-
-User = get_user_model()
 
 
 def create_admin():
@@ -121,8 +118,14 @@ def create_default_vpn_template(defaultVpnClient, defaultVpn):
 
 
 if __name__ == '__main__':
-    from openwisp_controller.config.models import Template, Vpn
-    from openwisp_controller.pki.models import Ca, Cert
+    from django.contrib.auth import get_user_model
+    from swapper import load_model
+
+    Ca = load_model('pki', 'Ca')
+    Cert = load_model('pki', 'Cert')
+    Template = load_model('config', 'Template')
+    Vpn = load_model('config', 'Vpn')
+    User = get_user_model()
 
     create_admin()
     # Steps for creating new vpn client template with all the
