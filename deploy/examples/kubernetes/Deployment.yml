@@ -12,24 +12,24 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-      - name: openwisp-dashboard
-        image: openwisp/openwisp-dashboard:latest
-        imagePullPolicy: Always
-        envFrom:
-          - configMapRef:
-              name: common-config
-        volumeMounts:
-          - name: openwisp-static-data
-            mountPath: /opt/openwisp/static
-          - name: openwisp-media-data
-            mountPath: /opt/openwisp/media
-        readinessProbe:
-          exec:
-            command:
-            - cat
-            - /opt/openwisp/uwsgi.pid
-          initialDelaySeconds: 60
-          periodSeconds: 30
+        - name: openwisp-dashboard
+          image: openwisp/openwisp-dashboard:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
+          volumeMounts:
+            - name: openwisp-static-data
+              mountPath: /opt/openwisp/static
+            - name: openwisp-media-data
+              mountPath: /opt/openwisp/media
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /opt/openwisp/uwsgi.pid
+            initialDelaySeconds: 60
+            periodSeconds: 30
       volumes:
         - name: openwisp-media-data
           persistentVolumeClaim:
@@ -51,19 +51,19 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-      - name: openwisp-api
-        image: openwisp/openwisp-api:latest
-        imagePullPolicy: Always
-        envFrom:
-          - configMapRef:
-              name: common-config
-        readinessProbe:
-          exec:
-            command:
-            - cat
-            - /opt/openwisp/uwsgi.pid
-          initialDelaySeconds: 60
-          periodSeconds: 30
+        - name: openwisp-api
+          image: openwisp/openwisp-api:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /opt/openwisp/uwsgi.pid
+            initialDelaySeconds: 60
+            periodSeconds: 30
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -78,19 +78,19 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-      - name: openwisp-radius
-        image: openwisp/openwisp-radius:latest
-        imagePullPolicy: Always
-        envFrom:
-          - configMapRef:
-              name: common-config
-        readinessProbe:
-          exec:
-            command:
-            - cat
-            - /opt/openwisp/uwsgi.pid
-          initialDelaySeconds: 60
-          periodSeconds: 30
+        - name: openwisp-radius
+          image: openwisp/openwisp-radius:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /opt/openwisp/uwsgi.pid
+            initialDelaySeconds: 60
+            periodSeconds: 30
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -125,32 +125,30 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-      - name: openwisp-nginx
-        image: openwisp/openwisp-nginx:latest
-        ports:
-          - containerPort: 443
-          - containerPort: 80
-        imagePullPolicy: Always
-        envFrom:
-          - configMapRef:
-              name: common-config
-        volumeMounts:
-          - name: openwisp-static-data
-            mountPath: /opt/openwisp/static
-            readOnly: true
-          - name: openwisp-media-data
-            mountPath: /opt/openwisp/media
-            readOnly: true
-          - name: openwisp-html-data
-            mountPath: /opt/openwisp/public_html
-        readinessProbe:
-          httpGet:
-            path: /status
-            port: 80
-          initialDelaySeconds: 15
-          periodSeconds: 5
-          failureThreshold: 2
-          successThreshold: 2
+        - name: openwisp-nginx
+          image: openwisp/openwisp-nginx:latest
+          ports:
+            - containerPort: 443
+            - containerPort: 80
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: common-config
+          volumeMounts:
+            - name: openwisp-static-data
+              mountPath: /opt/openwisp/public/static
+              readOnly: true
+            - name: openwisp-media-data
+              mountPath: /opt/openwisp/public/media
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 2
+            successThreshold: 2
       volumes:
         - name: openwisp-static-data
           persistentVolumeClaim:
@@ -158,9 +156,6 @@ spec:
         - name: openwisp-media-data
           persistentVolumeClaim:
             claimName: media-pv-claim
-        - name: openwisp-html-data
-          persistentVolumeClaim:
-            claimName: html-pv-claim
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -318,6 +313,6 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-      - name: redis
-        image: redis:alpine
-        imagePullPolicy: Always
+        - name: redis
+          image: redis:alpine
+          imagePullPolicy: Always

@@ -93,10 +93,10 @@ services:
     env_file:
       - .env
     volumes:
-      - openwisp_static:/opt/openwisp/static:ro
-      - openwisp_media:/opt/openwisp/media:ro
+      - openwisp_static:/opt/openwisp/public/static:ro
+      - openwisp_media:/opt/openwisp/public/media:ro
       - openwisp_certs:/etc/letsencrypt
-      - public_html:/opt/openwisp/public_html
+      - ./customize:/opt/openwisp/public/custom:ro
     networks:
       default:
         aliases:
@@ -174,7 +174,6 @@ services:
     image: redis:alpine
 
 volumes:
-  public_html: {}
   influxdb_data: {}
   postgres_data: {}
   openwisp_certs: {}
