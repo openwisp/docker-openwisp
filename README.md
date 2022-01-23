@@ -11,7 +11,25 @@ This repository contains official docker images of OpenWISP. Designed with horiz
 ![kubernetes](https://i.ibb.co/rGpLq4y/ss1.png)
 The sample files for deployment on kubernetes are available in the `deploy/examples/kubernetes/` directory.
 
-## Available Images
+## Table of contents
+
+- [Images Available](#images-available)
+- [Architecture](#architecture)
+- [Deployment](#deployment)
+  - [Quick Setup](#quick-setup)
+  - [Compose](#compose)
+  - [Kubernetes](#kubernetes)
+- [Customization](#customization)
+  - [Custom Styles and JavaScript](#custom-styles-and-javascript)
+  - [Changing Python Packages](#changing-python-packages)
+  - [Disabling Services](#disabling-services)
+- [Development](#development)
+  - [Workbench setup](#workbench-setup)
+  - [Runtests](#runtests)
+- [Usage](#usage)
+  - [Makefile Options](#makefile-options)
+
+## Images Available
 
 | Version | Corresponding Ansible Version |
 | ------- | :---------------------------: |
@@ -86,20 +104,24 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 
 ## Customization
 
-### Workbench setup
+### Custom Styles and JavaScript
 
-1. Install docker & docker-compose.
-2. In the root of the repository, run `make develop`, when the containers are ready, you can test them out by going to the domain name of the modules.
+If you want to use your custom styles, add custom JavaScript you can follow the following guide.
 
-#### Notes:
+1. Read about the option [`OPENWISP_ADMIN_THEME_LINKS`](https://github.com/openwisp/openwisp-utils/#openwisp_admin_theme_links). Please make [ensure the value you have enter is a valid JSON](https://jsonlint.com/) and add the desired JSON in `.env` file. example:
 
-- Default username & password are `admin`.
-- Default domains are: `dashboard.openwisp.org`, `api.openwisp.org` and `radius.openwisp.org`.
-- To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file,
-  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" >> /etc/hosts'`
-- Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
-- If you want to perform actions like cleaning everything produced by `docker-openwisp`,
-  please use the [makefile options](#makefile-options).
+```bash
+OPENWISP_ADMIN_THEME_LINKS=[{"type": "text/css", "href": "/static/custom/css/custom-theme.css", "rel": "stylesheet", "media": "all"},{"type": "image/x-icon", "href": "/static/custom/bootload.png", "rel": "icon"},{"type": "image/svg+xml", "href": "/static/ui/openwisp/images/openwisp-logo-small.svg", "rel": "icons"}]
+```
+
+2. Create a folder `customize` in same location as the `docker-compose.yml` file.
+3. Create your custom CSS / Javascript file, exmaple `customize/static/custom/css/custom-theme.css`.
+4. Start the nginx containers.
+
+**Notes:**
+
+1. You can edit the styles / JavaScript files now without restarting the container, as long as file is in the correct place, it will be picked.
+2. You can create a `maintenance.html` file inside the `customize` folder to have a custom maintainence page for scheduled downtime.
 
 ### Changing Python Packages
 
@@ -149,6 +171,23 @@ If you want to disable a service, you can simply remove the container for that s
   - Ensure your SMTP instance reachable by the OpenWISP containers.
   - Change the [email configuration variables](docs/ENV.md) to point to your instances.
 
+## Development
+
+### Workbench setup
+
+1. Install docker & docker-compose.
+2. In the root of the repository, run `make develop`, when the containers are ready, you can test them out by going to the domain name of the modules.
+
+**Notes:**
+
+- Default username & password are `admin`.
+- Default domains are: `dashboard.openwisp.org`, `api.openwisp.org` and `radius.openwisp.org`.
+- To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file,
+  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" >> /etc/hosts'`
+- Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
+- If you want to perform actions like cleaning everything produced by `docker-openwisp`,
+  please use the [makefile options](#makefile-options).
+
 ### Runtests
 
 You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromium). Chromium is preferred as it checks for console log errors as well.
@@ -194,6 +233,8 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 python3 tests/runtests.py <TestSuite>.<TestCase>
 # python3 tests/runtests.py TestServices.test_celery
 ```
+
+## Usage
 
 ### Makefile Options
 

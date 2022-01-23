@@ -17,4 +17,5 @@ The steps where performed on master version-1.14.
 
 5. Create BareMetal OpenWISP kubernetes requirements: `kubectl create -f BareMetal.yml`
 
-6. Your system is ready, now you can move to the installation of OpenWISP on kubernetes [here](KUBERNETES.md).
+6. Your system is ready, now you can move to the installation of OpenWISP on
+   kubernetes [here](KUBERNETES.md).
