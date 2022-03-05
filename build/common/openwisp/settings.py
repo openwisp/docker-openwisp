@@ -82,6 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'pipeline.middleware.MinifyHTMLMiddleware'
 ]
 
 TEMPLATES = [
@@ -386,3 +387,13 @@ if not env_bool(os.environ['USE_OPENWISP_MONITORING']):
         INSTALLED_APPS.remove('openwisp_monitoring.device')
     if 'openwisp_monitoring.check' in INSTALLED_APPS:
         INSTALLED_APPS.remove('openwisp_monitoring.check')
+
+# For static minification and cache invalidation
+INSTALLED_APPS.append('pipeline')
+# HTML minification with django pipeline
+PIPELINE = { 'PIPELINE_ENABLED': True }
+# static files minification and invalidation with django-compress-staticfiles
+STATICFILES_STORAGE = 'openwisp_utils.storage.CompressStaticFilesStorage'
+# GZIP compression is handled by nginx
+BROTLI_STATIC_COMPRESSION = False
+GZIP_STATIC_COMPRESSION = False
