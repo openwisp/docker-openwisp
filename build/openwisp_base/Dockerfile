@@ -44,7 +44,7 @@ RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS
 RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
                                     uwsgi sentry-sdk supervisor celery django-celery-beat \
                                     django-cors-headers django-rest-auth jinja2 \
-                                    django-pipeline~=2.0.0 django-compress-staticfiles~=1.0.1b
+                                    django-pipeline~=2.0.0
 ARG DJANGO_SOURCE=django~=4.0.0
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_SOURCE}
 
