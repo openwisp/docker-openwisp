@@ -28,14 +28,11 @@ jobs:
       - name: Lint
         run: openwisp-qa-check --skip-checkmigrations
 
-      - name: Setup for Testing Images
+      - name: Setup
         run: |
-          sudo apt update
-          sudo apt install --yes google-chrome-stable
-          wget https://chromedriver.storage.googleapis.com/97.0.4692.20/chromedriver_linux64.zip
-          sudo unzip chromedriver_linux64.zip -d /usr/local/bin/
-          sudo chmod +x /usr/local/bin/chromedriver
           echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" | sudo tee -a /etc/hosts
 
       - name: Build & Publish
         run: make publish TAG=edge || (docker-compose logs && exit 1)
+        env:
+          SELENIUM_HEADLESS: 1
