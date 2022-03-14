@@ -1,5 +1,6 @@
 import os
 from openwisp.utils import request_scheme
+from openwisp.settings import MIDDLEWARE
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -63,12 +64,21 @@ INSTALLED_APPS = [
     'private_storage',
     'drf_yasg',
     'channels',
+    'pipeline',
 ]
 
 EXTENDED_APPS = [
     'django_x509',
     'django_loci',
 ]
+MIDDLEWARE += ['pipeline.middleware.MinifyHTMLMiddleware',]
+# HTML minification with django pipeline
+PIPELINE = { 'PIPELINE_ENABLED': True }
+# static files minification and invalidation with django-compress-staticfiles
+STATICFILES_STORAGE = 'openwisp_utils.storage.CompressStaticFilesStorage'
+# GZIP compression is handled by nginx
+BROTLI_STATIC_COMPRESSION = False
+GZIP_STATIC_COMPRESSION = False
 
 API_BASEURL = f'{request_scheme()}://{os.environ["API_DOMAIN"]}'
 RADIUS_BASEURL = f'{request_scheme()}://{os.environ["RADIUS_DOMAIN"]}'

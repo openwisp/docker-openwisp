@@ -39,11 +39,12 @@ ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/doc
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}
 ARG DJANGO_X509_SOURCE=https://github.com/openwisp/django-x509/tarball/docker-openwisp-usage
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}
-ARG OPENWISP_UTILS_SOURCE=https://github.com/openwisp/openwisp-utils/tarball/docker-openwisp-usage
+ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=1.0.0
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}
 RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
                                     uwsgi sentry-sdk supervisor celery django-celery-beat \
-                                    django-cors-headers django-rest-auth jinja2
+                                    django-cors-headers django-rest-auth jinja2 \
+                                    django-pipeline~=2.0.0
 ARG DJANGO_SOURCE=django~=4.0.0
 RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_SOURCE}
 
