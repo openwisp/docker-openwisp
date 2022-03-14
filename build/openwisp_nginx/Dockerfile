@@ -26,11 +26,11 @@ ENV MODULE_NAME=nginx \
     NGINX_SERVER_NAME_HASH_BUCKET=32 \
     NGINX_SSL_CONFIG='' \
     NGINX_80_CONFIG='' \
-    NGINX_GZIP_SWITCH=off \
+    NGINX_GZIP_SWITCH=on \
     NGINX_GZIP_LEVEL=6 \
     NGINX_GZIP_PROXIED=any \
     NGINX_GZIP_MIN_LENGTH=1000 \
-    NGINX_GZIP_TYPES=* \
+    NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
     NGINX_CUSTOM_FILE=False \
     NINGX_REAL_REMOTE_ADDR='$real_ip' \
     # USWGI pass_port
