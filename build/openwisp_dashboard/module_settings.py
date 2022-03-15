@@ -76,9 +76,9 @@ MIDDLEWARE += ['pipeline.middleware.MinifyHTMLMiddleware',]
 PIPELINE = { 'PIPELINE_ENABLED': True }
 # static files minification and invalidation with django-compress-staticfiles
 STATICFILES_STORAGE = 'openwisp_utils.storage.CompressStaticFilesStorage'
-# GZIP compression is handled by nginx
 BROTLI_STATIC_COMPRESSION = False
-GZIP_STATIC_COMPRESSION = False
+# pregenerate static gzip files to save CPU
+GZIP_STATIC_COMPRESSION = True
 
 API_BASEURL = f'{request_scheme()}://{os.environ["API_DOMAIN"]}'
 RADIUS_BASEURL = f'{request_scheme()}://{os.environ["RADIUS_DOMAIN"]}'
