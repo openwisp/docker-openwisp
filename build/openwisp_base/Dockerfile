@@ -4,62 +4,79 @@ FROM python:3.10-slim-bullseye AS SYSTEM
 # 1. gettext: Required by envsubst used in scripts
 # 2. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
 # 3. openwisp-monitoring: fping gdal-bin
+# 4. sudo
 RUN apt update && \
-    apt install --yes --no-install-recommends libcairo2 libpangocairo-1.0-0 gdal-bin \
-                                              gettext fping \
-    && rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
+    apt install --yes --no-install-recommends \
+                libcairo2 apt-utils libpangocairo-1.0-0 \
+                gdal-bin gettext fping sudo && \
+    rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
+
+RUN apt update && \
+    apt install --yes --no-install-recommends \
+                gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
+                python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
+
+RUN useradd --system --password '' --create-home --shell /bin/bash \
+   --gid root --groups sudo --uid 1001 openwisp
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+USER openwisp:root
 
 FROM SYSTEM AS PYTHON
 
-RUN apt update && \
-    apt install --yes --no-install-recommends gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
-                                              python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
+ENV PATH="${PATH}:/home/openwisp/.local/bin"
+ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
-ENV PYTHONPATH=/install/lib/python3.10/site-packages
+RUN pip install --user --upgrade pip
 ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_MONITORING_SOURCE}
+RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}
 ARG OPENWISP_FIRMWARE_SOURCE=https://github.com/openwisp/openwisp-firmware-upgrader/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_FIRMWARE_SOURCE}
+RUN pip install --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topology/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
+RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_RADIUS_SOURCE}
+RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_IPAM_SOURCE=https://github.com/openwisp/openwisp-ipam/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade ${OPENWISP_IPAM_SOURCE}
+RUN pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}
 
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
 # otherwise these modules will have already been installed above
 ARG OPENWISP_CONTROLLER_SOURCE=default
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
-    pip install --prefix='/install' --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
+    pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
     fi
 ARG OPENWISP_NOTIFICATION_SOURCE=default
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
-    pip install --prefix='/install' --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
+    pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
 ARG OPENWISP_USERS_SOURCE=default
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
-    pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
+    pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
 ARG OPENWISP_UTILS_SOURCE=default
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
-    pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
+    pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
     fi
 ARG DJANGO_X509_SOURCE=default
 RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
-    pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
+    pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
+    fi
+
+ARG DJANGO_SOURCE=django~=4.0.0
+RUN pip install --user --upgrade ${DJANGO_SOURCE}
+
+RUN if [ "$EMAIL_BACKEND" = "djcelery_email.backends.CeleryEmailBackend" ]; then \
+    pip install --prefix='/install' django-celery-email; \
     fi
 
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
-RUN pip install --prefix='/install' -r /tmp/openwisp-deploy-requirements.txt
-ARG DJANGO_SOURCE=django~=4.0.0
-RUN pip install --prefix='/install' --upgrade ${DJANGO_SOURCE}
+RUN pip install --user --upgrade -r /tmp/openwisp-deploy-requirements.txt
 
 FROM SYSTEM
 
-COPY --from=PYTHON /install /usr/local
-COPY ./common/ /opt/openwisp/
+COPY --from=PYTHON --chown=openwisp:root /home/openwisp/.local/ /usr/local
+COPY --chown=openwisp:root ./common/ /opt/openwisp/
+RUN mkdir /opt/openwisp/static && mkdir /opt/openwisp/media && chown -R openwisp:root /opt/openwisp
 
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \
@@ -130,7 +147,3 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     CRON_DELETE_OLD_POSTAUTH=365 \
     CRON_CLEANUP_STALE_RADACCT=365 \
     CRON_DELETE_OLD_USERS=12
-
-RUN if [ "$EMAIL_BACKEND" = "djcelery_email.backends.CeleryEmailBackend" ]; then \
-    pip install --prefix='/install' django-celery-email; \
-    fi

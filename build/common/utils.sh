@@ -1,7 +1,6 @@
 #!/bin/sh
 
 function init_conf {
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
     default_psql_vars
 }
 

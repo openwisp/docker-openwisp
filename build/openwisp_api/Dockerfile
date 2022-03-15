@@ -2,7 +2,7 @@ FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
 
-COPY ./openwisp_api/urls.py \
+COPY --chown=openwisp:root ./openwisp_api/urls.py \
     ./openwisp_api/module_settings.py \
     /opt/openwisp/openwisp/
 

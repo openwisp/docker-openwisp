@@ -2,10 +2,10 @@ FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/
 
-COPY ./common/ \
+COPY --chown=openwisp:root  ./common/ \
     ./openwisp_websocket/daphne.conf \
     /opt/openwisp/
-COPY ./openwisp_websocket/module_settings.py \
+COPY --chown=openwisp:root  ./openwisp_websocket/module_settings.py \
     ./openwisp_websocket/urls.py \
     /opt/openwisp/openwisp/
 

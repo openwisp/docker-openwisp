@@ -3,12 +3,17 @@ FROM freeradius/freeradius-server:3.0.25-alpine
 RUN apk add --no-cache --update tzdata postgresql-dev postgresql-client && \
     rm -rf /var/cache/apk/* /tmp/*
 
+RUN addgroup -S freerad && \
+    adduser -S freerad -G freerad
+
 CMD ["sh", "init_command.sh"]
 EXPOSE 1812/udp 1813/udp
 
 COPY ./common/init_command.sh \
     ./common/utils.sh ./
-COPY --chown=root:root ./openwisp_freeradius/raddb/ /etc/raddb/
+COPY ./openwisp_freeradius/raddb/ /etc/raddb/
+RUN chown -R freerad:root /opt/etc/raddb/ && \
+    chown -R freerad:root /opt/var/log/
 
 ENV TZ=UTC \
     MODULE_NAME=freeradius \

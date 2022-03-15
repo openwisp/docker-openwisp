@@ -1,8 +1,8 @@
 # /etc/freeradius/mods-available/sql
 
 sql {
-    driver = "rlm_sql_postgresql"
-    dialect = "postgresql"
+	driver = "rlm_sql_postgresql"
+	dialect = "postgresql"
 	radius_db = "host=$ENV{DB_HOST} port=$ENV{DB_PORT} dbname=$ENV{DB_NAME} user=$ENV{DB_USER} password=$ENV{DB_PASS} sslmode=$ENV{DB_SSLMODE} sslcert=$ENV{DB_SSLCERT} sslkey=$ENV{DB_SSLKEY} sslrootcert=$ENV{DB_SSLROOTCERT}"
 	acct_table1 = "radacct"
 	acct_table2 = "radacct"
