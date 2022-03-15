@@ -30,7 +30,7 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_LEVEL=6 \
     NGINX_GZIP_PROXIED=any \
     NGINX_GZIP_MIN_LENGTH=1000 \
-    NGINX_GZIP_TYPES='text/plain text/html image/svg+xml application/json application/javascript text/xml text/css application/xml image/svg+xml application/x-font-ttf font/opentype' \
+    NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
     NGINX_CUSTOM_FILE=False \
     NINGX_REAL_REMOTE_ADDR='$real_ip' \
     # USWGI pass_port
