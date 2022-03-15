@@ -133,18 +133,17 @@ You can build with your own python package by creating a file named `.build.env`
 - `OPENWISP_NOTIFICATION_SOURCE`
 - `OPENWISP_TOPOLOGY_SOURCE`
 - `OPENWISP_RADIUS_SOURCE`
+- `OPENWISP_IPAM_SOURCE`
 - `OPENWISP_USERS_SOURCE`
 - `OPENWISP_UTILS_SOURCE`
-- `OPENWISP_IPAM_SOURCE`
-- `DJANGO_SOURCE`
-- `DJANGO_NETJSONCONFIG_SOURCE`
 - `DJANGO_X509_SOURCE`
+- `DJANGO_SOURCE`
 
 For example, if you want to supply your own django and openwisp-controller source, your `.build.env` should be written like this:
 
 ```
 DJANGO_SOURCE=django==3.2
-OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-api/tarball/master
+OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-controller/tarball/master
 ```
 
 ### Disabling Services

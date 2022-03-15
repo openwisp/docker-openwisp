@@ -16,37 +16,45 @@ RUN apt update && \
                                               python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
 
 ENV PYTHONPATH=/install/lib/python3.10/site-packages
-# Python Packages
-## TODO: We need to temporarily lock the version of pip to avoid using
-## the new version of the dependency resolver which is not compatible
-## with openwisp modules
-RUN pip install --upgrade pip==20.2.4
 ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_MONITORING_SOURCE}
+RUN pip install --prefix='/install' --upgrade ${OPENWISP_MONITORING_SOURCE}
 ARG OPENWISP_FIRMWARE_SOURCE=https://github.com/openwisp/openwisp-firmware-upgrader/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_CONTROLLER_SOURCE}
-ARG OPENWISP_NOTIFICATION_SOURCE=https://github.com/openwisp/openwisp-notifications/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_NOTIFICATION_SOURCE}
+RUN pip install --prefix='/install' --upgrade ${OPENWISP_FIRMWARE_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topology/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_TOPOLOGY_SOURCE}
+RUN pip install --prefix='/install' --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_RADIUS_SOURCE}
+RUN pip install --prefix='/install' --upgrade ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_IPAM_SOURCE=https://github.com/openwisp/openwisp-ipam/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_IPAM_SOURCE}
-ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}
-ARG DJANGO_X509_SOURCE=https://github.com/openwisp/django-x509/tarball/docker-openwisp-usage
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}
-ARG OPENWISP_UTILS_SOURCE=openwisp-utils~=1.0.0
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}
-RUN pip install --prefix='/install' channels_redis service_identity django-redis psycopg2 \
-                                    uwsgi sentry-sdk supervisor celery django-celery-beat \
-                                    django-cors-headers django-rest-auth jinja2 \
-                                    django-pipeline~=2.0.0
+RUN pip install --prefix='/install' --upgrade ${OPENWISP_IPAM_SOURCE}
+
+# here we try to install custom versions of the modules only if the
+# supplied argument does not equal the default value, because
+# otherwise these modules will have already been installed above
+ARG OPENWISP_CONTROLLER_SOURCE=default
+RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
+    pip install --prefix='/install' --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
+    fi
+ARG OPENWISP_NOTIFICATION_SOURCE=default
+RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
+    pip install --prefix='/install' --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
+    fi
+ARG OPENWISP_USERS_SOURCE=default
+RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
+    pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
+    fi
+ARG OPENWISP_UTILS_SOURCE=default
+RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
+    pip install --prefix='/install' --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
+    fi
+ARG DJANGO_X509_SOURCE=default
+RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
+    pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
+    fi
+
+COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
+RUN pip install --prefix='/install' -r /tmp/openwisp-deploy-requirements.txt
 ARG DJANGO_SOURCE=django~=4.0.0
-RUN pip install --prefix='/install' --upgrade --force-reinstall ${DJANGO_SOURCE}
+RUN pip install --prefix='/install' --upgrade ${DJANGO_SOURCE}
 
 FROM SYSTEM
 
