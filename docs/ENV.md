@@ -324,7 +324,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 - **Explaination:** Email will be sent using this backend.
 - **Valid Values:** [See list](https://docs.djangoproject.com/en/2.2/topics/email/#obtaining-an-instance-of-an-email-backend)
-- **Default:** django.core.mail.backends.smtp.EmailBackend
+- **Default:** djcelery_email.backends.CeleryEmailBackend
 
 ### `EMAIL_HOST_PORT`
 
