@@ -132,3 +132,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     CRON_DELETE_OLD_POSTAUTH=365 \
     CRON_CLEANUP_STALE_RADACCT=365 \
     CRON_DELETE_OLD_USERS=12
+
+RUN if [ "$EMAIL_BACKEND" = "djcelery_email.backends.CeleryEmailBackend" ]; then \
+    pip install --prefix='/install' django-celery-email; \
+    fi
