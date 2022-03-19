@@ -82,7 +82,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     INFLUXDB_NAME=openwisp \
     INFLUXDB_HOST=influxdb \
     INFLUXDB_PORT=8086 \
-    EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend \
+    EMAIL_BACKEND=djcelery_email.backends.CeleryEmailBackend \
     EMAIL_HOST=postfix \
     EMAIL_HOST_PORT=25 \
     EMAIL_HOST_USER="" \
@@ -132,3 +132,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     CRON_DELETE_OLD_POSTAUTH=365 \
     CRON_CLEANUP_STALE_RADACCT=365 \
     CRON_DELETE_OLD_USERS=12
+
+RUN if [ "$EMAIL_BACKEND" = "djcelery_email.backends.CeleryEmailBackend" ]; then \
+    pip install --prefix='/install' django-celery-email; \
+    fi
