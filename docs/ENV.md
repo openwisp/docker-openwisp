@@ -61,12 +61,6 @@ Additionally, you can search for the following:
 - **Valid Values:** Domain
 - **Default:** api.example.com
 
-### `RADIUS_DOMAIN`
-
-- **Explaination:** Domain on which you want to access OpenWISP radius API.
-- **Valid Values:** Domain
-- **Default:** radius.example.com
-
 ### `VPN_DOMAIN`
 
 - **Explaination:** Valid domain / IP address to reach the OpenVPN server.
@@ -639,12 +633,6 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** Domain | IP address
 - **Default:** api
 
-### `RADIUS_APP_SERVICE`
-
-- **Explaination:** Host to establish OpenWISP radius connection.
-- **Valid Values:** Domain | IP address
-- **Default:** radius
-
 ## Developer
 
 ### `DEBUG_MODE`
@@ -665,12 +653,6 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** INTEGER
 - **Default:** 8001
 
-### `RADIUS_APP_PORT`
-
-- **Explaination:** Change the port on which nginx tries to get the OpenWISP radius container. DON'T Change unless you know what you are doing.
-- **Valid Values:** INTEGER
-- **Default:** 8002
-
 ### `DASHBOARD_INTERNAL`
 
 - **Explaination:** Internal dashboard domain to reach dashboard from other containers.
@@ -682,12 +664,6 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Explaination:** Internal api domain to reach api from other containers.
 - **Valid Values:** STRING
 - **Default:** api.internal
-
-### `RADIUS_INTERNAL`
-
-- **Explaination:** Internal radius domain to reach radius from other containers.
-- **Valid Values:** STRING
-- **Default:** radius.internal
 
 ### `POSTFIX_DEBUG_MYNETWORKS`
 

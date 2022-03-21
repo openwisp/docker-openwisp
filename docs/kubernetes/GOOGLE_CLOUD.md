@@ -39,7 +39,6 @@ kubectl patch ingress/openwisp-http-ingress \
                 "hosts": [
                     "dasboard.openwisp.org",
                     "api.openwisp.org",
-                    "radius.openwisp.org"
                 ],
                 "secretName": "openwisp-tls-secret"
                 }

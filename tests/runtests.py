@@ -366,7 +366,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         Ensure freeradius service is working correctly.
         """
         token_page = (
-            f"{self.config['radius_url']}/api/v1/radius/"
+            f"{self.config['api_url']}/api/v1/radius/"
             "organization/default/account/token/"
         )
         request_body = "username=admin&password=admin".encode('utf-8')
@@ -374,7 +374,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         try:
             response = request.urlopen(request_info, context=self.ctx)
         except (urlerror.HTTPError, OSError, ConnectionResetError):
-            self.fail(f"Couldn't get radius-token, check {self.config['radius_url']}")
+            self.fail(f"Couldn't get radius-token, check {self.config['api_url']}")
         self.assertIn('"is_active":true', response.read().decode())
 
         container_id = self.docker_compose_get_container_id('freeradius')

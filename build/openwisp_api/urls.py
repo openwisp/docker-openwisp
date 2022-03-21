@@ -32,3 +32,10 @@ if env_bool(os.environ['USE_OPENWISP_MONITORING']):
             '', include('openwisp_monitoring.device.api.urls', namespace='monitoring'),
         )
     ]
+
+if env_bool(os.environ['USE_OPENWISP_RADIUS']):
+    urlpatterns += [
+        path(
+            '', include(('openwisp_radius.urls', 'radius'))
+        )
+    ]

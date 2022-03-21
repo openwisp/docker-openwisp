@@ -36,18 +36,14 @@ ENV MODULE_NAME=nginx \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     API_APP_PORT=8001 \
-    RADIUS_APP_PORT=8002 \
-    WEBSOCKET_APP_PORT=8003 \
+    WEBSOCKET_APP_PORT=8002 \
     # Application Service Name
     DASHBOARD_APP_SERVICE=dashboard \
     API_APP_SERVICE=api \
-    RADIUS_APP_SERVICE=radius \
     WEBSOCKET_APP_SERVICE=websocket \
     # Listen domains
     DASHBOARD_DOMAIN=dashboard.example.com \
     API_DOMAIN=api.example.com \
-    RADIUS_DOMAIN=radius.example.com \
     # Inter container communication domains
     DASHBOARD_INTERNAL=dashboard.internal \
-    API_INTERNAL=api.internal \
-    RADIUS_INTERNAL=radius.internal
+    API_INTERNAL=api.internal

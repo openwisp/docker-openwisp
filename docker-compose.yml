@@ -37,28 +37,13 @@ services:
       - redis
       - dashboard
 
-  radius:
-    image: openwisp/openwisp-radius:latest
-    build:
-      context: build
-      dockerfile: openwisp_radius/Dockerfile
-      args:
-        RADIUS_APP_PORT: 8002
-    env_file:
-      - .env
-    volumes:
-      - openwisp_media:/opt/openwisp/media
-    depends_on:
-      - postgres
-      - dashboard
-
   websocket:
     image: openwisp/openwisp-websocket:latest
     build:
       context: build
       dockerfile: openwisp_websocket/Dockerfile
       args:
-        WEBSOCKET_APP_PORT: 8003
+        WEBSOCKET_APP_PORT: 8002
     env_file:
       - .env
     depends_on:
@@ -105,14 +90,12 @@ services:
         aliases:
          - dashboard.internal
          - api.internal
-         - radius.internal
     ports:
       - "80:80"
       - "443:443"
     depends_on:
       - dashboard
       - api
-      - radius
       - websocket
 
   freeradius:
@@ -127,7 +110,7 @@ services:
       - "1813:1813/udp"
     depends_on:
       - postgres
-      - radius
+      - api
       - dashboard
 
   postfix:

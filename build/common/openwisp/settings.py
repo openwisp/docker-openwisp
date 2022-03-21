@@ -39,7 +39,6 @@ ALLOWED_HOSTS = [
     'localhost',
     os.environ['DASHBOARD_INTERNAL'],
     os.environ['API_INTERNAL'],
-    os.environ['RADIUS_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ[
@@ -57,7 +56,6 @@ HTTP_SCHEME = request_scheme()
 CORS_ALLOWED_ORIGINS = [
     f'{HTTP_SCHEME}://{os.environ["DASHBOARD_DOMAIN"]}',
     f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}',
-    f'{HTTP_SCHEME}://{os.environ["RADIUS_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')
 CORS_ALLOW_CREDENTIALS = True
 

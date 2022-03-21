@@ -68,33 +68,6 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: openwisp-radius
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: openwisp-radius
-    spec:
-      restartPolicy: Always
-      containers:
-        - name: openwisp-radius
-          image: openwisp/openwisp-radius:latest
-          imagePullPolicy: Always
-          envFrom:
-            - configMapRef:
-                name: common-config
-          readinessProbe:
-            exec:
-              command:
-                - cat
-                - /opt/openwisp/uwsgi.pid
-            initialDelaySeconds: 60
-            periodSeconds: 30
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
   name: openwisp-websocket
 spec:
   replicas: 1

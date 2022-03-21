@@ -48,8 +48,6 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 - **openwisp-dashboard**: Your OpenWISP device administration dashboard.
 - **openwisp-api**: HTTP API from various openwisp modules which can be scaled simply by having multiple
   API containers as per requirement.
-- **openwisp-radius**: HTTP API for interacting with openwisp-radius. Separated from the rest of APIs as it
-  can have different scalability requirements in large deployments.
 - **openwisp-websocket**: Dedicated container for handling websocket requests, eg. for updating location of
   mobile network devices.
 - **openwisp-celery**: Runs all the background tasks for OpenWISP, eg. updating configurations of your device.
@@ -61,8 +59,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 - **openwisp-postfix**: Mail server for sending mails to MTA.
 - **openwisp-nfs**: NFS server that allows shared storage between different machines. It does not run
   in single server machines but provided for K8s setup.
-- **openwisp-base**: It is the base image which does not run on your server, but openwisp-radius,
-  openwisp-api & openwisp-dashboard use it as a base.
+- **openwisp-base**: It is the base image which does not run on your server, but openwisp-api & openwisp-dashboard use it as a base.
 - **Redis**: data caching service (required for actions like login).
 - **PostgreSQL**: SQL database container for OpenWISP.
 
@@ -76,7 +73,7 @@ The `auto-install.sh` script can be used to quickly install a simple instance of
 
 If you have created a [`.env` file](docs/ENV.md) to configure your instance, then you can use it with the script otherwise.
 
-**It asks 6 questions for application configuration, 4 of them are domain names.** The dashboard, api, radius & openvpn can be setup on different domain, **please ensure the domains you enter point to your server**. The remaining **2 questions are email id** for site manager email (used by django to send application emails) and letsencrypt (used by [certbot](https://certbot.eff.org/) to issue https certs on this address.)
+**It asks 6 questions for application configuration, 4 of them are domain names.** The dashboard, api & openvpn can be setup on different domain, **please ensure the domains you enter point to your server**. The remaining **2 questions are email id** for site manager email (used by django to send application emails) and letsencrypt (used by [certbot](https://certbot.eff.org/) to issue https certs on this address.)
 
 To get started, run the following command:
 
@@ -161,7 +158,7 @@ If you want to disable a service, you can simply remove the container for that s
 - `openwisp-monitoring` : Set the `USE_OPENWISP_MONITORING` variable to `False`.
 - `openwisp-radius` : Set the `USE_OPENWISP_RADIUS` variable to `False`.
 - `openwisp-postgres`: If you are using a seperate database instance,
-  - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `radius`, `api`, `dashboard`.
+  - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `api`, `dashboard`.
   - Ensure your database server supports GeoDjango. (Install PostGIS for PostgreSQL)
   - Change the [database configuration variables](docs/ENV.md) to point to your instances, if you are using SSL, remember to set `DB_SSLMODE`, `DB_SSLKEY`, `DB_SSLCERT`, `DB_SSLROOTCERT`.
   - If you are using SSL, remember to mount volume containing the certificates and key in all the containers which contact the database server and make sure that the private key permission is `600` and owned by `root:root`.
@@ -180,9 +177,9 @@ If you want to disable a service, you can simply remove the container for that s
 **Notes:**
 
 - Default username & password are `admin`.
-- Default domains are: `dashboard.openwisp.org`, `api.openwisp.org` and `radius.openwisp.org`.
+- Default domains are: `dashboard.openwisp.org` and `api.openwisp.org`.
 - To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file,
-  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" >> /etc/hosts'`
+  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" >> /etc/hosts'`
 - Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 - If you want to perform actions like cleaning everything produced by `docker-openwisp`,
   please use the [makefile options](#makefile-options).

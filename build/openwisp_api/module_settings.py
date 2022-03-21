@@ -5,6 +5,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.humanize',
     # all-auth
     'django.contrib.sites',
     'allauth',
@@ -33,6 +34,8 @@ INSTALLED_APPS = [
     'openwisp_network_topology',
     # openwisp-firmware-upgrader
     'openwisp_firmware_upgrader',
+    # openwisp radius
+    'openwisp_radius',
     # Admin theme required for the templates
     # stored in openwisp_utils/admin_theme
     'openwisp_utils.admin_theme',
@@ -46,8 +49,15 @@ INSTALLED_APPS = [
     # rest framework
     'rest_framework',
     'rest_framework_gis',
-    'rest_framework.authtoken',
     'django_filters',
+    # registration
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    # social login
+    'allauth.socialaccount.providers.facebook',
+    'allauth.socialaccount.providers.google',
+    # other packages
     'private_storage',
     'drf_yasg',
     'channels',

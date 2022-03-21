@@ -104,11 +104,9 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     NGINX_CLIENT_BODY_SIZE=30 \
     DASHBOARD_APP_PORT=8000 \
     API_APP_PORT=8001 \
-    RADIUS_APP_PORT=8002 \
-    WEBSOCKET_APP_PORT=8003 \
+    WEBSOCKET_APP_PORT=8002 \
     DASHBOARD_INTERNAL=dashboard.internal \
     API_INTERNAL=api.internal \
-    RADIUS_INTERNAL=radius.internal \
     # VPN Configurations
     VPN_DOMAIN=openvpn.example.com \
     VPN_NAME=default \
