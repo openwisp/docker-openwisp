@@ -73,7 +73,7 @@ The `auto-install.sh` script can be used to quickly install a simple instance of
 
 If you have created a [`.env` file](docs/ENV.md) to configure your instance, then you can use it with the script otherwise.
 
-**It asks 6 questions for application configuration, 4 of them are domain names.** The dashboard, api & openvpn can be setup on different domain, **please ensure the domains you enter point to your server**. The remaining **2 questions are email id** for site manager email (used by django to send application emails) and letsencrypt (used by [certbot](https://certbot.eff.org/) to issue https certs on this address.)
+**It asks 5 questions for application configuration, 3 of them are domain names.** The dashboard, api & openvpn can be setup on different domain, **please ensure the domains you enter point to your server**. The remaining **2 questions are email id** for site manager email (used by django to send application emails) and letsencrypt (used by [certbot](https://certbot.eff.org/) to issue https certs on this address.)
 
 To get started, run the following command:
 
