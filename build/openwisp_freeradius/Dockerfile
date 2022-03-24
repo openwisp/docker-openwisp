@@ -23,5 +23,5 @@ ENV TZ=UTC \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
     DASHBOARD_INTERNAL=dashboard.internal \
-    RADIUS_INTERNAL=radius.internal \
+    API_INTERNAL=api.internal \
     DEBUG_MODE=False

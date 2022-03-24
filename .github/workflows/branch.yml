@@ -30,7 +30,7 @@ jobs:
 
       - name: Setup
         run: |
-          echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org radius.openwisp.org" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
 
       - name: Build & Publish
         run: make publish TAG=edge || (docker-compose logs && exit 1)

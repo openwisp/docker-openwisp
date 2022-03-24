@@ -13,7 +13,7 @@ pull:
 	printf '\e[1;34m%-6s\e[m\n' "Downloading OpenWISP images..."
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
-				 'openwisp-radius' 'openwisp-websocket' ; do \
+				 'openwisp-websocket' ; do \
 		docker pull --quiet $(USER)/$${image}:$(TAG) &> /dev/null; \
 		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:latest; \
 	done
@@ -91,7 +91,7 @@ TAG  = latest
 publish: compose-build runtests nfs-build
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
-				 'openwisp-radius' 'openwisp-websocket' ; do \
+				 'openwisp-websocket' ; do \
 		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
 		docker rmi $(USER)/$${image}:$(TAG); \

@@ -22,11 +22,9 @@ data:
   DJANGO_SECRET_KEY: MY_COMPANY_SECRET_KEY
   DASHBOARD_DOMAIN: dashboard.openwisp.org
   API_DOMAIN: api.openwisp.org
-  RADIUS_DOMAIN: radius.openwisp.org
   VPN_DOMAIN: openvpn.openwisp.org
   DASHBOARD_INTERNAL: dashboard-internal
   API_INTERNAL: api-internal
-  RADIUS_INTERNAL: radius-internal
   NGINX_SERVER_NAME_HASH_BUCKET: "64"
   SSL_CERT_MODE: "External"
   DEBUG_MODE: "False"

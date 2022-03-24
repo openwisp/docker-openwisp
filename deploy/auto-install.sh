@@ -88,23 +88,20 @@ setup_docker_openwisp() {
     read env_path;
     if [[ ! -f "$env_path" ]]; then
         # Dashboard Domain
-        echo -ne ${GRN}"(1/6) Enter dashboard domain: "${NON};
+        echo -ne ${GRN}"(1/5) Enter dashboard domain: "${NON};
         read dashboard_domain;
         domain=$(echo "$dashboard_domain" | cut -f2- -d'.')
         # API Domain
-        echo -ne ${GRN}"(2/6) Enter API domain (blank for api.${domain}): "${NON};
+        echo -ne ${GRN}"(2/5) Enter API domain (blank for api.${domain}): "${NON};
         read API_DOMAIN;
-        # Radius Domain
-        echo -ne ${GRN}"(3/6) Enter radius domain (blank for radius.${domain}, N to disable module): "${NON};
-        read radius_domain;
         # VPN domain
-        echo -ne ${GRN}"(4/6) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON};
+        echo -ne ${GRN}"(3/5) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON};
         read vpn_domain;
         # Site manager email
-        echo -ne ${GRN}"(5/6) Site manager email: "${NON};
+        echo -ne ${GRN}"(4/5) Site manager email: "${NON};
         read django_default_email;
         # SSL Configuration
-        echo -ne ${GRN}"(6/6) Enter letsencrypt email (leave blank for self-signed certificate): "${NON};
+        echo -ne ${GRN}"(5/5) Enter letsencrypt email (leave blank for self-signed certificate): "${NON};
         read letsencrypt_email;
     else
         cp $env_path $ENV_USER &>> $LOG_FILE;
@@ -136,14 +133,11 @@ setup_docker_openwisp() {
         else
             set_env "API_DOMAIN" "$API_DOMAIN";
         fi
-        # Radius Domain
-        if [[ -z "$radius_domain" ]]; then
-            set_env "RADIUS_DOMAIN" "radius.${domain}";
-        elif [[ "${radius_domain,,}" == "n" ]]; then
-            set_env "USE_OPENWISP_RADIUS" "No";
-        else
-            set_env "RADIUS_DOMAIN" "$radius_domain";
+        # Use Radius
+        if [[ -z "$USE_OPENWISP_RADIUS" ]]; then
             set_env "USE_OPENWISP_RADIUS" "Yes";
+        else
+            set_env "USE_OPENWISP_RADIUS" "No";
         fi
         # VPN domain
         if [[ -z "$vpn_domain" ]]; then

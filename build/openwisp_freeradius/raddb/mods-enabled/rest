@@ -1,6 +1,6 @@
 rest {
     tls = {}
-    connect_uri = "http://$ENV{RADIUS_INTERNAL}/api/v1/freeradius"
+    connect_uri = "http://$ENV{API_INTERNAL}/api/v1/freeradius"
     authorize {
         uri = "${..connect_uri}/authorize/"
         method = 'post'
