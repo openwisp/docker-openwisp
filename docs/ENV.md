@@ -51,13 +51,13 @@ Additionally, you can search for the following:
 
 ### `DASHBOARD_DOMAIN`
 
-- **Explaination:** Domain on which you want to access OpenWISP dashboard.
+- **Explaination:** Domain on which you want to access OpenWISP dashboard. You cannot use multi-part sub-domain (eg. dashboard.wisp.openwisp.org).
 - **Valid Values:** Domain
 - **Default:** dashboard.example.com
 
 ### `API_DOMAIN`
 
-- **Explaination:** Domain on which you want to access OpenWISP controller & topology API.
+- **Explaination:** Domain on which you want to access OpenWISP controller & topology API. You cannot use multi-part sub-domain (eg. api.wisp.openwisp.org).
 - **Valid Values:** Domain
 - **Default:** api.example.com
 
