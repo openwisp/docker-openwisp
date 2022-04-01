@@ -35,12 +35,14 @@ ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topolo
 RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/docker-openwisp-usage
 RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}
-ARG OPENWISP_IPAM_SOURCE=https://github.com/openwisp/openwisp-ipam/tarball/docker-openwisp-usage
-RUN pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}
 
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
 # otherwise these modules will have already been installed above
+ARG OPENWISP_IPAM_SOURCE=default
+RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
+    pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
+    fi
 ARG OPENWISP_CONTROLLER_SOURCE=default
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
     pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
