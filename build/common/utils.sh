@@ -103,10 +103,6 @@ function ssl_http_behaviour {
     fi
 }
 
-function domain {
-    eval "python3 -c \"import os;print('.'.join(os.environ['API_DOMAIN'].split('.')[-2:]), end='')\""
-}
-
 function envsubst_create_config {
     # Creates nginx configurations files for dashboard
     # and api instances.
@@ -114,7 +110,7 @@ function envsubst_create_config {
         eval export APP_SERVICE=\$${application}_APP_SERVICE
         eval export APP_PORT=\$${application}_APP_PORT
         eval export DOMAIN=\$${application}_${3}
-        eval export ROOT_DOMAIN="$(domain)"
+        eval export ROOT_DOMAIN=$(python3 get_domain.py)
         application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
         envsubst < ${1} > /etc/nginx/conf.d/${application}.${2}.conf
     done

@@ -41,6 +41,7 @@ elif [ "$MODULE_NAME" = 'openvpn' ]; then
     supervisord --nodaemon --configuration supervisord.conf
 elif [ "$MODULE_NAME" = 'nginx' ]; then
     rm -rf /etc/nginx/conf.d/default.conf
+    pip install tldextract
     if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
         nginx -g 'daemon off;'
     fi
