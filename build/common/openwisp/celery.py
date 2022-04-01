@@ -69,6 +69,9 @@ notification_schedule = {
     },
 }
 
+if not os.environ.get('USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS', True):
+    task_routes = {}
+
 app = Celery(
     'openwisp',
     include=['openwisp.tasks'],

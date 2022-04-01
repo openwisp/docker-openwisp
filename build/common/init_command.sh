@@ -57,7 +57,7 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 elif [ "$MODULE_NAME" = 'celery' ]; then
     python services.py database redis dashboard
     echo "Starting the 'default' celery worker"
-    celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues celery -n background@%%h --logfile /opt/openwisp/logs/celery_background.log --pidfile /opt/openwisp/celery_background.pid --detach
+    celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues celery -n celery@%%h --logfile /opt/openwisp/logs/celery.log --pidfile /opt/openwisp/celery_background.pid --detach
 
     if [ "$USE_OPENWISP_CELERY_NETWORK" = "True" ]; then
         echo "Starting the 'network' celery worker"
@@ -77,6 +77,7 @@ elif [ "$MODULE_NAME" = 'celery_monitoring' ]; then
         celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring -n monitoring@%%h --logfile /opt/openwisp/logs/monitoring.log --pidfile /opt/openwisp/monitoring.pid --detach
         echo "Starting the 'monitoring_checks' celery worker"
         celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring_checks -n monitoring_checks@%%h --logfile /opt/openwisp/logs/monitoring_checks.log --pidfile /opt/openwisp/monitoring_checks.pid --detach
+        sleep 1s
         tail -f /opt/openwisp/logs/*
     else
         echo "Monitoring queues are not activated, exiting."
