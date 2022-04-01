@@ -62,6 +62,19 @@ services:
       - redis
       - dashboard
 
+  celery_monitoring:
+    image: openwisp/openwisp-dashboard:latest
+    environment:
+      - MODULE_NAME=celery_monitoring
+    volumes:
+      - openwisp_media:/opt/openwisp/media
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - dashboard
+
   celerybeat:
     image: openwisp/openwisp-dashboard:latest
     environment:

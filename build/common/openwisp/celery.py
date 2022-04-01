@@ -3,16 +3,42 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 from openwisp.utils import env_bool
+from django.utils.timezone import timedelta
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 
-app = Celery('openwisp', include=['openwisp.tasks'])
-app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks()
+radius_schedule, topology_schedule, monitoring_schedule = {}, {}, {}
+task_routes = {}
 
-radius_schedule, topology_schedule = {}, {}
+if env_bool(os.environ.get('USE_OPENWISP_CELERY_NETWORK')):
+    task_routes['openwisp_controller.connection.tasks.*'] = {'queue': 'network'}
 
-if env_bool(os.environ['USE_OPENWISP_RADIUS']):
+if env_bool(os.environ.get('USE_OPENWISP_MONITORING')):
+    monitoring_schedule = {
+        'monitoring-periodic-task': {
+            'task': 'openwisp_monitoring.check.tasks.run_checks',
+            'schedule': timedelta(minutes=5),
+        },
+    }
+    if env_bool(os.environ.get('USE_OPENWISP_CELERY_MONITORING')):
+        task_routes['openwisp_monitoring.check.tasks.perform_checks'] = {
+            'queue': 'monitoring_checks'
+        }
+        task_routes['openwisp_monitoring.monitoring.tasks.*'] = {
+            'queue': 'monitoring'
+        }
+
+if env_bool(os.environ.get('USE_OPENWISP_FIRMWARE')) and env_bool(
+    os.environ.get('USE_OPENWISP_CELERY_FIRMWARE')
+):
+    task_routes['openwisp_firmware_upgrader.tasks.upgrade_firmware'] = {
+        'queue': 'firmware_upgrader'
+    }
+    task_routes['openwisp_firmware_upgrader.tasks.batch_upgrade_operation'] = {
+        'queue': 'firmware_upgrader'
+    }
+
+if env_bool(os.environ.get('USE_OPENWISP_RADIUS')):
     radius_schedule = {
         'radius-periodic-tasks': {
             'task': 'openwisp.tasks.radius_tasks',
@@ -21,7 +47,7 @@ if env_bool(os.environ['USE_OPENWISP_RADIUS']):
         },
     }
 
-if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
+if env_bool(os.environ.get('USE_OPENWISP_TOPOLOGY')):
     topology_schedule = {
         'topology-snapshot-tasks': {
             'task': 'openwisp.tasks.save_snapshot',
@@ -43,8 +69,11 @@ notification_schedule = {
     },
 }
 
-app.conf.beat_schedule = {
-    **radius_schedule,
-    **topology_schedule,
-    **notification_schedule,
-}
+app = Celery(
+    'openwisp',
+    include=['openwisp.tasks'],
+    task_routes=task_routes,
+    beat_schedule={**radius_schedule, **topology_schedule, **notification_schedule},
+)
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
