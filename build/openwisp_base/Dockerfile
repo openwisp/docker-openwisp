@@ -8,7 +8,7 @@ FROM python:3.10-slim-bullseye AS SYSTEM
 RUN apt update && \
     apt install --yes --no-install-recommends \
                 libcairo2 apt-utils libpangocairo-1.0-0 \
-                gdal-bin gettext fping sudo && \
+                gdal-bin gettext fping && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 RUN apt update && \
@@ -17,8 +17,7 @@ RUN apt update && \
                 python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
 
 RUN useradd --system --password '' --create-home --shell /bin/bash \
-   --gid root --groups sudo --uid 1001 openwisp
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+   --gid root --uid 1001 openwisp
 USER openwisp:root
 
 FROM SYSTEM AS PYTHON
