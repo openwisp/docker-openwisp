@@ -46,4 +46,5 @@ ENV MODULE_NAME=nginx \
     API_DOMAIN=api.example.com \
     # Inter container communication domains
     DASHBOARD_INTERNAL=dashboard.internal \
-    API_INTERNAL=api.internal
+    API_INTERNAL=api.internal \
+    NGINX_CONTENT_SECURITY_POLICY="\"default-src http: https: data: blob: 'unsafe-inline'; script-src 'unsafe-eval' https: 'unsafe-inline' 'self'; frame-ancestors 'self'; connect-src *.\${ROOT_DOMAIN} wss: 'self'; worker-src https://\${DOMAIN} blob: 'self';\" always;"
