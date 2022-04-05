@@ -312,6 +312,37 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** Domain | IP Address
 - **Default:** 0.0.0.0
 
+### `USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS`
+
+- **Explaination:** Whether the default celery task routes should be
+  by celery. Turn this off if you're defining custom task routing rules.
+- **Valid Values:** True | False
+- **Default:** True
+
+### `USE_OPENWISP_CELERY_NETWORK`
+
+- **Explaination:** Whether the dedicated worker for the celery
+  "network" queue is enabled. Must be turned on unless there's another
+  server running a worker for this queue.
+- **Valid Values:** True | False
+- **Default:** True
+
+### `USE_OPENWISP_CELERY_FIRMWARE`
+
+- **Explaination:** Whether the dedicated worker for the celery
+    "firmware_upgrader" queue is enabled. Must be turned on unless
+    there's another server running a worker for this queue.
+- **Valid Values:** True | False
+- **Default:** True
+
+### `USE_OPENWISP_CELERY_MONITORING`
+
+- **Explaination:** Whether the dedicated worker for the celery
+    "monitoring" queue is enabled. Must be turned on unless there's
+    another server running a worker for this queue.
+- **Valid Values:** True | False
+- **Default:** True
+
 ## Email
 
 ### `EMAIL_BACKEND`

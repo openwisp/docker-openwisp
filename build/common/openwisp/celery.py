@@ -15,13 +15,13 @@ if env_bool(os.environ.get('USE_OPENWISP_CELERY_NETWORK')):
 
 if env_bool(os.environ.get('USE_OPENWISP_MONITORING')):
     monitoring_schedule = {
-        'monitoring-periodic-task': {
+        'run_checks': {
             'task': 'openwisp_monitoring.check.tasks.run_checks',
             'schedule': timedelta(minutes=5),
         },
     }
     if env_bool(os.environ.get('USE_OPENWISP_CELERY_MONITORING')):
-        task_routes['openwisp_monitoring.check.tasks.perform_checks'] = {
+        task_routes['openwisp_monitoring.check.tasks.perform_check'] = {
             'queue': 'monitoring_checks'
         }
         task_routes['openwisp_monitoring.monitoring.tasks.*'] = {
@@ -76,7 +76,12 @@ app = Celery(
     'openwisp',
     include=['openwisp.tasks'],
     task_routes=task_routes,
-    beat_schedule={**radius_schedule, **topology_schedule, **notification_schedule},
+    beat_schedule={
+        **radius_schedule,
+        **topology_schedule,
+        **notification_schedule,
+        **monitoring_schedule
+    },
 )
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
