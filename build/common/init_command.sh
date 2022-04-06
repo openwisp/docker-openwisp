@@ -56,7 +56,42 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
     nginx -g 'daemon off;'
 elif [ "$MODULE_NAME" = 'celery' ]; then
     python services.py database redis dashboard
-    celery -A openwisp worker -l ${DJANGO_LOG_LEVEL}
+    echo "Starting the 'default' celery worker"
+    celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues celery \
+           -n celery@%h --logfile /opt/openwisp/logs/celery.log \
+           --pidfile /opt/openwisp/celery.pid --detach
+
+    if [ "$USE_OPENWISP_CELERY_NETWORK" = "True" ]; then
+        echo "Starting the 'network' celery worker"
+        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues network \
+               -n network@%h --logfile /opt/openwisp/logs/celery_network.log \
+               --pidfile /opt/openwisp/celery_network.pid --detach
+    fi
+
+    if [[ "$USE_OPENWISP_FIRMWARE" == "True" && "$USE_OPENWISP_CELERY_FIRMWARE" == "True" ]]; then
+        echo "Starting the 'firmware_upgrader' celery worker"
+        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues firmware_upgrader \
+               -n firmware_upgrader@%h --logfile /opt/openwisp/logs/celery_firmware_upgrader.log \
+               --pidfile /opt/openwisp/celery_firmware_upgrader.pid --detach
+    fi
+    sleep 1s
+    tail -f /opt/openwisp/logs/*
+elif [ "$MODULE_NAME" = 'celery_monitoring' ]; then
+    python services.py database redis dashboard
+    if [[ "$USE_OPENWISP_MONITORING" == "True" && "$USE_OPENWISP_CELERY_MONITORING" == 'True' ]]; then
+        echo "Starting the 'monitoring' celery worker"
+        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring \
+               -n monitoring@%h --logfile /opt/openwisp/logs/celery_monitoring.log \
+               --pidfile /opt/openwisp/celery_monitoring.pid --detach
+        echo "Starting the 'monitoring_checks' celery worker"
+        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring_checks \
+               -n monitoring_checks@%h --logfile /opt/openwisp/logs/celery_monitoring_checks.log \
+               --pidfile /opt/openwisp/celery_monitoring_checks.pid --detach
+        sleep 1s
+        tail -f /opt/openwisp/logs/*
+    else
+        echo "Monitoring queues are not activated, exiting."
+    fi
 elif [ "$MODULE_NAME" = 'celerybeat' ]; then
     rm -rf celerybeat.pid
     python services.py database redis dashboard

@@ -9,10 +9,10 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.by import By
-from utils import TestConfig, TestUtilities
+from utils import TestUtilities
 
 
-class Pretest(TestConfig, unittest.TestCase):
+class Pretest(TestUtilities, unittest.TestCase):
     """
     Checks to perform before tests
     """
@@ -36,11 +36,27 @@ class Pretest(TestConfig, unittest.TestCase):
                     isServiceReachable = True
                     break
             except (urlerror.HTTPError, OSError, ConnectionResetError):
-                # if error occured, retry to reach the admin
+                # if error occurred, retry to reach the admin
                 # login page after delay_retries second(s)
                 time.sleep(delay_retries)
         if not isServiceReachable:
             self.fail('ERROR: openwisp-dashboard login page not reachable!')
+
+        # Ensure all celery workers are online
+        container_id = self.docker_compose_get_container_id('celery')
+        celery_container = self.docker_client.containers.get(container_id)
+        for _ in range(0, max_retries):
+            result = celery_container.exec_run('celery -A openwisp status')
+            online_workers = result.output.decode('utf-8').split('\n')[-2]
+            try:
+                assert online_workers == '5 nodes online.'
+                break
+            except AssertionError:
+                # if error occurred, retry to reach the celery workers
+                # after delay_retries second(s)
+                time.sleep(delay_retries)
+        else:
+            self.fail(f'All celery workers are not online: {online_workers}')
 
 
 class TestServices(TestUtilities, unittest.TestCase):
@@ -304,11 +320,6 @@ class TestServices(TestUtilities, unittest.TestCase):
         """
         Ensure celery and celery-beat tasks are registered.
         """
-        container_id = self.docker_compose_get_container_id('celery')
-        celery_container = self.docker_client.containers.get(container_id)
-        result = celery_container.exec_run('celery -A openwisp inspect registered')
-        self.assertEqual(result.exit_code, 0)
-
         expected_output_list = [
             "openwisp.tasks.radius_tasks",
             "openwisp.tasks.save_snapshot",
@@ -353,13 +364,25 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_radius.tasks.send_login_email",
         ]
 
-        output = result.output.decode('utf-8')
-        for expected_output in expected_output_list:
-            if expected_output not in output:
-                self.fail(
-                    'Not all celery / celery-beat tasks are registered\n'
-                    f'Output:\n{output}\n'
-                )
+        def _test_celery_task_registered(container_name):
+            container_id = self.docker_compose_get_container_id(container_name)
+            celery_container = self.docker_client.containers.get(container_id)
+            result = celery_container.exec_run('celery -A openwisp inspect registered')
+            self.assertEqual(result.exit_code, 0)
+
+            output = result.output.decode('utf-8')
+            for expected_output in expected_output_list:
+                if expected_output not in output:
+                    self.fail(
+                        'Not all celery / celery-beat tasks are registered\n'
+                        f'Output:\n{output}\n'
+                    )
+
+        with self.subTest('Test celery container'):
+            _test_celery_task_registered('celery')
+
+        with self.subTest('Test celery_monitoring container'):
+            _test_celery_task_registered('celery_monitoring')
 
     def test_freeradius(self):
         """

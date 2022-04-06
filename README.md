@@ -13,21 +13,23 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 
 ## Table of contents
 
-- [Images Available](#images-available)
-- [Architecture](#architecture)
-- [Deployment](#deployment)
-  - [Quick Setup](#quick-setup)
-  - [Compose](#compose)
-  - [Kubernetes](#kubernetes)
-- [Customization](#customization)
-  - [Custom Styles and JavaScript](#custom-styles-and-javascript)
-  - [Changing Python Packages](#changing-python-packages)
-  - [Disabling Services](#disabling-services)
-- [Development](#development)
-  - [Workbench setup](#workbench-setup)
-  - [Runtests](#runtests)
-- [Usage](#usage)
-  - [Makefile Options](#makefile-options)
+- [Docker-OpenWISP](#docker-openwisp)
+  - [Table of contents](#table-of-contents)
+  - [Images Available](#images-available)
+  - [Architecture](#architecture)
+  - [Deployment](#deployment)
+    - [Quick Setup](#quick-setup)
+    - [Compose](#compose)
+    - [Kubernetes](#kubernetes)
+  - [Customization](#customization)
+    - [Custom Styles and JavaScript](#custom-styles-and-javascript)
+    - [Changing Python Packages](#changing-python-packages)
+    - [Disabling Services](#disabling-services)
+  - [Development](#development)
+    - [Workbench setup](#workbench-setup)
+    - [Runtests](#runtests)
+  - [Usage](#usage)
+    - [Makefile Options](#makefile-options)
 
 ## Images Available
 
@@ -51,6 +53,9 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 - **openwisp-websocket**: Dedicated container for handling websocket requests, eg. for updating location of
   mobile network devices.
 - **openwisp-celery**: Runs all the background tasks for OpenWISP, eg. updating configurations of your device.
+- **openwisp-celery-monitoring**: Runs background tasks that perform active monitoring checks,
+  eg. ping checks and configuration checks. It also executes task for writing monitoring data
+  to the timeseries DB.
 - **openwisp-celerybeat**: Runs periodic background tasks. eg. revoking all the expired certificates.
 - **openwisp-nginx**: Internet facing container that facilitates all the HTTP and Websocket communication
   between the outside world and the service containers.
@@ -158,7 +163,7 @@ If you want to disable a service, you can simply remove the container for that s
 - `openwisp-monitoring` : Set the `USE_OPENWISP_MONITORING` variable to `False`.
 - `openwisp-radius` : Set the `USE_OPENWISP_RADIUS` variable to `False`.
 - `openwisp-postgres`: If you are using a seperate database instance,
-  - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `websocket`, `api`, `dashboard`.
+  - Ensure your database instance is reachable by the following OpenWISP containers: `openvpn`, `freeradius`, `celerybeat`, `celery`, `celery_monitoring`, `websocket`, `api`, `dashboard`.
   - Ensure your database server supports GeoDjango. (Install PostGIS for PostgreSQL)
   - Change the [database configuration variables](docs/ENV.md) to point to your instances, if you are using SSL, remember to set `DB_SSLMODE`, `DB_SSLKEY`, `DB_SSLCERT`, `DB_SSLROOTCERT`.
   - If you are using SSL, remember to mount volume containing the certificates and key in all the containers which contact the database server and make sure that the private key permission is `600` and owned by `root:root`.
