@@ -315,7 +315,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 ### `USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS`
 
 - **Explaination:** Whether the default celery task routes should be
-  by celery. Turn this off if you're defining custom task routing rules.
+  used by celery. Turn this off if you're defining custom task routing rules.
 - **Valid Values:** True | False
 - **Default:** True
 
