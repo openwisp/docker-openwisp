@@ -109,6 +109,7 @@ function envsubst_create_config {
         eval export APP_SERVICE=\$${application}_APP_SERVICE
         eval export APP_PORT=\$${application}_APP_PORT
         eval export DOMAIN=\$${application}_${3}
+        eval export ROOT_DOMAIN=$(python3 get_domain.py)
         application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
         envsubst < ${1} > /etc/nginx/conf.d/${application}.${2}.conf
     done

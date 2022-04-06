@@ -13,6 +13,8 @@ COPY ./common/services.py \
     ./openwisp_nginx/ \
     /etc/nginx/
 
+RUN pip install -r requirements.txt
+
 ENV MODULE_NAME=nginx \
     PYTHONUNBUFFERED=1 \
     DOLLAR=$ \
