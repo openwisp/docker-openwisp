@@ -56,23 +56,45 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
     nginx -g 'daemon off;'
 elif [ "$MODULE_NAME" = 'celery' ]; then
     python services.py database redis dashboard
+
     echo "Starting the 'default' celery worker"
-    celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues celery \
-           -n celery@%h --logfile /opt/openwisp/logs/celery.log \
-           --pidfile /opt/openwisp/celery.pid --detach
+    default_worker_command="
+        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues celery
+               -n celery@%h --logfile /opt/openwisp/logs/celery.log
+               --pidfile /opt/openwisp/celery.pid --detach"
+    if [[ $OPENWISP_CELERY_CONCURRENCY =~ ^[0-9]+$ ]]; then
+        default_worker_command="${default_worker_command} --concurrency ${OPENWISP_CELERY_CONCURRENCY}"
+    elif [[ "$OPENWISP_CELERY_AUTOSCALE" =~ ^[0-9]+,[0-9]+$ ]]; then
+        default_worker_command="${default_worker_command} --autoscale ${OPENWISP_CELERY_AUTOSCALE}"
+    fi
+    $default_worker_command
 
     if [ "$USE_OPENWISP_CELERY_NETWORK" = "True" ]; then
         echo "Starting the 'network' celery worker"
-        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues network \
-               -n network@%h --logfile /opt/openwisp/logs/celery_network.log \
-               --pidfile /opt/openwisp/celery_network.pid --detach
+        network_worker_command="
+            celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues network
+                   -n network@%h --logfile /opt/openwisp/logs/celery_network.log
+                   --pidfile /opt/openwisp/celery_network.pid --detach"
+        if [[ $OPENWISP_CELERY_NETWORK_CONCURRENCY =~ ^[0-9]+$ ]]; then
+            network_worker_command="${network_worker_command} --concurrency ${OPENWISP_CELERY_NETWORK_CONCURRENCY}"
+        elif [[ "$OPENWISP_CELERY_NETWORK_AUTOSCALE" =~ ^[0-9]+,[0-9]+$ ]]; then
+            network_worker_command="${network_worker_command} --autoscale ${OPENWISP_CELERY_NETWORK_AUTOSCALE}"
+        fi
+        $network_worker_command
     fi
 
     if [[ "$USE_OPENWISP_FIRMWARE" == "True" && "$USE_OPENWISP_CELERY_FIRMWARE" == "True" ]]; then
         echo "Starting the 'firmware_upgrader' celery worker"
-        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues firmware_upgrader \
-               -n firmware_upgrader@%h --logfile /opt/openwisp/logs/celery_firmware_upgrader.log \
-               --pidfile /opt/openwisp/celery_firmware_upgrader.pid --detach
+        firmware_worker_command="
+            celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues firmware_upgrader
+                   -n firmware_upgrader@%h --logfile /opt/openwisp/logs/celery_firmware_upgrader.log
+                   --pidfile /opt/openwisp/celery_firmware_upgrader.pid --detach"
+        if [[ $OPENWISP_CELERY_FIRMWARE_CONCURRENCY =~ ^[0-9]+$ ]]; then
+            firmware_worker_command="${firmware_worker_command} --concurrency ${OPENWISP_CELERY_FIRMWARE_CONCURRENCY}"
+        elif [[ "$OPENWISP_CELERY_FIRMWARE_AUTOSCALE" =~ ^[0-9]+,[0-9]+$ ]]; then
+            firmware_worker_command="${firmware_worker_command} --autoscale ${OPENWISP_CELERY_FIRMWARE_AUTOSCALE}"
+        fi
+        $firmware_worker_command
     fi
     sleep 1s
     tail -f /opt/openwisp/logs/*
@@ -80,13 +102,29 @@ elif [ "$MODULE_NAME" = 'celery_monitoring' ]; then
     python services.py database redis dashboard
     if [[ "$USE_OPENWISP_MONITORING" == "True" && "$USE_OPENWISP_CELERY_MONITORING" == 'True' ]]; then
         echo "Starting the 'monitoring' celery worker"
-        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring \
-               -n monitoring@%h --logfile /opt/openwisp/logs/celery_monitoring.log \
-               --pidfile /opt/openwisp/celery_monitoring.pid --detach
+        monitoring_worker_command="
+            celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring
+                   -n monitoring@%h --logfile /opt/openwisp/logs/celery_monitoring.log
+                   --pidfile /opt/openwisp/celery_monitoring.pid --detach"
+        if [[ $OPENWISP_CELERY_MONITORING_CONCURRENCY =~ ^[0-9]+$ ]]; then
+            monitoring_worker_command="${monitoring_worker_command} --concurrency ${OPENWISP_CELERY_MONITORING_CONCURRENCY}"
+        elif [[ "$OPENWISP_CELERY_MONITORING_AUTOSCALE" =~ ^[0-9]+,[0-9]+$ ]]; then
+            monitoring_worker_command="${monitoring_worker_command} --autoscale ${OPENWISP_CELERY_MONITORING_AUTOSCALE}"
+        fi
+        $monitoring_worker_command
+
         echo "Starting the 'monitoring_checks' celery worker"
-        celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring_checks \
-               -n monitoring_checks@%h --logfile /opt/openwisp/logs/celery_monitoring_checks.log \
-               --pidfile /opt/openwisp/celery_monitoring_checks.pid --detach
+        monitoring_check_worker_command="
+            celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} \
+                   --queues monitoring_checks -n monitoring_checks@%h \
+                   --logfile /opt/openwisp/logs/celery_monitoring_checks.log \
+                   --pidfile /opt/openwisp/celery_monitoring_checks.pid --detach"
+        if [[ $OPENWISP_CELERY_MONITORING_CONCURRENCY =~ ^[0-9]+$ ]]; then
+            monitoring_check_worker_command="${monitoring_check_worker_command} --concurrency ${OPENWISP_CELERY_MONITORING_CONCURRENCY}"
+        elif [[ "$OPENWISP_CELERY_MONITORING_AUTOSCALE" =~ ^[0-9]+,[0-9]+$ ]]; then
+            monitoring_check_worker_command="${monitoring_check_worker_command} --autoscale ${OPENWISP_CELERY_MONITORING_AUTOSCALE}"
+        fi
+        $monitoring_check_worker_command
         sleep 1s
         tail -f /opt/openwisp/logs/*
     else

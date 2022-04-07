@@ -314,34 +314,113 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 ### `USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS`
 
-- **Explaination:** Whether the default celery task routes should be
+- **Explanation:** Whether the default celery task routes should be
   used by celery. Turn this off if you're defining custom task routing rules.
 - **Valid Values:** True | False
 - **Default:** True
 
+### `OPENWISP_CELERY_CONCURRENCY`
+
+- **Explanation:** Celery concurrency for the "default" queue.
+  Setting it to `False` will make concurrency equal to the number of
+  CPUs if autoscaling is not used.
+- **Valid Values:** INT | False
+- **Default:** 1
+
+### `OPENWISP_CELERY_AUTOSCALE`
+
+- **Explanation:** Alternative to [OPENWISP_CELERY_CONCURRENCY](#openwisp_celery_concurrency),
+  the celery `autoscale` option can be set for the "default" queue.
+  For more information, consult [celery's autoscaling documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#autoscaling).
+- **Valid Values:** STRING | False
+- **Default:** False
+- **Example:** `4,2`
+- **Note:** It is required to set [OPENWISP_CELERY_CONCURRENCY](#openwisp_celery_concurrency)
+  to `False` in order for `OPENWISP_CELERY_AUTOSCALE` to take effect.
+
+
 ### `USE_OPENWISP_CELERY_NETWORK`
 
-- **Explaination:** Whether the dedicated worker for the celery
+- **Explanation:** Whether the dedicated worker for the celery
   "network" queue is enabled. Must be turned on unless there's another
   server running a worker for this queue.
 - **Valid Values:** True | False
 - **Default:** True
 
+### `OPENWISP_CELERY_NETWORK_CONCURRENCY`
+
+- **Explanation:** Celery concurrency for the "network" queue.
+  Setting it to `False` will make concurrency equal to the number of
+  CPUs if autoscaling is not used.
+- **Valid Values:** INT | False
+- **Default:** 1
+
+### `OPENWISP_CELERY_NETWORK_AUTOSCALE`
+
+- **Explanation:** Alternative to [OPENWISP_CELERY_NETWORK_CONCURRENCY](#openwisp_celery_network_concurrency),
+  the celery `autoscale` option can be set for the "network" queue.
+  For more information, consult [celery's autoscaling documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#autoscaling).
+- **Valid Values:** STRING | False
+- **Default:** False
+- **Example:** `4,2`
+- **Note:** It is required to set [OPENWISP_CELERY_NETWORK_CONCURRENCY](#openwisp_celery_network_concurrency)
+  to `False` in order for `OPENWISP_CELERY_NETWORK_AUTOSCALE` to take effect.
+
 ### `USE_OPENWISP_CELERY_FIRMWARE`
 
-- **Explaination:** Whether the dedicated worker for the celery
+- **Explanation:** Whether the dedicated worker for the celery
     "firmware_upgrader" queue is enabled. Must be turned on unless
     there's another server running a worker for this queue.
 - **Valid Values:** True | False
 - **Default:** True
 
+### `OPENWISP_CELERY_FIRMWARE_CONCURRENCY`
+
+- **Explanation:** Celery concurrency for the "firmware_upgrader" queue.
+  Setting it to `False` will make concurrency equal to the number of
+  CPUs if autoscaling is not used.
+- **Valid Values:** INT | False
+- **Default:** 1
+
+### `OPENWISP_CELERY_FIRMWARE_AUTOSCALE`
+
+- **Explanation:** Alternative to [OPENWISP_CELERY_FIRMWARE_CONCURRENCY](#openwisp_celery_firmware_concurrency),
+  the celery `autoscale` option can be set for the "firmware_upgrader" queue.
+  For more information, consult [celery's autoscaling documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#autoscaling).
+- **Valid Values:** STRING | False
+- **Default:** False
+- **Example:** `4,2`
+- **Note:** It is required to set [OPENWISP_CELERY_FIRMWARE_CONCURRENCY](#openwisp_celery_firmware_concurrency)
+  to `False` in order for `OPENWISP_CELERY_FIRMWARE_AUTOSCALE` to take effect.
+
 ### `USE_OPENWISP_CELERY_MONITORING`
 
-- **Explaination:** Whether the dedicated worker for the celery
-    "monitoring" queue is enabled. Must be turned on unless there's
-    another server running a worker for this queue.
+- **Explanation:** Whether the dedicated worker for the celery
+    "monitoring" and "monitoring_checks" queue is enabled.
+    Must be turned on unless there's another server running
+    a worker for this queue.
 - **Valid Values:** True | False
 - **Default:** True
+
+### `OPENWISP_CELERY_MONITORING_CONCURRENCY`
+
+- **Explanation:** Celery concurrency for the "monitoring" and
+  "monitoring_checks" queue. Setting it to `False` will make concurrency
+  equal to the number of CPUs if autoscaling is not used.
+- **Valid Values:** INT | False
+- **Default:** 1
+
+### `OPENWISP_CELERY_MONITORING_AUTOSCALE`
+
+- **Explanation:** Alternative to [OPENWISP_CELERY_MONITORING_CONCURRENCY](#openwisp_celery_monitoring_concurrency),
+  the celery `autoscale` option can be set for the "monitoring" and
+  "monitoring_checks" queue. For more information, consult
+  [celery's autoscaling documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#autoscaling).
+- **Valid Values:** STRING | False
+- **Default:** False
+- **Example:** `4,2`
+- **Note:** It is required to set [OPENWISP_CELERY_MONITORING_CONCURRENCY](#openwisp_celery_monitoring_concurrency)
+  to `False` in order for `OPENWISP_CELERY_MONITORING_AUTOSCALE` to take effect.
 
 ## Email
 
