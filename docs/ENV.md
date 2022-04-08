@@ -319,6 +319,16 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** True | False
 - **Default:** True
 
+### `OPENWISP_CELERY_COMMAND_FLAGS`
+
+- **Explanation:** Additional flags passed to the command that
+  starts the celery worker for the "default" queue. It can be used to configure
+  different attributes of the celery worker (e.g. autoscaling, concurrency, etc.).
+  Refer to the [celery worker documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#workers-guide)
+  for more information on configurable properties.
+- **Valid Values:** STRING
+- **Default:** `--concurrency=1`
+
 ### `USE_OPENWISP_CELERY_NETWORK`
 
 - **Explaination:** Whether the dedicated worker for the celery
@@ -326,6 +336,16 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
   server running a worker for this queue.
 - **Valid Values:** True | False
 - **Default:** True
+
+### `OPENWISP_CELERY_NETWORK_COMMAND_FLAGS`
+
+- **Explanation:** Additional flags passed to the command that
+  starts the celery worker for the "network" queue. It can be used to configure
+  different attributes of the celery worker (e.g. autoscaling, concurrency, etc.).
+  Refer to the [celery worker documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#workers-guide)
+  for more information on configurable properties.
+- **Valid Values:** STRING
+- **Default:** `--concurrency=1`
 
 ### `USE_OPENWISP_CELERY_FIRMWARE`
 
@@ -335,13 +355,46 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** True | False
 - **Default:** True
 
+### `OPENWISP_CELERY_FIRMWARE_COMMAND_FLAGS`
+
+- **Explanation:** Additional flags passed to the command that
+  starts the celery worker for the "firmware_upgrader" queue. It can be used to configure
+  different attributes of the celery worker (e.g. autoscaling, concurrency, etc.).
+  Refer to the [celery worker documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#workers-guide)
+  for more information on configurable properties.
+- **Valid Values:** STRING
+- **Default:** `--concurrency=1`
+
 ### `USE_OPENWISP_CELERY_MONITORING`
 
-- **Explaination:** Whether the dedicated worker for the celery
-    "monitoring" queue is enabled. Must be turned on unless there's
-    another server running a worker for this queue.
+- **Explanation:** Whether the dedicated worker for the celery
+    "monitoring" and "monitoring_checks" queue is enabled.
+    Must be turned on unless there's another server running
+    a worker for this queue.
 - **Valid Values:** True | False
 - **Default:** True
+
+### `OPENWISP_CELERY_MONITORING_COMMAND_FLAGS`
+
+- **Explanation:** Additional flags passed to the command that
+  starts the celery worker for the "monitoring" queue.
+  It can be used to configure different attributes of the
+  celery worker (e.g. autoscaling, concurrency, etc.).
+  Refer to the [celery worker documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#workers-guide)
+  for more information on configurable properties.
+- **Valid Values:** STRING
+- **Default:** `--concurrency=1`
+
+### `OPENWISP_CELERY_MONITORING_CHECKS_COMMAND_FLAGS`
+
+- **Explanation:** Additional flags passed to the command that
+  starts the celery worker for the "monitoring_checks" queue.
+  It can be used to configure different attributes of the
+  celery worker (e.g. autoscaling, concurrency, etc.).
+  Refer to the [celery worker documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#workers-guide)
+  for more information on configurable properties.
+- **Valid Values:** STRING
+- **Default:** `--concurrency=1`
 
 ## Email
 

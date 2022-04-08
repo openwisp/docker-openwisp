@@ -59,20 +59,23 @@ elif [ "$MODULE_NAME" = 'celery' ]; then
     echo "Starting the 'default' celery worker"
     celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues celery \
            -n celery@%h --logfile /opt/openwisp/logs/celery.log \
-           --pidfile /opt/openwisp/celery.pid --detach
+           --pidfile /opt/openwisp/celery.pid --detach \
+           ${OPENWISP_CELERY_COMMAND_FLAGS}
 
     if [ "$USE_OPENWISP_CELERY_NETWORK" = "True" ]; then
         echo "Starting the 'network' celery worker"
         celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues network \
                -n network@%h --logfile /opt/openwisp/logs/celery_network.log \
-               --pidfile /opt/openwisp/celery_network.pid --detach
+               --pidfile /opt/openwisp/celery_network.pid --detach \
+               ${OPENWISP_CELERY_NETWORK_COMMAND_FLAGS}
     fi
 
     if [[ "$USE_OPENWISP_FIRMWARE" == "True" && "$USE_OPENWISP_CELERY_FIRMWARE" == "True" ]]; then
         echo "Starting the 'firmware_upgrader' celery worker"
         celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues firmware_upgrader \
                -n firmware_upgrader@%h --logfile /opt/openwisp/logs/celery_firmware_upgrader.log \
-               --pidfile /opt/openwisp/celery_firmware_upgrader.pid --detach
+               --pidfile /opt/openwisp/celery_firmware_upgrader.pid --detach \
+               ${OPENWISP_CELERY_FIRMWARE_COMMAND_FLAGS}
     fi
     sleep 1s
     tail -f /opt/openwisp/logs/*
@@ -82,11 +85,13 @@ elif [ "$MODULE_NAME" = 'celery_monitoring' ]; then
         echo "Starting the 'monitoring' celery worker"
         celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring \
                -n monitoring@%h --logfile /opt/openwisp/logs/celery_monitoring.log \
-               --pidfile /opt/openwisp/celery_monitoring.pid --detach
+               --pidfile /opt/openwisp/celery_monitoring.pid --detach \
+               ${OPENWISP_CELERY_MONITORING_COMMAND_FLAGS}
         echo "Starting the 'monitoring_checks' celery worker"
         celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring_checks \
                -n monitoring_checks@%h --logfile /opt/openwisp/logs/celery_monitoring_checks.log \
-               --pidfile /opt/openwisp/celery_monitoring_checks.pid --detach
+               --pidfile /opt/openwisp/celery_monitoring_checks.pid --detach \
+               ${OPENWISP_CELERY_MONITORING_CHECKS_COMMAND_FLAGS}
         sleep 1s
         tail -f /opt/openwisp/logs/*
     else
