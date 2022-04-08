@@ -377,8 +377,19 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 ### `OPENWISP_CELERY_MONITORING_COMMAND_FLAGS`
 
 - **Explanation:** Additional flags passed to the command that
-  starts the celery worker for the "monitoring" and "monitoring_checks"
-  queue. It can be used to configure different attributes of the
+  starts the celery worker for the "monitoring" queue.
+  It can be used to configure different attributes of the
+  celery worker (e.g. autoscaling, concurrency, etc.).
+  Refer to the [celery worker documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#workers-guide)
+  for more information on configurable properties.
+- **Valid Values:** STRING
+- **Default:** `--concurrency=1`
+
+### `OPENWISP_CELERY_MONITORING_CHECKS_COMMAND_FLAGS`
+
+- **Explanation:** Additional flags passed to the command that
+  starts the celery worker for the "monitoring_checks" queue.
+  It can be used to configure different attributes of the
   celery worker (e.g. autoscaling, concurrency, etc.).
   Refer to the [celery worker documentation](https://docs.celeryq.dev/en/stable/userguide/workers.html#workers-guide)
   for more information on configurable properties.

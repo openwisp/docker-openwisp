@@ -91,7 +91,7 @@ elif [ "$MODULE_NAME" = 'celery_monitoring' ]; then
         celery -A openwisp worker -l ${DJANGO_LOG_LEVEL} --queues monitoring_checks \
                -n monitoring_checks@%h --logfile /opt/openwisp/logs/celery_monitoring_checks.log \
                --pidfile /opt/openwisp/celery_monitoring_checks.pid --detach \
-               ${OPENWISP_CELERY_MONITORING_COMMAND_FLAGS}
+               ${OPENWISP_CELERY_MONITORING_CHECKS_COMMAND_FLAGS}
         sleep 1s
         tail -f /opt/openwisp/logs/*
     else
