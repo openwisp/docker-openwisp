@@ -17,10 +17,12 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Testing Requirements
-        run: sudo pip install -r requirements-test.txt
+        run: |
+          sudo pip install -r requirements-test.txt
+          sudo curl -sL -o /bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64" && sudo chmod +x /bin/hadolint
 
-      - name: Lint
-        run: openwisp-qa-check --skip-checkmigrations
+      - name: QA checks
+        run: ./run-qa-checks
 
       - name: Setup
         run: |

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e
+
+# will be 1 by default when run through github actions
+CI=${CI:-0}
+
+if [ "$CI" -eq 0 ]; then
+	echo 'Shell scripts QA checks ...'
+	# check shell scripts formatting
+	sh_files=$(shfmt -f .)
+	shfmt -d .
+fi
+
+echo ''
+echo 'Python file QA checks...'
+openwisp-qa-check --skip-checkmigrations
+
+echo ''
+echo 'Dockerfile QA checks...'
+
+# ignoring some dockerfile-lint:
+# DL3013 - Pin versions in pip. Instead of `pip install <package>` use `pip install <package>==<version>`
+# DL3007 - Using latest is prone to errors if the image will ever update. Pin the version explicitly to a release tag
+# DL3018 - Pin versions in apk add. Instead of `apk add <package>` use `apk add <package>=<version>`
+hadolint ./build/openwisp_freeradius/Dockerfile --ignore DL3018
+hadolint ./build/openwisp_nfs/Dockerfile --ignore DL3018 --ignore DL3007
+hadolint ./build/openwisp_postfix/Dockerfile --ignore DL3018
+hadolint ./build/openwisp_base/Dockerfile --ignore DL3013
+hadolint ./build/openwisp_api/Dockerfile --ignore DL3007
+hadolint ./build/openwisp_dashboard/Dockerfile --ignore DL3007
+hadolint ./build/openwisp_nginx/Dockerfile --ignore DL3018
+hadolint ./build/openwisp_openvpn/Dockerfile --ignore DL3007 --ignore DL3018
+hadolint ./build/openwisp_websocket/Dockerfile --ignore DL3007
