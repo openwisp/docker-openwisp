@@ -1,6 +1,6 @@
+import ctypes
 import socket
 from urllib.parse import urlsplit
-import ctypes
 
 
 class UwsgiPacketHeader(ctypes.Structure):

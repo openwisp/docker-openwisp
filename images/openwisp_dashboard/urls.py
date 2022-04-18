@@ -1,13 +1,12 @@
 import os
-from django.urls import include, path
-from django.contrib import admin
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.urls import reverse_lazy
-from django.views.generic import RedirectView
+
 from django.conf import settings
 from django.conf.urls.static import static
-from openwisp.utils import openwisp_controller_urls, env_bool
-
+from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import include, path, reverse_lazy
+from django.views.generic import RedirectView
+from openwisp.utils import env_bool, openwisp_controller_urls
 
 index_redirect_view = RedirectView.as_view(url=reverse_lazy('admin:index'))
 

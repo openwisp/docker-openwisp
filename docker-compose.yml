@@ -4,7 +4,7 @@ services:
   dashboard:
     image: openwisp/openwisp-dashboard:latest
     build:
-      context: build
+      context: images
       dockerfile: openwisp_dashboard/Dockerfile
       args:
         DASHBOARD_APP_PORT: 8000
@@ -24,7 +24,7 @@ services:
   api:
     image: openwisp/openwisp-api:latest
     build:
-      context: build
+      context: images
       dockerfile: openwisp_api/Dockerfile
       args:
         API_APP_PORT: 8001
@@ -42,7 +42,7 @@ services:
   websocket:
     image: openwisp/openwisp-websocket:latest
     build:
-      context: build
+      context: images
       dockerfile: openwisp_websocket/Dockerfile
       args:
         WEBSOCKET_APP_PORT: 8002
@@ -97,7 +97,7 @@ services:
   nginx:
     image: openwisp/openwisp-nginx:latest
     build:
-      context: build
+      context: images
       dockerfile: openwisp_nginx/Dockerfile
     env_file:
       - .env
@@ -122,7 +122,7 @@ services:
   freeradius:
     image: openwisp/openwisp-freeradius:latest
     build:
-      context: build
+      context: images
       dockerfile: openwisp_freeradius/Dockerfile
     env_file:
       - .env
@@ -137,7 +137,7 @@ services:
   postfix:
     image: openwisp/openwisp-postfix:latest
     build:
-      context: build
+      context: images
       dockerfile: openwisp_postfix/Dockerfile
     env_file:
       - .env
@@ -147,7 +147,7 @@ services:
   openvpn:
     image: openwisp/openwisp-openvpn:latest
     build:
-      context: build
+      context: images
       dockerfile: openwisp_openvpn/Dockerfile
     ports:
       - "1194:1194/udp"

@@ -133,6 +133,9 @@ if __name__ == '__main__':
     defaultCa = create_default_CA(os.environ['X509_NAME_CA'])
     defaultCert = create_default_cert(defaultCa, os.environ['X509_NAME_CERT'])
     defaultVpn = create_default_vpn(
-        os.environ['VPN_NAME'], os.environ['VPN_DOMAIN'], defaultCa, defaultCert,
+        os.environ['VPN_NAME'],
+        os.environ['VPN_DOMAIN'],
+        defaultCa,
+        defaultCert,
     )
     create_default_vpn_template(os.environ['VPN_CLIENT_NAME'], defaultVpn)

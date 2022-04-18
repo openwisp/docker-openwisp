@@ -1,7 +1,7 @@
+import json
+import logging
 import os
 import sys
-import logging
-import json
 
 from openwisp.utils import (
     env_bool,
@@ -208,7 +208,10 @@ LEAFLET_CONFIG = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        )
     },
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
@@ -358,7 +361,7 @@ else:
         )
 
 try:
-    from openwisp.module_settings import *
+    from openwisp.module_settings import *  # noqa: F401, F403
 except ImportError:
     pass
 

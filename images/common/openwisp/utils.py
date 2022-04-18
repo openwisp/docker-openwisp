@@ -1,9 +1,9 @@
 # Utility functions for django modules
 # that are used in multiple openwisp modules
-import logging
-import socket
 import json
+import logging
 import os
+import socket
 
 
 class HostFilter(logging.Filter):

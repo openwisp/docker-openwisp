@@ -28,19 +28,19 @@ base-build:
 	    BUILD_ARGS+=" --build-arg $$build_arg"; \
 	done; \
 	docker build --tag openwisp/openwisp-base:intermedia-system \
-	             --file ./build/openwisp_base/Dockerfile \
-	             --target SYSTEM ./build/; \
+	             --file ./images/openwisp_base/Dockerfile \
+	             --target SYSTEM ./images/; \
 	docker build --tag openwisp/openwisp-base:intermedia-python \
-	             --file ./build/openwisp_base/Dockerfile \
-	             --target PYTHON ./build/ \
+	             --file ./images/openwisp_base/Dockerfile \
+	             --target PYTHON ./images/ \
 	             $$BUILD_ARGS; \
 	docker build --tag openwisp/openwisp-base:latest \
-	             --file ./build/openwisp_base/Dockerfile ./build/ \
+	             --file ./images/openwisp_base/Dockerfile ./images/ \
 	             $$BUILD_ARGS
 
 nfs-build:
 	docker build --tag openwisp/openwisp-nfs:latest \
-	             --file ./build/openwisp_nfs/Dockerfile ./build/
+	             --file ./images/openwisp_nfs/Dockerfile ./images/
 
 compose-build: base-build
 	docker-compose build --parallel

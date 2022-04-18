@@ -1,6 +1,7 @@
 import os
-from openwisp.utils import request_scheme
+
 from openwisp.settings import MIDDLEWARE
+from openwisp.utils import request_scheme
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -72,9 +73,11 @@ EXTENDED_APPS = [
     'django_x509',
     'django_loci',
 ]
-MIDDLEWARE += ['pipeline.middleware.MinifyHTMLMiddleware',]
+MIDDLEWARE += [
+    'pipeline.middleware.MinifyHTMLMiddleware',
+]
 # HTML minification with django pipeline
-PIPELINE = { 'PIPELINE_ENABLED': True }
+PIPELINE = {'PIPELINE_ENABLED': True}
 # static files minification and invalidation with django-compress-staticfiles
 STATICFILES_STORAGE = 'openwisp_utils.storage.CompressStaticFilesStorage'
 BROTLI_STATIC_COMPRESSION = False

@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 import tldextract
 
 ext = tldextract.extract(os.environ['API_DOMAIN'])

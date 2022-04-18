@@ -2,8 +2,8 @@ import os
 
 from celery import Celery
 from celery.schedules import crontab
-from openwisp.utils import env_bool
 from django.utils.timezone import timedelta
+from openwisp.utils import env_bool
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 
@@ -24,9 +24,7 @@ if env_bool(os.environ.get('USE_OPENWISP_MONITORING')):
         task_routes['openwisp_monitoring.check.tasks.perform_check'] = {
             'queue': 'monitoring_checks'
         }
-        task_routes['openwisp_monitoring.monitoring.tasks.*'] = {
-            'queue': 'monitoring'
-        }
+        task_routes['openwisp_monitoring.monitoring.tasks.*'] = {'queue': 'monitoring'}
 
 if env_bool(os.environ.get('USE_OPENWISP_FIRMWARE')) and env_bool(
     os.environ.get('USE_OPENWISP_CELERY_FIRMWARE')
@@ -80,7 +78,7 @@ app = Celery(
         **radius_schedule,
         **topology_schedule,
         **notification_schedule,
-        **monitoring_schedule
+        **monitoring_schedule,
     },
 )
 app.config_from_object('django.conf:settings', namespace='CELERY')

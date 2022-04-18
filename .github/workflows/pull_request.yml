@@ -19,7 +19,8 @@ jobs:
       - name: Install Testing Requirements
         run: |
           sudo pip install -r requirements-test.txt
-          sudo curl -sL -o /bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64" && sudo chmod +x /bin/hadolint
+          sudo curl -sL -o /bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64"
+          sudo chmod +x /bin/hadolint
 
       - name: QA checks
         run: ./run-qa-checks
