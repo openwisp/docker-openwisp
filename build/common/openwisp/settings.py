@@ -386,3 +386,8 @@ if not env_bool(os.environ['USE_OPENWISP_MONITORING']):
         INSTALLED_APPS.remove('openwisp_monitoring.check')
 if EMAIL_BACKEND == 'djcelery_email.backends.CeleryEmailBackend':
     INSTALLED_APPS.append('djcelery_email')
+
+try:
+    from .custom_settings import *
+except ImportError:
+    pass

@@ -80,3 +80,4 @@ local/
 
 # openwisp
 customize/
+!customize/configuration/custom_django_settings.example.py

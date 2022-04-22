@@ -22,6 +22,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
     - [Compose](#compose)
     - [Kubernetes](#kubernetes)
   - [Customization](#customization)
+    - [Custom Django Settings](#custom-django-settings)
     - [Custom Styles and JavaScript](#custom-styles-and-javascript)
     - [Changing Python Packages](#changing-python-packages)
     - [Disabling Services](#disabling-services)
@@ -106,6 +107,14 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 
 ## Customization
 
+### Custom Django Settings
+
+If you want to add custom Django settings, you can follow the following guide.
+
+1. Create a directory `customize` in the same location as the `docker-compose.yml` file.
+2. Create a sub-directory `customize/configuration`.
+3. Create a file which will contain settings for Django `customize/configuration/custom_django_settings.py`. You can write all Django specific configuration in this file.
+
 ### Custom Styles and JavaScript
 
 If you want to use your custom styles, add custom JavaScript you can follow the following guide.
@@ -116,14 +125,16 @@ If you want to use your custom styles, add custom JavaScript you can follow the 
 OPENWISP_ADMIN_THEME_LINKS=[{"type": "text/css", "href": "/static/custom/css/custom-theme.css", "rel": "stylesheet", "media": "all"},{"type": "image/x-icon", "href": "/static/custom/bootload.png", "rel": "icon"},{"type": "image/svg+xml", "href": "/static/ui/openwisp/images/openwisp-logo-small.svg", "rel": "icons"}]
 ```
 
-2. Create a folder `customize` in same location as the `docker-compose.yml` file.
-3. Create your custom CSS / Javascript file, exmaple `customize/static/custom/css/custom-theme.css`.
-4. Start the nginx containers.
+2. Create a directory `customize` in same location as the `docker-compose.yml` file.
+3. Create a sub-directory `customize/theme`.
+4. Create your custom CSS / Javascript file in `customize/theme` sub-directory,
+   example `customize/theme/static/custom/css/custom-theme.css`.
+5. Start the nginx containers.
 
 **Notes:**
 
 1. You can edit the styles / JavaScript files now without restarting the container, as long as file is in the correct place, it will be picked.
-2. You can create a `maintenance.html` file inside the `customize` folder to have a custom maintainence page for scheduled downtime.
+2. You can create a `maintenance.html` file inside the `customize` directory to have a custom maintenance page for scheduled downtime.
 
 ### Changing Python Packages
 
