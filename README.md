@@ -26,6 +26,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
     - [Custom Styles and JavaScript](#custom-styles-and-javascript)
     - [Changing Python Packages](#changing-python-packages)
     - [Disabling Services](#disabling-services)
+    - [Customizing uWSGI configuration](#customizing-uwsgi-configuration)
   - [Development](#development)
     - [Workbench setup](#workbench-setup)
     - [Runtests](#runtests)
@@ -199,6 +200,31 @@ If you want to disable a service, you can simply remove the container for that s
 - `openwisp-postfix`:
   - Ensure your SMTP instance reachable by the OpenWISP containers.
   - Change the [email configuration variables](docs/ENV.md) to point to your instances.
+
+### Customizing uWSGI configuration
+
+By default, you can only configure [`processes`, `threads` and `listen`
+settings of uWSGI using environment variables](docs/ENV.md#uWSGI).
+If you want to configure more uWSGI settings, you can supply your uWSGI
+configuration by following these steps:
+
+1. Create the uWSGI configuration file in the same directory as `docker-compose.yml`.
+   For the sake of this example, let's assume the filename is `custom_uwsgi.ini`.
+2. In `dashboard` and `api` services of `docker-compose.yml`, add volumes as following
+
+```yml
+  services:
+    dashboard:
+      ... # other configuration
+      volumes:
+        ... # other volumes
+        - ${PWD}/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
+    api:
+      ... # other configuration
+      volumes:
+        ... # other volumes
+        - ${PWD}/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
+```
 
 ## Development
 
