@@ -22,6 +22,7 @@ Following are the options that can be changed. The list is divided in following 
 - [Django](#Django): Additional django settings.
 - [Email](#Email): Email & postfix configurations.
 - [Cron](#Cron): Settings of the periodic tasks.
+- [uWSGI](#uWSGI): uWSGI configurations.
 - [Nginx](#Nginx): Nginx configurations.
 - [VPN](#VPN): Default VPN and VPN template related configurations.
 - [X509](#X509): Default certificate & certicate Authority configuration options.
@@ -512,6 +513,26 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Explaination:** (Value in months) Deactivates expired user accounts which were created temporarily and have an expiration date set.
 - **Valid Values:** INT
 - **Default:** 12
+
+## uWSGI
+
+### `UWSGI_PROCESSES`
+
+- **Explanation:** Number of uWSGI process to spawn.
+- **Valid Values:** INT
+- **Default:** 2
+
+### `UWSGI_THREADS`
+
+- **Explanation:** Number of threads each uWSGI process will have.
+- **Valid Values:** INT
+- **Default:** 2
+
+### `UWSGI_LISTEN`
+
+- **Explanation:** Value of the listen queue of uWSGI
+- **Valid Values:** INT
+- **Default:** 2
 
 ## Nginx
 
