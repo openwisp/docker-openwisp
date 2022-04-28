@@ -82,5 +82,3 @@ local/
 customization/*
 !customization/configuration/django/__init__.py
 !customization/configuration/django/custom_django_settings.example.py
-
-
