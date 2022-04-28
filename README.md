@@ -107,13 +107,32 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 
 ## Customization
 
+The following commands will create the directory structure required for
+adding customizations. Execute these commands in the same location
+as the `docker-compose.yml` file.
+
+```shell
+mkdir -p customization/configuration/django
+touch customization/configuration/django/__init__.py
+touch customization/configuration/django/custom_django_settings.py
+mkdir -p customization/theme
+```
+
+You can also refer to the [directory structure of this repository](https://github.com/openwisp/docker-openwisp/tree/master/customize)
+for an example.
+
 ### Custom Django Settings
 
-If you want to add custom Django settings, you can follow the following guide.
+The `customization/configuration/django` directory created in the above section
+is mounted at `/opt/openwisp/openwisp/configuration` in the `dashboard`, `api`,
+`celery`, `celery_monitoring` and `celerybeat` containers.
 
-1. Create a directory `customize` in the same location as the `docker-compose.yml` file.
-2. Create a sub-directory `customize/configuration`.
-3. Create a file which will contain settings for Django `customize/configuration/custom_django_settings.py`. You can write all Django specific configuration in this file.
+You can specify additional Django settings (e.g. SMTP configuration) in the
+`customization/configuration/django/custom_django_settings.py` file.
+Django will use these settings at the project startup.
+
+You can also put additional files in `customization/configuration/django` that
+needs to be mounted at `/opt/openwisp/openwisp/configuration` in the containers.
 
 ### Custom Styles and JavaScript
 
@@ -125,11 +144,9 @@ If you want to use your custom styles, add custom JavaScript you can follow the 
 OPENWISP_ADMIN_THEME_LINKS=[{"type": "text/css", "href": "/static/custom/css/custom-theme.css", "rel": "stylesheet", "media": "all"},{"type": "image/x-icon", "href": "/static/custom/bootload.png", "rel": "icon"},{"type": "image/svg+xml", "href": "/static/ui/openwisp/images/openwisp-logo-small.svg", "rel": "icons"}]
 ```
 
-2. Create a directory `customize` in same location as the `docker-compose.yml` file.
-3. Create a sub-directory `customize/theme`.
-4. Create your custom CSS / Javascript file in `customize/theme` sub-directory,
-   example `customize/theme/static/custom/css/custom-theme.css`.
-5. Start the nginx containers.
+2. Create your custom CSS / Javascript file in `customization/theme` directory created
+   in the above section. E.g. `customization/theme/static/custom/css/custom-theme.css`.
+3. Start the nginx containers.
 
 **Notes:**
 
