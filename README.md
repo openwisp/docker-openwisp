@@ -208,7 +208,7 @@ settings of uWSGI using environment variables](docs/ENV.md#uWSGI).
 If you want to configure more uWSGI settings, you can supply your uWSGI
 configuration by following these steps:
 
-1. Create the uWSGI configuration file in the same directory as `docker-compose.yml`.
+1. Create the uWSGI configuration file in the `customization/configuration` directory.
    For the sake of this example, let's assume the filename is `custom_uwsgi.ini`.
 2. In `dashboard` and `api` services of `docker-compose.yml`, add volumes as following
 
@@ -218,12 +218,12 @@ configuration by following these steps:
       ... # other configuration
       volumes:
         ... # other volumes
-        - ${PWD}/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
+        - ${PWD}/customization/configuration/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
     api:
       ... # other configuration
       volumes:
         ... # other volumes
-        - ${PWD}/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
+        - ${PWD}/customization/configuration/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
 ```
 
 ## Development
