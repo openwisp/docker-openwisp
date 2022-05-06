@@ -532,7 +532,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 - **Explanation:** Value of the listen queue of uWSGI
 - **Valid Values:** INT
-- **Default:** 2
+- **Default:** 100
 
 ## Nginx
 
