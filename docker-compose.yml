@@ -14,6 +14,7 @@ services:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
       - influxdb_data:/var/lib/influxdb
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
       - postgres
       - redis
@@ -32,6 +33,7 @@ services:
     volumes:
       - influxdb_data:/var/lib/influxdb
       - openwisp_media:/opt/openwisp/media
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
       - postgres
       - redis
@@ -46,6 +48,8 @@ services:
         WEBSOCKET_APP_PORT: 8002
     env_file:
       - .env
+    volumes:
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
       - dashboard
 
@@ -55,6 +59,7 @@ services:
       - MODULE_NAME=celery
     volumes:
       - openwisp_media:/opt/openwisp/media
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     env_file:
       - .env
     depends_on:
@@ -68,6 +73,7 @@ services:
       - MODULE_NAME=celery_monitoring
     volumes:
       - openwisp_media:/opt/openwisp/media
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     env_file:
       - .env
     depends_on:
@@ -81,6 +87,8 @@ services:
       - MODULE_NAME=celerybeat
     env_file:
       - .env
+    volumes:
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
       - postgres
       - redis
@@ -97,7 +105,7 @@ services:
       - openwisp_static:/opt/openwisp/public/static:ro
       - openwisp_media:/opt/openwisp/public/media:ro
       - openwisp_certs:/etc/letsencrypt
-      - ./customize:/opt/openwisp/public/custom:ro
+      - ./customization/theme:/opt/openwisp/public/custom:ro
     networks:
       default:
         aliases:
