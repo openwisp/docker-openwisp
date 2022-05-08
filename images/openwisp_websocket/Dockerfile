@@ -1,3 +1,4 @@
+# hadolint ignore=DL3007
 FROM openwisp/openwisp-base:latest
 
 WORKDIR /opt/openwisp/

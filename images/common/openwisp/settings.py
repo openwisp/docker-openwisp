@@ -391,6 +391,6 @@ if EMAIL_BACKEND == 'djcelery_email.backends.CeleryEmailBackend':
     INSTALLED_APPS.append('djcelery_email')
 
 try:
-    from .configuration.custom_django_settings import *
+    from .configuration.custom_django_settings import *  # noqa: F403, F401
 except ImportError:
     pass

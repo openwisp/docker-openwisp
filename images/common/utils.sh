@@ -20,12 +20,12 @@ function default_psql_vars {
 }
 
 function start_uwsgi {
-    # If a user supplies custom uWSGI configuration, then
-    # due to lack of write permissions this command will fail.
-    # Hence, OR (||) operator is used here to continue execution
-    # of the script.
-    envsubst < uwsgi.conf.ini > uwsgi.ini || true
-    uwsgi --ini uwsgi.ini
+	# If a user supplies custom uWSGI configuration, then
+	# due to lack of write permissions this command will fail.
+	# Hence, OR (||) operator is used here to continue execution
+	# of the script.
+	envsubst <uwsgi.conf.ini >uwsgi.ini || true
+	uwsgi --ini uwsgi.ini
 }
 
 function create_prod_certs {

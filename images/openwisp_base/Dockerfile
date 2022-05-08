@@ -7,67 +7,68 @@ FROM python:3.10-slim-bullseye AS SYSTEM
 # 4. sudo
 RUN apt update && \
     apt install --yes --no-install-recommends \
-                libcairo2 apt-utils libpangocairo-1.0-0 \
-                gdal-bin gettext fping && \
+    libcairo2 apt-utils libpangocairo-1.0-0 \
+    gdal-bin gettext fping && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 RUN apt update && \
     apt install --yes --no-install-recommends \
-                gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
-                python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
+    gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
+    python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
 
 RUN useradd --system --password '' --create-home --shell /bin/bash \
-   --gid root --uid 1001 openwisp
+    --gid root --uid 1001 openwisp
 USER openwisp:root
 
 FROM SYSTEM AS PYTHON
 
 ENV PATH="${PATH}:/home/openwisp/.local/bin"
 ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
+ENV EMAIL_BACKEND=djcelery_email.backends.CeleryEmailBackend
 
-RUN pip install --user --upgrade pip
-ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/docker-openwisp-usage
-RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE=https://github.com/openwisp/openwisp-firmware-upgrader/tarball/docker-openwisp-usage
-RUN pip install --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topology/tarball/docker-openwisp-usage
-RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/docker-openwisp-usage
-RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}
+RUN pip install --user --upgrade pip~=22.0.4
+ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring
+RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}~=1.0.0
+ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader
+RUN pip install --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}~=1.0.0
+ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology
+RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}~=1.0.0
+ARG OPENWISP_RADIUS_SOURCE=openwisp-radius
+RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}~=1.0.0
 
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
 # otherwise these modules will have already been installed above
 ARG OPENWISP_IPAM_SOURCE=default
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
+    pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}~=1.0.0; \
     fi
 ARG OPENWISP_CONTROLLER_SOURCE=default
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
+    pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}~=1.0.0; \
     fi
 ARG OPENWISP_NOTIFICATION_SOURCE=default
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
+    pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}~=1.0.0; \
     fi
 ARG OPENWISP_USERS_SOURCE=default
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
+    pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}~=1.0.0; \
     fi
 ARG OPENWISP_UTILS_SOURCE=default
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
+    pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}~=1.0.1; \
     fi
 ARG DJANGO_X509_SOURCE=default
 RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
-    pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
+    pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}~=1.1.0; \
     fi
 
-ARG DJANGO_SOURCE=django~=4.0.0
-RUN pip install --user --upgrade ${DJANGO_SOURCE}
+ARG DJANGO_SOURCE=django
+RUN pip install --user --upgrade ${DJANGO_SOURCE}~=4.0.0
 
 RUN if [ "$EMAIL_BACKEND" = "djcelery_email.backends.CeleryEmailBackend" ]; then \
-    pip install --prefix='/install' django-celery-email; \
+    pip install --user django-celery-email~=3.0.0; \
     fi
 
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt

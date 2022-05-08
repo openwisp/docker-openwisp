@@ -19,16 +19,12 @@ openwisp-qa-check --skip-checkmigrations
 echo ''
 echo 'Dockerfile QA checks...'
 
-# ignoring some dockerfile-lint:
-# DL3013 - Pin versions in pip. Instead of `pip install <package>` use `pip install <package>==<version>`
-# DL3007 - Using latest is prone to errors if the image will ever update. Pin the version explicitly to a release tag
-# DL3018 - Pin versions in apk add. Instead of `apk add <package>` use `apk add <package>=<version>`
-hadolint ./images/openwisp_freeradius/Dockerfile --ignore DL3018
-hadolint ./images/openwisp_nfs/Dockerfile --ignore DL3018 --ignore DL3007
-hadolint ./images/openwisp_postfix/Dockerfile --ignore DL3018
-hadolint ./images/openwisp_base/Dockerfile --ignore DL3013
-hadolint ./images/openwisp_api/Dockerfile --ignore DL3007
-hadolint ./images/openwisp_dashboard/Dockerfile --ignore DL3007
-hadolint ./images/openwisp_nginx/Dockerfile --ignore DL3018
-hadolint ./images/openwisp_openvpn/Dockerfile --ignore DL3007 --ignore DL3018
-hadolint ./images/openwisp_websocket/Dockerfile --ignore DL3007
+hadolint ./images/openwisp_freeradius/Dockerfile
+hadolint ./images/openwisp_nfs/Dockerfile
+hadolint ./images/openwisp_postfix/Dockerfile
+hadolint ./images/openwisp_base/Dockerfile
+hadolint ./images/openwisp_api/Dockerfile
+hadolint ./images/openwisp_dashboard/Dockerfile
+hadolint ./images/openwisp_nginx/Dockerfile
+hadolint ./images/openwisp_openvpn/Dockerfile
+hadolint ./images/openwisp_websocket/Dockerfile
