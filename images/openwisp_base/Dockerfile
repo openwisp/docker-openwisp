@@ -27,41 +27,51 @@ ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 ENV EMAIL_BACKEND=djcelery_email.backends.CeleryEmailBackend
 
 RUN pip install --user --upgrade pip~=22.0.4
-ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring
-RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}~=1.0.0
-ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader
-RUN pip install --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}~=1.0.0
-ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology
-RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}~=1.0.0
-ARG OPENWISP_RADIUS_SOURCE=openwisp-radius
-RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}~=1.0.0
+ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring~=1.0.0
+# hadolint ignore=DL3013
+RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}
+ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.0.0
+# hadolint ignore=DL3013
+RUN pip install --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
+ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=1.0.0
+# hadolint ignore=DL3013
+RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
+ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=1.0.0
+# hadolint ignore=DL3013
+RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
 # otherwise these modules will have already been installed above
 ARG OPENWISP_IPAM_SOURCE=default
+# hadolint ignore=DL3013
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}~=1.0.0; \
+    pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
 ARG OPENWISP_CONTROLLER_SOURCE=default
+# hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}~=1.0.0; \
+    pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
     fi
 ARG OPENWISP_NOTIFICATION_SOURCE=default
+# hadolint ignore=DL3013
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}~=1.0.0; \
+    pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
 ARG OPENWISP_USERS_SOURCE=default
+# hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}~=1.0.0; \
+    pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
 ARG OPENWISP_UTILS_SOURCE=default
+# hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}~=1.0.1; \
+    pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
     fi
 ARG DJANGO_X509_SOURCE=default
+# hadolint ignore=DL3013
 RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
-    pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}~=1.1.0; \
+    pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
     fi
 
 ARG DJANGO_SOURCE=django
