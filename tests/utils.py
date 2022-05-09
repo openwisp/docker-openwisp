@@ -230,7 +230,10 @@ class TestUtilities(TestConfig):
     def create_network_topology(
         self,
         label='automated-selenium-test-01',
-        topology_url='https://pastebin.com/raw/ZMHRRYss',
+        topology_url=(
+            'https://raw.githubusercontent.com/openwisp/'
+            'docker-openwisp/master/tests/static/network-graph.json'
+        ),
         driver=None,
     ):
         """
