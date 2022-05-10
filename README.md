@@ -251,16 +251,16 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 
    - Setup chromedriver
 
-     1. Install: `sudo apt --yes install chromium`
+     1. Install: `sudo apt --yes install chromium-browser`
      2. Check version: `chromium --version`
-     3. Install Driver for your version: `https://chromedriver.chromium.org/downloads`
+     3. Install Driver for your version: [`https://chromedriver.chromium.org/downloads`](https://chromedriver.chromium.org/downloads)
      4. Extract chromedriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
 
    - Setup geckodriver
 
      1. Install: `sudo apt --yes install firefox`
      2. Check version: `firefox --version`
-     3. Install Driver for your version: `https://github.com/mozilla/geckodriver/releases`
+     3. Install Driver for your version: [`https://github.com/mozilla/geckodriver/releases`](https://github.com/mozilla/geckodriver/releases)
      4. Extract geckodriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
 
 2. Install selenium: `python3 -m pip install selenium`
