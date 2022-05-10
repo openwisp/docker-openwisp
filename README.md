@@ -251,7 +251,7 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 
    - Setup chromedriver
 
-     1. Install: `sudo apt --yes install chromium-browser`
+     1. Install: `sudo apt --yes install chromium-browser` (Ubuntu), `sudo apt --yes install chromium` (Debian)
      2. Check version: `chromium --version`
      3. Install Driver for your version: [`https://chromedriver.chromium.org/downloads`](https://chromedriver.chromium.org/downloads)
      4. Extract chromedriver to one of directories from your `$PATH`. (example: `/usr/bin/`)
