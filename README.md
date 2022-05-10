@@ -24,9 +24,9 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
   - [Customization](#customization)
     - [Custom Django Settings](#custom-django-settings)
     - [Custom Styles and JavaScript](#custom-styles-and-javascript)
+    - [Customizing uWSGI configuration](#customizing-uwsgi-configuration)
     - [Changing Python Packages](#changing-python-packages)
     - [Disabling Services](#disabling-services)
-    - [Customizing uWSGI configuration](#customizing-uwsgi-configuration)
   - [Development](#development)
     - [Workbench setup](#workbench-setup)
     - [Runtests](#runtests)
@@ -154,6 +154,31 @@ OPENWISP_ADMIN_THEME_LINKS=[{"type": "text/css", "href": "/static/custom/css/cus
 1. You can edit the styles / JavaScript files now without restarting the container, as long as file is in the correct place, it will be picked.
 2. You can create a `maintenance.html` file inside the `customize` directory to have a custom maintenance page for scheduled downtime.
 
+### Customizing uWSGI configuration
+
+By default, you can only configure [`processes`, `threads` and `listen`
+settings of uWSGI using environment variables](docs/ENV.md#uWSGI).
+If you want to configure more uWSGI settings, you can supply your uWSGI
+configuration by following these steps:
+
+1. Create the uWSGI configuration file in the `customization/configuration` directory.
+   For the sake of this example, let's assume the filename is `custom_uwsgi.ini`.
+2. In `dashboard` and `api` services of `docker-compose.yml`, add volumes as following
+
+```yml
+  services:
+    dashboard:
+      ... # other configuration
+      volumes:
+        ... # other volumes
+        - ${PWD}/customization/configuration/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
+    api:
+      ... # other configuration
+      volumes:
+        ... # other volumes
+        - ${PWD}/customization/configuration/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
+```
+
 ### Changing Python Packages
 
 You can build with your own python package by creating a file named `.build.env` in the root of the repository, then set the variables inside `.build.env` file in `<variable>=<value>` format. Multiple variable should be separated in newline. These are the variables that can be changed:
@@ -200,31 +225,6 @@ If you want to disable a service, you can simply remove the container for that s
 - `openwisp-postfix`:
   - Ensure your SMTP instance reachable by the OpenWISP containers.
   - Change the [email configuration variables](docs/ENV.md) to point to your instances.
-
-### Customizing uWSGI configuration
-
-By default, you can only configure [`processes`, `threads` and `listen`
-settings of uWSGI using environment variables](docs/ENV.md#uWSGI).
-If you want to configure more uWSGI settings, you can supply your uWSGI
-configuration by following these steps:
-
-1. Create the uWSGI configuration file in the `customization/configuration` directory.
-   For the sake of this example, let's assume the filename is `custom_uwsgi.ini`.
-2. In `dashboard` and `api` services of `docker-compose.yml`, add volumes as following
-
-```yml
-  services:
-    dashboard:
-      ... # other configuration
-      volumes:
-        ... # other volumes
-        - ${PWD}/customization/configuration/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
-    api:
-      ... # other configuration
-      volumes:
-        ... # other volumes
-        - ${PWD}/customization/configuration/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
-```
 
 ## Development
 
