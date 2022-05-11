@@ -313,6 +313,12 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** Domain | IP Address
 - **Default:** 0.0.0.0
 
+### `OPENWISP_GEOCODING_CHECK`
+
+- **Explaination:** Use to check if geocoding is working as expected or not.
+- **Valid Values:** True | False
+- **Default:** True
+
 ### `USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS`
 
 - **Explaination:** Whether the default celery task routes should be
