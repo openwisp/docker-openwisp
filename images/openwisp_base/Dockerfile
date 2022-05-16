@@ -45,36 +45,37 @@ RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_IPAM_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
+        pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
 ARG OPENWISP_CONTROLLER_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
+        pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
     fi
 ARG OPENWISP_NOTIFICATION_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
+        pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
 ARG OPENWISP_USERS_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
+        pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
 ARG OPENWISP_UTILS_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
-    pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
+        pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
     fi
 ARG DJANGO_X509_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
-    pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
+        pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
     fi
 
-ARG DJANGO_SOURCE=django
-RUN pip install --user --upgrade ${DJANGO_SOURCE}~=4.0.0
+ARG DJANGO_SOURCE=django~=4.0.0
+# hadolint ignore=DL3013
+RUN pip install --user --upgrade ${DJANGO_SOURCE}
 
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
 RUN pip install --user --upgrade -r /tmp/openwisp-deploy-requirements.txt
