@@ -7,14 +7,14 @@ init_conf
 
 # Start services
 if [ "$MODULE_NAME" = 'dashboard' ]; then
-    if [ "$OPENWISP_GEOCODING_CHECK" = 'True' ]; then
-        python manage.py check --deploy --tag geocoding
-    fi
-    python services.py database redis
-    python manage.py migrate --noinput
-    python load_init_data.py
-    python manage.py collectstatic --noinput
-    start_uwsgi
+	if [ "$OPENWISP_GEOCODING_CHECK" = 'True' ]; then
+		python manage.py check --deploy --tag geocoding
+	fi
+	python services.py database redis
+	python manage.py migrate --noinput
+	python load_init_data.py
+	python manage.py collectstatic --noinput
+	start_uwsgi
 elif [ "$MODULE_NAME" = 'postfix' ]; then
 	postfix_config
 	postfix start

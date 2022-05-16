@@ -24,7 +24,6 @@ FROM SYSTEM AS PYTHON
 
 ENV PATH="${PATH}:/home/openwisp/.local/bin"
 ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
-ENV EMAIL_BACKEND=djcelery_email.backends.CeleryEmailBackend
 
 RUN pip install --user --upgrade pip~=22.0.4
 ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring~=1.0.0
@@ -76,10 +75,6 @@ RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
 
 ARG DJANGO_SOURCE=django
 RUN pip install --user --upgrade ${DJANGO_SOURCE}~=4.0.0
-
-RUN if [ "$EMAIL_BACKEND" = "djcelery_email.backends.CeleryEmailBackend" ]; then \
-    pip install --user django-celery-email~=3.0.0; \
-    fi
 
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
 RUN pip install --user --upgrade -r /tmp/openwisp-deploy-requirements.txt
