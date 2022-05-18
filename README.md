@@ -297,6 +297,27 @@ python3 tests/runtests.py <TestSuite>.<TestCase>
 # python3 tests/runtests.py TestServices.test_celery
 ```
 
+### Run Quality Assurance Checks
+
+We use [shfmt](https://github.com/mvdan/sh#shfmt) to format shell scripts and
+[hadolint](https://github.com/hadolint/hadolint#install) to lint Dockerfile
+
+To format all files, Run:
+
+```
+./qa-format
+```
+
+To run quality assurance checks you can use the `run-qa-checks` script:
+
+```
+# install test requirements first
+pip install requirements-test.txt
+
+# run QA checks before committing code
+./run-qa-checks
+```
+
 ## Usage
 
 ### Makefile Options

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+# will be 1 by default when run through github actions
+CI=${CI:-0}
+
+if [ "$CI" -eq 0 ]; then
+	echo 'Shell scripts QA checks ...'
+	# check shell scripts formatting
+	sh_files=$(shfmt -f .)
+	shfmt -d .
+fi
+
+echo ''
+echo 'Python file QA checks...'
+openwisp-qa-check --skip-checkmigrations
+
+echo ''
+echo 'Dockerfile QA checks...'
+
+hadolint ./images/openwisp_freeradius/Dockerfile
+hadolint ./images/openwisp_nfs/Dockerfile
+hadolint ./images/openwisp_postfix/Dockerfile
+hadolint ./images/openwisp_base/Dockerfile
+hadolint ./images/openwisp_api/Dockerfile
+hadolint ./images/openwisp_dashboard/Dockerfile
+hadolint ./images/openwisp_nginx/Dockerfile
+hadolint ./images/openwisp_openvpn/Dockerfile
+hadolint ./images/openwisp_websocket/Dockerfile
