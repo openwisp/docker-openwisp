@@ -130,14 +130,24 @@ WSGI_APPLICATION = 'openwisp.wsgi.application'
 ASGI_APPLICATION = 'openwisp.asgi.application'
 
 REDIS_HOST = os.environ['REDIS_HOST']
-CELERY_BROKER_URL = f'redis://{REDIS_HOST}:6379/1'
+REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
+REDIS_PASS = os.environ.get('REDIS_PASS')
+
+if not REDIS_PASS:
+    CHANNEL_REDIS_HOST = f'redis://{REDIS_HOST}:{REDIS_PORT}/1'
+else:
+    CHANNEL_REDIS_HOST = f'redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/1'
+
+if not REDIS_PASS:
+    CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/2'
+else:
+    CELERY_BROKER_URL = f'redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/2'
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_BROKER_TRANSPORT_OPTIONS = {'max_retries': 10}
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
-
 
 DB_OPTIONS = {
     'sslmode': os.environ['DB_SSLMODE'],
@@ -170,11 +180,10 @@ TIMESERIES_DATABASE = {
 
 # Channels(Websocket)
 # https://channels.readthedocs.io/en/latest/topics/channel_layers.html#configuration
-
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {'hosts': [(REDIS_HOST, 6379)]},
+        'CONFIG': {'hosts': [CHANNEL_REDIS_HOST]},
     },
 }
 
@@ -184,12 +193,15 @@ CHANNEL_LAYERS = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': f'redis://{REDIS_HOST}:6379/1',
+        'LOCATION': f'redis://{REDIS_HOST}:{REDIS_PORT}/0',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
     }
 }
+
+if REDIS_PASS:
+    CACHES['default']['OPTIONS']['PASSWORD'] = os.environ['REDIS_PASS']
 
 # Leaflet Configurations
 # https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration
