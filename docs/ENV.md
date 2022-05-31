@@ -732,6 +732,18 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** Domain | IP address
 - **Default:** redis
 
+### `REDIS_PORT`
+
+- **Explanation:** Port to establish redis connection.
+- **Valid Values:** INT
+- **Default:** `6379`
+
+### `REDIS_PASS`
+
+- **Explanation:** Redis password, optional.
+- **Valid Values:** STRING
+- **Default:** `None`
+
 ### `DASHBOARD_APP_SERVICE`
 
 - **Explanation:** Host to establish OpenWISP dashboard connection.

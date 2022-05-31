@@ -40,7 +40,14 @@ def dashboard_status():
 
 
 def redis_status():
-    rs = redis.Redis(os.environ['REDIS_HOST'])
+    kwargs = {}
+    redis_pass = os.environ.get('REDIS_PASS')
+    redis_port = os.environ.get('REDIS_PORT', 6379)
+    if redis_pass:
+        kwargs['password'] = redis_pass
+    if redis_port:
+        kwargs['port'] = redis_port
+    rs = redis.Redis(os.environ['REDIS_HOST'], **kwargs)
     try:
         rs.ping()
     except redis.ConnectionError:
