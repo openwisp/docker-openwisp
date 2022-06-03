@@ -21,6 +21,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
     - [Quick Setup](#quick-setup)
     - [Compose](#compose)
     - [Kubernetes](#kubernetes)
+    - [Deploying WireGuard VPN](#deploying-wireguard-vpn)
   - [Customization](#customization)
     - [Custom Django Settings](#custom-django-settings)
     - [Custom Styles and JavaScript](#custom-styles-and-javascript)
@@ -30,6 +31,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
   - [Development](#development)
     - [Workbench setup](#workbench-setup)
     - [Runtests](#runtests)
+    - [Run Quality Assurance Checks](#run-quality-assurance-checks)
   - [Usage](#usage)
     - [Makefile Options](#makefile-options)
 
@@ -111,6 +113,10 @@ by the images:
 
 - startup probe example: `test $(ps aux | grep -c uwsgi) -ge 2`
 - readiness probe example: `python services.py uwsgi_status "127.0.0.1:8001"`
+
+### Deploying WireGuard VPN
+
+Follow this detailed [step-by-step guide for deploying the WireGuard VPN](docs/tutorials/deploying-wireguard-vpn.md).
 
 ## Customization
 
@@ -244,7 +250,7 @@ If you want to disable a service, you can simply remove the container for that s
 - Default username & password are `admin`.
 - Default domains are: `dashboard.openwisp.org` and `api.openwisp.org`.
 - To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file,
-  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" >> /etc/hosts'`
+  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org wireguard-updater.openwisp.org" >> /etc/hosts'`
 - Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 - If you want to perform actions like cleaning everything produced by `docker-openwisp`,
   please use the [makefile options](#makefile-options).
@@ -257,15 +263,15 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 
    - Setup chromedriver
 
-     1. Install chromium: 
-     
+     1. Install chromium:
+
      ```bash
-     # On debian 
+     # On debian
      sudo apt --yes install chromium
-     # On ubuntu 
+     # On ubuntu
      sudo apt --yes install chromium-browser
      ```
-     
+
      3. Check version: `chromium --version`
      4. Install Driver for your version: [`https://chromedriver.chromium.org/downloads`](https://chromedriver.chromium.org/downloads)
      5. Extract chromedriver to one of directories from your `$PATH`. (example: `/usr/bin/`)

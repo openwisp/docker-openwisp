@@ -58,6 +58,22 @@ class Pretest(TestUtilities, unittest.TestCase):
         else:
             self.fail(f'All celery workers are not online: {online_workers}')
 
+        # Ensure Wireguard updater is running
+        wg_updater_ping = f"{self.config['wg_updater_url']}/ping"
+        for _ in range(1, max_retries):
+            try:
+                # check if we can reach the ping endpoint of wireguard-updater
+                # and the page return 200 OK status code
+                if request.urlopen(wg_updater_ping, context=self.ctx).getcode() == 200:
+                    isServiceReachable = True
+                    break
+            except (urlerror.HTTPError, OSError, ConnectionResetError):
+                # if error occurred, retry to reach the admin
+                # login page after delay_retries second(s)
+                time.sleep(delay_retries)
+        if not isServiceReachable:
+            self.fail('ERROR: wireguard-updater ping endpoint is not reachable!')
+
 
 class TestServices(TestUtilities, unittest.TestCase):
     @property

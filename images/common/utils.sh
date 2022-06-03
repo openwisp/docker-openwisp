@@ -41,12 +41,19 @@ function create_prod_certs {
 			--domain ${API_DOMAIN} \
 			--email ${CERT_ADMIN_EMAIL}
 	fi
+	if [ ! -f /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem ]; then
+		certbot certonly --standalone --noninteractive --agree-tos \
+			--rsa-key-size 4096 \
+			--domain ${WIREGUARD_UPDATER_DOMAIN} \
+			--email ${CERT_ADMIN_EMAIL}
+	fi
 }
 
 function create_dev_certs {
 	# Ensure required directories exist
 	mkdir -p /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/
 	mkdir -p /etc/letsencrypt/live/${API_DOMAIN}/
+	mkdir -p /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/
 	# Create self-signed certificates
 	if [ ! -f /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/privkey.pem ]; then
 		openssl req -x509 -newkey rsa:4096 \
@@ -58,6 +65,12 @@ function create_dev_certs {
 		openssl req -x509 -newkey rsa:4096 \
 			-keyout /etc/letsencrypt/live/${API_DOMAIN}/privkey.pem \
 			-out /etc/letsencrypt/live/${API_DOMAIN}/fullchain.pem \
+			-days 365 -nodes -subj '/CN=OpenWISP'
+	fi
+	if [ ! -f /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem ]; then
+		openssl req -x509 -newkey rsa:4096 \
+			-keyout /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem \
+			-out /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/fullchain.pem \
 			-days 365 -nodes -subj '/CN=OpenWISP'
 	fi
 }
@@ -109,7 +122,7 @@ function ssl_http_behaviour {
 function envsubst_create_config {
 	# Creates nginx configurations files for dashboard
 	# and api instances.
-	for application in DASHBOARD API; do
+	for application in DASHBOARD API WIREGUARD_UPDATER; do
 		eval export APP_SERVICE=\$${application}_APP_SERVICE
 		eval export APP_PORT=\$${application}_APP_PORT
 		eval export DOMAIN=\$${application}_${3}
@@ -238,4 +251,12 @@ function openvpn_config_download {
 function crl_download {
 	export CAid=$(psql -qAtc "SELECT ca_id FROM config_vpn where name='${VPN_NAME}';")
 	wget -qO revoked.crl --no-check-certificate ${DASHBOARD_INTERNAL}/admin/pki/ca/${CAid}.crl
+}
+
+function wireguard_setup {
+	bash /opt/openwisp/update_wireguard.sh bring_up_interface
+	bash /opt/openwisp/update_wireguard.sh check_config
+	echo "*/5 * * * * bash /opt/openwisp/update_wireguard.sh check_config" | crontab -
+	sudo cron
+	bash /opt/openwisp/update_wireguard.sh watch_configuration_change
 }

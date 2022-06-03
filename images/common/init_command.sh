@@ -45,6 +45,16 @@ elif [ "$MODULE_NAME" = 'openvpn' ]; then
 	# docker container running, restarting would mean killing
 	# the container while supervisor helps only to restart the service!
 	supervisord --nodaemon --configuration supervisord.conf
+elif [ "$MODULE_NAME" = 'wireguard' ]; then
+	if [[ -z "$WIREGUARD_VPN_UUID" || -z "$WIREGUARD_VPN_KEY" ]]; then
+		echo "You need to cofigure the WIREGUARD_VPN_UUID and WIREGUARD_ environment varibales."
+		exit
+	fi
+	wait_nginx_services
+	sudo -u openwisp -E bash -c "source utils.sh; wireguard_setup"
+
+elif [ "$MODULE_NAME" = 'wireguard_updater' ]; then
+	start_uwsgi
 elif [ "$MODULE_NAME" = 'nginx' ]; then
 	rm -rf /etc/nginx/conf.d/default.conf
 	if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
