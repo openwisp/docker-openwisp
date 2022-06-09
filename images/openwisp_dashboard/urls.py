@@ -23,5 +23,20 @@ if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
 
     urlpatterns += [path('topology/', include(visualizer_urls))]
 
+if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
+    # When using S3_REVERSE_PROXY feature of django-private-storage,
+    # the storage backend reverse the "serve_private_file" URL
+    # pattern in order to proxy the file with the correct URL.
+    from openwisp_firmware_upgrader.private_storage.urls import (
+        urlpatterns as fw_private_storage_urls,
+    )
+
+    urlpatterns += [
+        path(
+            '',
+            include((fw_private_storage_urls, 'firmware'), namespace='firmware'),
+        )
+    ]
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()

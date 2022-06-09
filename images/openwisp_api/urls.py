@@ -18,12 +18,16 @@ if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
     urlpatterns += [path('api/v1/', include(topology_api(views)))]
 
 if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
+    from openwisp_firmware_upgrader.private_storage.urls import (
+        urlpatterns as fw_private_storage_urls,
+    )
+
     urlpatterns += [
         path(
             'api/v1/',
             include('openwisp_firmware_upgrader.api.urls', namespace='firmware'),
         ),
-        path('', include('openwisp_firmware_upgrader.private_storage.urls')),
+        path('', include((fw_private_storage_urls, 'firmware'), namespace='firmware')),
     ]
 
 if env_bool(os.environ['USE_OPENWISP_MONITORING']):
