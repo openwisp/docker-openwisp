@@ -27,16 +27,22 @@ def database_status():
         return True
 
 
-def dashboard_status():
+def uwsgi_status(target, exit_on_error=False):
     try:
-        uwsgi_curl(
-            f"{os.environ['DASHBOARD_APP_SERVICE']}:{os.environ['DASHBOARD_APP_PORT']}"
-        )
+        uwsgi_curl(target)
     except OSError:
+        # used for readiness/liveliness probes
+        if exit_on_error:
+            sys.exit(1)
         time.sleep(3)
         return False
     else:
         return True
+
+
+def dashboard_status():
+    t = f"{os.environ['DASHBOARD_APP_SERVICE']}:{os.environ['DASHBOARD_APP_PORT']}"
+    return uwsgi_status(t)
 
 
 def redis_status():
@@ -84,3 +90,6 @@ if __name__ == "__main__":
         while not connected:
             connected = redis_status()
         print("Connection with redis established.")
+    if "uwsgi_status" in arguments:
+        target = sys.argv[2]
+        uwsgi_status(target, exit_on_error=True)

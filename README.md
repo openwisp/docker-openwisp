@@ -106,6 +106,12 @@ Setup on kubernetes is complex and requires prior knowledge about linux systems,
 - [Bare Metal](docs/kubernetes/BARE_METAL.md)
 - [Google Cloud](docs/kubernetes/GOOGLE_CLOUD.md)
 
+Useful commands for startup and readiness probes which are provided
+by the images:
+
+- startup probe example: `test $(ps aux | grep -c uwsgi) -ge 2`
+- readiness probe example: `python services.py uwsgi_status "127.0.0.1:8001"`
+
 ## Customization
 
 The following commands will create the directory structure required for
