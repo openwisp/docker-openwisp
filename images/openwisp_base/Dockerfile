@@ -4,7 +4,6 @@ FROM python:3.10-slim-bullseye AS SYSTEM
 # 1. gettext: Required by envsubst used in scripts
 # 2. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
 # 3. openwisp-monitoring: fping gdal-bin
-# 4. sudo
 RUN apt update && \
     apt install --yes --no-install-recommends \
     libcairo2 apt-utils libpangocairo-1.0-0 \
@@ -14,7 +13,7 @@ RUN apt update && \
 RUN apt update && \
     apt install --yes --no-install-recommends \
     gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
-    python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++
+    python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++ procps
 
 RUN useradd --system --password '' --create-home --shell /bin/bash \
     --gid root --uid 1001 openwisp

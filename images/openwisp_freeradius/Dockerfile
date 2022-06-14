@@ -1,6 +1,7 @@
 FROM freeradius/freeradius-server:3.0.25-alpine
 
-RUN apk add --no-cache --update tzdata~=2022a-r0 postgresql-dev~=13.6-r0  postgresql-client~=13.6-r0 && \
+RUN apk add --no-cache --update tzdata~=2022a-r0 postgresql-dev~=13.7-r0 \
+                                postgresql-client~=13.7-r0 && \
     rm -rf /var/cache/apk/* /tmp/*
 
 RUN addgroup -S freerad && \
