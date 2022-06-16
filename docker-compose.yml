@@ -3,6 +3,7 @@ version: "3"
 services:
   dashboard:
     image: openwisp/openwisp-dashboard:latest
+    restart: always
     build:
       context: images
       dockerfile: openwisp_dashboard/Dockerfile
@@ -23,6 +24,7 @@ services:
 
   api:
     image: openwisp/openwisp-api:latest
+    restart: always
     build:
       context: images
       dockerfile: openwisp_api/Dockerfile
@@ -41,6 +43,7 @@ services:
 
   websocket:
     image: openwisp/openwisp-websocket:latest
+    restart: always
     build:
       context: images
       dockerfile: openwisp_websocket/Dockerfile
@@ -55,6 +58,7 @@ services:
 
   celery:
     image: openwisp/openwisp-dashboard:latest
+    restart: always
     environment:
       - MODULE_NAME=celery
     volumes:
@@ -69,6 +73,7 @@ services:
 
   celery_monitoring:
     image: openwisp/openwisp-dashboard:latest
+    restart: always
     environment:
       - MODULE_NAME=celery_monitoring
     volumes:
@@ -83,6 +88,7 @@ services:
 
   celerybeat:
     image: openwisp/openwisp-dashboard:latest
+    restart: always
     environment:
       - MODULE_NAME=celerybeat
     env_file:
@@ -96,6 +102,7 @@ services:
 
   nginx:
     image: openwisp/openwisp-nginx:latest
+    restart: always
     build:
       context: images
       dockerfile: openwisp_nginx/Dockerfile
@@ -121,6 +128,7 @@ services:
 
   freeradius:
     image: openwisp/openwisp-freeradius:latest
+    restart: always
     build:
       context: images
       dockerfile: openwisp_freeradius/Dockerfile
@@ -136,6 +144,7 @@ services:
 
   postfix:
     image: openwisp/openwisp-postfix:latest
+    restart: always
     build:
       context: images
       dockerfile: openwisp_postfix/Dockerfile
@@ -146,6 +155,7 @@ services:
 
   openvpn:
     image: openwisp/openwisp-openvpn:latest
+    restart: always
     build:
       context: images
       dockerfile: openwisp_openvpn/Dockerfile
@@ -160,6 +170,7 @@ services:
 
   postgres:
     image: mdillon/postgis:11-alpine
+    restart: always
     environment:
       - POSTGRES_DB=$DB_NAME
       - POSTGRES_USER=$DB_USER
@@ -170,6 +181,7 @@ services:
 
   influxdb:
     image: influxdb:1.8-alpine
+    restart: always
     environment:
       - INFLUXDB_DB=$INFLUXDB_NAME
       - INFLUXDB_USER=$INFLUXDB_USER
@@ -179,6 +191,7 @@ services:
 
   redis:
     image: redis:alpine
+    restart: always
 
 volumes:
   influxdb_data: {}
