@@ -117,10 +117,8 @@ def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
     return b''.join(response).decode('utf8')
 
 
-def uwsgi_curl(
-    uwsgi_addr, url='localhost', method='GET', body='', timeout=0, headers=(), udp=False
-):
-    host, uri = get_host_from_url(url)
+def uwsgi_curl(uwsgi_addr, method='GET', body='', timeout=0, headers=(), udp=False):
+    host, uri = get_host_from_url(uwsgi_addr)
     parts_uri = urlsplit(uri)
 
     if '/' not in uwsgi_addr:
@@ -145,7 +143,6 @@ def uwsgi_curl(
     var['SERVER_NAME'] = var['HTTP_HOST']
     if port:
         var['SERVER_PORT'] = str(port)
-    result = ask_uwsgi(
-        uwsgi_addr=uwsgi_addr, var=var, body=body, timeout=timeout, udp=udp
-    )
+
+    result = ask_uwsgi(uwsgi_addr=host, var=var, body=body, timeout=timeout, udp=udp)
     return result
