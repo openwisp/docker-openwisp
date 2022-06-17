@@ -25,6 +25,8 @@ USER openwisp:root
 COPY --chown=openwisp:root ./openwisp_wireguard_updater/uwsgi.conf.ini \
     ./openwisp_wireguard_updater/vpn_updater.py \
     ./common/init_command.sh \
+    ./common/services.py \
+    ./common/utils.py \
     ./common/utils.sh ./
 
 COPY --from=SYSTEM --chown=openwisp:root /usr/local/bin/uwsgi /usr/local/bin/uwsgi
