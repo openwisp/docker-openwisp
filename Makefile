@@ -91,7 +91,7 @@ TAG  = latest
 publish: compose-build runtests nfs-build
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
-				 'openwisp-celelery' 'openwisp-websocket' 'openwisp-wireguard' \
+				 'openwisp-celery' 'openwisp-websocket' 'openwisp-wireguard' \
 				 'openwisp-wireguard-updater' ; do \
 		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
