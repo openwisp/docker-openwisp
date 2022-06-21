@@ -14,7 +14,7 @@ COPY --chown=openwisp:root ./openwisp_dashboard/module_settings.py \
 
 USER root:root
 RUN apt install --yes --no-install-recommends \
-        iproute2 iptables sudo
+        iproute2 iptables sudo iputils-ping
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 CMD ["bash", "init_command.sh"]

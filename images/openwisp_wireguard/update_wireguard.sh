@@ -121,7 +121,7 @@ watch_configuration_change() {
 		_REDIS_CMD="$_REDIS_CMD -p $REDIS_PORT"
 	fi
 	if [[ "$REDIS_PASS" ]]; then
-		_REDIS_CMD="$_REDIS_CMD -a $REDIS_PASS"
+		_REDIS_CMD="$_REDIS_CMD -a $REDIS_PASS --no-auth-warning"
 	fi
 	while true; do
 		if [ -f "$_TIMESTAMP_FILE" ]; then

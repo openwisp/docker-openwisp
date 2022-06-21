@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import time
 import unittest
@@ -450,6 +451,9 @@ class TestServices(TestUtilities, unittest.TestCase):
             cwd=self.root_location,
         )
         output, error = map(str, cmd.communicate())
+        # Remove wireguard container from output because it exits when it fails
+        # to download configuration from the dashboard
+        output = re.sub('docker-openwisp_wireguard_1(.*)Exit(.*)\\n', '', output)
         if 'Exit' in output:
             self.fail(
                 f'One of the containers are down!\nOutput:\n{output}\nError:\n{error}'
