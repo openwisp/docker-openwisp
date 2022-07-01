@@ -45,7 +45,19 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 
 \* Roughly the same features would be available but it's not an exact one-to-one mapping.
 
+The images are hosted on [Docker Hub](https://hub.docker.com/u/openwisp)
+and [GitLab Container Registry](https://gitlab.com/openwisp/docker-openwisp/container_registry).
+
 ## Architecture
+
+An OpenWISP service contains multiple components (e.g. controller,
+reverse proxy, database, messaging queue, etc. ) that have different
+scaling requirements. Docker OpenWISP is built to facilitate this
+requirement and allow horizontal scaling on-the-fly. Therefore,
+separate Docker images for individual logical components of OpenWISP
+has been created.
+
+Docker OpenWISP **IS NOT** a single container project.
 
 ![Architecture](docs/images/architecture.jpg)
 
