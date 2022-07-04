@@ -26,6 +26,9 @@ mkdir -p $_APPLIED_CONF_DIR
 assert_exit_code() {
 	exit_code=$?
 	lineno=$(($1 - 1))
+	if [ ! -z "$2" ]; then
+		echo $2
+	fi
 	if [ "$exit_code" != "0" ]; then
 		echo "Line $lineno: Command returned non zero exit code: $exit_code"
 		exit $exit_code
@@ -34,7 +37,7 @@ assert_exit_code() {
 
 check_config() {
 	_latest_checksum=$($_CURL $_VPN_CHECKSUM_URL)
-	assert_exit_code $LINENO
+	assert_exit_code $LINENO "Failed to fetch VPN checksum. Ensure VPN UUID and key are correct."
 	if [ -f "$_CHECKSUM_FILE" ]; then
 		_current_checksum=$(cat $_CHECKSUM_FILE)
 	else
@@ -66,7 +69,7 @@ update_config() {
 	# for having public configurations
 	umask 0117
 	$($_CURL $_VPN_DOWNLOAD_URL >"$_CONF_TAR")
-	assert_exit_code $LINENO
+	assert_exit_code $LINENO "Failed to download VPN configuration. Ensure VPN UUID and key are correct."
 	echo "Configuration downloaded, extracting it..."
 	tar -zxvf $_CONF_TAR -C $CONF_DIR >/dev/null
 	assert_exit_code $LINENO
