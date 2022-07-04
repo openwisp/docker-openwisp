@@ -26,11 +26,12 @@ mkdir -p $_APPLIED_CONF_DIR
 assert_exit_code() {
 	exit_code=$?
 	lineno=$(($1 - 1))
-	if [ ! -z "$2" ]; then
+	if [ "$exit_code" != "0" ] && [ ! -z "$2" ]; then
 		echo $2
 	fi
 	if [ "$exit_code" != "0" ]; then
 		echo "Line $lineno: Command returned non zero exit code: $exit_code"
+		sudo kill 1
 		exit $exit_code
 	fi
 }
