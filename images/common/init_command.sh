@@ -51,6 +51,10 @@ elif [ "$MODULE_NAME" = 'wireguard' ]; then
 		exit
 	fi
 	wait_nginx_services
+	# sudo raises "unable to resolve host" error if host networking
+	# is used for this container. Hence, hostname is added to
+	# /etc/hosts here.
+	echo "127.0.0.1    $(hostname)" >> /etc/hosts
 	sudo -u openwisp -E bash -c "source utils.sh; wireguard_setup"
 
 elif [ "$MODULE_NAME" = 'wireguard_updater' ]; then
