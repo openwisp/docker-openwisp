@@ -311,8 +311,9 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.base_driver.find_element(By.NAME, 'email').send_keys('admin@example.com')
         self.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
         self.assertIn(
-            'We have sent you an e-mail. Please contact us if you '
-            'do not receive it within a few minutes.',
+            'We have sent you an e-mail. If you have not received '
+            'it please check your spam folder. Otherwise contact us '
+            'if you do not receive it in a few minutes.',
             self.base_driver.page_source,
         )
 
