@@ -51,7 +51,7 @@ elif [ "$MODULE_NAME" = 'wireguard' ]; then
 		exit
 	fi
 	wait_nginx_services
-	wireguard_setup
+	sudo -u openwisp -E bash -c "source utils.sh; wireguard_setup"
 
 elif [ "$MODULE_NAME" = 'wireguard_updater' ]; then
 	start_uwsgi
