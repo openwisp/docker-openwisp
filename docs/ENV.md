@@ -713,6 +713,13 @@ settings should be configured on individual container.
 - **Valid Values:** Domain | IP address
 - **Default:** wireguard_updater
 
+### `WIREGUARD_UPDATER_PUBLIC`
+
+- **Explanation:** Whether the WireGuard Updater should be exposed to the
+  public traffic on [`WIREGUARD_UPDATER_DOMAIN`](#wireguard_updater_domain).
+- **Valid Values:** True | False
+- **Default:** False
+
 ## X509
 
 ### `X509_NAME_CA`

@@ -41,7 +41,7 @@ function create_prod_certs {
 			--domain ${API_DOMAIN} \
 			--email ${CERT_ADMIN_EMAIL}
 	fi
-	if [ ! -f /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem ]; then
+	if [ "$WIREGUARD_UPDATER_PUBLIC" == "True" ] && [ ! -f /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem ]; then
 		certbot certonly --standalone --noninteractive --agree-tos \
 			--rsa-key-size 4096 \
 			--domain ${WIREGUARD_UPDATER_DOMAIN} \
@@ -67,7 +67,7 @@ function create_dev_certs {
 			-out /etc/letsencrypt/live/${API_DOMAIN}/fullchain.pem \
 			-days 365 -nodes -subj '/CN=OpenWISP'
 	fi
-	if [ ! -f /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem ]; then
+	if [ "$WIREGUARD_UPDATER_PUBLIC" == "True" ] && [ ! -f /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem ]; then
 		openssl req -x509 -newkey rsa:4096 \
 			-keyout /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/privkey.pem \
 			-out /etc/letsencrypt/live/${WIREGUARD_UPDATER_DOMAIN}/fullchain.pem \
@@ -122,14 +122,23 @@ function ssl_http_behaviour {
 function envsubst_create_config {
 	# Creates nginx configurations files for dashboard
 	# and api instances.
-	for application in DASHBOARD API WIREGUARD_UPDATER; do
-		eval export APP_SERVICE=\$${application}_APP_SERVICE
-		eval export APP_PORT=\$${application}_APP_PORT
-		eval export DOMAIN=\$${application}_${3}
+	function _create_config {
+		eval export APP_SERVICE=\$${4}_APP_SERVICE
+		eval export APP_PORT=\$${4}_APP_PORT
+		eval export DOMAIN=\$${4}_${3}
 		eval export ROOT_DOMAIN=$(python3 get_domain.py)
-		application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
+		application=$(echo "$4" | tr "[:upper:]" "[:lower:]")
 		envsubst <${1} >/etc/nginx/conf.d/${application}.${2}.conf
-	done
+	}
+
+	_create_config $1 $2 $3 DASHBOARD
+	_create_config $1 $2 $3 API
+
+	# Create a reverse proxy for the WireGuard Updater application
+	# for public traffic only when configured
+	if [ "$2" == "internal" ] || [ "$WIREGUARD_UPDATER_PUBLIC" == "True" ]; then
+		_create_config $1 $2 $3 WIREGUARD_UPDATER
+	fi
 }
 
 function postfix_config {
