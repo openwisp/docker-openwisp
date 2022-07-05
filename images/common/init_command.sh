@@ -54,14 +54,14 @@ elif [ "$MODULE_NAME" = 'wireguard' ]; then
 	# sudo raises "unable to resolve host" error if host networking
 	# is used for this container. Hence, hostname is added to
 	# /etc/hosts here.
-	echo "127.0.0.1    $(hostname)" >> /etc/hosts
+	echo "127.0.0.1    $(hostname)" >>/etc/hosts
 	# The image is started with the root user. This sets the
 	# environment variables only for the root user.
 	# These environment variables are required when script is
 	# executed by the "openwisp" user through cronjob, hence
 	# the environment variables are saved in this file which
 	# is loaded by the shell.
-	env >> /etc/environment
+	env >>/etc/environment
 	sudo -u openwisp -E bash -c "source utils.sh; wireguard_setup"
 
 elif [ "$MODULE_NAME" = 'wireguard_updater' ]; then
