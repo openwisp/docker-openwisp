@@ -56,19 +56,21 @@ All images are tagged using the following convention:
 
 |  Tag   | Software Version                              |
 | ------ |---------------------------------------------- |
-| latest | Images built on the **latest stable** version |
+| latest | Images built on the **latest git tag**        |
 | edge   | Images built on the **current master branch** |
 
 ## Architecture
 
-An OpenWISP service contains multiple components (e.g. controller,
-reverse proxy, database, messaging queue, etc. ) that have different
-scaling requirements. Docker OpenWISP is built to facilitate this
-requirement and allow horizontal scaling on-the-fly. Therefore,
-separate Docker images for individual logical components of OpenWISP
-has been created.
+A typical OpenWISP installation is made of multiple components
+(e.g. application servers, background workers, web servers,
+database, messaging queue, VPN server, etc. ) that have different
+scaling requirements.
 
-Docker OpenWISP **IS NOT** a single container project.
+The aim of Docker OpenWISP is to allow deploying
+OpenWISP in cloud based environments which
+allow potentially infinite horizontal scaling.
+That is the reason for which there are different
+docker images shipped in this repository.
 
 ![Architecture](docs/images/architecture.jpg)
 
