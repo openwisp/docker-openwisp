@@ -16,6 +16,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 - [Docker-OpenWISP](#docker-openwisp)
   - [Table of contents](#table-of-contents)
   - [Images Available](#images-available)
+    - [Image Tags](#image-tags)
   - [Architecture](#architecture)
   - [Deployment](#deployment)
     - [Quick Setup](#quick-setup)
@@ -30,6 +31,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
   - [Development](#development)
     - [Workbench setup](#workbench-setup)
     - [Runtests](#runtests)
+    - [Run Quality Assurance Checks](#run-quality-assurance-checks)
   - [Usage](#usage)
     - [Makefile Options](#makefile-options)
 
@@ -45,7 +47,30 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 
 \* Roughly the same features would be available but it's not an exact one-to-one mapping.
 
+The images are hosted on [Docker Hub](https://hub.docker.com/u/openwisp)
+and [GitLab Container Registry](https://gitlab.com/openwisp/docker-openwisp/container_registry).
+
+### Image Tags
+
+All images are tagged using the following convention:
+
+|  Tag   | Software Version                              |
+| ------ |---------------------------------------------- |
+| latest | Images built on the **latest git tag**        |
+| edge   | Images built on the **current master branch** |
+
 ## Architecture
+
+A typical OpenWISP installation is made of multiple components
+(e.g. application servers, background workers, web servers,
+database, messaging queue, VPN server, etc. ) that have different
+scaling requirements.
+
+The aim of Docker OpenWISP is to allow deploying
+OpenWISP in cloud based environments which
+allow potentially infinite horizontal scaling.
+That is the reason for which there are different
+docker images shipped in this repository.
 
 ![Architecture](docs/images/architecture.jpg)
 
@@ -257,15 +282,15 @@ You can run tests either with `geckodriver` (firefox) or `chromedriver` (chromiu
 
    - Setup chromedriver
 
-     1. Install chromium: 
-     
+     1. Install chromium:
+
      ```bash
-     # On debian 
+     # On debian
      sudo apt --yes install chromium
-     # On ubuntu 
+     # On ubuntu
      sudo apt --yes install chromium-browser
      ```
-     
+
      3. Check version: `chromium --version`
      4. Install Driver for your version: [`https://chromedriver.chromium.org/downloads`](https://chromedriver.chromium.org/downloads)
      5. Extract chromedriver to one of directories from your `$PATH`. (example: `/usr/bin/`)

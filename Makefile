@@ -88,7 +88,16 @@ stop:
 # Publish
 USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG  = latest
-publish: compose-build runtests nfs-build
+SKIP_BUILD = false
+SKIP_TESTS = false
+
+publish:
+	if [[ "$(SKIP_BUILD)" == "false" ]]; then \
+		make compose-build nfs-build; \
+	fi
+	if [[ "$(SKIP_TESTS)" == "false" ]]; then \
+		make runtests; \
+	fi
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
