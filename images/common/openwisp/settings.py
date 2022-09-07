@@ -181,6 +181,9 @@ TIMESERIES_DATABASE = {
     'HOST': os.environ['INFLUXDB_HOST'],
     'PORT': os.environ['INFLUXDB_PORT'],
 }
+OPENWISP_MONITORING_DEFAULT_RETENTION_POLICY = os.environ[
+    'INFLUXDB_DEFAULT_RETENTION_POLICY'
+]
 
 # Channels(Websocket)
 # https://channels.readthedocs.io/en/latest/topics/channel_layers.html#configuration

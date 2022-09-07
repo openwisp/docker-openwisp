@@ -253,6 +253,12 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** INT
 - **Default:** 8086
 
+### `INFLUXDB_DEFAULT_RETENTION_POLICY`
+
+- **Explanation:** The default retention policy that applies to the timeseries data.
+- **Valid Values:** STRING
+- **Default:** 26280h0m0s (3y years)
+
 ## Django
 
 ### `DJANGO_X509_DEFAULT_CERT_VALIDITY`

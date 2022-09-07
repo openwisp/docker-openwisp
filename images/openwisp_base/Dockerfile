@@ -106,6 +106,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     INFLUXDB_NAME=openwisp \
     INFLUXDB_HOST=influxdb \
     INFLUXDB_PORT=8086 \
+    INFLUXDB_DEFAULT_RETENTION_POLICY=26280h0m0s \
     EMAIL_BACKEND=djcelery_email.backends.CeleryEmailBackend \
     EMAIL_HOST=postfix \
     EMAIL_HOST_PORT=25 \

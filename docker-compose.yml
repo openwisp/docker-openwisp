@@ -9,6 +9,7 @@ services:
       dockerfile: openwisp_dashboard/Dockerfile
       args:
         DASHBOARD_APP_PORT: 8000
+        OPENWISP_MONITORING_SOURCE: https://github.com/openwisp/openwisp-monitoring/tarball/master
     env_file:
       - .env
     volumes:
@@ -30,6 +31,7 @@ services:
       dockerfile: openwisp_api/Dockerfile
       args:
         API_APP_PORT: 8001
+        OPENWISP_MONITORING_SOURCE: https://github.com/openwisp/openwisp-monitoring/tarball/master
     env_file:
       - .env
     volumes:
@@ -49,6 +51,7 @@ services:
       dockerfile: openwisp_websocket/Dockerfile
       args:
         WEBSOCKET_APP_PORT: 8002
+        OPENWISP_MONITORING_SOURCE: https://github.com/openwisp/openwisp-monitoring/tarball/master
     env_file:
       - .env
     volumes:
