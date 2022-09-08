@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     'flat_json_widget',
     'private_storage',
     'drf_yasg',
+    'import_export',
+    'admin_auto_filters',
     'channels',
     'pipeline',
 ]

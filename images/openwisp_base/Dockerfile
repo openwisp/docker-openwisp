@@ -25,7 +25,8 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
 RUN pip install --user --upgrade pip~=22.0.4
-ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring~=1.0.0
+# TODO: Remove when next version of openwisp-monitoring is released
+ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/master
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}
 ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.0.0
@@ -46,7 +47,8 @@ ARG OPENWISP_IPAM_SOURCE=default
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
-ARG OPENWISP_CONTROLLER_SOURCE=default
+# TODO: Remove when next version of openwisp-controller is released
+ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/master
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
@@ -61,10 +63,11 @@ ARG OPENWISP_USERS_SOURCE=default
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
-ARG OPENWISP_UTILS_SOURCE=default
+# TODO: Remove when next version of openwisp-utils is released
+ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/master"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
-        pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
+        pip install --user --upgrade --force-reinstall "${OPENWISP_UTILS_SOURCE}"; \
     fi
 ARG DJANGO_X509_SOURCE=default
 # hadolint ignore=DL3013
