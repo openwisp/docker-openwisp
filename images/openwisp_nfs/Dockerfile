@@ -1,6 +1,6 @@
 FROM alpine:3.15
 
-RUN apk add --no-cache --update --verbose tzdata~=2022a-r0 nfs-utils~=2.5.4-r1 && \
+RUN apk add --no-cache --update --verbose tzdata~=2022c-r0 nfs-utils~=2.5.4-r1 && \
     rm -rf /var/cache/apk/* /tmp/*
 
 COPY ./openwisp_nfs/init_command.sh /init_command.sh
