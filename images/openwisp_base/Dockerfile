@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye AS SYSTEM
+FROM python:3.10-slim-bullseye AS system
 
 # System requirements:
 # 1. gettext: Required by envsubst used in scripts
@@ -19,7 +19,7 @@ RUN useradd --system --password '' --create-home --shell /bin/bash \
     --gid root --uid 1001 openwisp
 USER openwisp:root
 
-FROM SYSTEM AS PYTHON
+FROM system AS openwisp_python
 
 ENV PATH="${PATH}:/home/openwisp/.local/bin"
 ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
@@ -79,9 +79,9 @@ RUN pip install --user --upgrade ${DJANGO_SOURCE}
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
 RUN pip install --user --upgrade -r /tmp/openwisp-deploy-requirements.txt
 
-FROM SYSTEM
+FROM system
 
-COPY --from=PYTHON --chown=openwisp:root /home/openwisp/.local/ /usr/local
+COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
 COPY --chown=openwisp:root ./common/ /opt/openwisp/
 RUN mkdir /opt/openwisp/static && mkdir /opt/openwisp/media && mkdir /opt/openwisp/logs && chown -R openwisp:root /opt/openwisp
 
