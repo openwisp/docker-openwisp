@@ -257,7 +257,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 
 - **Explanation:** The default retention policy that applies to the timeseries data.
 - **Valid Values:** STRING
-- **Default:** 26280h0m0s (3y years)
+- **Default:** 26280h0m0s (3 years)
 
 ## Django
 
