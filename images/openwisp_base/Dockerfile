@@ -25,7 +25,8 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
 RUN pip install --user --upgrade pip~=22.0.4
-ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring~=1.0.0
+# TODO: Remove when next version of openwisp-monitoring is released
+ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/67bc8867e677b21de2d9c342670fd16fffb00b8d
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}
 ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.0.0
@@ -46,7 +47,8 @@ ARG OPENWISP_IPAM_SOURCE=default
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
-ARG OPENWISP_CONTROLLER_SOURCE=default
+# TODO: Remove when next version of openwisp-controller is released
+ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/d8d8bb81eb8fb6d168dcfb1dc554ae8db5bcd3dc
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
@@ -61,10 +63,11 @@ ARG OPENWISP_USERS_SOURCE=default
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
-ARG OPENWISP_UTILS_SOURCE=default
+# TODO: Remove when next version of openwisp-utils is released
+ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/502af264431f91f34a604cc7c21e67fa2dd7de0e "
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
-        pip install --user --upgrade --force-reinstall ${OPENWISP_UTILS_SOURCE}; \
+        pip install --user --upgrade --force-reinstall "${OPENWISP_UTILS_SOURCE}"; \
     fi
 ARG DJANGO_X509_SOURCE=default
 # hadolint ignore=DL3013
@@ -106,6 +109,7 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     INFLUXDB_NAME=openwisp \
     INFLUXDB_HOST=influxdb \
     INFLUXDB_PORT=8086 \
+    INFLUXDB_DEFAULT_RETENTION_POLICY=26280h0m0s \
     EMAIL_BACKEND=djcelery_email.backends.CeleryEmailBackend \
     EMAIL_HOST=postfix \
     EMAIL_HOST_PORT=25 \
