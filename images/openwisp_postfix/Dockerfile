@@ -1,8 +1,14 @@
-FROM alpine:3.12
+FROM alpine:3.16
 
 WORKDIR /opt/openwisp/
-RUN apk add --no-cache --upgrade openssl~=1.1.1o-r0 cyrus-sasl~=2.1.28-r0 cyrus-sasl-plain~=2.1.28-r0 cyrus-sasl-login~=2.1.28-r0 && \
-    apk add --no-cache postfix~=3.5.16-r0 rsyslog~=8.2004.0-r2 tzdata~=2022a-r0 && \
+RUN apk add --no-cache --upgrade \
+            openssl~=1.1.1s-r0 \
+            cyrus-sasl~=2.1.28-r1	\
+            cyrus-sasl-login~=2.1.28-r1 && \
+    apk add --no-cache \
+            postfix~=3.7.3-r0 \
+            rsyslog~=8.2204.1-r0	 \
+            tzdata~=2022f-r1 && \
     rm -rf /tmp/* /var/cache/apk/*
 
 CMD ["sh", "init_command.sh"]
