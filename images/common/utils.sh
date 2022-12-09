@@ -148,9 +148,9 @@ function postfix_config {
 
 	postconf -e myhostname="$POSTFIX_MYHOSTNAME"
 	postconf -e myorigin='$myhostname'
-	postconf -e alias_maps=hash:/etc/aliases
-	postconf -e smtp_generic_maps=hash:/etc/postfix/generic
-	postconf -e alias_database=hash:/etc/aliases
+	postconf -e alias_maps=lmdb:/etc/aliases
+	postconf -e smtp_generic_maps=lmdb:/etc/postfix/generic
+	postconf -e alias_database=lmdb:/etc/aliases
 	postconf -e mydestination="$POSTFIX_DESTINATION"
 
 	postconf -e mynetworks="$POSTFIX_MYNETWORKS"
@@ -172,7 +172,7 @@ function postfix_config {
 		postmap /etc/allowed_senders
 		postconf -e "smtpd_restriction_classes=allowed_domains_only"
 		postconf -e "allowed_domains_only=permit_mynetworks, reject_non_fqdn_sender reject"
-		postconf -e "smtpd_recipient_restrictions=reject_non_fqdn_recipient, check_sender_access hash:/etc/allowed_senders,permit_sasl_authenticated, reject_unauth_destination"
+		postconf -e "smtpd_recipient_restrictions=reject_non_fqdn_recipient, check_sender_access lmdb:/etc/allowed_senders,permit_sasl_authenticated, reject_unauth_destination"
 		postconf -e "smtpd_relay_restrictions=permit"
 	fi
 
@@ -181,9 +181,9 @@ function postfix_config {
 		postconf -e smtp_tls_CAfile=/etc/ssl/mail/openwisp.mail.crt
 		if [ "$POSTFIX_RELAYHOST_USERNAME" != 'null' ] && [ "$POSTFIX_RELAYHOST_PASSWORD" != 'null' ]; then
 			echo "$POSTFIX_RELAYHOST $POSTFIX_RELAYHOST_USERNAME:$POSTFIX_RELAYHOST_PASSWORD" >>/etc/postfix/sasl_passwd
-			postmap hash:/etc/postfix/sasl_passwd
+			postmap lmdb:/etc/postfix/sasl_passwd
 			postconf -e "smtp_sasl_auth_enable=yes"
-			postconf -e "smtp_sasl_password_maps=hash:/etc/postfix/sasl_passwd"
+			postconf -e "smtp_sasl_password_maps=lmdb:/etc/postfix/sasl_passwd"
 			postconf -e "smtp_sasl_security_options=noanonymous"
 			postconf -e "smtp_sasl_tls_security_options=noanonymous"
 		fi
