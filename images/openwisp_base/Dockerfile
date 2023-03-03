@@ -26,16 +26,16 @@ ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
 RUN pip install --user --upgrade pip~=22.0.4
 # TODO: Remove when next version of openwisp-monitoring is released
-ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/67bc8867e677b21de2d9c342670fd16fffb00b8d
+ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/15977c74b48d846ac469316abc7f13ccbef405f0
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.0.0
+ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.0.1
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=1.0.0
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=1.0.0
+ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=1.0.2
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
@@ -48,7 +48,7 @@ RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
 # TODO: Remove when next version of openwisp-controller is released
-ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/d8d8bb81eb8fb6d168dcfb1dc554ae8db5bcd3dc
+ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/60d971fdf5e1976568afbf5611ba172d678e34d3
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
@@ -64,7 +64,7 @@ RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
 # TODO: Remove when next version of openwisp-utils is released
-ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/502af264431f91f34a604cc7c21e67fa2dd7de0e "
+ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/9fd347fb861af674674a4bcc59c54bcdeef18b8c "
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
         pip install --user --upgrade --force-reinstall "${OPENWISP_UTILS_SOURCE}"; \
@@ -75,7 +75,7 @@ RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
         pip install --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
     fi
 
-ARG DJANGO_SOURCE=django~=4.0.0
+ARG DJANGO_SOURCE=django~=4.0.10
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${DJANGO_SOURCE}
 
