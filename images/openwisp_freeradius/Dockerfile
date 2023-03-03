@@ -1,4 +1,4 @@
-FROM freeradius/freeradius-server:3.0.25-alpine
+FROM freeradius/freeradius-server:3.0.26-alpine
 
 RUN apk add --no-cache --update tzdata~=2021c-r0 postgresql-dev~=13.8-r0 \
                                 postgresql-client~=13.8-r0 && \

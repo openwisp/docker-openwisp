@@ -1,7 +1,7 @@
 FROM alpine:3.16
 
 RUN apk add --no-cache --update --verbose \
-            tzdata~=2022f-r1 \
+            tzdata~=2022t-r1 \
             nfs-utils~=2.6.1-r1 && \
     rm -rf /var/cache/apk/* /tmp/*
 
