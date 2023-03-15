@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'openwisp_controller.config',
     'openwisp_controller.geo',
     'openwisp_controller.connection',
-    # 'openwisp_controller.subnet_division',
+    'openwisp_controller.subnet_division',
     # openwisp-monitoring
     'openwisp_monitoring.monitoring',
     'openwisp_monitoring.device',

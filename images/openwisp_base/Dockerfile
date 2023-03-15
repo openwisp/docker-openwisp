@@ -29,13 +29,13 @@ RUN pip install --user --upgrade pip~=23.0.1
 ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/15977c74b48d846ac469316abc7f13ccbef405f0
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.0.1
+ARG OPENWISP_FIRMWARE_SOURCE=https://github.com/openwisp/openwisp-firmware-upgrader/tarball/9c7840c7436eb8b8cd5a63e83194041ccf887cd2
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=1.0.0
+ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topology/tarball/ade4d5f844753879ccb54cce1d3528f17c55a490
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=1.0.2
+ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/1a748466c269df3548557d9d42df6bb886da4f57
 # hadolint ignore=DL3013
 RUN pip install --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
@@ -48,7 +48,7 @@ RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
 # TODO: Remove when next version of openwisp-controller is released
-ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/60d971fdf5e1976568afbf5611ba172d678e34d3
+ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/3383bc11e5f8e9c89ebd9ac8aefa0066576d3133
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
@@ -58,7 +58,7 @@ ARG OPENWISP_NOTIFICATION_SOURCE=default
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
         pip install --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
-ARG OPENWISP_USERS_SOURCE=default
+ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/55023698cf39711585480be90c98d64ce5a04b8d
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
