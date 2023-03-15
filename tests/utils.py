@@ -248,8 +248,10 @@ class TestUtilities(TestConfig):
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}/admin/topology/topology/add/")
         driver.find_element(By.NAME, 'label').send_keys(label)
-        driver.find_element(By.NAME, 'organization').find_element(
-            By.XPATH, '//option[text()="default"]'
+        # We have to select the organisation field from the
+        # autocomplete filter of openwisp-network-topology
+        driver.find_element(
+            by=By.CSS_SELECTOR, value='#select2-id_organization-container'
         ).click()
         driver.find_element(By.NAME, 'parser').find_element(
             By.XPATH, '//option[text()="NetJSON NetworkGraph"]'
