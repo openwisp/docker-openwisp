@@ -26,6 +26,7 @@ ENV MODULE_NAME=openvpn \
     DB_OPTIONS={} \
     VPN_NAME=default
 
+# hadolint ignore=DL3045
 COPY ./common/init_command.sh \
     ./common/utils.sh \
     ./openwisp_openvpn/ ./

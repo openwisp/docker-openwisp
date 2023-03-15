@@ -16,7 +16,7 @@ COPY ./common/services.py \
     ./openwisp_nginx/ \
     /etc/nginx/
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 ENV MODULE_NAME=nginx \
     PYTHONUNBUFFERED=1 \
