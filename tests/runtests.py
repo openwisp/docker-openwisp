@@ -261,6 +261,10 @@ class TestServices(TestUtilities, unittest.TestCase):
         # url_list tests
         for url in url_list:
             self.base_driver.get(f"{self.config['app_url']}{url}")
+            # console_error_check method should be called twice
+            # to avoid the "beforeunload' chrome issue
+            # https://stackoverflow.com/questions/10680544/beforeunload-chrome-issue
+            self.console_error_check()
             self.assertEqual([], self.console_error_check())
             self.assertIn('OpenWISP', self.base_driver.title)
         # change_form_list tests
@@ -322,12 +326,16 @@ class TestServices(TestUtilities, unittest.TestCase):
         Ensure celery and celery-beat tasks are registered.
         """
         expected_output_list = [
+            "djcelery_email_send_multiple",
             "openwisp.tasks.radius_tasks",
             "openwisp.tasks.save_snapshot",
             "openwisp.tasks.update_topology",
+            "openwisp_controller.config.tasks.change_devices_templates",
             "openwisp_controller.config.tasks.create_vpn_dh",
             "openwisp_controller.config.tasks.invalidate_devicegroup_cache_change",
             "openwisp_controller.config.tasks.invalidate_devicegroup_cache_delete",
+            "openwisp_controller.config.tasks.invalidate_vpn_server_devices_cache_change",  # noqa: E501
+            "openwisp_controller.config.tasks.trigger_vpn_server_endpoint",
             "openwisp_controller.config.tasks.update_template_related_config_status",
             "openwisp_controller.connection.tasks.auto_add_credentials_to_devices",
             "openwisp_controller.connection.tasks.launch_command",
@@ -341,10 +349,18 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_firmware_upgrader.tasks.create_device_firmware",
             "openwisp_firmware_upgrader.tasks.upgrade_firmware",
             "openwisp_monitoring.check.tasks.auto_create_config_check",
+            "openwisp_monitoring.check.tasks.auto_create_iperf3_check",
             "openwisp_monitoring.check.tasks.auto_create_ping",
             "openwisp_monitoring.check.tasks.perform_check",
             "openwisp_monitoring.check.tasks.run_checks",
+            "openwisp_monitoring.device.tasks.delete_wifi_clients_and_sessions",
+            "openwisp_monitoring.device.tasks.offline_device_close_session",
+            "openwisp_monitoring.device.tasks.save_wifi_clients_and_sessions",
             "openwisp_monitoring.device.tasks.trigger_device_checks",
+            "openwisp_monitoring.device.tasks.write_device_metrics",
+            "openwisp_monitoring.monitoring.tasks.delete_timeseries",
+            "openwisp_monitoring.monitoring.tasks.migrate_timeseries_database",
+            "openwisp_monitoring.monitoring.tasks.timeseries_batch_write",
             "openwisp_monitoring.monitoring.tasks.timeseries_write",
             "openwisp_notifications.tasks.delete_ignore_object_notification",
             "openwisp_notifications.tasks.delete_notification",
@@ -362,6 +378,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_radius.tasks.delete_old_radacct",
             "openwisp_radius.tasks.delete_old_users",
             "openwisp_radius.tasks.delete_unverified_users",
+            "openwisp_radius.tasks.perform_change_of_authorization",
             "openwisp_radius.tasks.send_login_email",
         ]
 

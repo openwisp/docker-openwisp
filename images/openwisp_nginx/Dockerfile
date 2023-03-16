@@ -1,9 +1,9 @@
-FROM nginx:1.23.2-alpine
+FROM nginx:1.23.3-alpine
 
 RUN apk add --update --no-cache \
-            openssl~=1.1.1s-r0 \
-            certbot~=1.27.0-r0 \
-            certbot-nginx~=1.27.0-r0 && \
+            openssl~=3.0.8-r0 \
+            certbot~=1.32.0-r0 \
+            certbot-nginx~=1.32.0-r0 && \
     rm -rf /var/cache/apk/* /tmp/*
 
 WORKDIR /etc/nginx/
@@ -16,7 +16,7 @@ COPY ./common/services.py \
     ./openwisp_nginx/ \
     /etc/nginx/
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 ENV MODULE_NAME=nginx \
     PYTHONUNBUFFERED=1 \

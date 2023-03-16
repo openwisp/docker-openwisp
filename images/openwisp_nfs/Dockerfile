@@ -1,5 +1,6 @@
 FROM alpine:3.16
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache --update --verbose \
             tzdata~=2022f-r1 \
             nfs-utils~=2.6.1-r1 && \
