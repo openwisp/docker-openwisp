@@ -14,6 +14,7 @@ services:
     volumes:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
+      - openwisp_private_storage:/opt/openwisp/private
       - influxdb_data:/var/lib/influxdb
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
@@ -35,6 +36,7 @@ services:
     volumes:
       - influxdb_data:/var/lib/influxdb
       - openwisp_media:/opt/openwisp/media
+      - openwisp_private_storage:/opt/openwisp/private
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
       - postgres
@@ -63,6 +65,7 @@ services:
       - MODULE_NAME=celery
     volumes:
       - openwisp_media:/opt/openwisp/media
+      - openwisp_private_storage:/opt/openwisp/private
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     env_file:
       - .env
@@ -78,6 +81,7 @@ services:
       - MODULE_NAME=celery_monitoring
     volumes:
       - openwisp_media:/opt/openwisp/media
+      - openwisp_private_storage:/opt/openwisp/private
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     env_file:
       - .env
@@ -111,6 +115,7 @@ services:
     volumes:
       - openwisp_static:/opt/openwisp/public/static:ro
       - openwisp_media:/opt/openwisp/public/media:ro
+      - openwisp_private_storage:/opt/openwisp/public/private:ro
       - openwisp_certs:/etc/letsencrypt
       - ./customization/theme:/opt/openwisp/public/custom:ro
     networks:
@@ -199,6 +204,7 @@ volumes:
   openwisp_certs: {}
   openwisp_media: {}
   openwisp_static: {}
+  openwisp_private_storage: {}
 
 networks:
   default:
