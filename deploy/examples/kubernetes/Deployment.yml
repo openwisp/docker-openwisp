@@ -120,7 +120,7 @@ spec:
               mountPath: /opt/openwisp/public/media
               readOnly: true
             - name: openwisp-private-storage-data
-              mountPath: /opt/openwisp/public/private
+              mountPath: /opt/openwisp/private
               readOnly: true
           readinessProbe:
             httpGet:
