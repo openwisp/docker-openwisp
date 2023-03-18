@@ -251,7 +251,8 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-PRIVATE_STORAGE_ROOT = os.path.join(MEDIA_ROOT, 'private')
+# PRIVATE_STORAGE_ROOT path should be similar to ansible-openwisp2
+PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'private')
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 

@@ -23,6 +23,8 @@ spec:
               mountPath: /opt/openwisp/static
             - name: openwisp-media-data
               mountPath: /opt/openwisp/media
+            - name: openwisp-private-storage-data
+              mountPath: /opt/openwisp/private
           readinessProbe:
             exec:
               command:
@@ -34,6 +36,9 @@ spec:
         - name: openwisp-media-data
           persistentVolumeClaim:
             claimName: media-pv-claim
+        - name: openwisp-private-storage-data
+          persistentVolumeClaim:
+            claimName: private-storage-pv-claim
         - name: openwisp-static-data
           persistentVolumeClaim:
             claimName: static-pv-claim
@@ -113,6 +118,9 @@ spec:
               readOnly: true
             - name: openwisp-media-data
               mountPath: /opt/openwisp/public/media
+              readOnly: true
+            - name: openwisp-private-storage-data
+              mountPath: /opt/openwisp/private
               readOnly: true
           readinessProbe:
             httpGet:

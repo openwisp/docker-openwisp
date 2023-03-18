@@ -87,7 +87,8 @@ FROM system
 
 COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
 COPY --chown=openwisp:root ./common/ /opt/openwisp/
-RUN mkdir /opt/openwisp/static && mkdir /opt/openwisp/media && mkdir /opt/openwisp/logs && chown -R openwisp:root /opt/openwisp
+RUN mkdir /opt/openwisp/static && mkdir /opt/openwisp/media && mkdir /opt/openwisp/private && \
+    mkdir /opt/openwisp/logs && chown -R openwisp:root /opt/openwisp
 
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \
