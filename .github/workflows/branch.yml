@@ -43,7 +43,7 @@ jobs:
         with:
           registry: registry.gitlab.com
           username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          password: ${{ secrets.GITLAB_DOCKER_REGISTRY_TOKEN }}
 
       # Skip image builds and tests since they were done when
       # publishing to Docker Hub
