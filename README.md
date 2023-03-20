@@ -47,8 +47,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
 
 \* Roughly the same features would be available but it's not an exact one-to-one mapping.
 
-The images are hosted on [Docker Hub](https://hub.docker.com/u/openwisp)
-and [GitLab Container Registry](https://gitlab.com/openwisp/docker-openwisp/container_registry).
+The images are hosted on [GitLab Container Registry](https://gitlab.com/openwisp/docker-openwisp/container_registry).
 
 ### Image Tags
 
