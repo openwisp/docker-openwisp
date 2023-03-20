@@ -110,7 +110,7 @@ If you have created a [`.env` file](docs/ENV.md) to configure your instance, the
 To get started, run the following command:
 
 ```bash
-   curl -L https://raw.githubusercontent.com/openwisp/docker-openwisp/master/deploy/auto-install.sh -o setup.sh
+   curl https://raw.githubusercontent.com/openwisp/docker-openwisp/master/deploy/auto-install.sh -o setup.sh
    sudo bash setup.sh
    # If you are upgrading from an older version setup by this script use
    # sudo bash setup.sh --upgrade
