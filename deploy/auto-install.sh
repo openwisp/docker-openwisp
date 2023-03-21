@@ -253,7 +253,7 @@ init_setup() {
 		echo -e "  - Root privileges"
 		echo -e "  - Supported systems"
 		echo -e "    - Debian: 10 & 11"
-		echo -e "    - Ubuntu 18.04, 18.10 & 20.04"
+		echo -e "    - Ubuntu 18.04, 18.10, 20.04 & 22.04"
 		echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
 	fi
 
@@ -274,7 +274,7 @@ init_setup() {
 
 	if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
 		case "$system_release" in
-		18.04 | 20.04 | 10 | 11)
+		18.04 | 20.04 | 22.04 | 10 | 11)
 			if [[ "$1" == "upgrade" ]]; then
 				report_ok && upgrade_debian
 			else
@@ -301,7 +301,7 @@ init_help() {
 	echo -e "  - Root privileges"
 	echo -e "  - Supported systems"
 	echo -e "    - Debian: 10 & 11"
-	echo -e "    - Ubuntu 18.04, 18.10 & 20.04\n"
+	echo -e "    - Ubuntu 18.04, 18.10, 20.04, 22.04\n"
 	echo -e "  -i\--install : (default) Install OpenWISP"
 	echo -e "  -u\--upgrade : Change OpenWISP version already setup with this script"
 	echo -e "  -h\--help    : See this help message"
