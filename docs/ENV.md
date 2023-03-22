@@ -442,6 +442,12 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** True | False
 - **Default:** False
 
+### `EMAIL_TIMEOUT`
+
+- **Explanation:** Specifies a timeout in seconds used by Django for blocking operations like the connection attempt.
+- **Valid Values:** INTEGER
+- **Default:** 10
+
 ### `POSTFIX_ALLOWED_SENDER_DOMAINS`
 
 - **Explanation:** Due to in-built spam protection in Postfix you will need to specify sender domains.
