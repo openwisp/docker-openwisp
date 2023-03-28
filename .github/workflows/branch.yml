@@ -22,7 +22,8 @@ jobs:
 
       - name: Setup
         run: |
-          echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org wireguard-updater.openwisp.org" |
+          sudo tee -a /etc/hosts
 
       # the following action is equivalent to
       # echo "$DOCKER_HUB_SECRET" | docker login --username "$DOCKER_HUB_USERNAME" --password-stdin

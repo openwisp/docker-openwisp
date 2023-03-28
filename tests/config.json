@@ -3,6 +3,7 @@
     "headless": true,
     "app_url": "https://dashboard.openwisp.org",
     "api_url": "https://api.openwisp.org",
+    "wg_updater_url": "https://wireguard-updater.openwisp.org",
     "load_init_data": true,
     "logs": false,
     "logs_file": "/tmp/odocker.log",

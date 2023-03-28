@@ -59,8 +59,11 @@ services:
       - dashboard
 
   celery:
-    image: openwisp/openwisp-dashboard:latest
+    image: openwisp/openwisp-celery:latest
     restart: always
+    build:
+      context: images
+      dockerfile: openwisp_celery/Dockerfile
     environment:
       - MODULE_NAME=celery
     volumes:
@@ -75,8 +78,11 @@ services:
       - dashboard
 
   celery_monitoring:
-    image: openwisp/openwisp-dashboard:latest
+    image: openwisp/openwisp-celery:latest
     restart: always
+    build:
+      context: images
+      dockerfile: openwisp_celery/Dockerfile
     environment:
       - MODULE_NAME=celery_monitoring
     volumes:
@@ -91,8 +97,8 @@ services:
       - dashboard
 
   celerybeat:
-    image: openwisp/openwisp-dashboard:latest
     restart: always
+    image: openwisp/openwisp-celery:latest
     environment:
       - MODULE_NAME=celerybeat
     env_file:
@@ -123,6 +129,7 @@ services:
         aliases:
          - dashboard.internal
          - api.internal
+         - wireguard_updater.internal
     ports:
       - "80:80"
       - "443:443"
@@ -130,6 +137,7 @@ services:
       - dashboard
       - api
       - websocket
+      - wireguard_updater
 
   freeradius:
     image: openwisp/openwisp-freeradius:latest
@@ -172,6 +180,47 @@ services:
       - postgres
     cap_add:
       - NET_ADMIN
+
+  wireguard:
+    image: openwisp/openwisp-wireguard:latest
+    build:
+      context: images
+      dockerfile: openwisp_wireguard/Dockerfile
+    env_file:
+      - .env
+    environment:
+      # Substitute the placeholder values with the UUID and Key
+      # of the VPN server.
+      # These variables needs to be configured on individual
+      # container to avoid conflicts between multiple VPN servers.
+      - WIREGUARD_VPN_UUID=ENTER_WIREGUARD_VPN_UUID
+      - WIREGUARD_VPN_KEY=ENTER_WIREGUARD_VPN_KEY
+    # Maps the default UDP port (51820) for WireGuard VPN traffic.
+    # Update this this if you are using different port for WireGuard.
+    ports:
+      - 51820:51820/udp
+    # Following properties allow WireGuard to manage network on the
+    # machine while running in a container.
+    volumes:
+      - /lib/modules:/lib/modules
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+
+  wireguard_updater:
+    image: openwisp/openwisp-wireguard-updater:latest
+    build:
+      context: images
+      dockerfile: openwisp_wireguard_updater/Dockerfile
+      args:
+        WIREGUARD_UPDATER_APP_PORT: 8081
+    env_file:
+      - .env
+    environment:
+      # Create an authentication token consisting alphanumeric
+      # characters. This token will be used by OpenWISP for
+      # triggering configuration updates.
+      - WIREGUARD_UPDATER_KEY=openwisp-wireguard-updater-auth-key
 
   postgres:
     image: mdillon/postgis:11-alpine

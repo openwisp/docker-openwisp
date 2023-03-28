@@ -22,6 +22,7 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
     - [Quick Setup](#quick-setup)
     - [Compose](#compose)
     - [Kubernetes](#kubernetes)
+    - [Deploying WireGuard VPN](#deploying-wireguard-vpn)
   - [Customization](#customization)
     - [Custom Django Settings](#custom-django-settings)
     - [Custom Styles and JavaScript](#custom-styles-and-javascript)
@@ -147,6 +148,10 @@ by the images:
 
 - startup probe example: `test $(ps aux | grep -c uwsgi) -ge 2`
 - readiness probe example: `python services.py uwsgi_status "127.0.0.1:8001"`
+
+### Deploying WireGuard VPN
+
+Follow this detailed [step-by-step guide for deploying the WireGuard VPN](docs/tutorials/deploying-wireguard-vpn.md).
 
 ## Customization
 
@@ -280,7 +285,7 @@ If you want to disable a service, you can simply remove the container for that s
 - Default username & password are `admin`.
 - Default domains are: `dashboard.openwisp.org` and `api.openwisp.org`.
 - To reach the dashboard you may need to add the openwisp domains set in your `.env` to your `hosts` file,
-  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" >> /etc/hosts'`
+  example: `bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org wireguard-updater.openwisp.org" >> /etc/hosts'`
 - Now you'll need to do steps (2) everytime you make a changes and want to build the images again.
 - If you want to perform actions like cleaning everything produced by `docker-openwisp`,
   please use the [makefile options](#makefile-options).

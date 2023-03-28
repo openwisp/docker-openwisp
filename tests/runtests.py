@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import time
 import unittest
@@ -57,6 +58,22 @@ class Pretest(TestUtilities, unittest.TestCase):
                 time.sleep(delay_retries)
         else:
             self.fail(f'All celery workers are not online: {online_workers}')
+
+        # Ensure Wireguard updater is running
+        wg_updater_ping = f"{self.config['wg_updater_url']}/ping"
+        for _ in range(1, max_retries):
+            try:
+                # check if we can reach the ping endpoint of wireguard-updater
+                # and the page return 200 OK status code
+                if request.urlopen(wg_updater_ping, context=self.ctx).getcode() == 200:
+                    isServiceReachable = True
+                    break
+            except (urlerror.HTTPError, OSError, ConnectionResetError):
+                # if error occurred, retry to reach the admin
+                # login page after delay_retries second(s)
+                time.sleep(delay_retries)
+        if not isServiceReachable:
+            self.fail('ERROR: wireguard-updater ping endpoint is not reachable!')
 
 
 class TestServices(TestUtilities, unittest.TestCase):
@@ -451,6 +468,9 @@ class TestServices(TestUtilities, unittest.TestCase):
             cwd=self.root_location,
         )
         output, error = map(str, cmd.communicate())
+        # Remove wireguard container from output because it exits when it fails
+        # to download configuration from the dashboard
+        output = re.sub('docker-openwisp_wireguard_1(.*)Exit(.*)\\n', '', output)
         if 'Exit' in output:
             self.fail(
                 f'One of the containers are down!\nOutput:\n{output}\nError:\n{error}'

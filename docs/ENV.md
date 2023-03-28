@@ -25,6 +25,8 @@ Following are the options that can be changed. The list is divided in following 
 - [uWSGI](#uWSGI): uWSGI configurations.
 - [Nginx](#Nginx): Nginx configurations.
 - [VPN](#VPN): Default VPN and VPN template related configurations.
+- [WireGuard](#WireGuard): WireGuard VPN configurations.
+- [WireGuard Updater](#WireGuard-Updater): WireGuard Updater app configurations.
 - [X509](#X509): Default certificate & certicate Authority configuration options.
 - [Host](#Hosts): Want to change the host of a particular service? Like pointing all the containers to a different database service.
 - [Developer](#Developer): DON'T change these values unless you know what you are doing.
@@ -673,6 +675,63 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** STRING
 - **Default:** default-management-vpn
 
+## WireGuard
+
+**Note:** If you have more that one WireGuard container, then these
+settings should be configured on individual container.
+
+### `WIREGUARD_VPN_UUID`
+
+- **Explanation:** ``UUID`` of the WireGuard VPN server object created on the OpenWISP dashboard.
+- **Valid Values:** STRING
+
+### `WIREGUARD_VPN_KEY`
+
+- **Explanation:** ``Key`` of the WireGuard VPN server object created on the OpenWISP dashboard.
+- **Valid Values:** STRING
+
+## WireGuard Updater
+
+### `WIREGUARD_UPDATER_KEY`
+
+- **Explanation:** The authentication token required to trigger the configuration
+  updater. It is strongly recommended to change this before deploying the container.
+- **Valid Values:** STRING
+- **Default:** openwisp-wireguard-updater-auth-key
+
+### `WIREGUARD_UPDATER_DOMAIN`
+
+- **Explanation:** Valid domain / IP address to reach the WireGuard updater application.
+- **Valid Values:** Domain
+- **Default:** wireguard-updater.openwisp.org
+
+### `WIREGUARD_UPDATER_APP_PORT`
+
+- **Explanation:** Change the port on which NGINX connects to the updater app on the WireGuard updater container. Don't change unless you know what you are doing.
+- **Valid Values:** INTEGER
+- **Default:** 8081
+
+### `WIREGUARD_UPDATER_ENDPOINT`
+
+- **Explanation:** The endpoint used for triggering updates to configuration of
+  WireGuard tunnels. It should lead with a slash (`/`). Don't change unless
+  you know what you are doing.
+- **Valid Values:** STRING
+- **Default:** /trigger-update
+
+### `WIREGUARD_UPDATER_APP_SERVICE`
+
+- **Explanation:** Host to establish WireGuard updater connection.
+- **Valid Values:** Domain | IP address
+- **Default:** wireguard_updater
+
+### `WIREGUARD_UPDATER_PUBLIC`
+
+- **Explanation:** Whether the WireGuard Updater should be exposed to the
+  public traffic on [`WIREGUARD_UPDATER_DOMAIN`](#wireguard_updater_domain).
+- **Valid Values:** True | False
+- **Default:** False
+
 ## X509
 
 ### `X509_NAME_CA`
@@ -799,6 +858,13 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Explanation:** Internal api domain to reach api from other containers.
 - **Valid Values:** STRING
 - **Default:** api.internal
+
+### `WIREGUARD_UPDATER_INTERNAL`
+
+- **Explanation:** Internal domain to reach the WireGuard updater app
+  from other containers.
+- **Valid Values:** STRING
+- **Default:** wireguard_updater.internal
 
 ### `POSTFIX_DEBUG_MYNETWORKS`
 

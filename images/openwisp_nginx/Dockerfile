@@ -42,13 +42,17 @@ ENV MODULE_NAME=nginx \
     DASHBOARD_APP_PORT=8000 \
     API_APP_PORT=8001 \
     WEBSOCKET_APP_PORT=8002 \
+    WIREGUARD_UPDATER_APP_PORT=8081 \
     # Application Service Name
     DASHBOARD_APP_SERVICE=dashboard \
     API_APP_SERVICE=api \
     WEBSOCKET_APP_SERVICE=websocket \
+    WIREGUARD_UPDATER_APP_SERVICE=wireguard_updater \
     # Listen domains
     DASHBOARD_DOMAIN=dashboard.example.com \
     API_DOMAIN=api.example.com \
+    WIREGUARD_UPDATER_DOMAIN=wireguard-updater.example.com \
     # Inter container communication domains
     DASHBOARD_INTERNAL=dashboard.internal \
-    API_INTERNAL=api.internal
+    API_INTERNAL=api.internal \
+    WIREGUARD_UPDATER_INTERNAL=wireguard_updater.internal
