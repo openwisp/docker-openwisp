@@ -26,15 +26,14 @@ if env_bool(os.environ.get('USE_OPENWISP_MONITORING')):
         }
         task_routes['openwisp_monitoring.monitoring.tasks.*'] = {'queue': 'monitoring'}
 
-if env_bool(os.environ.get('USE_OPENWISP_FIRMWARE')) and env_bool(
-    os.environ.get('USE_OPENWISP_CELERY_FIRMWARE')
-):
-    task_routes['openwisp_firmware_upgrader.tasks.upgrade_firmware'] = {
-        'queue': 'firmware_upgrader'
-    }
-    task_routes['openwisp_firmware_upgrader.tasks.batch_upgrade_operation'] = {
-        'queue': 'firmware_upgrader'
-    }
+if env_bool(os.environ.get('USE_OPENWISP_FIRMWARE')):
+    if env_bool(os.environ.get('USE_OPENWISP_CELERY_FIRMWARE')):
+        task_routes['openwisp_firmware_upgrader.tasks.upgrade_firmware'] = {
+            'queue': 'firmware_upgrader'
+        }
+        task_routes['openwisp_firmware_upgrader.tasks.batch_upgrade_operation'] = {
+            'queue': 'firmware_upgrader'
+        }
 
 if env_bool(os.environ.get('USE_OPENWISP_RADIUS')):
     radius_schedule = {

@@ -1,5 +1,6 @@
 # hadolint ignore=DL3007
-FROM openwisp/openwisp-base:latest
+ARG BASE_IMAGE=openwisp/openwisp-base:latest
+FROM ${BASE_IMAGE}
 
 WORKDIR /opt/openwisp/
 

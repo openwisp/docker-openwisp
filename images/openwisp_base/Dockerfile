@@ -8,13 +8,10 @@ FROM python:3.10-slim-bullseye AS system
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
     libcairo2 apt-utils libpangocairo-1.0-0 \
-    gdal-bin gettext fping && \
-    rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
-# hadolint ignore=DL3008, DL3009
-RUN apt-get update && \
-    apt-get install --yes --no-install-recommends \
+    gdal-bin gettext fping \
     gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
-    python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++ procps
+    python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++ procps git && \
+    rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 
 RUN useradd --system --password '' --create-home --shell /bin/bash \
     --gid root --uid 1001 openwisp
@@ -25,7 +22,7 @@ FROM system AS openwisp_python
 ENV PATH="${PATH}:/home/openwisp/.local/bin"
 ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
-RUN pip install --no-cache-dir  --user --upgrade pip~=23.0.1
+RUN pip install --no-cache-dir  --user --upgrade pip wheel
 # TODO: Remove when next version of openwisp-monitoring is released
 ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/15977c74b48d846ac469316abc7f13ccbef405f0
 # hadolint ignore=DL3013

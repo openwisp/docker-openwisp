@@ -1,3 +1,4 @@
+urllib3~=1.26.1
 channels_redis
 service_identity
 django-redis

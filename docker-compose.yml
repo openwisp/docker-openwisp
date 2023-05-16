@@ -174,7 +174,7 @@ services:
       - NET_ADMIN
 
   postgres:
-    image: mdillon/postgis:11-alpine
+    image: postgis/postgis:13-3.3-alpine
     restart: always
     environment:
       - POSTGRES_DB=$DB_NAME
