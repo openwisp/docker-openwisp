@@ -5,11 +5,11 @@ FROM ${BASE_IMAGE}
 WORKDIR /opt/openwisp/
 
 # Location: /opt/openwisp/
-COPY --chown=openwisp:root ./openwisp_dashboard/load_init_data.py \
+COPY ./openwisp_dashboard/load_init_data.py \
     ./openwisp_dashboard/openvpn.json \
     /opt/openwisp/
 # Location: /opt/openwisp/openwisp/
-COPY --chown=openwisp:root ./openwisp_dashboard/module_settings.py \
+COPY ./openwisp_dashboard/module_settings.py \
     ./openwisp_dashboard/urls.py \
     /opt/openwisp/openwisp/
 

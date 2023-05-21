@@ -25,7 +25,7 @@ function start_uwsgi {
 	# Hence, OR (||) operator is used here to continue execution
 	# of the script.
 	envsubst <uwsgi.conf.ini >uwsgi.ini || true
-	uwsgi --ini uwsgi.ini --uid openwisp
+	uwsgi --ini uwsgi.ini
 }
 
 function create_prod_certs {

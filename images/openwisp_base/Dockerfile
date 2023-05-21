@@ -8,90 +8,86 @@ FROM python:3.10-slim-bullseye AS system
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
     libcairo2 apt-utils libpangocairo-1.0-0 \
-    gdal-bin gettext fping \
-    gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
-    python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++ procps git && \
+    gdal-bin gettext fping nano && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
-
-RUN useradd --system --password '' --create-home --shell /bin/bash \
-    --gid root --uid 1001 openwisp
-USER openwisp:root
 
 FROM system AS openwisp_python
 
-ENV PATH="${PATH}:/home/openwisp/.local/bin"
-ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
+# hadolint ignore=DL3008, DL3009
+RUN apt-get update && \
+    apt-get install --yes --no-install-recommends \
+    gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
+    python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++ procps
+    # no need to clean the caches because this builder image will get discarded
 
-RUN pip install --no-cache-dir  --user --upgrade pip wheel
-# TODO: Remove when next version of openwisp-monitoring is released
-ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/15977c74b48d846ac469316abc7f13ccbef405f0
-# hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE=https://github.com/openwisp/openwisp-firmware-upgrader/tarball/9c7840c7436eb8b8cd5a63e83194041ccf887cd2
-# hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topology/tarball/ade4d5f844753879ccb54cce1d3528f17c55a490
-# hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/1a748466c269df3548557d9d42df6bb886da4f57
-# hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
-
+ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/master"
+ARG OPENWISP_MONITORING_SOURCE=https://github.com/openwisp/openwisp-monitoring/tarball/master
+ARG OPENWISP_FIRMWARE_SOURCE=https://github.com/openwisp/openwisp-firmware-upgrader/tarball/master
+ARG OPENWISP_TOPOLOGY_SOURCE=https://github.com/openwisp/openwisp-network-topology/tarball/master
+ARG OPENWISP_RADIUS_SOURCE=https://github.com/openwisp/openwisp-radius/tarball/master
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
 # otherwise these modules will have already been installed above
 ARG OPENWISP_IPAM_SOURCE=default
+ARG OPENWISP_CONTROLLER_SOURCE=default
+ARG OPENWISP_NOTIFICATION_SOURCE=default
+ARG OPENWISP_USERS_SOURCE=default
+ARG DJANGO_X509_SOURCE=default
+
+RUN pip install --no-cache-dir --upgrade pip wheel
+
+# install common dependencies with pinned versions first
+COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /tmp/openwisp-deploy-requirements.txt && pip cache purge
+
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade "${OPENWISP_UTILS_SOURCE}";
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade ${OPENWISP_MONITORING_SOURCE}
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade ${OPENWISP_FIRMWARE_SOURCE}
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade ${OPENWISP_RADIUS_SOURCE}
+
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
-        pip install --no-cache-dir --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
+        pip install --no-cache-dir --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
-# TODO: Remove when next version of openwisp-controller is released
-ARG OPENWISP_CONTROLLER_SOURCE=https://github.com/openwisp/openwisp-controller/tarball/3383bc11e5f8e9c89ebd9ac8aefa0066576d3133
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
-        pip install --no-cache-dir --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
+        pip install --no-cache-dir --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
     fi
-ARG OPENWISP_NOTIFICATION_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
-        pip install --no-cache-dir --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
+        pip install --no-cache-dir --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
-ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/55023698cf39711585480be90c98d64ce5a04b8d
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
-        pip install --no-cache-dir --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
+        pip install --no-cache-dir --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
-# TODO: Remove when next version of openwisp-utils is released
-ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/9fd347fb861af674674a4bcc59c54bcdeef18b8c "
-# hadolint ignore=DL3013
-RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
-        pip install --no-cache-dir --user --upgrade --force-reinstall "${OPENWISP_UTILS_SOURCE}"; \
-    fi
-ARG DJANGO_X509_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
-        pip install --no-cache-dir --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
+        pip install --no-cache-dir --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
     fi
 
-ARG DJANGO_SOURCE=django~=4.0.10
-# hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${DJANGO_SOURCE}
+FROM system as openwisp_base
 
-COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
-RUN pip install --no-cache-dir --user --upgrade -r /tmp/openwisp-deploy-requirements.txt
-
-FROM system
-
-COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
-COPY --chown=openwisp:root ./common/ /opt/openwisp/
-RUN mkdir /opt/openwisp/static && mkdir /opt/openwisp/media && mkdir /opt/openwisp/private && \
-    mkdir /opt/openwisp/logs && chown -R openwisp:root /opt/openwisp
+COPY --from=openwisp_python /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=openwisp_python /usr/local/bin /usr/local/bin
+COPY ./common/ /opt/openwisp/
+RUN mkdir /opt/openwisp/static && mkdir /opt/openwisp/media && mkdir /opt/openwisp/private && mkdir /opt/openwisp/logs && \
+    chmod a+w /opt/openwisp /opt/openwisp/static /opt/openwisp/media /opt/openwisp/private /opt/openwisp/logs
 
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \
     TZ=UTC \
     DEBUG_MODE=False \
     REDIS_HOST=redis \
+    UWSGI_PROCESSES=1 \
+    UWSGI_THREADS=1 \
+    UWSGI_LISTEN=64 \
     DB_ENGINE=django.contrib.gis.db.backends.postgis \
     DB_NAME=openwisp_db \
     DB_USER=admin \

@@ -4,7 +4,7 @@ FROM ${BASE_IMAGE}
 
 WORKDIR /opt/openwisp/
 
-COPY --chown=openwisp:root ./openwisp_api/urls.py \
+COPY ./openwisp_api/urls.py \
     ./openwisp_api/module_settings.py \
     /opt/openwisp/openwisp/
 
