@@ -58,6 +58,8 @@ CORS_ALLOWED_ORIGINS = [
     f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}',
 ] + os.environ['DJANGO_CORS_HOSTS'].split(',')
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = DEBUG
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
 if HTTP_SCHEME == 'https':
     SESSION_COOKIE_SECURE = True
@@ -298,7 +300,7 @@ LOGGING = {
             'stream': sys.stdout,
         },
         'mail_admins': {
-            'level': os.environ['DJANGO_LOG_LEVEL'],
+            'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'filters': ['require_debug_false', 'user_filter'],
         },
