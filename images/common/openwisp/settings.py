@@ -300,7 +300,7 @@ LOGGING = {
             'stream': sys.stdout,
         },
         'mail_admins': {
-            'level': 'ERROR',
+            'level': os.environ['DJANGO_LOG_MAIL_ADMINS_LEVEL'],
             'class': 'django.utils.log.AdminEmailHandler',
             'filters': ['require_debug_false', 'user_filter'],
         },
