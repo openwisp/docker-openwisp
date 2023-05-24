@@ -21,7 +21,9 @@ def create_admin():
     Creates superuser `admin` if it does not exist.
     """
     User.objects.filter(is_superuser=True).exists() or User.objects.create_superuser(
-        "admin", os.getenv('EMAIL_DJANGO_DEFAULT', "admin@example.com"), os.getenv('ADMIN_PASSWORD', "admin")
+        "admin",
+        os.getenv('EMAIL_DJANGO_DEFAULT', "admin@example.com"),
+        os.getenv('ADMIN_PASSWORD', "admin"),
     )
 
 
