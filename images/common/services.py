@@ -28,16 +28,19 @@ def database_status():
 
 
 def uwsgi_status(target, exit_on_error=False):
+    resp = ""
     try:
-        uwsgi_curl(target)
-    except OSError:
+        resp = uwsgi_curl(target)
+        if resp is not None:
+            print(resp[:256])
+        return True
+    except Exception as e:
         # used for readiness/liveliness probes
         if exit_on_error:
             sys.exit(1)
+        print(str(e))
         time.sleep(3)
         return False
-    else:
-        return True
 
 
 def dashboard_status():

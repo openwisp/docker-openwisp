@@ -1,9 +1,10 @@
 # hadolint ignore=DL3007
-FROM openwisp/openwisp-base:latest
+ARG BASE_IMAGE=openwisp/openwisp-base:latest
+FROM ${BASE_IMAGE}
 
 WORKDIR /opt/openwisp/
 
-COPY --chown=openwisp:root ./openwisp_api/urls.py \
+COPY ./openwisp_api/urls.py \
     ./openwisp_api/module_settings.py \
     /opt/openwisp/openwisp/
 

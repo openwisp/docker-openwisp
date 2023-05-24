@@ -1,12 +1,13 @@
 # hadolint ignore=DL3007
-FROM openwisp/openwisp-base:latest
+ARG BASE_IMAGE=openwisp/openwisp-base:latest
+FROM ${BASE_IMAGE}
 
 WORKDIR /opt/openwisp/
 
-COPY --chown=openwisp:root  ./common/ \
+COPY ./common/ \
     ./openwisp_websocket/daphne.conf \
     /opt/openwisp/
-COPY --chown=openwisp:root  ./openwisp_websocket/module_settings.py \
+COPY ./openwisp_websocket/module_settings.py \
     ./openwisp_websocket/urls.py \
     /opt/openwisp/openwisp/
 
