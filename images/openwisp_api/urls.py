@@ -27,7 +27,7 @@ if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
             'api/v1/',
             include('openwisp_firmware_upgrader.api.urls', namespace='firmware'),
         ),
-        path('', include((fw_private_storage_urls, 'firmware'), namespace='firmware')),
+        path('', include((fw_private_storage_urls, 'firmware'), namespace='firmware-private')),
     ]
 
 if env_bool(os.environ['USE_OPENWISP_MONITORING']):
