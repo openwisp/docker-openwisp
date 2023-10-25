@@ -1,7 +1,7 @@
 FROM nginx:1.23.3-alpine
 
 RUN apk add --update --no-cache \
-            openssl~=3.0.8-r0 \
+            openssl~=3.0.12-r0 \
             certbot~=1.32.0-r0 \
             certbot-nginx~=1.32.0-r0 && \
     rm -rf /var/cache/apk/* /tmp/*

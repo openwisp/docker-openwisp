@@ -3,12 +3,12 @@ service_identity
 django-redis
 psycopg2
 sentry-sdk
-supervisor~=4.2  # allows 4.x and > 4.2
-django-cors-headers~=3.1  # allows 3.x and > 3.1
-django-pipeline~=2.0  # allows 2.x
-uwsgi~=2.0.20
+supervisor~=4.2.5  # allows 4.x and > 4.2
+django-cors-headers~=3.14.0  # allows 3.x and > 3.1
+django-pipeline~=2.1.0  # allows 2.x
+uwsgi~=2.0.22
 django-celery-email~=3.0.0
 # these add support for object storage
 # (eg: Amazon S3, GCS)
-django-storages~=1.12.3
-boto3~=1.24.8
+django-storages~=1.14.2
+boto3~=1.28.70
