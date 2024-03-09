@@ -376,7 +376,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_radius.tasks.deactivate_expired_users",
             "openwisp_radius.tasks.delete_old_postauth",
             "openwisp_radius.tasks.delete_old_radacct",
-            "openwisp_radius.tasks.delete_old_users",
+            "openwisp_radius.tasks.delete_old_radiusbatch_users",
             "openwisp_radius.tasks.delete_unverified_users",
             "openwisp_radius.tasks.perform_change_of_authorization",
             "openwisp_radius.tasks.send_login_email",

@@ -526,7 +526,7 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Valid Values:** INT
 - **Default:** 365
 
-### `CRON_DELETE_OLD_USERS`
+### `CRON_DELETE_OLD_RADIUSBATCH_USERS`
 
 - **Explanation:** (Value in months) Deactivates expired user accounts which were created temporarily and have an expiration date set.
 - **Valid Values:** INT
