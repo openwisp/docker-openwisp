@@ -1,3 +1,2 @@
-docker~=5.0.3
-selenium~=4.1.0
-openwisp-utils[qa] @ https://github.com/openwisp/openwisp-utils/tarball/master
+docker~=7.0.0
+openwisp-utils[qa,selenium] @ https://github.com/openwisp/openwisp-utils/tarball/master

@@ -265,7 +265,7 @@ EMAIL_PORT = os.environ['EMAIL_HOST_PORT']
 EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 EMAIL_USE_TLS = env_bool(os.environ['EMAIL_HOST_TLS'])
-EMAIL_TIMEOUT = os.environ['EMAIL_TIMEOUT']
+EMAIL_TIMEOUT = int(os.environ['EMAIL_TIMEOUT'])
 
 # Logging
 # http://docs.djangoproject.com/en/dev/topics/logging

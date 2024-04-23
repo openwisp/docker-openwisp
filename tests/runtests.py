@@ -9,6 +9,7 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from utils import TestUtilities
 
 
@@ -120,13 +121,17 @@ class TestServices(TestUtilities, unittest.TestCase):
             )
         # Create base drivers (Chromium)
         if cls.config['driver'] == 'chromium':
-            chrome_options = ChromiumOptions()
-            chrome_options.set_capability("goog:loggingPrefs", {'browser': 'ALL'})
-            chrome_options.add_argument('--ignore-certificate-errors')
+            options = ChromiumOptions()
+            options.add_argument('--headless')
+            options.add_argument('--ignore-certificate-errors')
             if cls.config['headless']:
-                chrome_options.add_argument('--headless')
-            cls.base_driver = webdriver.Chrome(options=chrome_options)
-            cls.second_driver = webdriver.Chrome(options=chrome_options)
+                options.add_argument('--headless')
+            options.add_argument(f'--remote-debugging-port={5003 + 100}')
+            capabilities = DesiredCapabilities.CHROME
+            capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
+            options.set_capability('cloud:options', capabilities)
+            cls.base_driver = webdriver.Chrome(options=options)
+            cls.second_driver = webdriver.Chrome(options=options)
         cls.base_driver.set_window_size(1366, 768)
         cls.second_driver.set_window_size(1366, 768)
 
@@ -137,8 +142,8 @@ class TestServices(TestUtilities, unittest.TestCase):
                 cls._delete_object(resource_link)
             except NoSuchElementException:
                 print(f'Unable to delete resource at: {resource_link}')
-        cls.second_driver.close()
-        cls.base_driver.close()
+        cls.second_driver.quit()
+        cls.base_driver.quit()
         if cls.failed_test and cls.config['logs']:
             cmd = subprocess.Popen(
                 ['docker-compose', 'logs'],
@@ -170,8 +175,9 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.action_on_resource(label, path, 'delete_selected')
         self.assertNotIn('<li>Nodes: ', self.base_driver.page_source)
         self.action_on_resource(label, path, 'update_selected')
-        time.sleep(4)  # Wait for nodes to be fetched!
+
         self.action_on_resource(label, path, 'delete_selected')
+        self._wait_for_element()
         self.assertIn('<li>Nodes: ', self.base_driver.page_source)
 
     def test_admin_login(self):
@@ -194,21 +200,21 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.base_driver.get(
             f"{self.config['app_url']}/admin/openwisp_radius/radiusbatch/add/"
         )
-        self.base_driver.find_element_by_name('strategy').find_element_by_xpath(
-            '//option[@value="prefix"]'
+        self.base_driver.find_element(By.NAME, 'strategy').find_element(
+            By.XPATH, '//option[@value="prefix"]'
         ).click()
-        self.base_driver.find_element_by_name('organization').find_element_by_xpath(
-            '//option[text()="default"]'
+        self.base_driver.find_element(By.NAME, 'organization').find_element(
+            By.XPATH, '//option[text()="default"]'
         ).click()
-        self.base_driver.find_element_by_name('name').send_keys(prefix_objname)
-        self.base_driver.find_element_by_name('prefix').send_keys('automated-prefix')
-        self.base_driver.find_element_by_name('number_of_users').send_keys('1')
-        self.base_driver.find_element_by_name('_save').click()
+        self.base_driver.find_element(By.NAME, 'name').send_keys(prefix_objname)
+        self.base_driver.find_element(By.NAME, 'prefix').send_keys('automated-prefix')
+        self.base_driver.find_element(By.NAME, 'number_of_users').send_keys('1')
+        self.base_driver.find_element(By.NAME, '_save').click()
         # Check PDF available
         self.get_resource(prefix_objname, '/admin/openwisp_radius/radiusbatch/')
         self.objects_to_delete.append(self.base_driver.current_url)
-        prefix_pdf_file_path = self.base_driver.find_element_by_xpath(
-            '//a[text()="Download User Credentials"]'
+        prefix_pdf_file_path = self.base_driver.find_element(
+            By.XPATH, '//a[text()="Download User Credentials"]'
         ).get_property('href')
         reqHeader = {
             'Cookie': f"sessionid={self.base_driver.get_cookies()[0]['value']}"
@@ -314,6 +320,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.base_driver.get(f"{self.config['app_url']}/accounts/password/reset/")
         self.base_driver.find_element(By.NAME, 'email').send_keys('admin@example.com')
         self.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
+        self._wait_for_element()
         self.assertIn(
             'We have sent you an e-mail. If you have not received '
             'it please check your spam folder. Otherwise contact us '
@@ -355,13 +362,14 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_monitoring.check.tasks.run_checks",
             "openwisp_monitoring.device.tasks.delete_wifi_clients_and_sessions",
             "openwisp_monitoring.device.tasks.offline_device_close_session",
-            "openwisp_monitoring.device.tasks.save_wifi_clients_and_sessions",
             "openwisp_monitoring.device.tasks.trigger_device_checks",
             "openwisp_monitoring.device.tasks.write_device_metrics",
+            "openwisp_monitoring.device.tasks.handle_disabled_organization",
             "openwisp_monitoring.monitoring.tasks.delete_timeseries",
             "openwisp_monitoring.monitoring.tasks.migrate_timeseries_database",
             "openwisp_monitoring.monitoring.tasks.timeseries_batch_write",
             "openwisp_monitoring.monitoring.tasks.timeseries_write",
+            "openwisp_monitoring.monitoring.tasks.delete_timeseries",
             "openwisp_notifications.tasks.delete_ignore_object_notification",
             "openwisp_notifications.tasks.delete_notification",
             "openwisp_notifications.tasks.delete_obsolete_objects",
@@ -392,8 +400,8 @@ class TestServices(TestUtilities, unittest.TestCase):
             for expected_output in expected_output_list:
                 if expected_output not in output:
                     self.fail(
-                        'Not all celery / celery-beat tasks are registered\n'
-                        f'Output:\n{output}\n'
+                        'Not all celery / celery-beat tasks are registered.\n'
+                        f'Expected celery task not found:\n{expected_output}'
                     )
 
         with self.subTest('Test celery container'):

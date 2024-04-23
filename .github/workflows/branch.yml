@@ -15,7 +15,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Testing Requirements
-        run: sudo pip install -r requirements-test.txt
+        run: |
+          sudo pip install -U pip setuptools wheel
+          sudo pip install -r requirements-test.txt
 
       - name: Lint
         run: openwisp-qa-check --skip-checkmigrations

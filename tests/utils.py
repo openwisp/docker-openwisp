@@ -8,9 +8,11 @@ import docker
 from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
-class TestConfig(object):
+class TestConfig:
     """
     Get the configurations that are to be used for all the tests.
     """
@@ -96,6 +98,7 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}/admin/openwisp_users/user/add/")
+        self._wait_for_element()
         driver.find_element(By.NAME, 'username').send_keys(username)
         driver.find_element(By.NAME, 'email').send_keys(email)
         driver.find_element(By.NAME, 'password1').send_keys(password)
@@ -104,6 +107,7 @@ class TestUtilities(TestConfig):
         self._click_save_btn(driver)
         self.objects_to_delete.append(driver.current_url)
         self._click_save_btn(driver)
+        self._wait_for_element()
 
     def get_resource(self, resource_name, path, select_field='field-name', driver=None):
         """
@@ -195,8 +199,10 @@ class TestUtilities(TestConfig):
         self._click_save_btn(driver)
         # Add to delete list
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
+        self._wait_for_element()
         self.objects_to_delete.append(driver.current_url)
         driver.get(f"{self.config['app_url']}/admin/geo/location/")
+        self._wait_for_element()
 
     def add_mobile_location_point(self, location_name, driver=None):
         """
@@ -261,5 +267,12 @@ class TestUtilities(TestConfig):
         self.get_resource(
             label, '/admin/topology/topology/', 'field-label', driver=driver
         )
+        self._wait_for_element()
         self.objects_to_delete.append(driver.current_url)
         driver.get(f"{self.config['app_url']}/admin/topology/topology/")
+        self._wait_for_element()
+
+    def _wait_for_element(self, element_id='content'):
+        WebDriverWait(self.base_driver, 10).until(
+            EC.visibility_of_element_located((By.ID, element_id))
+        )
