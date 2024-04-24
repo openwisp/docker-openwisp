@@ -65,7 +65,7 @@ RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
 # TODO: Remove when next version of openwisp-utils is released
-ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/1d3b00cbd8b36686a39b3f24c42667e6482197b2"
+ARG OPENWISP_UTILS_SOURCE="openwisp-utils[celery,rest] @ https://github.com/openwisp/openwisp-utils/tarball/0a7f9214388b634eec437af544fc31c1762a02ce"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall "${OPENWISP_UTILS_SOURCE}"; \
@@ -82,13 +82,19 @@ RUN pip install --no-cache-dir --user --upgrade ${DJANGO_SOURCE}
 
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
 RUN pip install --no-cache-dir --user --upgrade -r /tmp/openwisp-deploy-requirements.txt
+RUN pip install --upgrade urllib3~=2.2.1
 
 FROM system
 
 COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
 COPY --chown=openwisp:root ./common/ /opt/openwisp/
-RUN mkdir /opt/openwisp/static && mkdir /opt/openwisp/media && mkdir /opt/openwisp/private && \
-    mkdir /opt/openwisp/logs && chown -R openwisp:root /opt/openwisp
+RUN mkdir /opt/openwisp/static && \
+    mkdir /opt/openwisp/media && \
+    mkdir /opt/openwisp/private && \
+    mkdir /opt/openwisp/logs && \
+    chown -R openwisp:root /opt/openwisp
+# Maintain backward compatibility with code written for ansible-openwisp2
+RUN ln -s /opt/openwisp/openwisp /opt/openwisp/openwisp2
 
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \

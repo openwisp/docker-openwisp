@@ -357,6 +357,8 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
+TEST_RUNNER = 'openwisp_utils.metric_collection.tests.runner.MockRequestPostRunner'
+
 # Add Custom OpenWRT Images for openwisp firmware
 try:
     OPENWRT_IMAGES = json.loads(os.environ['OPENWISP_CUSTOM_OPENWRT_IMAGES'])
@@ -410,6 +412,8 @@ if not env_bool(os.environ['USE_OPENWISP_MONITORING']):
         INSTALLED_APPS.remove('openwisp_monitoring.check')
 if EMAIL_BACKEND == 'djcelery_email.backends.CeleryEmailBackend':
     INSTALLED_APPS.append('djcelery_email')
+if env_bool(os.environ.get('METRIC_COLLECTION', 'True')):
+    INSTALLED_APPS.append('openwisp_utils.metric_collection')
 
 try:
     from .configuration.custom_django_settings import *  # noqa: F403, F401

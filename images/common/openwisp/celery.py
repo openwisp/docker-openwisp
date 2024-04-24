@@ -7,7 +7,12 @@ from openwisp.utils import env_bool
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 
-radius_schedule, topology_schedule, monitoring_schedule = {}, {}, {}
+radius_schedule, topology_schedule, monitoring_schedule, metric_collection_schedule = (
+    {},
+    {},
+    {},
+    {},
+)
 task_routes = {}
 
 if env_bool(os.environ.get('USE_OPENWISP_CELERY_NETWORK')):
@@ -59,6 +64,14 @@ if env_bool(os.environ.get('USE_OPENWISP_TOPOLOGY')):
         },
     }
 
+if env_bool(os.environ.get('METRIC_COLLECTION', 'True')):
+    metric_collection_schedule = {
+        'send_usage_metrics': {
+            'task': 'openwisp_utils.metric_collection.tasks.send_usage_metrics',
+            'schedule': timedelta(days=1),
+        },
+    }
+
 notification_schedule = {
     'notification-delete-tasks': {
         'task': 'openwisp_notifications.tasks.delete_old_notifications',
@@ -79,6 +92,7 @@ app = Celery(
         **topology_schedule,
         **notification_schedule,
         **monitoring_schedule,
+        **metric_collection_schedule,
     },
 )
 app.config_from_object('django.conf:settings', namespace='CELERY')

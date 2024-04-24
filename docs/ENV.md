@@ -165,6 +165,12 @@ Any OpenWISP Configuration of type `string`. `int`, `bool` or `json` is supporte
 - **Default:** None
 - **Example:** [{"name": "Name1","label": "Label1","boards": ["TestA", "TestB"]}, {"name": "Name2","label": "Label2","boards": ["TestC", "TestD"]}]
 
+### `METRIC_COLLECTION`
+
+- **Explanation:** Whether the usage metric collection feature of openwisp-utils is enabled or not.
+- **Valid Values:** True | False
+- **Default:** True
+
 ## Database
 
 ### `DB_NAME`

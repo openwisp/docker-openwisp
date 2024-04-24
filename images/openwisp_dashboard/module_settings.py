@@ -17,7 +17,6 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'corsheaders',
     'django_extensions',
     # openwisp modules
     'openwisp_users',
@@ -41,6 +40,8 @@ INSTALLED_APPS = [
     # openwisp-firmware-upgrader
     'openwisp_firmware_upgrader',
     # openwisp-radius
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'openwisp_radius',
     # admin
     'openwisp_utils.admin_theme',
@@ -53,11 +54,8 @@ INSTALLED_APPS = [
     # rest framework
     'rest_framework',
     'rest_framework_gis',
-    'django_filters',
-    # registration
     'rest_framework.authtoken',
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
+    'django_filters',
     # social login
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.google',
@@ -69,6 +67,7 @@ INSTALLED_APPS = [
     'admin_auto_filters',
     'channels',
     'pipeline',
+    'corsheaders',
 ]
 
 EXTENDED_APPS = [

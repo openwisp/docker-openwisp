@@ -8,11 +8,13 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     # all-auth
     'django.contrib.sites',
+    # overrides allauth templates
+    # must precede allauth
+    'openwisp_users.accounts',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'django_extensions',
-    'corsheaders',
     # openwisp modules
     'openwisp_users',
     # openwisp-controller
@@ -35,11 +37,11 @@ INSTALLED_APPS = [
     # openwisp-firmware-upgrader
     'openwisp_firmware_upgrader',
     # openwisp radius
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'openwisp_radius',
-    # Admin theme required for the templates
-    # stored in openwisp_utils/admin_theme
-    'openwisp_utils.admin_theme',
     # admin
+    'openwisp_utils.admin_theme',
     'django.contrib.admin',
     'django.forms',
     # other dependencies
@@ -49,18 +51,19 @@ INSTALLED_APPS = [
     # rest framework
     'rest_framework',
     'rest_framework_gis',
-    'django_filters',
-    # registration
     'rest_framework.authtoken',
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
+    'django_filters',
     # social login
     'allauth.socialaccount.providers.facebook',
     'allauth.socialaccount.providers.google',
-    # other packages
+    # other dependencies
+    'flat_json_widget',
     'private_storage',
     'drf_yasg',
+    'import_export',
+    'admin_auto_filters',
     'channels',
+    'corsheaders',
 ]
 
 EXTENDED_APPS = [

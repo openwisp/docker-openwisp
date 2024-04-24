@@ -200,6 +200,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.base_driver.get(
             f"{self.config['app_url']}/admin/openwisp_radius/radiusbatch/add/"
         )
+        self._wait_for_element()
         self.base_driver.find_element(By.NAME, 'strategy').find_element(
             By.XPATH, '//option[@value="prefix"]'
         ).click()
@@ -212,6 +213,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.base_driver.find_element(By.NAME, '_save').click()
         # Check PDF available
         self.get_resource(prefix_objname, '/admin/openwisp_radius/radiusbatch/')
+        self._wait_for_element()
         self.objects_to_delete.append(self.base_driver.current_url)
         prefix_pdf_file_path = self.base_driver.find_element(
             By.XPATH, '//a[text()="Download User Credentials"]'
@@ -220,7 +222,6 @@ class TestServices(TestUtilities, unittest.TestCase):
             'Cookie': f"sessionid={self.base_driver.get_cookies()[0]['value']}"
         }
         curlRequest = request.Request(prefix_pdf_file_path, headers=reqHeader)
-
         try:
             if request.urlopen(curlRequest, context=self.ctx).getcode() != 200:
                 raise ValueError
