@@ -8,6 +8,7 @@ django-cors-headers~=3.1  # allows 3.x and > 3.1
 django-pipeline~=2.0  # allows 2.x
 uwsgi~=2.0.20
 django-celery-email~=3.0.0
+tldextract~=5.1.2
 # these add support for object storage
 # (eg: Amazon S3, GCS)
 django-storages~=1.12.3

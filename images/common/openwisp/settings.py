@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 
+import tldextract
 from openwisp.utils import (
     env_bool,
     is_string_env_bool,
@@ -28,8 +29,8 @@ for config in os.environ:
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 DEBUG = env_bool(os.environ['DEBUG_MODE'])
-ROOT_DOMAIN = f'.{".".join(os.environ["DASHBOARD_DOMAIN"].split(".")[1:])}'
 MAX_REQUEST_SIZE = int(os.environ['NGINX_CLIENT_BODY_SIZE']) * 1024 * 1024
+ROOT_DOMAIN = '.' + tldextract.extract(os.environ["DASHBOARD_DOMAIN"]).registered_domain
 INSTALLED_APPS = []
 
 if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
