@@ -44,7 +44,7 @@ jobs:
 
       - name: Build & Publish to Docker Hub
         run: |
-          make publish TAG=edge USER=registry.docker.com/openwisp || (docker-compose logs && exit 1)
+          make publish TAG=edge USER=docker.io/openwisp
         env:
           SELENIUM_HEADLESS: 1
 
