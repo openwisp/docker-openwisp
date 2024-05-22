@@ -81,8 +81,8 @@ ARG DJANGO_SOURCE=django~=4.2.0
 RUN pip install --no-cache-dir --user --upgrade ${DJANGO_SOURCE}
 
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
-RUN pip install --no-cache-dir --user --upgrade -r /tmp/openwisp-deploy-requirements.txt
-RUN pip install --upgrade urllib3~=2.2.1
+RUN pip install --no-cache-dir --user --upgrade -r /tmp/openwisp-deploy-requirements.txt && \
+    pip install --no-cache-dir --upgrade urllib3~=2.2.1
 
 FROM system
 

@@ -19,8 +19,14 @@ jobs:
           sudo pip install -U pip setuptools wheel
           sudo pip install -r requirements-test.txt
 
-      - name: Lint
-        run: openwisp-qa-check --skip-checkmigrations
+      - name: Install Testing Requirements
+        run: |
+          sudo pip install -r requirements-test.txt
+          sudo curl -sL -o /bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64"
+          sudo chmod +x /bin/hadolint
+
+      - name: QA checks
+        run: ./run-qa-checks
 
       - name: Setup
         run: |
