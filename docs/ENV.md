@@ -101,7 +101,7 @@ Additionally, you can search for the following:
 - **Default:** <your-dashboard-domains>
 - **Example:** .openwisp.org,.example.org,www.example.com
 
-### `DJANGO_FREERADIUS_ALLOWED_HOSTS`
+### `OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS`
 
 - **Explanation:** Default IP address or subnet of your freeradius instance.
 - **Valid Values:** List(IP adress) | Subnet
