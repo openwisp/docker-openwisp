@@ -13,7 +13,7 @@ RUN apt-get update && \
 # hadolint ignore=DL3008, DL3009
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
-    gcc libpq-dev libjpeg-dev libffi-dev python3-dev \
+    libpq-dev libjpeg-dev libffi-dev python3-dev \
     python3-pip libxml2-dev libxslt1-dev zlib1g-dev g++ procps
 
 RUN useradd --system --password '' --create-home --shell /bin/bash \
