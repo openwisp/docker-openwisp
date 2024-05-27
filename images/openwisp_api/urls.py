@@ -2,13 +2,11 @@ import os
 
 from django.urls import include, path
 from openwisp.utils import env_bool, openwisp_controller_urls
-from openwisp_users.api.urls import get_api_urls as ipam_api
 from openwisp_users.api.urls import get_api_urls as users_api
 
 urlpatterns = openwisp_controller_urls() + [
-    path('api/v1/', include((users_api(), 'users'), namespace='users')),
+    path('api/v1/', include((users_api(), 'users'))),
     path('api/v1/', include('openwisp_utils.api.urls')),
-    path('api/v1/', include((ipam_api(), 'ipam'), namespace='ipam')),
 ]
 
 if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
@@ -23,11 +21,11 @@ if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
     )
 
     urlpatterns += [
+        path('', include('openwisp_firmware_upgrader.urls')),
         path(
-            'api/v1/',
-            include('openwisp_firmware_upgrader.api.urls', namespace='firmware'),
+            '',
+            include((fw_private_storage_urls, 'firmware'), namespace='firmware'),
         ),
-        path('', include((fw_private_storage_urls, 'firmware'), namespace='firmware')),
     ]
 
 if env_bool(os.environ['USE_OPENWISP_MONITORING']):
@@ -36,4 +34,4 @@ if env_bool(os.environ['USE_OPENWISP_MONITORING']):
     ]
 
 if env_bool(os.environ['USE_OPENWISP_RADIUS']):
-    urlpatterns += [path('', include(('openwisp_radius.urls', 'radius')))]
+    urlpatterns += [path('', include('openwisp_radius.urls'))]
