@@ -20,10 +20,7 @@ urlpatterns += openwisp_controller_urls()
 
 if env_bool(os.environ['USE_OPENWISP_MONITORING']):
     urlpatterns += [
-        path(
-            '',
-            include('openwisp_monitoring.monitoring.api.urls', namespace='monitoring'),
-        )
+        path('', include('openwisp_monitoring.urls')),
     ]
 
 if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
