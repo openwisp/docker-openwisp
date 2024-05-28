@@ -52,7 +52,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: registry.gitlab.com
-          username: ${{ secrets.DOCKER_USER }}
+          username: ${{ secrets.GITLAB_DOCKER_REGISTRY_USER }}
           password: ${{ secrets.GITLAB_DOCKER_REGISTRY_TOKEN }}
 
       # Skip image builds and tests since they were done when
