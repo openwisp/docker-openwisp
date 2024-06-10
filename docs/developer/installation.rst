@@ -1,7 +1,9 @@
-Development
-===========
+Developer Installation Instructions
+===================================
 
-Workbench setup
+.. include:: ../partials/developer-docs.rst
+
+Workbench Setup
 ---------------
 
 1. Install docker & docker-compose.
@@ -14,14 +16,14 @@ Workbench setup
 - Default username & password are ``admin``.
 - Default domains are: ``dashboard.openwisp.org`` and
   ``api.openwisp.org``.
-- To reach the dashboard you may need to add the openwisp domains set in
+- To reach the dashboard you may need to add the OpenWISP domains set in
   your ``.env`` to your ``hosts`` file, example: ``bash -c 'echo
   "127.0.0.1 dashboard.openwisp.org api.openwisp.org" >> /etc/hosts'``
 - Now you’ll need to do steps (2) everytime you make a changes and want to
   build the images again.
 - If you want to perform actions like cleaning everything produced by
-  ``docker-openwisp``, please use the `makefile options
-  <#makefile-options>`__.
+  ``docker-openwisp``, please use the :ref:`makefile options
+  <docker_image>`.
 
 Runtests
 --------
@@ -32,31 +34,32 @@ console log errors as well.
 
 1. Setup driver for selenium:
 
-   - Setup chromedriver
+       - Setup chromedriver
 
-     1. Install chromium:
+         1. Install chromium:
 
-     .. code-block:: bash
+                .. code-block:: bash
 
-         # On debian
-         sudo apt --yes install chromium
-         # On ubuntu
-         sudo apt --yes install chromium-browser
+                    # On debian
+                    sudo apt --yes install chromium
+                    # On ubuntu
+                    sudo apt --yes install chromium-browser
 
-     3. Check version: ``chromium --version``
-     4. Install Driver for your version:
-        https://chromedriver.chromium.org/downloads
-     5. Extract chromedriver to one of directories from your ``$PATH``.
-        (example: ``/usr/bin/``)
+         2. Install selenium: ``python3 -m pip install selenium``
+         3. Check version: ``chromium --version``
+         4. Install Driver for your version:
+                https://chromedriver.chromium.org/downloads
+         5. Extract chromedriver to one of directories from your ``$PATH``.
+                (example: ``/usr/bin/``)
 
-   - Setup geckodriver
+       - Setup geckodriver
 
-     1. Install: ``sudo apt --yes install firefox``
-     2. Check version: ``firefox --version``
-     3. Install Driver for your version:
-        https://github.com/mozilla/geckodriver/releases
-     4. Extract geckodriver to one of directories from your ``$PATH``.
-        (example: ``/usr/bin/``)
+         1. Install: ``sudo apt --yes install firefox``
+         2. Check version: ``firefox --version``
+         3. Install Driver for your version:
+                https://github.com/mozilla/geckodriver/releases
+         4. Extract geckodriver to one of directories from your ``$PATH``.
+                (example: ``/usr/bin/``)
 
 2. Install selenium: ``python3 -m pip install selenium``
 3. (Optional) Configure: open ``tests/config.json`` and configure
@@ -106,3 +109,38 @@ To run quality assurance checks you can use the ``run-qa-checks`` script:
 
     # run QA checks before committing code
     ./run-qa-checks
+
+.. _docker_image:
+
+Usage
+-----
+
+Makefile Options
+~~~~~~~~~~~~~~~~
+
+Most commonly used:
+
+- ``start``\ <USER=docker-username> <TAG=image-tag>: Start OpenWISP
+  containers on your server.
+- ``pull``\ <USER=docker-username> <TAG=image-tag>: Pull Images from
+  registry.
+- ``stop``: Stop make containers on your server.
+- ``develop``: Bundles all the commands required to build the images and
+  run containers.
+- ``runtests``: Run testcases to ensure all the services are working.
+- ``clean``: Aggressively purge all the containers, images, volumes &
+  networks related to ``docker-openwisp``.
+
+Other options:
+
+- ``publish`` <USER=docker-username> <TAG=image-tag>: Build, test and
+  publish images.
+- ``python-build``: Generate a random django secret and set it in the
+  ``.env`` file.
+- ``nfs-build``: Build openwisp-nfs server image.
+- ``base-build``: Build openwisp-base image. The base image is used in
+  other OpenWISP images.
+- ``compose-build``: (default) Build OpenWISP images for development.
+- ``develop-runtests``: Similar to ``runtests``, it runs the testcases
+  except doesn't stop the containers after running the tests which maybe
+  desired for debugging & analyzing failing container's logs.
