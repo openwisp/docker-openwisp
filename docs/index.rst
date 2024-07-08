@@ -23,6 +23,6 @@ scaling process.
 
 .. toctree::
     :caption: Developer Docs
-    :maxdepth: 1
+    :maxdepth: 2
 
-    ./developer/installation.rst
+    ./developer/instructions.rst
