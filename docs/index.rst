@@ -15,11 +15,11 @@ scaling process.
 
     ./user/architecture.rst
     ./user/quickstart.rst
-    ./user/customizations.rst
     ./user/settings.rst
     ./user/files.rst
-    ./user/kubernetes.rst
+    ./user/customizations.rst
     ./user/faq.rst
+    ./user/kubernetes.rst
 
 .. toctree::
     :caption: Developer Docs
