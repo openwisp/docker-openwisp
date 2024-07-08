@@ -1,8 +1,11 @@
 Advanced Customization
 ======================
 
-This page describes how to perform advanced customize pretty much any
-aspect of the docker images.
+This page describes advanced customization options for the OpenWISP Docker
+images.
+
+The table of contents below provides a quick overview of the specific
+areas that can be customized.
 
 .. contents::
     :depth: 1
@@ -294,9 +297,10 @@ that service, however, there are additional steps for some images:
     ``celery_monitoring``, ``websocket``, ``api``, ``dashboard``.
   - Ensure your database server supports GeoDjango. (Install PostGIS for
     PostgreSQL)
-  - Change the :doc:`database configuration variables <settings>` to point
-    to your instances, if you are using SSL, remember to set
-    ``DB_SSLMODE``, ``DB_SSLKEY``, ``DB_SSLCERT``, ``DB_SSLROOTCERT``.
+  - Change the :ref:`PostgreSQL Database Setting
+    <docker_postgresql_db_settings>` to point to your instances, if you
+    are using SSL, remember to set ``DB_SSLMODE``, ``DB_SSLKEY``,
+    ``DB_SSLCERT``, ``DB_SSLROOTCERT``.
   - If you are using SSL, remember to mount volume containing the
     certificates and key in all the containers which contact the database
     server and make sure that the private key permission is ``600`` and

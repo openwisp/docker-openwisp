@@ -496,6 +496,8 @@ These options allow to disable the optional OpenWISP modules.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``True``.
 
+.. _docker_postgresql_db_settings:
+
 PostgreSQL Database
 -------------------
 
