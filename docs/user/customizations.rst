@@ -1,5 +1,5 @@
-Customizing OpenWISP Installation
-=================================
+Advanced Customization
+======================
 
 The following commands will create the directory structure required for
 adding customizations. Execute these commands in the same location as the
@@ -16,6 +16,8 @@ You can also refer to the `directory structure of Docker OpenWISP
 repository
 <https://github.com/openwisp/docker-openwisp/tree/master/customization>`__
 for an example.
+
+.. _docker_custom_django_settings:
 
 Custom Django Settings
 ----------------------
