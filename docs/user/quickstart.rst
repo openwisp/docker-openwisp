@@ -1,5 +1,12 @@
-Deploying OpenWISP Using Docker
-===============================
+Quickstart
+==========
+
+This page explains how to deploy OpenWISP using the docker images provided
+by Docker OpenWISP.
+
+.. contents::
+    :depth: 1
+    :local:
 
 Images Available
 ----------------
@@ -33,8 +40,8 @@ latest Images built on the **latest git tag**
 edge   Images built on the **current master branch**
 ====== =============================================
 
-Quick Setup
------------
+Auto Install
+------------
 
 The ``auto-install.sh`` script can be used to quickly install a simple
 instance of OpenWISP on your server.
@@ -87,43 +94,45 @@ command:
 - Still facing errors while installation? Please :doc:`read the FAQ
   <faq>`.
 
-Using ``docker-compose``
-------------------------
+Using Docker Compose
+--------------------
 
 This setup is suitable for single-server setup requirements. It is quicker
 and requires less prior knowledge about OpenWISP & networking.
 
 1. Install requirements:
 
-       .. code-block:: bash
+   .. code-block:: bash
 
-           sudo apt -y update
-           sudo apt -y install git docker.io docker-compose make
-           # Please ensure docker is installed properly and the following
-           # command show system information. In most machines, you'll need to
-           # add your user to the `docker` group and re-login to the shell.
-           docker info
+       sudo apt -y update
+       sudo apt -y install git docker.io docker-compose make
+       # Please ensure docker is installed properly and the following
+       # command show system information. In most machines, you'll need to
+       # add your user to the `docker` group and re-login to the shell.
+       docker info
 
 2. Setup repository:
 
-       .. code-block:: bash
+   .. code-block:: bash
 
-           git clone https://github.com/openwisp/docker-openwisp.git
-           cd docker-openwisp
+       git clone https://github.com/openwisp/docker-openwisp.git
+       cd docker-openwisp
 
 3. Configure:
 
-Please follow the :doc:`environment variable documentation <settings>` and
-customize your deployment of OpenWISP. Remember to change the values for
-:ref:`essential <docker_essential_env>` and :ref:`security
-<docker_security_env>` variables.
+    Please refer to the :doc:`settings` and :doc:`customization` pages to
+    configure any aspect of your OpenWISP instance.
+
+    Make sure to change the values for :ref:`essential
+    <docker_essential_env>` and :ref:`security <docker_security_env>`
+    variables.
 
 4. Deploy: ``make start``
 
-.. note::
+    .. note::
 
-    If you want to shutdown services for maintenance or any other
-    purposes, please use ``make stop``.
+        If you want to shutdown services for maintenance or any other
+        purposes, please use ``make stop``.
 
-If you are facing errors while installation, then :doc:`read the FAQ
-<faq>` for known issues.
+If you are facing errors during the installation process, :doc:`read the
+FAQ <faq>` for known issues.

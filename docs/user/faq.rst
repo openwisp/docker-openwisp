@@ -1,4 +1,4 @@
-Docker OpenWISP: FAQ
+Docker OpenWISP FAQs
 ====================
 
 1. Setup fails, it couldn't find the images on DockerHub?
@@ -42,8 +42,10 @@ upgrading:
     $ uname -v # kernel-version
     #1 SMP Debian 4.19.181-1 (2021-03-19)
 
-3. I am running as ``root`` user and ``docker`` behaves rather weirdly at times.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Can I run the containers as the ``root`` or ``docker``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Answer: Yeah, don't run things as root. Create a user and use something
-like ``sudo`` or ``su`` to escalate privileges for the installation.
+No, please do not run the Docker containers as these users.
+
+Ensure you use a less privileged user and tools like ``sudo`` or ``su`` to
+escalate privileges during the installation phase.

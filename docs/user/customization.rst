@@ -51,8 +51,8 @@ Supplying Custom CSS and JavaScript Files
 If you want to use your custom styles, add custom JavaScript you can
 follow the following guide.
 
-1. Read about the option :ref:`openwisp_admin_theme_links`.
-   Please make `ensure the value you have enter is a valid JSON
+1. Read about the option :ref:`openwisp_admin_theme_links`. Please make
+   `ensure the value you have enter is a valid JSON
    <https://jsonlint.com/>`__ and add the desired JSON in ``.env`` file.
    example:
 
