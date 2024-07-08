@@ -16,8 +16,7 @@ scaling process.
     ./user/architecture.rst
     ./user/quickstart.rst
     ./user/settings.rst
-    ./user/files.rst
-    ./user/customizations.rst
+    ./user/customization.rst
     ./user/faq.rst
     ./user/kubernetes.rst
 

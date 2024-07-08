@@ -1,6 +1,16 @@
 Advanced Customization
 ======================
 
+This page describes how to perform advanced customize pretty much any
+aspect of the docker images.
+
+.. contents::
+    :depth: 1
+    :local:
+
+Creating the ``customization`` Directory
+----------------------------------------
+
 The following commands will create the directory structure required for
 adding customizations. Execute these commands in the same location as the
 ``docker-compose.yml`` file.
@@ -19,30 +29,29 @@ for an example.
 
 .. _docker_custom_django_settings:
 
-Custom Django Settings
-----------------------
+Supplying Custom Django Settings
+--------------------------------
 
-The ``customization/configuration/django`` directory created in the above
-section is mounted at ``/opt/openwisp/openwisp/configuration`` in the
-``dashboard``, ``api``, ``celery``, ``celery_monitoring`` and
+The ``customization/configuration/django`` directory created in the
+previous section is mounted at ``/opt/openwisp/openwisp/configuration`` in
+the ``dashboard``, ``api``, ``celery``, ``celery_monitoring`` and
 ``celerybeat`` containers.
 
 You can specify additional Django settings (e.g. SMTP configuration) in
 the ``customization/configuration/django/custom_django_settings.py`` file.
-Django will use these settings at the project startup.
+OpenWISP will include these settings during the startup phase.
 
 You can also put additional files in
-``customization/configuration/django`` that needs to be mounted at
+``customization/configuration/django`` that need to be mounted at
 ``/opt/openwisp/openwisp/configuration`` in the containers.
 
-Custom Styles and JavaScript
-----------------------------
+Supplying Custom CSS and JavaScript Files
+-----------------------------------------
 
 If you want to use your custom styles, add custom JavaScript you can
 follow the following guide.
 
-1. Read about the option ```OPENWISP_ADMIN_THEME_LINKS``
-   <https://github.com/openwisp/openwisp-utils/#openwisp_admin_theme_links>`__.
+1. Read about the option :ref:`openwisp_admin_theme_links`.
    Please make `ensure the value you have enter is a valid JSON
    <https://jsonlint.com/>`__ and add the desired JSON in ``.env`` file.
    example:
@@ -73,15 +82,16 @@ follow the following guide.
    ``customization/theme/static/custom/css/custom-theme.css``.
 3. Start the nginx containers.
 
-**Notes:**
+.. note::
 
-1. You can edit the styles / JavaScript files now without restarting the
-   container, as long as file is in the correct place, it will be picked.
-2. You can create a ``maintenance.html`` file inside the ``customize``
-   directory to have a custom maintenance page for scheduled downtime.
+    1. You can edit the styles / JavaScript files now without restarting
+       the container, as long as file is in the correct place, it will be
+       picked.
+    2. You can create a ``maintenance.html`` file inside the ``customize``
+       directory to have a custom maintenance page for scheduled downtime.
 
-Customizing uWSGI configuration
--------------------------------
+Supplying Custom uWSGI configuration
+------------------------------------
 
 By default, you can only configure :ref:`"processes", "threads" and
 "listen" settings of uWSGI using environment variables
@@ -108,14 +118,130 @@ supply your uWSGI configuration by following these steps:
           ... # other volumes
           - ${PWD}/customization/configuration/custom_uwsgi.ini:/opt/openwisp/uwsgi.ini:ro
 
-Changing Python Packages
-------------------------
+.. _docker_nginx:
 
-You can build with your own python package by creating a file named
-``.build.env`` in the root of the repository, then set the variables
-inside ``.build.env`` file in ``<variable>=<value>`` format. Multiple
-variable should be separated in newline. These are the variables that can
-be changed:
+Supplying Custom Nginx Configurations
+-------------------------------------
+
+Docker
+~~~~~~
+
+1. Create nginx your configuration file.
+2. Set ``NGINX_CUSTOM_FILE`` to ``True``
+3. Mount your file in ``docker-compose.yml`` as following:
+
+.. code-block:: yaml
+
+    nginx:
+      ...
+      volumes:
+          ...
+          PATH/TO/YOUR/FILE:/etc/nginx/nginx.conf
+      ...
+
+Kubernetes
+~~~~~~~~~~
+
+1. Create nginx your configuration file. Files in
+   ``build/openwisp-nginx/`` may by helpful.
+2. Set ``NGINX_CUSTOM_FILE`` to ``True``.
+3. Create configmap from file: ``kubectl create configmap
+   nginx-file-config --from-file PATH/TO/YOUR/FILE``
+4. Add your config to ``openwisp-nginx`` object:
+
+.. code-block:: yaml
+
+    ...
+    metadata:
+      name: openwisp-nginx
+    spec:
+      ...
+      spec:
+        containers:
+          ...
+          volumeMounts:
+            ...
+            - name: "nginx-file-config"
+              mountPath: "/etc/nginx/nginx.conf"
+              subPath: "nginx.conf"
+        volumes:
+            ...
+            - name: "nginx-file-config"
+              configMap:
+                name: "nginx-file-config"
+
+.. _docker_freeradius:
+
+Supplying Custom Freeradius Configurations
+------------------------------------------
+
+Note: ``/etc/raddb/clients.conf``, ``/etc/raddb/radiusd.conf``,
+``/etc/raddb/sites-enabled/default``, ``/etc/raddb/mods-enabled/``,
+``/etc/raddb/mods-available/`` are the default files you may want to
+overwrite and you can find all of default files in
+``build/openwisp_freeradius/raddb``. The following are examples for
+including custom ``radiusd.conf`` and ``sites-enabled/default`` files.
+
+.. _docker-1:
+
+Docker
+~~~~~~
+
+1. Create file configuration files that you want to edit / add to your
+   container.
+2. Mount your file in ``docker-compose.yml`` as following:
+
+.. code-block:: yaml
+
+    nginx:
+      ...
+      volumes:
+          ...
+          PATH/TO/YOUR/RADIUSD:/etc/raddb/radiusd.conf
+          PATH/TO/YOUR/DEFAULT:/etc/raddb/sites-enabled/default
+      ...
+
+Kubernetes
+~~~~~~~~~~
+
+1. Create configmap from file: ``kubectl create configmap
+   freeradius-dir-files --from-file PATH/TO/YOUR/RADIUSD --from-file
+   PATH/TO/YOUR/DEFAULT``
+2. Add your config to ``openwisp-freeradius`` object:
+
+.. code-block:: yaml
+
+    ...
+    metadata:
+      name: openwisp-freeradius
+    spec:
+      ...
+      spec:
+        containers:
+          ...
+          volumeMounts:
+            ...
+            - name: "freeradius-dir-files"
+              mountPath: "/etc/raddb/radiusd.conf"
+              subPath: "radiusd.conf"
+            - name: "freeradius-dir-files"
+              mountPath: "/etc/raddb/sites-enabled/default"
+              subPath: "default"
+        volumes:
+            ...
+            - name: "freeradius-dir-files"
+              configMap:
+                name: "freeradius-dir-files"
+
+Supplying Custom Python Source Code
+-----------------------------------
+
+You can build the images and supply custom python source code by creating
+a file named ``.build.env`` in the root of the repository, then set the
+variables inside ``.build.env`` file in ``<variable>=<value>`` format.
+Multiple variable should be separated in newline.
+
+These are the variables that can be changed:
 
 - ``OPENWISP_MONITORING_SOURCE``
 - ``OPENWISP_FIRMWARE_SOURCE``
@@ -129,12 +255,13 @@ be changed:
 - ``DJANGO_X509_SOURCE``
 - ``DJANGO_SOURCE``
 
-For example, if you want to supply your own django and openwisp-controller
-source, your ``.build.env`` should be written like this:
+For example, if you want to supply your own Django and :doc:`OpenWISP
+Controller </controller/index>` source, your ``.build.env`` should be
+written like this:
 
 .. code-block:: shell
 
-    DJANGO_SOURCE=django==3.2
+    DJANGO_SOURCE=https://github.com/<username>/Django/tarball/master
     OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-controller/tarball/master
 
 Disabling Services
