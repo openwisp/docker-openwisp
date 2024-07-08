@@ -1,6 +1,9 @@
 Docker OpenWISP
 ===============
 
+**Source code**: `github.com/openwisp/docker-openwisp
+<https://github.com/openwisp/docker-openwisp>`_.
+
 This project provides Docker images and configurations to easily deploy
 and manage OpenWISP. By leveraging Docker, you can quickly set up isolated
 and reproducible OpenWISP environments, simplifying the deployment and
