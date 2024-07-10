@@ -294,7 +294,7 @@ framework.
 
 - **Explanation:** Host on which Daphne should listen for websocket
   connections.
-- **Valid Values:** Any valid domain or IP Addres.
+- **Valid Values:** Any valid domain or IP Address.
 - **Default:** ``0.0.0.0``.
 
 ``OPENWISP_GEOCODING_CHECK``
@@ -987,7 +987,7 @@ X509 Certificates
 ``X509_EMAIL``
 ~~~~~~~~~~~~~~
 
-- **Explanation:** Organzation email adddress that'll be available to view
+- **Explanation:** Organization email address that'll be available to view
   in the certificate.
 - **Valid Values:** STRING.
 - **Default:** ``certificate@example.com``.

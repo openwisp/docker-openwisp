@@ -366,7 +366,7 @@ try:
 except (json.decoder.JSONDecodeError, TypeError):
     OPENWISP_CUSTOM_OPENWRT_IMAGES = None
     # Key is defined but it's not a proper JSON, probably user
-    # needs to read the docs, so let's imform them.
+    # needs to read the docs, so let's inform them.
     logging.warning(
         'Could not load "OPENWISP_CUSTOM_OPENWRT_IMAGES" please read '
         'the docs to configure it properly, continuing without it.'
