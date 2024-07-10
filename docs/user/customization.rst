@@ -290,7 +290,7 @@ that service, however, there are additional steps for some images:
   to ``False``.
 - ``openwisp-radius`` : Set the ``USE_OPENWISP_RADIUS`` variable to
   ``False``.
-- ``openwisp-postgres``: If you are using a seperate database instance,
+- ``openwisp-postgres``: If you are using a separate database instance,
 
   - Ensure your database instance is reachable by the following OpenWISP
     containers: ``openvpn``, ``freeradius``, ``celerybeat``, ``celery``,

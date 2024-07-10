@@ -48,7 +48,7 @@ Cloud Platform. The steps are tested on master version-1.14.9
    uploaded files and user database.
 3. Create your cluster (Minimum 4 instances of g1-small are required for
    the deployment)
-4. You will need “Compute Engine API - Backend services” to be atleast 7
+4. You will need “Compute Engine API - Backend services” to be at least 7
    for this deployment, please request more quota if required. (By default
    backend quota is 5)
 5. Create GoogleCloud OpenWISP kubernetes requirements: ``kubectl create
@@ -104,7 +104,7 @@ Common Kubernetes Setup
 3. Customization:
        - In ``ConfigMap.yml``: You need to change the values according to
          your cluster. You can set any of the variables from the
-         :doc:`list here <settings>` to trailor setup to your
+         :doc:`list here <settings>` to tailor setup to your
          requirements.
 4. Apply to Kubernetes Cluster:
 

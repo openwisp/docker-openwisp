@@ -144,7 +144,7 @@ class TestUtilities(TestConfig):
     def action_on_resource(self, name, path, option, driver=None):
         """
         Perform action on resource:
-        Arguement:
+        Argument:
             name: name of the resource to select
             path: path to reach the list page
             option: value of option to be deleted
@@ -161,7 +161,7 @@ class TestUtilities(TestConfig):
 
     def console_error_check(self, driver=None):
         """
-        Return all js errors that occured
+        Return all js errors that occurred
         Firefox doesn't support it yet, read here:
         https://github.com/mozilla/geckodriver/issues/284
         Argument:
