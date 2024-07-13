@@ -360,7 +360,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 TEST_RUNNER = 'openwisp_utils.metric_collection.tests.runner.MockRequestPostRunner'
 
-# Add Custom OpenWRT Images for openwisp firmware
+# Add Custom OpenWrt Images for openwisp firmware
 try:
     OPENWRT_IMAGES = json.loads(os.environ['OPENWISP_CUSTOM_OPENWRT_IMAGES'])
 except (json.decoder.JSONDecodeError, TypeError):
