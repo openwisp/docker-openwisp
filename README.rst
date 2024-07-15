@@ -30,5 +30,5 @@ Documentation
 -------------
 
 - `Developer documentation
-  <https://openwisp.io/docs/__new__/dev/docker/developer/>`_
-- `User documentation <https://openwisp.io/docs/__new__/dev/docker/>`_
+  <https://openwisp.io/docs/dev/docker/developer/>`_
+- `User documentation <https://openwisp.io/docs/dev/docker/>`_
