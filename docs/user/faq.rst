@@ -1,6 +1,10 @@
 Docker OpenWISP FAQs
 ====================
 
+.. contents:: **Table of Contents**:
+    :depth: 1
+    :local:
+
 1. Setup fails, it couldn't find the images on DockerHub?
 ---------------------------------------------------------
 
@@ -22,7 +26,7 @@ traffic, please whitelist:
 = ====== ======== ========== ====================== =================================
 
 2. Makefile failed without any information, what's wrong?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------------------
 
 Answer: You are using an old version of a requirement, please consider
 upgrading:
@@ -43,7 +47,7 @@ upgrading:
     #1 SMP Debian 4.19.181-1 (2021-03-19)
 
 3. Can I run the containers as the ``root`` or ``docker``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------------------
 
 No, please do not run the Docker containers as these users.
 

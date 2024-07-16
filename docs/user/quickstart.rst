@@ -1,14 +1,14 @@
-Quickstart
-==========
+Quick Start Guide
+=================
 
 This page explains how to deploy OpenWISP using the docker images provided
 by Docker OpenWISP.
 
-.. contents::
+.. contents:: **Table of Contents**:
     :depth: 1
     :local:
 
-Images Available
+Available Images
 ----------------
 
 ======= =============================

@@ -3,6 +3,10 @@ Developer Docs
 
 .. include:: ../partials/developer-docs.rst
 
+.. contents:: **Table of Contents**:
+    :depth: 2
+    :local:
+
 Building Images
 ---------------
 
@@ -11,20 +15,20 @@ Building Images
    containers are ready, you can test them by accessing the domain names
    of the modules.
 
-**Notes:**
+.. important::
 
-- The default username and password are ``admin``.
-- The default domains are ``dashboard.openwisp.org`` and
-  ``api.openwisp.org``.
-- To access the dashboard, you may need to add the OpenWISP domains
-  specified in your ``.env`` file to your ``hosts`` file. For example,
-  run: ``bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org"
-  >> /etc/hosts'``
-- You will need to repeat step 2 each time you make changes and want to
-  rebuild the images.
-- If you want to perform actions such as cleaning everything produced by
-  ``docker-openwisp``, please refer to the :ref:`makefile options
-  <docker_image>`.
+    - The default username and password are ``admin``.
+    - The default domains are ``dashboard.openwisp.org`` and
+      ``api.openwisp.org``.
+    - To access the dashboard, you may need to add the OpenWISP domains
+      specified in your ``.env`` file to your ``hosts`` file. For example,
+      run: ``bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org"
+      >> /etc/hosts'``
+    - You will need to repeat step 2 each time you make changes and want to
+      rebuild the images.
+    - If you want to perform actions such as cleaning everything produced by
+      ``docker-openwisp``, please refer to the :ref:`makefile options
+      <docker_image>`.
 
 Running Tests
 -------------
