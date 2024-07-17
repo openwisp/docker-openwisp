@@ -77,7 +77,8 @@ class TestServices(TestUtilities, unittest.TestCase):
             entrypoint = "python manage.py shell --command='import data; data.setup()'"
             cmd = subprocess.Popen(
                 [
-                    'docker-compose',
+                    'docker',
+                    'compose',
                     'run',
                     '--rm',
                     '--entrypoint',
@@ -96,7 +97,7 @@ class TestServices(TestUtilities, unittest.TestCase):
                 logs_file.write(output)
                 logs_file.write(error)
             subprocess.run(
-                ['docker-compose', 'up', '--detach'],
+                ['docker', 'compose', 'up', '--detach'],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 cwd=cls.root_location,
@@ -146,7 +147,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         cls.base_driver.quit()
         if cls.failed_test and cls.config['logs']:
             cmd = subprocess.Popen(
-                ['docker-compose', 'logs'],
+                ['docker', 'compose', 'logs'],
                 universal_newlines=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -437,8 +438,8 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.assertIn('Received Access-Accept', result.output.decode('utf-8'))
 
         remove_tainted_container = [
-            'docker-compose rm -sf freeradius',
-            'docker-compose up -d freeradius',
+            'docker compose rm -sf freeradius',
+            'docker compose up -d freeradius',
         ]
         for command in remove_tainted_container:
             subprocess.Popen(
@@ -453,7 +454,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         Ensure freeradius service is working correctly.
         """
         cmd = subprocess.Popen(
-            ['docker-compose', 'ps'],
+            ['docker', 'compose', 'ps'],
             universal_newlines=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

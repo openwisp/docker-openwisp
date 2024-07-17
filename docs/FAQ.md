@@ -1,4 +1,4 @@
-# FAQ: docker-compose
+# FAQ: Docker Compose
 
 [![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/dockerize-openwisp)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
@@ -27,8 +27,8 @@ $ git --version
 git version 2.20.1
 $ docker --version
 Docker version 20.10.7, build f0df350
-$ docker-compose --version
-docker-compose version 1.28.2, build unknown
+$ docker compose version
+Docker Compose version v2.28.1
 $ make --version
 GNU Make 4.2.1
 $ bash --version

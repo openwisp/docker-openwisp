@@ -1,2 +1,2 @@
-docker @ git+https://github.com/docker/docker-py.git@7785ad913ddf2d86478f08278bb2c488d05a29ff#egg=docker
+docker~=7.1.0
 openwisp-utils[qa,selenium] @ https://github.com/openwisp/openwisp-utils/tarball/master

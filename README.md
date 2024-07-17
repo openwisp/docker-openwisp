@@ -133,7 +133,7 @@ tail -n 50 -f /opt/openwisp/autoinstall.log
 
 ### Compose
 
-[Setup on docker-compose](docs/QUICK_SETUP.md) is suitable for single-server setup requirements. It is quicker and requires less prior knowledge about openwisp & networking.
+[Setup on docker compose](docs/QUICK_SETUP.md) is suitable for single-server setup requirements. It is quicker and requires less prior knowledge about openwisp & networking.
 
 ### Kubernetes
 
@@ -272,7 +272,7 @@ If you want to disable a service, you can simply remove the container for that s
 
 ### Workbench setup
 
-1. Install docker & docker-compose.
+1. Install Docker & Docker Compose v2.
 2. In the root of the repository, run `make develop`, when the containers are ready, you can test them out by going to the domain name of the modules.
 
 **Notes:**

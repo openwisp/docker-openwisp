@@ -1,4 +1,4 @@
-# Quick Setup: docker-compose
+# Quick Setup: Docker Compose
 
 [![Gitter](https://img.shields.io/gitter/room/openwisp/general.svg)](https://gitter.im/openwisp/dockerize-openwisp)
 [![Support](https://img.shields.io/badge/support-orange.svg)](http://openwisp.org/support.html)
@@ -7,12 +7,9 @@
 
 ```bash
 sudo apt -y update
-sudo apt -y install git docker.io docker-compose make
-# Please ensure docker is installed properly and the following
-# command show system information. In most machines, you'll need to
-# add your user to the `docker` group and re-login to the shell.
-docker info
-```
+sudo apt -y install git
+
+Install [Docker and Docker Compose v2](https://docs.docker.com/compose/install/).
 
 2. Setup repository:
 

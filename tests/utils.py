@@ -225,7 +225,7 @@ class TestUtilities(TestConfig):
 
     def docker_compose_get_container_id(self, container_name):
         services_output = subprocess.Popen(
-            ['docker-compose', 'ps', '--quiet', container_name],
+            ['docker', 'compose', 'ps', '--quiet', container_name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             cwd=self.root_location,

@@ -43,27 +43,27 @@ nfs-build:
 	             --file ./images/openwisp_nfs/Dockerfile ./images/
 
 compose-build: base-build
-	docker-compose build --parallel
+	docker compose build --parallel
 
 # Test
 runtests: develop-runtests
-	docker-compose stop
+	docker compose stop
 
 develop-runtests:
-	docker-compose up -d
+	docker compose up -d
 	python3 tests/runtests.py
 
 # Development
 develop: compose-build
-	docker-compose up -d
-	docker-compose logs -f
+	docker compose up -d
+	docker compose logs -f
 
 # Clean
 clean:
 	printf '\e[1;34m%-6s\e[m\n' "Removing docker-openwisp..."
-	docker-compose stop &> /dev/null
-	docker-compose down --remove-orphans --volumes --rmi all &> /dev/null
-	docker-compose rm -svf &> /dev/null
+	docker compose stop &> /dev/null
+	docker compose down --remove-orphans --volumes --rmi all &> /dev/null
+	docker compose rm -svf &> /dev/null
 	docker rmi --force openwisp/openwisp-base:latest \
 				openwisp/openwisp-base:intermedia-system \
 				openwisp/openwisp-base:intermedia-python \
@@ -76,14 +76,14 @@ USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG  = latest
 start: pull
 	printf '\e[1;34m%-6s\e[m\n' "Starting Services..."
-	docker-compose --log-level WARNING up -d
+	docker compose --log-level WARNING up -d
 	printf '\e[1;32m%-6s\e[m\n' "Success: OpenWISP should be available at your dashboard domain in 2 minutes."
 
 stop:
 	printf '\e[1;31m%-6s\e[m\n' "Stopping OpenWISP services..."
-	docker-compose --log-level ERROR stop
-	docker-compose --log-level ERROR down --remove-orphans
-	docker-compose down --remove-orphans &> /dev/null
+	docker compose --log-level ERROR stop
+	docker compose --log-level ERROR down --remove-orphans
+	docker compose down --remove-orphans &> /dev/null
 
 # Publish
 USER = registry.gitlab.com/openwisp/docker-openwisp

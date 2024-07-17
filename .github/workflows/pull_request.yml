@@ -35,6 +35,6 @@ jobs:
         run: make compose-build nfs-build
 
       - name: Test
-        run: make runtests || (docker-compose logs && exit 1)
+        run: make runtests || (docker compose logs && exit 1)
         env:
           SELENIUM_HEADLESS: 1

@@ -73,10 +73,10 @@ setup_docker() {
 }
 
 setup_docker_compose() {
-	start_step "Setting up docker-compose..."
-	python3 -m pip install docker-compose &>>$LOG_FILE
-	docker-compose version &>/dev/null
-	check_status $? "docker-compose installation failed."
+	start_step "Install docker compose python library..."
+	python3 -m pip install docker compose &>>$LOG_FILE
+	docker compose version &>/dev/null
+	check_status $? "Docker compose installation failed."
 }
 
 setup_docker_openwisp() {
