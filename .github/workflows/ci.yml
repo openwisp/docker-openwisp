@@ -1,0 +1,89 @@
+---
+name: Merge Tests
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: CI Build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup testing environment
+        id: deps
+        run: |
+          sudo curl -sL -o /bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64"
+          sudo chmod +x /bin/hadolint
+          echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
+          # disable metric collection during builds
+          sed -i 's/METRIC_COLLECTION=True/METRIC_COLLECTION=False/' .env
+          sudo pip3 install -r requirements-test.txt
+
+      - name: QA checks
+        run: ./run-qa-checks
+
+      - name: Build Images
+        id: build_images
+        if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
+        run: make compose-build nfs-build
+
+      - name: Use auto-install script to start containers
+        id: start_containers
+        if: ${{ !cancelled() && steps.build_images.conclusion == 'success' }}
+        # Do not remove the blank lines from the input.
+        run: |
+          (GIT_BRANCH="${{ github.head_ref }}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh <<EOF
+          latest
+          ./.env
+          EOF
+          ) || (cat /opt/openwisp/autoinstall.log && exit 1)
+
+      - name: Test
+        if: ${{ !cancelled() && steps.start_containers.conclusion == 'success' }}
+        # The auto-install script installs docker-openwisp by default in
+        # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
+        # and environment variables remain intact, it is essential to
+        # execute the test from this directory.
+        run: |
+          (make develop-pythontests && make stop) || (docker compose logs && exit 1)
+        working-directory: /opt/openwisp/docker-openwisp
+        env:
+          SELENIUM_HEADLESS: 1
+
+      # the following action is equivalent to
+      # echo "$DOCKER_HUB_SECRET" | docker login --username "$DOCKER_HUB_USERNAME" --password-stdin
+      - name: Login to Docker Hub
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_SECRET }}
+
+      # Skip image builds and tests since they were already done
+      - name: Publish to Docker Hub
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        run: |
+          make publish USER=docker.io/openwisp TAG=edge SKIP_BUILD=true SKIP_TESTS=true
+        env:
+          SELENIUM_HEADLESS: 1
+
+      - name: Login to GitLab Container Registry
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        uses: docker/login-action@v1
+        with:
+          registry: registry.gitlab.com
+          username: ${{ secrets.GITLAB_DOCKER_REGISTRY_USER }}
+          password: ${{ secrets.GITLAB_DOCKER_REGISTRY_TOKEN }}
+
+      # Skip image builds and tests since they were already done
+      - name: Publish to GitLab Container Registry
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        run: |
+          make publish TAG=edge SKIP_BUILD=true SKIP_TESTS=true
