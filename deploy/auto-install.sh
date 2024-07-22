@@ -72,11 +72,22 @@ setup_docker() {
 	fi
 }
 
-setup_docker_compose() {
-	start_step "Install docker compose python library..."
-	python3 -m pip install docker compose &>>$LOG_FILE
-	docker compose version &>/dev/null
-	check_status $? "Docker compose installation failed."
+download_docker_openwisp() {
+	local openwisp_version="$1"
+	start_step "Downloading docker-openwisp..."
+	if [[ -f $INSTALL_PATH/.env ]]; then
+		mv $INSTALL_PATH/.env $ENV_BACKUP &>>$LOG_FILE
+		rm -rf $INSTALL_PATH &>>$LOG_FILE
+	fi
+	if [ -z "$GIT_BRANCH" ]; then
+		if [[ "$openwisp_version" == "edge" ]]; then
+			GIT_BRANCH="master"
+		else
+			GIT_BRANCH="$openwisp_version"
+		fi
+	fi
+
+	git clone $GIT_PATH $INSTALL_PATH --depth 1 --branch $GIT_BRANCH &>>$LOG_FILE
 }
 
 setup_docker_openwisp() {
@@ -93,7 +104,7 @@ setup_docker_openwisp() {
 		domain=$(echo "$dashboard_domain" | cut -f2- -d'.')
 		# API Domain
 		echo -ne ${GRN}"(2/5) Enter API domain (blank for api.${domain}): "${NON}
-		read API_DOMAIN
+		read api_domain
 		# VPN domain
 		echo -ne ${GRN}"(3/5) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON}
 		read vpn_domain
@@ -108,17 +119,7 @@ setup_docker_openwisp() {
 	fi
 	echo ""
 
-	start_step "Downloading docker-openwisp..."
-	if [[ -f $INSTALL_PATH/.env ]]; then
-		mv $INSTALL_PATH/.env $ENV_BACKUP &>>$LOG_FILE
-		rm -rf $INSTALL_PATH &>>$LOG_FILE
-	fi
-
-	if [[ $openwisp_version -ne "edge" ]]; then
-		git clone $GIT_PATH $INSTALL_PATH --depth 1 --branch $openwisp_version &>>$LOG_FILE
-	else
-		git clone $GIT_PATH $INSTALL_PATH --depth 1 &>>$LOG_FILE
-	fi
+	download_docker_openwisp "$openwisp_version"
 
 	cd $INSTALL_PATH &>>$LOG_FILE
 	check_status $? "docker-openwisp download failed."
@@ -128,10 +129,10 @@ setup_docker_openwisp() {
 		# Dashboard Domain
 		set_env "DASHBOARD_DOMAIN" "$dashboard_domain"
 		# API Domain
-		if [[ -z "$API_DOMAIN" ]]; then
+		if [[ -z "$api_domain" ]]; then
 			set_env "API_DOMAIN" "api.${domain}"
 		else
-			set_env "API_DOMAIN" "$API_DOMAIN"
+			set_env "API_DOMAIN" "$api_domain"
 		fi
 		# Use Radius
 		if [[ -z "$USE_OPENWISP_RADIUS" ]]; then
@@ -182,15 +183,7 @@ upgrade_docker_openwisp() {
 	if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
 	echo ""
 
-	start_step "Downloading docker-openwisp..."
-	cp $INSTALL_PATH/.env $ENV_BACKUP &>>$LOG_FILE
-	rm -rf $INSTALL_PATH &>>$LOG_FILE
-
-	if [[ $openwisp_version -ne "edge" ]]; then
-		git clone $GIT_PATH $INSTALL_PATH --depth 1 --branch $openwisp_version &>>$LOG_FILE
-	else
-		git clone $GIT_PATH $INSTALL_PATH --depth 1 &>>$LOG_FILE
-	fi
+	download_docker_openwisp "$openwisp_version"
 
 	cd $INSTALL_PATH &>>$LOG_FILE
 	check_status $? "docker-openwisp download failed."
@@ -235,7 +228,6 @@ upgrade_debian() {
 install_debian() {
 	apt_dependenices_setup
 	setup_docker
-	setup_docker_compose
 	setup_docker_openwisp
 	give_information_to_user
 }

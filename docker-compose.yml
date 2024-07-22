@@ -172,7 +172,7 @@ services:
       - NET_ADMIN
 
   postgres:
-    image: postgis/postgis:12-3.4
+    image: postgis/postgis:15-3.4-alpine
     restart: always
     environment:
       - POSTGRES_DB=$DB_NAME

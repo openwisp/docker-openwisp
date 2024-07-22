@@ -6,9 +6,13 @@ SHELL := /bin/bash
 
 default: compose-build
 
-# Pull
 USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG  = latest
+SKIP_PULL ?= false
+SKIP_BUILD ?= false
+SKIP_TESTS ?= false
+
+# Pull
 pull:
 	printf '\e[1;34m%-6s\e[m\n' "Downloading OpenWISP images..."
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
@@ -51,6 +55,9 @@ runtests: develop-runtests
 
 develop-runtests:
 	docker compose up -d
+	make develop-pythontests
+
+develop-pythontests:
 	python3 tests/runtests.py
 
 # Development
@@ -72,25 +79,21 @@ clean:
 				`docker images | grep openwisp/docker-openwisp | tr -s ' ' | cut -d ' ' -f 3` &> /dev/null
 
 # Production
-USER = registry.gitlab.com/openwisp/docker-openwisp
-TAG  = latest
-start: pull
+start:
+	if [ "$(SKIP_PULL)" == "false" ]; then \
+		make pull; \
+	fi
 	printf '\e[1;34m%-6s\e[m\n' "Starting Services..."
-	docker compose --log-level WARNING up -d
+	docker --log-level WARNING compose up -d
 	printf '\e[1;32m%-6s\e[m\n' "Success: OpenWISP should be available at your dashboard domain in 2 minutes."
 
 stop:
 	printf '\e[1;31m%-6s\e[m\n' "Stopping OpenWISP services..."
-	docker compose --log-level ERROR stop
-	docker compose --log-level ERROR down --remove-orphans
+	docker --log-level ERROR compose stop
+	docker --log-level ERROR compose down --remove-orphans
 	docker compose down --remove-orphans &> /dev/null
 
 # Publish
-USER = registry.gitlab.com/openwisp/docker-openwisp
-TAG  = latest
-SKIP_BUILD = false
-SKIP_TESTS = false
-
 publish:
 	if [[ "$(SKIP_BUILD)" == "false" ]]; then \
 		make compose-build nfs-build; \
@@ -101,12 +104,10 @@ publish:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
+		# Docker images built locally are tagged "latest" by default.
+		# This script updates the tag of each built image to a user-defined tag
+		# and pushes the newly tagged image to a Docker registry under the user's namespace.
 		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
 		docker rmi $(USER)/$${image}:$(TAG); \
-		if [[ "$(TAG)" != "edge" ]] && [[ "$(TAG)" != "latest" ]]; then \
-			docker tag openwisp/$${image}:latest $(USER)/$${image}:latest; \
-			docker push $(USER)/$${image}:latest; \
-			docker rmi $(USER)/$${image}:latest; \
-		fi \
 	done
