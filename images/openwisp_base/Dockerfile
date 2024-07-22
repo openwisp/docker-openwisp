@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bullseye AS system
+FROM python:3.12-slim-bullseye AS system
 
 # System requirements:
 # 1. gettext: Required by envsubst used in scripts
