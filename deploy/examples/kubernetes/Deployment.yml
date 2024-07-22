@@ -152,7 +152,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: openwisp-postgres
-          image: mdillon/postgis:10-alpine
+          image: mdillon/postgis:11-alpine
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
