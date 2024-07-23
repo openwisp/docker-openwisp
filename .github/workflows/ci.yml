@@ -54,7 +54,7 @@ jobs:
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             GIT_BRANCH="${{ github.head_ref }}"
           else
-            GIT_BRANCH="${{ github.ref#refs/heads/ }}"
+            GIT_BRANCH="${{ github.ref_name }}"
           fi
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
 
