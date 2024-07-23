@@ -2,6 +2,9 @@
 name: Merge Tests
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
@@ -29,24 +32,33 @@ jobs:
       - name: QA checks
         run: ./run-qa-checks
 
-      - name: Build Images
-        id: build_images
+      - name: Use the auto-install script to start containers with edge images
+        id: auto_install_edge
         if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
-        run: make compose-build nfs-build
-
-      - name: Use auto-install script to start containers
-        id: start_containers
-        if: ${{ !cancelled() && steps.build_images.conclusion == 'success' }}
-        # Do not remove the blank lines from the input.
         run: |
-          (GIT_BRANCH="${{ github.head_ref }}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh <<EOF
-          latest
+          (sudo -E ./deploy/auto-install.sh <<EOF
+          edge
           ./.env
           EOF
           ) || (cat /opt/openwisp/autoinstall.log && exit 1)
 
+      - name: Build Images
+        id: build_images
+        if: ${{ !cancelled() && steps.auto_install_edge.conclusion == 'success' }}
+        run: make compose-build nfs-build
+
+      - name: Use auto-install script to upgrade containers to latest version
+        id: auto_install_upgrade
+        if: ${{ !cancelled() && steps.build_images.conclusion == 'success' }}
+        # Do not remove the blank lines from the input.
+        run: |
+          (GIT_BRANCH="${{ github.head_ref }}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade <<EOF
+          latest
+          EOF
+          ) || (cat /opt/openwisp/autoinstall.log && exit 1)
+
       - name: Test
-        if: ${{ !cancelled() && steps.start_containers.conclusion == 'success' }}
+        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
         # The auto-install script installs docker-openwisp by default in
         # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
         # and environment variables remain intact, it is essential to
