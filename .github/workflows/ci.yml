@@ -47,12 +47,23 @@ jobs:
         if: ${{ !cancelled() && steps.auto_install_edge.conclusion == 'success' }}
         run: make compose-build nfs-build
 
+      - name: Set GIT_BRANCH
+        id: set_git_branch
+        if: ${{ !cancelled() && steps.build_images.conclusion == 'success' }}
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            GIT_BRANCH="${{ github.head_ref }}"
+          else
+            GIT_BRANCH="${{ github.ref#refs/heads/ }}"
+          fi
+          echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
+
       - name: Use auto-install script to upgrade containers to latest version
         id: auto_install_upgrade
-        if: ${{ !cancelled() && steps.build_images.conclusion == 'success' }}
+        if: ${{ !cancelled() && steps.set_git_branch.conclusion == 'success' }}
         # Do not remove the blank lines from the input.
         run: |
-          (GIT_BRANCH="${{ github.head_ref }}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade <<EOF
+          (GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade <<EOF
           latest
           EOF
           ) || (cat /opt/openwisp/autoinstall.log && exit 1)
