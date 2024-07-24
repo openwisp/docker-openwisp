@@ -34,11 +34,11 @@ upgrading:
 .. code-block:: bash
 
     $ git --version
-    git version 2.20.1
+    git version 2.25.1
     $ docker --version
-    Docker version 20.10.7, build f0df350
-    $ docker-compose --version
-    docker-compose version 1.28.2, build unknown
+    Docker version 27.0.2, build 912c1dd
+    $ docker compose version
+    Docker Compose version v2.28.1
     $ make --version
     GNU Make 4.2.1
     $ bash --version
