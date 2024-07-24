@@ -59,26 +59,28 @@ follow the following guide.
    <https://jsonlint.com/>`__ and add the desired JSON in ``.env`` file.
    example:
 
-.. code-block:: python
+.. code-block:: shell
 
-    OPENWISP_ADMIN_THEME_LINKS = [
-        {
-            "type": "text/css",
-            "href": "/static/custom/css/custom-theme.css",
-            "rel": "stylesheet",
-            "media": "all",
-        },
-        {
-            "type": "image/x-icon",
-            "href": "/static/custom/bootload.png",
-            "rel": "icon",
-        },
-        {
-            "type": "image/svg+xml",
-            "href": "/static/ui/openwisp/images/openwisp-logo-small.svg",
-            "rel": "icons",
-        },
-    ]
+    # OPENWISP_ADMIN_THEME_LINKS = [
+    #     {
+    #         "type": "text/css",
+    #         "href": "/static/custom/css/custom-theme.css",
+    #         "rel": "stylesheet",
+    #         "media": "all",
+    #     },
+    #     {
+    #         "type": "image/x-icon",
+    #         "href": "/static/custom/bootload.png",
+    #         "rel": "icon",
+    #     },
+    #     {
+    #         "type": "image/svg+xml",
+    #         "href": "/static/ui/openwisp/images/openwisp-logo-small.svg",
+    #         "rel": "icons",
+    #     },
+    # ]
+    # JSON string of the above configuration:
+    OPENWISP_ADMIN_THEME_LINKS='[{"type": "text/css", "href": "/static/custom/css/custom-theme.css", "rel": "stylesheet", "media": "all"}, {"type": "image/x-icon", "href": "/static/custom/bootload.png", "rel": "icon"}, {"type": "image/svg+xml", "href": "/static/ui/openwisp/images/openwisp-logo-small.svg", "rel": "icons"}]'
 
 2. Create your custom CSS / Javascript file in ``customization/theme``
    directory created in the above section. E.g.
@@ -130,7 +132,7 @@ Docker
 ~~~~~~
 
 1. Create nginx your configuration file.
-2. Set ``NGINX_CUSTOM_FILE`` to ``True``
+2. Set ``NGINX_CUSTOM_FILE`` to ``True`` in ``.env`` file.
 3. Mount your file in ``docker-compose.yml`` as following:
 
 .. code-block:: yaml
@@ -270,8 +272,6 @@ written like this:
 Disabling Services
 ------------------
 
-.. include:: ../partials/tentative-guide-warning.rst
-
 - ``openwisp-dashboard``: You cannot disable the openwisp-dashboard. It is
   the heart of OpenWISP and performs core functionalities.
 - ``openwisp-api``: You cannot disable the openwisp-api. It is required
@@ -310,5 +310,5 @@ that service, however, there are additional steps for some images:
 - ``openwisp-postfix``:
 
   - Ensure your SMTP instance reachable by the OpenWISP containers.
-  - Change the `email configuration variables <settings>` to point to your
-    instances.
+  - Change the :ref:`email configuration variables <email_host>` to point
+    to your instances.

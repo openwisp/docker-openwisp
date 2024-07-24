@@ -7,10 +7,21 @@ Developer Docs
     :depth: 2
     :local:
 
-Building Images
----------------
+.. important::
 
-1. Install Docker and Docker Compose.
+    During development, ensure the OpenWISP domains specified in your
+    ``.env`` file are added to your ``/etc/hosts`` file. This allows you to
+    reach the containers. For instance, to add the default domains to your
+    ``hosts`` file, execute the following command:
+
+    .. code-block:: bash
+
+        bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts'
+
+Building and Running Images
+---------------------------
+
+1. Install Docker.
 2. In the root directory of the repository, run ``make develop``. Once the
    containers are ready, you can test them by accessing the domain names
    of the modules.
@@ -20,15 +31,11 @@ Building Images
     - The default username and password are ``admin``.
     - The default domains are ``dashboard.openwisp.org`` and
       ``api.openwisp.org``.
-    - To access the dashboard, you may need to add the OpenWISP domains
-      specified in your ``.env`` file to your ``hosts`` file. For example,
-      run: ``bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org"
-      >> /etc/hosts'``
-    - You will need to repeat step 2 each time you make changes and want to
-      rebuild the images.
-    - If you want to perform actions such as cleaning everything produced by
-      ``docker-openwisp``, please refer to the :ref:`makefile options
-      <docker_image>`.
+    - You will need to repeat step 2 each time you make changes and want
+      to rebuild the images.
+    - If you want to perform actions such as cleaning everything produced
+      by ``docker-openwisp``, please refer to the :ref:`makefile options
+      <docker_make_options>`.
 
 Running Tests
 -------------
@@ -41,44 +48,26 @@ You can run tests using either ``geckodriver`` (Firefox) or
 Using Chromedriver
 ~~~~~~~~~~~~~~~~~~
 
-1. Install Chromium:
-
-   .. code-block:: bash
-
-       # On Debian
-       sudo apt --yes install chromium
-       # On Ubuntu
-       sudo apt --yes install chromium-browser
-
-2. Check the version of Chromium: ``chromium --version``. Then, install
-   the corresponding driver from `chromedriver.chromium.org/downloads
-   <https://chromedriver.chromium.org/downloads>`_.
-3. Extract chromedriver to a directory in your ``$PATH``, e.g.,
-   ``/usr/sbin/``.
+Install WebDriver for Chromium for your browser version from
+https://chromedriver.chromium.org/home and extract ``chromedriver`` to one
+of directories from your ``$PATH`` (example: ``~/.local/bin/``).
 
 Using Geckodriver
 ~~~~~~~~~~~~~~~~~
 
-1. Install Firefox:
-
-   .. code-block:: bash
-
-       sudo apt --yes install firefox
-
-2. Check the version of Firefox: ``firefox --version``. Then, install the
-   corresponding driver from `github.com/mozilla/geckodriver/releases
-   <https://github.com/mozilla/geckodriver/releases>`_.
-3. Extract geckodriver to a directory in your ``$PATH``, e.g.,
-   ``/usr/sbin/``.
+Install Geckodriver for Firefox for your browser version from
+https://github.com/mozilla/geckodriver/releases and extract
+``geckodriver`` to one of directories from your ``$PATH`` (example:
+``~/.local/bin/``).
 
 Finish Setup and Run Tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Install Selenium:
+1. Install test requirements:
 
    .. code-block:: bash
 
-       python3 -m pip install selenium
+       python3 -m pip install -r requirements-test.txt
 
 2. (Optional) Modify configuration options in ``tests/config.json``:
 
@@ -124,13 +113,10 @@ To run quality assurance checks, use the ``run-qa-checks`` script:
 
 .. code-block:: bash
 
-    # Install test requirements first
-    pip install -r requirements-test.txt
-
     # Run QA checks before committing code
     ./run-qa-checks
 
-.. _docker_image:
+.. _docker_make_options:
 
 Makefile Options
 ----------------
@@ -144,7 +130,8 @@ Most commonly used:
 - ``make stop``: Stop OpenWISP containers on your server.
 - ``make develop``: Bundle all the commands required to build the images
   and run containers.
-- ``make runtests``: Run test cases to ensure all services are working.
+- ``make runtests``: Start containers and run test cases to ensure all
+  services are working. It stops containers after the test suite passes.
 - ``make clean``: Aggressively purge all containers, images, volumes, and
   networks related to ``docker-openwisp``.
 
@@ -161,3 +148,5 @@ Other options:
 - ``make develop-runtests``: Similar to ``runtests``, but it doesn't stop
   the containers after running the tests, which may be desired for
   debugging and analyzing failing container logs.
+- ``make develop-pythontests``: Similar to ``develop-runtests``, but it
+  requires containers to be already running.

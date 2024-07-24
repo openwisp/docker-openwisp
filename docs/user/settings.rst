@@ -1,8 +1,6 @@
 Settings
 ========
 
-.. include:: ../partials/tentative-guide-warning.rst
-
 The OpenWISP Docker images are designed for customization. You can easily
 modify environment variables to tailor the containers to your needs.
 
@@ -51,6 +49,8 @@ properly on your system.
 - **Valid Values:** Any valid domain.
 - **Default:** ``dashboard.example.com``.
 
+.. _api_domain:
+
 ``API_DOMAIN``
 ~~~~~~~~~~~~~~
 
@@ -58,6 +58,8 @@ properly on your system.
   & topology API.
 - **Valid Values:** Any valid domain.
 - **Default:** ``api.example.com``.
+
+.. _vpn_domain:
 
 ``VPN_DOMAIN``
 ~~~~~~~~~~~~~~
@@ -459,6 +461,14 @@ framework.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
+DJANGO_LOG_LEVEL
+~~~~~~~~~~~~~~~~
+
+- **Explanation:** Logging level for Django. `See here
+  <https://docs.djangoproject.com/en/4.2/topics/logging/#topic-logging-parts-loggers>`__.
+- **Valid Values:** STRING.
+- **Default:** ``ERROR``.
+
 Enabled OpenWISP Modules
 ------------------------
 
@@ -666,7 +676,7 @@ Postfix
 
 - **Explanation:** Destinations of the postfix service.
 - **Valid Values:** Any valid domain name.
-- **Default:** ``$myhostname``.
+- **Default:** ``$mydomain, $myhostname``.
 
 ``POSTFIX_MESSAGE_SIZE_LIMIT``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -830,7 +840,7 @@ Nginx
 
 - **Explanation:** Turn on/off Nginx GZIP.
 - **Valid Values:** ``on``, ``off``.
-- **Default:** ``off``.
+- **Default:** ``on``.
 
 ``NGINX_GZIP_LEVEL``
 ~~~~~~~~~~~~~~~~~~~~
@@ -1053,6 +1063,15 @@ Misc Services
   OpenWISP api container. Don't Change unless you know what you are doing.
 - **Valid Values:** INTEGER.
 - **Default:** ``8001``.
+
+``WEBSOCKET_APP_PORT``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Change the port on which nginx tries to get the
+  OpenWISP websocket container. Don't Change unless you know what you are
+  doing.
+- **Valid Values:** INTEGER.
+- **Default:** ``8002``.
 
 ``DASHBOARD_INTERNAL``
 ~~~~~~~~~~~~~~~~~~~~~~
