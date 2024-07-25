@@ -35,7 +35,6 @@ within the OpenWISP architecture.
     ./user/settings.rst
     ./user/customization.rst
     ./user/faq.rst
-    ./user/kubernetes.rst
 
 .. toctree::
     :caption: Docker OpenWISP Developer Docs

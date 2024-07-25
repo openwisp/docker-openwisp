@@ -23,9 +23,6 @@ in mind.
 .. image:: https://i.ibb.co/rGpLq4y/ss1.png
     :target: https://i.ibb.co/rGpLq4y/ss1.png
 
-The sample files for deployment on kubernetes are available in the
-``deploy/examples/kubernetes/`` directory.
-
 Documentation
 -------------
 

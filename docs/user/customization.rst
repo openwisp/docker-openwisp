@@ -144,37 +144,6 @@ Docker
           PATH/TO/YOUR/FILE:/etc/nginx/nginx.conf
       ...
 
-Kubernetes
-~~~~~~~~~~
-
-1. Create nginx your configuration file. Files in
-   ``build/openwisp-nginx/`` may by helpful.
-2. Set ``NGINX_CUSTOM_FILE`` to ``True``.
-3. Create configmap from file: ``kubectl create configmap
-   nginx-file-config --from-file PATH/TO/YOUR/FILE``
-4. Add your config to ``openwisp-nginx`` object:
-
-.. code-block:: yaml
-
-    ...
-    metadata:
-      name: openwisp-nginx
-    spec:
-      ...
-      spec:
-        containers:
-          ...
-          volumeMounts:
-            ...
-            - name: "nginx-file-config"
-              mountPath: "/etc/nginx/nginx.conf"
-              subPath: "nginx.conf"
-        volumes:
-            ...
-            - name: "nginx-file-config"
-              configMap:
-                name: "nginx-file-config"
-
 .. _docker_freeradius:
 
 Supplying Custom Freeradius Configurations
@@ -205,38 +174,6 @@ Docker
           PATH/TO/YOUR/RADIUSD:/etc/raddb/radiusd.conf
           PATH/TO/YOUR/DEFAULT:/etc/raddb/sites-enabled/default
       ...
-
-Kubernetes
-~~~~~~~~~~
-
-1. Create configmap from file: ``kubectl create configmap
-   freeradius-dir-files --from-file PATH/TO/YOUR/RADIUSD --from-file
-   PATH/TO/YOUR/DEFAULT``
-2. Add your config to ``openwisp-freeradius`` object:
-
-.. code-block:: yaml
-
-    ...
-    metadata:
-      name: openwisp-freeradius
-    spec:
-      ...
-      spec:
-        containers:
-          ...
-          volumeMounts:
-            ...
-            - name: "freeradius-dir-files"
-              mountPath: "/etc/raddb/radiusd.conf"
-              subPath: "radiusd.conf"
-            - name: "freeradius-dir-files"
-              mountPath: "/etc/raddb/sites-enabled/default"
-              subPath: "default"
-        volumes:
-            ...
-            - name: "freeradius-dir-files"
-              configMap:
-                name: "freeradius-dir-files"
 
 Supplying Custom Python Source Code
 -----------------------------------
