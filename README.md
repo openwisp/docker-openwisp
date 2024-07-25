@@ -8,9 +8,6 @@
 
 This repository contains official docker images of OpenWISP. Designed with horizontal scaling, easily replicable deployments and user customization in mind.
 
-![kubernetes](https://i.ibb.co/rGpLq4y/ss1.png)
-The sample files for deployment on kubernetes are available in the `deploy/examples/kubernetes/` directory.
-
 ## Table of contents
 
 - [Docker-OpenWISP](#docker-openwisp)
@@ -21,7 +18,6 @@ The sample files for deployment on kubernetes are available in the `deploy/examp
   - [Deployment](#deployment)
     - [Quick Setup](#quick-setup)
     - [Compose](#compose)
-    - [Kubernetes](#kubernetes)
   - [Customization](#customization)
     - [Custom Django Settings](#custom-django-settings)
     - [Custom Styles and JavaScript](#custom-styles-and-javascript)
@@ -134,19 +130,6 @@ tail -n 50 -f /opt/openwisp/autoinstall.log
 ### Compose
 
 [Setup on docker compose](docs/QUICK_SETUP.md) is suitable for single-server setup requirements. It is quicker and requires less prior knowledge about openwisp & networking.
-
-### Kubernetes
-
-Setup on kubernetes is complex and requires prior knowledge about linux systems, kubernetes, docker & openwisp. However, it provides scalability for very large networks.
-
-- [Bare Metal](docs/kubernetes/BARE_METAL.md)
-- [Google Cloud](docs/kubernetes/GOOGLE_CLOUD.md)
-
-Useful commands for startup and readiness probes which are provided
-by the images:
-
-- startup probe example: `test $(ps aux | grep -c uwsgi) -ge 2`
-- readiness probe example: `python services.py uwsgi_status "127.0.0.1:8001"`
 
 ## Customization
 

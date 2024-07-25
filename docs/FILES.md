@@ -26,35 +26,6 @@ For some of the images, if you want additional customization options, you can mo
         PATH/TO/YOUR/FILE:/etc/nginx/nginx.conf
     ...
 ```
-
-### Kubernetes
-
-1. Create nginx your configuration file. Files in `build/openwisp-nginx/` may by helpful.
-2. Set `NGINX_CUSTOM_FILE` to `True`.
-3. Create configmap from file: `kubectl create configmap nginx-file-config --from-file PATH/TO/YOUR/FILE`
-4. Add your config to `openwisp-nginx` object:
-
-```yaml
-  ...
-  metadata:
-    name: openwisp-nginx
-  spec:
-    ...
-    spec:
-      containers:
-        ...
-        volumeMounts:
-          ...
-          - name: "nginx-file-config"
-            mountPath: "/etc/nginx/nginx.conf"
-            subPath: "nginx.conf"
-      volumes:
-          ...
-          - name: "nginx-file-config"
-            configMap:
-              name: "nginx-file-config"
-```
-
 ## Freeradius
 
 Note: `/etc/raddb/clients.conf`, `/etc/raddb/radiusd.conf`, `/etc/raddb/sites-enabled/default`, `/etc/raddb/mods-enabled/`, `/etc/raddb/mods-available/` are the default files you may want to overwrite and you can find all of default files in `build/openwisp_freeradius/raddb`. The following are examples for including custom `radiusd.conf` and `sites-enabled/default` files.
@@ -72,33 +43,4 @@ Note: `/etc/raddb/clients.conf`, `/etc/raddb/radiusd.conf`, `/etc/raddb/sites-en
         PATH/TO/YOUR/RADIUSD:/etc/raddb/radiusd.conf
         PATH/TO/YOUR/DEFAULT:/etc/raddb/sites-enabled/default
     ...
-```
-
-### Kubernetes
-
-1. Create configmap from file: `kubectl create configmap freeradius-dir-files --from-file PATH/TO/YOUR/RADIUSD --from-file PATH/TO/YOUR/DEFAULT`
-2. Add your config to `openwisp-freeradius` object:
-
-```yaml
-  ...
-  metadata:
-    name: openwisp-freeradius
-  spec:
-    ...
-    spec:
-      containers:
-        ...
-        volumeMounts:
-          ...
-          - name: "freeradius-dir-files"
-            mountPath: "/etc/raddb/radiusd.conf"
-            subPath: "radiusd.conf"
-          - name: "freeradius-dir-files"
-            mountPath: "/etc/raddb/sites-enabled/default"
-            subPath: "default"
-      volumes:
-          ...
-          - name: "freeradius-dir-files"
-            configMap:
-              name: "freeradius-dir-files"
 ```
