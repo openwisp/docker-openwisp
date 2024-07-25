@@ -27,6 +27,8 @@ latest Images built on the **latest git tag**
 edge   Images built on the **current master branch**
 ====== =============================================
 
+.. include:: ../partials/updating-host-file.rst
+
 Auto Install
 ------------
 

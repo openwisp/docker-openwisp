@@ -7,16 +7,7 @@ Developer Docs
     :depth: 2
     :local:
 
-.. important::
-
-    During development, ensure the OpenWISP domains specified in your
-    ``.env`` file are added to your ``/etc/hosts`` file. This allows you to
-    reach the containers. For instance, to add the default domains to your
-    ``hosts`` file, execute the following command:
-
-    .. code-block:: bash
-
-        bash -c 'echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts'
+.. include:: ../partials/updating-host-file.rst
 
 Building and Running Images
 ---------------------------

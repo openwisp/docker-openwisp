@@ -9,8 +9,8 @@ Docker OpenWISP
 Docker-OpenWISP makes it possible to set up isolated and reproducible
 OpenWISP environments, simplifying the deployment and scaling process.
 
-The following diagram illustrates the role of Docker OpenWISP
-within the OpenWISP architecture.
+The following diagram illustrates the role of Docker OpenWISP within the
+OpenWISP architecture.
 
 .. figure:: images/architecture-v2-docker-openwisp.png
     :target: ../_images/architecture-v2-docker-openwisp.png
