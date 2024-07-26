@@ -34,7 +34,7 @@ Auto Install
 
 The ``auto-install.sh`` script can be used to quickly install a simple
 instance of OpenWISP on your server. It will install the required system
-dependencies and bring up docker containers.
+dependencies and starts docker containers.
 
 .. raw:: html
 

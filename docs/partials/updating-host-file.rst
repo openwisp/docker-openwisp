@@ -1,6 +1,6 @@
 .. important::
 
-    A Docker OpenWISP installation responds only to the `fully qualified
+    The Docker OpenWISP installation responds only to the `fully qualified
     domain names (FQDN)
     <https://en.wikipedia.org/wiki/Fully_qualified_domain_name>`_ defined
     in the :ref:`configuration <docker_essential_env>`. If you are

@@ -51,8 +51,7 @@ properly on your system.
 ``API_DOMAIN``
 ~~~~~~~~~~~~~~
 
-- **Explanation:** Domain on which you want to access OpenWISP controller
-  & topology API.
+- **Explanation:** Domain on which you want to access OpenWISP APIs.
 - **Valid Values:** Any valid domain.
 - **Default:** ``api.example.com``.
 
@@ -77,7 +76,7 @@ properly on your system.
 ~~~~~~~~~~~~~~~~~~~~
 
 - **Explanation:** Required by certbot. Email used for registration and
-  recovery contact. Use comma to register multiple emails.
+  recovery contact.
 - **Valid Values:** A comma separated list of valid email addresses.
 - **Default:** ``example@example.com``.
 
@@ -237,8 +236,9 @@ framework.
 ``DJANGO_CORS_HOSTS``
 ~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Hosts for which CORS is whitelisted. `See here
-  <https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS>`__.
+- **Explanation:** Hosts for which `CORS
+  <https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS>`__. is
+  whitelisted.
 - **Valid Values:** Comma separated list of CORS domains.
 - **Default:** ``http://localhost``
 - **Example:** ``https://www.openwisp.org,openwisp.example.org``
@@ -453,16 +453,20 @@ framework.
 ``DEBUG_MODE``
 ~~~~~~~~~~~~~~
 
-- **Explanation:** Enable Django Debugging. `See here
-  <https://docs.djangoproject.com/en/4.2/ref/settings/#debug>`__.
+- **Explanation:** Enable Django Debugging. Refer to the `related Django
+  documentation section
+  <https://docs.djangoproject.com/en/4.2/ref/settings/#debug>`__ for
+  details.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
 DJANGO_LOG_LEVEL
 ~~~~~~~~~~~~~~~~
 
-- **Explanation:** Logging level for Django. `See here
-  <https://docs.djangoproject.com/en/4.2/topics/logging/#topic-logging-parts-loggers>`__.
+- **Explanation:** Logging level for Django. Refer to the `related Django
+  documentation section
+  <https://docs.djangoproject.com/en/4.2/topics/logging/#topic-logging-parts-loggers>`__
+  for details.
 - **Valid Values:** STRING.
 - **Default:** ``ERROR``.
 
@@ -518,7 +522,7 @@ PostgreSQL Database
 ``DB_USER``
 ~~~~~~~~~~~
 
-- **Explanation:** The name of the database to use.
+- **Explanation:** The username to use when connecting to the database.
 - **Valid Values:** STRING.
 - **Default:** ``admin``.
 
@@ -649,7 +653,7 @@ Postfix
 
 .. note::
 
-    Keep in mind that Postfix is optional. You avoid running the Postfix
+    Keep in mind that Postfix is optional. You can avoid running the Postfix
     container if you already have an external SMTP server available.
 
 ``POSTFIX_ALLOWED_SENDER_DOMAINS``
@@ -765,16 +769,20 @@ Nginx
 ``NGINX_HTTP2``
 ~~~~~~~~~~~~~~~
 
-- **Explanation:** Used by nginx to enable http2. `See here
-  <https://www.nginx.com/blog/http2-module-nginx/#overview>`__.
+- **Explanation:** Used by nginx to enable http2. Refer to the `related
+  Nginx documentation section
+  <https://www.nginx.com/blog/http2-module-nginx/#overview>`__ for
+  details.
 - **Valid Values:** ``http2`` or empty string.
 - **Default:** ``http2``.
 
 ``NGINX_CLIENT_BODY_SIZE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Client body size. `See here
+- **Explanation:** Client body size. Refer to the `related Nginx
+  documentation section
   <http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size>`__
+  for details.
 - **Valid Values:** INTEGER.
 - **Default:** ``30``.
 
@@ -1047,7 +1055,7 @@ Misc Services
 ``DASHBOARD_APP_PORT``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Change the port on which nginx tries to get the
+- **Explanation:** The port on which nginx tries to get the
   OpenWISP dashboard container. Don't Change unless you know what you are
   doing.
 - **Valid Values:** INTEGER.
@@ -1056,7 +1064,7 @@ Misc Services
 ``API_APP_PORT``
 ~~~~~~~~~~~~~~~~
 
-- **Explanation:** Change the port on which nginx tries to get the
+- **Explanation:** The port on which nginx tries to get the
   OpenWISP api container. Don't Change unless you know what you are doing.
 - **Valid Values:** INTEGER.
 - **Default:** ``8001``.
@@ -1064,7 +1072,7 @@ Misc Services
 ``WEBSOCKET_APP_PORT``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Change the port on which nginx tries to get the
+- **Explanation:** The port on which nginx tries to get the
   OpenWISP websocket container. Don't Change unless you know what you are
   doing.
 - **Valid Values:** INTEGER.
