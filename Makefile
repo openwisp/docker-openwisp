@@ -6,7 +6,7 @@ SHELL := /bin/bash
 
 default: compose-build
 
-USER = registry.gitlab.com/openwisp/docker-openwisp
+USER = docker.io/openwisp
 TAG  = latest
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
