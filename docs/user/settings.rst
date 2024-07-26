@@ -653,8 +653,9 @@ Postfix
 
 .. note::
 
-    Keep in mind that Postfix is optional. You can avoid running the Postfix
-    container if you already have an external SMTP server available.
+    Keep in mind that Postfix is optional. You can avoid running the
+    Postfix container if you already have an external SMTP server
+    available.
 
 ``POSTFIX_ALLOWED_SENDER_DOMAINS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1055,26 +1056,24 @@ Misc Services
 ``DASHBOARD_APP_PORT``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** The port on which nginx tries to get the
-  OpenWISP dashboard container. Don't Change unless you know what you are
-  doing.
+- **Explanation:** The port on which nginx tries to get the OpenWISP
+  dashboard container. Don't Change unless you know what you are doing.
 - **Valid Values:** INTEGER.
 - **Default:** ``8000``.
 
 ``API_APP_PORT``
 ~~~~~~~~~~~~~~~~
 
-- **Explanation:** The port on which nginx tries to get the
-  OpenWISP api container. Don't Change unless you know what you are doing.
+- **Explanation:** The port on which nginx tries to get the OpenWISP api
+  container. Don't Change unless you know what you are doing.
 - **Valid Values:** INTEGER.
 - **Default:** ``8001``.
 
 ``WEBSOCKET_APP_PORT``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** The port on which nginx tries to get the
-  OpenWISP websocket container. Don't Change unless you know what you are
-  doing.
+- **Explanation:** The port on which nginx tries to get the OpenWISP
+  websocket container. Don't Change unless you know what you are doing.
 - **Valid Values:** INTEGER.
 - **Default:** ``8002``.
 
