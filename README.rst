@@ -20,8 +20,8 @@ This repository contains official docker images of OpenWISP. Designed with
 horizontal scaling, easily replicable deployments and user customization
 in mind.
 
-.. image:: https://raw.githubusercontent.com/openwisp/docker-openwisp/reorder-docs/docs/images/portainer-docker-list.png
-    :target: https://raw.githubusercontent.com/openwisp/docker-openwisp/reorder-docs/docs/images/portainer-docker-list.png
+.. image:: https://raw.githubusercontent.com/openwisp/docker-openwisp/master/docs/images/portainer-docker-list.png
+    :target: https://raw.githubusercontent.com/openwisp/docker-openwisp/master/docs/images/portainer-docker-list.png
 
 Documentation
 -------------
