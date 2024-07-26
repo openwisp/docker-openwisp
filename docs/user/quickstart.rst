@@ -20,21 +20,26 @@ Image Tags
 
 All images are tagged using the following convention:
 
-====== =============================================
+====== ============================================================
 Tag    Software Version
-====== =============================================
-latest Images built on the **latest git tag**
-edge   Images built on the **current master branch**
-====== =============================================
+====== ============================================================
+latest This is the most recent official release of OpenWISP.
 
-.. include:: ../partials/updating-host-file.rst
+       On Github, this corresponds to the latest tagged release.
+edge   This is the development version of OpenWISP.
 
-Auto Install
-------------
+       On Github, this corresponds to the current master branch.
+====== ============================================================
 
-The ``auto-install.sh`` script can be used to quickly install a simple
-instance of OpenWISP on your server. It will install the required system
-dependencies and starts docker containers.
+Auto Install Script
+-------------------
+
+The `auto-install
+<https://github.com/openwisp/docker-openwisp/blob/master/deploy/auto-install.sh>`_
+script can be used to quickly install an OpenWISP instance on your server.
+
+It will install the required system dependencies and start the docker
+containers.
 
 .. raw:: html
 
@@ -66,8 +71,11 @@ to set up OpenWISP. Below are the prompts and their descriptions:
   certificate generation. If you leave this blank, a self-signed
   certificate will be generated.
 
-Run the following commands to download the auto-install script and execute
-it:
+.. include:: ../partials/updating-host-file.rst
+
+Run the following commands to download the `auto-install
+<https://github.com/openwisp/docker-openwisp/blob/master/deploy/auto-install.sh>`_
+script and execute it:
 
 .. code-block:: bash
 
@@ -94,7 +102,7 @@ by using the following command
 
     - If you're having any installation issues with the ``latest``
       version, you can try auto-installation with the ``edge`` version,
-      which has images built on the current master branch.
+      which ships the development version of OpenWISP.
     - Still facing errors while installation? Please :doc:`read the FAQ
       <faq>`.
 
