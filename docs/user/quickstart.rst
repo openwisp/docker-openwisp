@@ -20,16 +20,16 @@ Image Tags
 
 All images are tagged using the following convention:
 
-====== ============================================================
+====== =========================================================
 Tag    Software Version
-====== ============================================================
+====== =========================================================
 latest This is the most recent official release of OpenWISP.
 
        On Github, this corresponds to the latest tagged release.
 edge   This is the development version of OpenWISP.
 
        On Github, this corresponds to the current master branch.
-====== ============================================================
+====== =========================================================
 
 Auto Install Script
 -------------------
