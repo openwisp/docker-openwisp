@@ -4,20 +4,20 @@ import ssl
 import subprocess
 import time
 
-import docker
 from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+import docker
+
 
 class TestConfig:
-    """
-    Get the configurations that are to be used for all the tests.
-    """
+    """Configuration class for setting up test parameters and utilities."""
 
     def shortDescription(self):
+        """Return a short description for the test."""
         return None
 
     docker_client = docker.from_env()
@@ -32,19 +32,21 @@ class TestConfig:
 
 
 class TestUtilities(TestConfig):
-    """
-    Utility functions that are used during testing.
-    """
+    """Utility functions for testing."""
 
     objects_to_delete = []
 
     def login(self, username=None, password=None, driver=None):
-        """
-        Log in to the admin dashboard
-        Argument:
-            driver: selenium driver (default: cls.base_driver)
-            username: username to be used for login (default: cls.config['username'])
-            password: password to be used for login (default: cls.config['password'])
+        """Log in to the admin dashboard.
+
+        Parameters:
+
+        - username (str, optional): The username to use for login.
+          Defaults to the value in the config.
+        - password (str, optional): The password to use for login.
+          Defaults to the value in the config.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
@@ -59,26 +61,37 @@ class TestUtilities(TestConfig):
             driver.find_element(By.XPATH, "//input[@type='submit']").click()
 
     def _ignore_location_alert(self, driver=None):
+        """Accept alerts related to location not found.
+
+        Parameters:
+
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
-        Accepts related address to location not found alert
-        Argument:
-            driver: selenium driver (default: cls.base_driver)
-        """
-        expectedMsg = "Could not find any address related to this location."
+        expected_msg = "Could not find any address related to this location."
         if not driver:
             driver = self.base_driver
-        time.sleep(2)  # Wait for two seconds for alert to come up
+        time.sleep(2)  # Wait for the alert to appear
         try:
-            windowAlert = driver.switch_to.alert
-            if expectedMsg in windowAlert.text:
-                windowAlert.accept()
+            window_alert = driver.switch_to.alert
+            if expected_msg in window_alert.text:
+                window_alert.accept()
         except NoAlertPresentException:
             pass  # No alert is okay.
 
     def _click_save_btn(self, driver=None):
-        saveBtn = driver.find_element(By.NAME, '_save')
+        """Click the save button in the admin interface.
+
+        Parameters:
+
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
+        """
+        if not driver:
+            driver = self.base_driver
+        save_btn = driver.find_element(By.NAME, '_save')
         actions = ActionChains(driver)
-        actions.move_to_element(saveBtn).click().perform()
+        actions.move_to_element(save_btn).click().perform()
 
     def create_superuser(
         self,
@@ -87,13 +100,18 @@ class TestUtilities(TestConfig):
         password='randomPassword01!',
         driver=None,
     ):
-        """
-        Create new superuser
-        Argument:
-            email: password for user (default: randomPassword01!)
-            username: username for user (default: test_superuser)
-            password: password for user (default: randomPassword01!)
-            driver: selenium driver (default: cls.base_driver)
+        """Create a new superuser.
+
+        Parameters:
+
+        - email (str, optional): The email address of the superuser.
+          Defaults to 'test@user.com'.
+        - username (str, optional): The username of the superuser.
+          Defaults to 'test_superuser'.
+        - password (str, optional): The password for the superuser.
+          Defaults to 'randomPassword01!'.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
@@ -110,13 +128,16 @@ class TestUtilities(TestConfig):
         self._wait_for_element()
 
     def get_resource(self, resource_name, path, select_field='field-name', driver=None):
-        """
-        Redirect to resource's change form page.
-        Argument:
-            resource_name: username of user to use for operation (example: 'users')
-            path: path to the resource. (example: '/admin/openwisp_users/user/')
-            select_field: field used to select the resource. (default: 'field-name')
-            driver: selenium driver (default: cls.base_driver)
+        """Navigate to a resource's change form page.
+
+        Parameters:
+
+        - resource_name (str): The name of the resource to find.
+        - path (str): The path to the resource in the admin interface.
+        - select_field (str, optional): The field used to identify the
+          resource. Defaults to 'field-name'.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
@@ -128,11 +149,13 @@ class TestUtilities(TestConfig):
                 break
 
     def select_resource(self, name, driver=None):
-        """
-        Select checkbox of a resource with resource name.
-        Argument:
-            name: name of the resource to select
-            driver: selenium driver (default: cls.base_driver)
+        """Select a resource by name.
+
+        Parameters:
+
+        - name (str): The name of the resource to select.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
@@ -142,13 +165,15 @@ class TestUtilities(TestConfig):
         driver.find_element(By.XPATH, path).click()
 
     def action_on_resource(self, name, path, option, driver=None):
-        """
-        Perform action on resource:
-        Argument:
-            name: name of the resource to select
-            path: path to reach the list page
-            option: value of option to be deleted
-            driver: selenium driver (default: cls.base_driver)
+        """Perform an action on a resource.
+
+        Parameters:
+
+        - name (str): The name of the resource to select.
+        - path (str): The path to the resource list page.
+        - option (str): The value of the option to select.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
@@ -160,12 +185,15 @@ class TestUtilities(TestConfig):
         driver.find_element(By.NAME, 'index').click()
 
     def console_error_check(self, driver=None):
-        """
-        Return all js errors that occurred
-        Firefox doesn't support it yet, read here:
-        https://github.com/mozilla/geckodriver/issues/284
-        Argument:
-            driver: selenium driver (default: cls.base_driver)
+        """Check for JavaScript errors in the console.
+
+        Parameters:
+
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
+
+        Returns:
+            list: A list of JavaScript error messages.
         """
         if not driver:
             driver = self.base_driver
@@ -173,16 +201,18 @@ class TestUtilities(TestConfig):
         if self.config['driver'] == 'chromium':
             logs = driver.get_log('browser')
             for logentry in logs:
-                if logentry['level'] in ['SEVERE']:
+                if logentry['level'] == 'SEVERE':
                     console_logs.append(logentry['message'])
         return console_logs
 
     def create_mobile_location(self, location_name, driver=None):
-        """
-        Create a new location with `location_name`
-        Argument:
-            location_name: location to use for operation
-            driver: selenium driver (default: cls.base_driver)
+        """Create a new mobile location.
+
+        Parameters:
+
+        - location_name (str): The name of the new location.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
@@ -197,7 +227,6 @@ class TestUtilities(TestConfig):
         driver.find_element(By.NAME, 'is_mobile').click()
         self._ignore_location_alert(driver)
         self._click_save_btn(driver)
-        # Add to delete list
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
         self._wait_for_element()
         self.objects_to_delete.append(driver.current_url)
@@ -205,11 +234,13 @@ class TestUtilities(TestConfig):
         self._wait_for_element()
 
     def add_mobile_location_point(self, location_name, driver=None):
-        """
-        Adds a point on map for an existing mobile location.
-        Argument:
-            location_name: location to use for operation
-            driver: selenium driver (default: cls.base_driver)
+        """Add a point on the map for an existing mobile location.
+
+        Parameters:
+
+        - location_name (str): The name of the location.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
@@ -224,6 +255,15 @@ class TestUtilities(TestConfig):
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
 
     def docker_compose_get_container_id(self, container_name):
+        """Get the Docker container ID for a specific container.
+
+        Parameters:
+
+        - container_name (str): The name of the Docker container.
+
+        Returns:
+            str: The ID of the Docker container.
+        """
         services_output = subprocess.Popen(
             ['docker', 'compose', 'ps', '--quiet', container_name],
             stdout=subprocess.PIPE,
@@ -242,20 +282,21 @@ class TestUtilities(TestConfig):
         ),
         driver=None,
     ):
-        """
-        Create a new fetch type network-toplogy resource.
-        Argument:
-            topology_url: fetch link of the topology
-            label: name of the topology (default: 'default')
-            location_name: location to use for operation
-            driver: selenium driver (default: cls.base_driver)
+        """Create a new network topology resource.
+
+        Parameters:
+
+        - label (str, optional): The label for the new topology. Defaults
+          to 'automated-selenium-test-01'.
+        - topology_url (str, optional): The URL to fetch the topology data
+          from. Defaults to the provided URL.
+        - driver (selenium.webdriver, optional): The Selenium WebDriver
+          instance. Defaults to `self.base_driver`.
         """
         if not driver:
             driver = self.base_driver
         driver.get(f"{self.config['app_url']}/admin/topology/topology/add/")
         driver.find_element(By.NAME, 'label').send_keys(label)
-        # We have to select the organisation field from the
-        # autocomplete filter of openwisp-network-topology
         driver.find_element(
             by=By.CSS_SELECTOR, value='#select2-id_organization-container'
         ).click()
@@ -273,6 +314,13 @@ class TestUtilities(TestConfig):
         self._wait_for_element()
 
     def _wait_for_element(self, element_id='content'):
+        """Wait for an element to be visible on the page.
+
+        Parameters:
+
+        - element_id (str, optional): The ID of the element to wait for.
+          Defaults to 'content'.
+        """
         WebDriverWait(self.base_driver, 10).until(
             EC.visibility_of_element_located((By.ID, element_id))
         )

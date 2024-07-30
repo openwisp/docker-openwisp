@@ -14,14 +14,12 @@ from utils import TestUtilities
 
 
 class Pretest(TestUtilities, unittest.TestCase):
-    """
-    Checks to perform before tests
-    """
+    """Checks to perform before tests"""
 
     def test_wait_for_services(self):
-        """
-        This test wait for services to be started up and check
-        if the openwisp-dashboard login page is reachable.
+        """This test wait for services to be started up.
+
+        Then checks if the openwisp-dashboard login page is reachable.
         Should be called first before calling another test.
         """
 
@@ -158,9 +156,7 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     @classmethod
     def _delete_object(cls, resource_link):
-        """
-        Takes URL for location to delete.
-        """
+        """Takes URL for location to delete."""
         cls.base_driver.get(resource_link)
         element = cls.base_driver.find_element(By.CLASS_NAME, 'deletelink-box')
         js = "arguments[0].setAttribute('style', 'display:block')"
@@ -282,11 +278,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             self.assertIn('OpenWISP', self.base_driver.title)
 
     def test_websocket_marker(self):
-        """
-        This test ensures that websocket service is running correctly
-        using selenium by creating a new location, setting a map marker
-        and checking if the location changed on a second window.
-        """
+        """This test ensures that websocket service is running correctly using selenium by creating a new location, setting a map marker and checking if the location changed on a second window."""
         location_name = 'automated-websocket-selenium-loc01'
         self.login()
         self.login(driver=self.second_driver)
@@ -303,10 +295,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.assertEqual(mark, 1)
 
     def test_add_superuser(self):
-        """
-        Create new user to ensure a new user
-        can be added.
-        """
+        """Create new user to ensure a new user can be added."""
         self.login()
         self.create_superuser()
         self.assertEqual(
@@ -315,10 +304,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         )
 
     def test_forgot_password(self):
-        """
-        Test forgot password to ensure that
-        postfix is working properly.
-        """
+        """Test forgot password to ensure that postfix is working properly."""
         self.base_driver.get(f"{self.config['app_url']}/accounts/password/reset/")
         self.base_driver.find_element(By.NAME, 'email').send_keys('admin@example.com')
         self.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
@@ -331,9 +317,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         )
 
     def test_celery(self):
-        """
-        Ensure celery and celery-beat tasks are registered.
-        """
+        """Ensure celery and celery-beat tasks are registered."""
         expected_output_list = [
             "djcelery_email_send_multiple",
             "openwisp.tasks.radius_tasks",
@@ -413,9 +397,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             _test_celery_task_registered('celery_monitoring')
 
     def test_freeradius(self):
-        """
-        Ensure freeradius service is working correctly.
-        """
+        """Ensure freeradius service is working correctly."""
         token_page = (
             f"{self.config['api_url']}/api/v1/radius/"
             "organization/default/account/token/"
@@ -450,9 +432,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             ).communicate()
 
     def test_containers_down(self):
-        """
-        Ensure freeradius service is working correctly.
-        """
+        """Ensure freeradius service is working correctly."""
         cmd = subprocess.Popen(
             ['docker', 'compose', 'ps'],
             universal_newlines=True,

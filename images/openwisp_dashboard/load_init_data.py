@@ -1,11 +1,11 @@
-'''
-Load initial data before starting the server.
+"""Load initial data before starting the server.
+
 - Create superuser `admin`.
 - Create default CA
 - Create default Cert
 - Create default VPN
 - Create default VPN Client Template
-'''
+"""
 
 import json
 import os
@@ -17,18 +17,14 @@ django.setup()
 
 
 def create_admin():
-    """
-    Creates superuser `admin` if it does not exist.
-    """
+    """Creates superuser `admin` if it does not exist."""
     User.objects.filter(is_superuser=True).exists() or User.objects.create_superuser(
         "admin", "admin@example.com", "admin"
     )
 
 
 def create_default_CA(x509NameCA):
-    """
-    Create default certificate authority
-    """
+    """Create default certificate authority."""
     if not Ca.objects.filter(name=x509NameCA).exists():
         defaultCa = Ca()
         defaultCa.name = x509NameCA
@@ -50,9 +46,7 @@ def create_default_CA(x509NameCA):
 
 
 def create_default_cert(defaultCa, x509NameCert):
-    """
-    Create default certificate
-    """
+    """Creates default certificate."""
     if not Cert.objects.filter(name=x509NameCert).exists():
         defaultCert = Cert()
         defaultCert.ca = defaultCa
@@ -76,9 +70,7 @@ def create_default_cert(defaultCa, x509NameCert):
 
 
 def create_default_vpn(vpnName, vpnDomain, defaultCa, defaultCert):
-    """
-    Create default vpn
-    """
+    """Creates default vpn."""
     if not Vpn.objects.filter(name=vpnName).exists():
         defaultVpn = Vpn()
         defaultVpn.ca = defaultCa
@@ -101,9 +93,7 @@ def create_default_vpn(vpnName, vpnDomain, defaultCa, defaultCert):
 
 
 def create_default_vpn_template(defaultVpnClient, defaultVpn):
-    """
-    Create default vpn client template
-    """
+    """Creates default vpn client template."""
     if not Template.objects.filter(name=defaultVpnClient).exists():
         defaultTp = Template()
         defaultTp.auto_cert = True
