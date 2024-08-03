@@ -278,7 +278,11 @@ class TestServices(TestUtilities, unittest.TestCase):
             self.assertIn('OpenWISP', self.base_driver.title)
 
     def test_websocket_marker(self):
-        """This test ensures that websocket service is running correctly using selenium by creating a new location, setting a map marker and checking if the location changed on a second window."""
+        """Ensures that the websocket service is running correctly.
+
+        This test uses selenium, it creates a new location, sets a map
+        marker and checks if the location changed int a second window.
+        """
         location_name = 'automated-websocket-selenium-loc01'
         self.login()
         self.login(driver=self.second_driver)
