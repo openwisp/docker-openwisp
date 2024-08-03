@@ -3,18 +3,18 @@
 set -e
 
 # will be 1 by default when run through github actions
-CI=${CI:-0}
+CI=${CI:-false}
 
-if [ "$CI" -eq 0 ]; then
+echo ''
+echo 'Python file QA checks...'
+openwisp-qa-check --skip-checkmigrations
+
+if [ "$CI" = "false" ]; then
 	echo 'Shell scripts QA checks ...'
 	# check shell scripts formatting
 	sh_files=$(shfmt -f .)
 	shfmt -d .
 fi
-
-echo ''
-echo 'Python file QA checks...'
-openwisp-qa-check --skip-checkmigrations
 
 echo ''
 echo 'Dockerfile QA checks...'
