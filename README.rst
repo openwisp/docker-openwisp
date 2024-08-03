@@ -26,6 +26,6 @@ in mind.
 Documentation
 -------------
 
+- `Usage documentation <https://openwisp.io/docs/dev/docker/>`_
 - `Developer documentation
-  <https://openwisp.io/docs/dev/docker/developer/>`_
-- `User documentation <https://openwisp.io/docs/dev/docker/>`_
+  <https://openwisp.io/docs/dev/docker/developer/instructions.html>`_
