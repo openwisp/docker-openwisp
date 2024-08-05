@@ -34,24 +34,16 @@ edge   This is the development version of OpenWISP.
 Auto Install Script
 -------------------
 
+.. figure:: ../images/auto-install.png
+    :target: ../_images/auto-install.png
+    :alt: Auto Install Script for Docker OpenWISP
+
 The `auto-install
 <https://github.com/openwisp/docker-openwisp/blob/master/deploy/auto-install.sh>`_
 script can be used to quickly install an OpenWISP instance on your server.
 
 It will install the required system dependencies and start the docker
 containers.
-
-.. raw:: html
-
-    <p>
-        <iframe width="560" height="315"
-            src="https://www.youtube.com/embed/LLbsKP79MzE?si=XzJ3YX_ueutr9--f"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-        ></iframe>
-    </p>
 
 This script prompts the user for basic configuration parameters required
 to set up OpenWISP. Below are the prompts and their descriptions:
