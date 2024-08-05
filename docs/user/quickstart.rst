@@ -35,7 +35,7 @@ Auto Install Script
 -------------------
 
 .. figure:: ../images/auto-install.png
-    :target: ../_images/auto-install.png
+    :target: ../../_images/auto-install.png
     :alt: Auto Install Script for Docker OpenWISP
 
 The `auto-install
