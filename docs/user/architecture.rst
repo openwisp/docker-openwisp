@@ -20,13 +20,13 @@ repository.
 - **openwisp-api**: HTTP API from various OpenWISP modules which can be
   scaled simply by having multiple API containers as per requirement.
 - **openwisp-websocket**: Dedicated container for handling websocket
-  requests, eg. for updating location of mobile network devices.
-- **openwisp-celery**: Runs all the background tasks for OpenWISP, eg.
+  requests, e.g. for updating location of mobile network devices.
+- **openwisp-celery**: Runs all the background tasks for OpenWISP, e.g.
   updating configurations of your device.
 - **openwisp-celery-monitoring**: Runs background tasks that perform
-  active monitoring checks, eg. ping checks and configuration checks. It
+  active monitoring checks, e.g. ping checks and configuration checks. It
   also executes task for writing monitoring data to the timeseries DB.
-- **openwisp-celerybeat**: Runs periodic background tasks. eg. revoking
+- **openwisp-celerybeat**: Runs periodic background tasks. e.g. revoking
   all the expired certificates.
 - **openwisp-nginx**: Internet facing container that facilitates all the
   HTTP and Websocket communication between the outside world and the

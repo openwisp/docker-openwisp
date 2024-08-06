@@ -88,7 +88,7 @@ properly on your system.
   help of certbot and a cronjob to ensure they stay updated is added. If
   it is set to ``SelfSigned``, self-signed certificates are used and
   cronjob for the certificates is set. If set to ``No``, site is
-  accessiable via HTTP, if set if ``EXTERNAL``, it tells HTTPs is used but
+  accessible via HTTP, if set if ``EXTERNAL``, it tells HTTPs is used but
   managed by external tool like loadbalancer / provider. Setting this
   option as ``No`` is not recommended and might break some features, only
   do it when you know what you are doing.
@@ -182,7 +182,7 @@ framework.
 - **Explanation:** Username to use for the SMTP server defined in
   :ref:`EMAIL_HOST`. If empty, Django won't attempt authentication.
 - **Valid Values:** STRING.
-- **Default:** ``""`` (emptry string).
+- **Default:** ``""`` (empty string).
 - **Example:** ``example@example.com``
 
 ``EMAIL_HOST_PASSWORD``
@@ -191,7 +191,7 @@ framework.
 - **Explanation:** Password to use for the SMTP server defined in
   :ref:`EMAIL_HOST`.. If empty, Django won't attempt authentication.
 - **Valid Values:** STRING.
-- **Default:** ``""`` (emptry string)
+- **Default:** ``""`` (empty string)
 
 ``EMAIL_HOST_TLS``
 ~~~~~~~~~~~~~~~~~~
@@ -257,7 +257,7 @@ framework.
 - **Explanation:** `Sentry DSN <https://sentry.io/for/django/>`__.
 - **Valid Values:** Your DSN value provided by sentry.
 - **Example:** ``https://example@sentry.io/example``.
-- **Default:** ``""`` (emptry string).
+- **Default:** ``""`` (empty string).
 
 ``DJANGO_LEAFET_CENTER_X_AXIS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -429,7 +429,7 @@ framework.
 ``CRON_DELETE_OLD_POSTAUTH``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** (Value in days) Deletes RADIUS post-auth logs older
+- **Explanation:** (Value in days) Deletes RADIUS *post-auth* logs older
   than given number of days.
 - **Valid Values:** INTEGER.
 - **Default:** ``365``.
@@ -693,8 +693,9 @@ Postfix
 ``POSTFIX_MYNETWORKS``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Postfix is exposed only in mynetworks to prevent any
-  issues with this postfix being inadvertently exposed on the internet.
+- **Explanation:** Postfix is exposed only in ``mynetworks`` to prevent
+  any issues with this postfix being inadvertently exposed on the
+  internet.
 - **Valid Values:** space separated IP Networks.
 - **Default:** ``127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128``.
 
@@ -793,7 +794,7 @@ Nginx
 - **Explanation:** Nginx listen on IPv6 for SSL connection. You can either
   enter a valid nginx statement or leave this value empty.
 - **Valid Values:** ``listen [::]:443 ssl http2;`` or empty string.
-- **Default:** ``""`` (emptry string).
+- **Default:** ``""`` (empty string).
 
 ``NGINX_IP6_80_STRING``
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -801,7 +802,7 @@ Nginx
 - **Explanation:** Nginx listen on IPv6 connection. You can either enter a
   valid nginx statement or leave this value empty.
 - **Valid Values:** ``listen [::]:80;`` or empty string.
-- **Default:** ``""`` (emptry string).
+- **Default:** ``""`` (empty string).
 
 ``NGINX_ADMIN_ALLOW_NETWORK``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -829,7 +830,7 @@ Nginx
   variable is only applicable when ``SSL_CERT_MODE`` is ``Yes`` or
   ``SelfSigned``.
 - **Example:** ``index index.html index.htm;``.
-- **Default:** ``""`` (emptry string).
+- **Default:** ``""`` (empty string).
 
 ``NGINX_80_CONFIG``
 ~~~~~~~~~~~~~~~~~~~
@@ -839,7 +840,7 @@ Nginx
   You may add options to this string or leave this variable blank. This
   variable is only applicable when ``SSL_CERT_MODE`` is ``False``.
 - **Example:** ``index index.html index.htm;``.
-- **Default:** ``""`` (emptry string).
+- **Default:** ``""`` (empty string).
 
 ``NGINX_GZIP_SWITCH``
 ~~~~~~~~~~~~~~~~~~~~~
