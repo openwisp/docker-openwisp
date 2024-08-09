@@ -4,13 +4,12 @@ import ssl
 import subprocess
 import time
 
+import docker
 from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
-import docker
 
 
 class TestConfig:
