@@ -300,7 +300,7 @@ init_help() {
 	echo -e ${NON}
 }
 
-## Parse command line arguements
+## Parse command line arguments
 while test $# != 0; do
 	case "$1" in
 	-i | --install) action='install' ;;

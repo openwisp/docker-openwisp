@@ -7,7 +7,7 @@ function init_conf {
 function default_psql_vars {
 	# Set database variable values in default PG
 	# vars to use psql command without passing additional
-	# arguements.
+	# arguments.
 	export PGHOST=$DB_HOST
 	export PGPORT=$DB_PORT
 	export PGUSER=$DB_USER
