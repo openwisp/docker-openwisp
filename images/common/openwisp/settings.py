@@ -38,6 +38,7 @@ if 'DJANGO_ALLOWED_HOSTS' not in os.environ:
 
 ALLOWED_HOSTS = [
     'localhost',
+    os.environ['DASHBOARD_APP_SERVICE'],
     os.environ['DASHBOARD_INTERNAL'],
     os.environ['API_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
