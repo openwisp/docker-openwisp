@@ -237,5 +237,5 @@ function openvpn_config_download {
 
 function crl_download {
 	export CAid=$(psql -qAtc "SELECT ca_id FROM config_vpn where name='${VPN_NAME}';")
-	wget -qO revoked.crl --no-check-certificate ${DASHBOARD_INTERNAL}/admin/pki/ca/${CAid}.crl
+	wget -qO revoked.crl --no-check-certificate ${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CAid}.crl
 }

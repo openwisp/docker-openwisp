@@ -38,7 +38,7 @@
             "mute_replay_warnings": false,
             "secret": "",
             "reneg_sec": 0,
-            "tls_timeout": 0,
+            "tls_timeout": 2,
             "tls_cipher": "",
             "remote_cert_tls": "",
             "float": false,
