@@ -55,7 +55,7 @@ error_msg_with_continue() {
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
 	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make &>>$LOG_FILE
-	pip3 install --upgrade pip &>>$LOG_FILE
+	#pip3 install --upgrade pip &>>$LOG_FILE
 	check_status $? "Python dependencies installation failed."
 }
 
@@ -266,7 +266,7 @@ init_setup() {
 
 	if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
 		case "$system_release" in
-		18.04 | 20.04 | 22.04 | 10 | 11)
+		18.04 | 20.04 | 22.04 | 10 | 11 | 12)
 			if [[ "$1" == "upgrade" ]]; then
 				report_ok && upgrade_debian
 			else
