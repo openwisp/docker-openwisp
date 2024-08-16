@@ -55,7 +55,6 @@ error_msg_with_continue() {
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
 	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make &>>$LOG_FILE
-	#pip3 install --upgrade pip &>>$LOG_FILE
 	check_status $? "Python dependencies installation failed."
 }
 
