@@ -486,7 +486,7 @@ These options allow to disable the optional OpenWISP modules.
 ``USE_OPENWISP_RADIUS``
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Whether the :doc:`RADIUS </user/radius>` module is
+- **Explanation:** Whether the :doc:`RADIUS </radius/index>` module is
   enabled or not.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``True``.
