@@ -1,3 +1,14 @@
+x-celery-depends-on: &celery-depends-on
+  depends_on:
+    postgres:
+      condition: service_started
+    redis:
+      condition: service_started
+    dashboard:
+      condition: service_started
+    openvpn:
+      condition: service_healthy
+
 services:
   dashboard:
     image: openwisp/openwisp-dashboard:latest
@@ -13,6 +24,7 @@ services:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
       - openwisp_private_storage:/opt/openwisp/private
+      - openwisp_ssh:/home/openwisp/.ssh
       - influxdb_data:/var/lib/influxdb
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
@@ -64,13 +76,12 @@ services:
     volumes:
       - openwisp_media:/opt/openwisp/media
       - openwisp_private_storage:/opt/openwisp/private
+      - openwisp_ssh:/home/openwisp/.ssh
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     env_file:
       - .env
-    depends_on:
-      - postgres
-      - redis
-      - dashboard
+    <<: *celery-depends-on
+    network_mode: "service:openvpn"
 
   celery_monitoring:
     image: openwisp/openwisp-dashboard:latest
@@ -83,10 +94,8 @@ services:
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     env_file:
       - .env
-    depends_on:
-      - postgres
-      - redis
-      - dashboard
+    <<: *celery-depends-on
+    network_mode: "service:openvpn"
 
   celerybeat:
     image: openwisp/openwisp-dashboard:latest
@@ -170,6 +179,12 @@ services:
       - postgres
     cap_add:
       - NET_ADMIN
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "openvpn"]
+      interval: 30s
+      timeout: 10s
+      retries: 30
+      start_period: 90s
 
   postgres:
     image: postgis/postgis:15-3.4-alpine
@@ -200,6 +215,7 @@ volumes:
   influxdb_data: {}
   postgres_data: {}
   openwisp_certs: {}
+  openwisp_ssh: {}
   openwisp_media: {}
   openwisp_static: {}
   openwisp_private_storage: {}

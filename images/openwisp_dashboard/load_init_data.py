@@ -5,6 +5,8 @@
 - Create default Cert
 - Create default VPN
 - Create default VPN Client Template
+- Create default Credentials
+- Create SSH Key template
 """
 
 import json
@@ -23,88 +25,159 @@ def create_admin():
     )
 
 
-def create_default_CA(x509NameCA):
+def create_default_ca():
     """Create default certificate authority."""
-    if not Ca.objects.filter(name=x509NameCA).exists():
-        defaultCa = Ca()
-        defaultCa.name = x509NameCA
-        defaultCa.country_code = os.environ['X509_COUNTRY_CODE']
-        defaultCa.state = os.environ['X509_STATE']
-        defaultCa.city = os.environ['X509_CITY']
-        defaultCa.organization_name = os.environ['X509_ORGANIZATION_NAME']
-        defaultCa.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
-        defaultCa.email = os.environ['X509_EMAIL']
-        defaultCa.common_name = os.environ['X509_COMMON_NAME']
-        defaultCa.notes = (
+    ca_name = os.environ['X509_NAME_CA']
+    if Ca.objects.filter(name=ca_name).exists():
+        return Ca.objects.get(name=ca_name)
+
+    ca = Ca(
+        name=ca_name,
+        country_code=os.environ['X509_COUNTRY_CODE'],
+        state=os.environ['X509_STATE'],
+        city=os.environ['X509_CITY'],
+        organization_name=os.environ['X509_ORGANIZATION_NAME'],
+        organizational_unit_name=os.environ['X509_ORGANIZATION_UNIT_NAME'],
+        email=os.environ['X509_EMAIL'],
+        common_name=os.environ['X509_COMMON_NAME'],
+        notes=(
             'This CA was created during the setup, it is used for '
             'the default management VPN. Please do not rename it.'
-        )
-        defaultCa.full_clean()
-        defaultCa.save()
-        return defaultCa
-    return Ca.objects.get(name=x509NameCA)
+        ),
+    )
+    ca.full_clean()
+    ca.save()
+    return ca
 
 
-def create_default_cert(defaultCa, x509NameCert):
+def create_default_cert(ca):
     """Creates default certificate."""
-    if not Cert.objects.filter(name=x509NameCert).exists():
-        defaultCert = Cert()
-        defaultCert.ca = defaultCa
-        defaultCert.name = x509NameCert
-        defaultCert.country_code = os.environ['X509_COUNTRY_CODE']
-        defaultCert.state = os.environ['X509_STATE']
-        defaultCert.city = os.environ['X509_CITY']
-        defaultCert.organization_name = os.environ['X509_ORGANIZATION_NAME']
-        defaultCert.organizational_unit_name = os.environ['X509_ORGANIZATION_UNIT_NAME']
-        defaultCert.email = os.environ['X509_EMAIL']
-        defaultCert.common_name = os.environ['X509_COMMON_NAME']
-        defaultCert.notes = (
+    cert_name = os.environ['X509_NAME_CERT']
+    if Cert.objects.filter(name=cert_name).exists():
+        return Cert.objects.get(name=cert_name)
+
+    cert = Cert(
+        ca=ca,
+        name=cert_name,
+        country_code=os.environ['X509_COUNTRY_CODE'],
+        state=os.environ['X509_STATE'],
+        city=os.environ['X509_CITY'],
+        organization_name=os.environ['X509_ORGANIZATION_NAME'],
+        organizational_unit_name=os.environ['X509_ORGANIZATION_UNIT_NAME'],
+        email=os.environ['X509_EMAIL'],
+        common_name=os.environ['X509_COMMON_NAME'],
+        notes=(
             'This certificate was created during the setup. '
             'It is used for the default management VPN. '
             'Please do not rename it.'
-        )
-        defaultCert.full_clean()
-        defaultCert.save()
-        return defaultCert
-    return Cert.objects.get(name=x509NameCert)
+        ),
+    )
+    cert.full_clean()
+    cert.save()
+    return cert
 
 
-def create_default_vpn(vpnName, vpnDomain, defaultCa, defaultCert):
+def create_default_vpn(ca, cert):
     """Creates default vpn."""
-    if not Vpn.objects.filter(name=vpnName).exists():
-        defaultVpn = Vpn()
-        defaultVpn.ca = defaultCa
-        defaultVpn.cert = defaultCert
-        defaultVpn.name = vpnName
-        defaultVpn.notes = (
+    vpn_name = os.environ['VPN_NAME']
+    if Vpn.objects.filter(name=vpn_name).exists():
+        return Vpn.objects.get(name=vpn_name)
+
+    vpn = Vpn(
+        ca=ca,
+        cert=cert,
+        name=vpn_name,
+        notes=(
             'This is the default management VPN created during setup, '
             'you may modify these settings and they will soon reflect '
             'in your OpenVPN Server instance.'
-        )
-        defaultVpn.host = vpnDomain
-        defaultVpn.backend = 'openwisp_controller.vpn_backends.OpenVpn'
-        with open('openvpn.json', 'r') as json_file:
-            json_data = json.load(json_file)
-        defaultVpn.config = json_data
-        defaultVpn.full_clean()
-        defaultVpn.save()
-        return defaultVpn
-    return Vpn.objects.get(name=vpnName)
+        ),
+        host=os.environ['VPN_DOMAIN'],
+        backend='openwisp_controller.vpn_backends.OpenVpn',
+    )
+    with open('openvpn.json', 'r') as json_file:
+        vpn.config = json.load(json_file)
+    vpn.full_clean()
+    vpn.save()
+    return vpn
 
 
-def create_default_vpn_template(defaultVpnClient, defaultVpn):
+def create_default_vpn_template(vpn):
     """Creates default vpn client template."""
-    if not Template.objects.filter(name=defaultVpnClient).exists():
-        defaultTp = Template()
-        defaultTp.auto_cert = True
-        defaultTp.name = defaultVpnClient
-        defaultTp.type = 'vpn'
-        defaultTp.tags = 'Management, VPN'
-        defaultTp.backend = 'netjsonconfig.OpenWrt'
-        defaultTp.vpn = defaultVpn
-        defaultTp.default = True
-        defaultTp.full_clean()
-        defaultTp.save()
+    template_name = os.environ['VPN_CLIENT_NAME']
+    if Template.objects.filter(vpn=vpn).exists():
+        return Template.objects.get(vpn=vpn)
+
+    template = Template.objects.create(
+        auto_cert=True,
+        name=template_name,
+        type='vpn',
+        tags='Management, VPN',
+        backend='netjsonconfig.OpenWrt',
+        vpn=vpn,
+        default=True,
+    )
+    template.full_clean()
+    template.save()
+    return template
+
+
+def create_default_credentials():
+    private_key_filepath = os.environ['SSH_PRIVATE_KEY_PATH']
+    if Credentials.objects.exists():
+        return
+    try:
+        with open(private_key_filepath, 'r') as file:
+            ssh_private_key = file.read()
+    except FileNotFoundError:
+        raise Exception(
+            'Failed to create default credentials:'
+            f' SSH private key not found at {private_key_filepath}'
+        )
+    credentials = Credentials(
+        connector='openwisp_controller.connection.connectors.ssh.Ssh',
+        name='OpenWISP Default',
+        auto_add=True,
+        params={'username': 'root', 'key': ssh_private_key},
+    )
+    credentials.full_clean()
+    credentials.save()
+    return credentials
+
+
+def create_ssh_key_template():
+    if Template.objects.filter(
+        default=True, config__contains='/etc/dropbear/authorized_keys'
+    ).exists():
+        return Template.objects.filter(
+            default=True, config__contains='/etc/dropbear/authorized_keys'
+        ).first()
+    public_key_filepath = os.environ['SSH_PUBLIC_KEY_PATH']
+    try:
+        with open(public_key_filepath, 'r') as file:
+            ssh_public_key = file.read()
+    except FileNotFoundError:
+        raise Exception(
+            'Failed to default SSH Template:'
+            f' SSH public key not found at {public_key_filepath}'
+        )
+    template = Template(
+        name='SSH Keys',
+        default=True,
+        backend='netjsonconfig.OpenWrt',
+        config={
+            'files': [
+                {
+                    'path': '/etc/dropbear/authorized_keys',
+                    'mode': '0644',
+                    'contents': ssh_public_key,
+                },
+            ]
+        },
+    )
+    template.full_clean()
+    template.save()
+    return template
 
 
 if __name__ == '__main__':
@@ -115,17 +188,19 @@ if __name__ == '__main__':
     Cert = load_model('pki', 'Cert')
     Template = load_model('config', 'Template')
     Vpn = load_model('config', 'Vpn')
+    Credentials = load_model('connection', 'Credentials')
     User = get_user_model()
 
     create_admin()
     # Steps for creating new vpn client template with all the
     # required objects (CA, Certificate, VPN Server).
-    defaultCa = create_default_CA(os.environ['X509_NAME_CA'])
-    defaultCert = create_default_cert(defaultCa, os.environ['X509_NAME_CERT'])
-    defaultVpn = create_default_vpn(
-        os.environ['VPN_NAME'],
-        os.environ['VPN_DOMAIN'],
-        defaultCa,
-        defaultCert,
+    default_ca = create_default_ca()
+    default_cert = create_default_cert(default_ca)
+    default_vpn = create_default_vpn(
+        default_ca,
+        default_cert,
     )
-    create_default_vpn_template(os.environ['VPN_CLIENT_NAME'], defaultVpn)
+    create_default_vpn_template(default_vpn)
+
+    create_default_credentials()
+    create_ssh_key_template()

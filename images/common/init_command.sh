@@ -12,6 +12,7 @@ if [ "$MODULE_NAME" = 'dashboard' ]; then
 	fi
 	python services.py database redis
 	python manage.py migrate --noinput
+	test -f "$SSH_PRIVATE_KEY_PATH" || ssh-keygen -t ed25519 -f "$SSH_PRIVATE_KEY_PATH" -N ""
 	python load_init_data.py
 	python manage.py collectstatic --noinput
 	start_uwsgi
