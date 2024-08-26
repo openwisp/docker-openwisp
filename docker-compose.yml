@@ -13,6 +13,7 @@ services:
       - openwisp_static:/opt/openwisp/static
       - openwisp_media:/opt/openwisp/media
       - openwisp_private_storage:/opt/openwisp/private
+      - openwisp_ssh:/home/openwisp/.ssh
       - influxdb_data:/var/lib/influxdb
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     depends_on:
@@ -64,6 +65,7 @@ services:
     volumes:
       - openwisp_media:/opt/openwisp/media
       - openwisp_private_storage:/opt/openwisp/private
+      - openwisp_ssh:/home/openwisp/.ssh
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
     env_file:
       - .env
@@ -200,6 +202,7 @@ volumes:
   influxdb_data: {}
   postgres_data: {}
   openwisp_certs: {}
+  openwisp_ssh: {}
   openwisp_media: {}
   openwisp_static: {}
   openwisp_private_storage: {}

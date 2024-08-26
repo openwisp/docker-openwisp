@@ -8,7 +8,7 @@ FROM python:3.12-slim-bullseye AS system
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
     libcairo2 apt-utils libpangocairo-1.0-0 \
-    gdal-bin gettext fping && \
+    gdal-bin gettext fping openssh-client net-tools && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 # hadolint ignore=DL3008, DL3009
 RUN apt-get update && \
@@ -92,7 +92,9 @@ RUN mkdir /opt/openwisp/static && \
     mkdir /opt/openwisp/media && \
     mkdir /opt/openwisp/private && \
     mkdir /opt/openwisp/logs && \
-    chown -R openwisp:root /opt/openwisp
+    mkdir /home/openwisp/.ssh && \
+    chown -R openwisp:root /opt/openwisp && \
+    chown -R openwisp:root /home/openwisp/.ssh
 # Maintain backward compatibility with code written for ansible-openwisp2
 RUN ln -s /opt/openwisp/openwisp /opt/openwisp/openwisp2
 
@@ -146,6 +148,9 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     WEBSOCKET_APP_PORT=8002 \
     DASHBOARD_INTERNAL=dashboard.internal \
     API_INTERNAL=api.internal \
+    # SSH Credentials Configurations
+    SSH_PRIVATE_KEY_PATH=/home/openwisp/.ssh/id_ed25519 \
+    SSH_PUBLIC_KEY_PATH=/home/openwisp/.ssh/id_ed25519.pub \
     # VPN Configurations
     VPN_DOMAIN=openvpn.example.com \
     VPN_NAME=default \
