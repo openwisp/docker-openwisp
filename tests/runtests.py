@@ -6,7 +6,7 @@ from urllib import error as urlerror
 from urllib import request
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -121,7 +121,6 @@ class TestServices(TestUtilities, unittest.TestCase):
         # Create base drivers (Chromium)
         if cls.config['driver'] == 'chromium':
             options = ChromiumOptions()
-            options.add_argument('--headless')
             options.add_argument('--ignore-certificate-errors')
             if cls.config['headless']:
                 options.add_argument('--headless')
@@ -189,6 +188,24 @@ class TestServices(TestUtilities, unittest.TestCase):
                 f"{self.config['username']} & Password: {self.config['password']}"
             )
             self.fail(message)
+
+    def test_device_monitoring_charts(self):
+        self.login()
+        self._wait_for_element()
+        self.get_resource('test-device', '/admin/config/device/')
+        self._wait_for_element()
+        self.base_driver.find_element(By.CSS_SELECTOR, 'ul.tabs li.charts').click()
+        self._wait_for_element()
+        try:
+            self.base_driver.switch_to.alert
+        except NoAlertPresentException:
+            # No alert means that the request to fetch
+            # monitoring charts was successful.
+            pass
+        else:
+            # When the request to fetch monitoring charts fails,
+            # an error is shown.
+            self.fail('An alert was found on the device chart page.')
 
     def test_create_prefix_users(self):
         self.login()
@@ -311,10 +328,10 @@ class TestServices(TestUtilities, unittest.TestCase):
         """Test forgot password to ensure that postfix is working properly."""
         self.base_driver.get(f"{self.config['app_url']}/accounts/password/reset/")
         self.base_driver.find_element(By.NAME, 'email').send_keys('admin@example.com')
-        self.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
+        self.base_driver.find_element(By.XPATH, '//button[@type="submit"]').click()
         self._wait_for_element()
         self.assertIn(
-            'We have sent you an e-mail. If you have not received '
+            'We have sent you an email. If you have not received '
             'it please check your spam folder. Otherwise contact us '
             'if you do not receive it in a few minutes.',
             self.base_driver.page_source,
