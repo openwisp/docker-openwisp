@@ -73,6 +73,8 @@ services:
       - postgres
       - redis
       - dashboard
+      - openvpn
+    network_mode: "container:openvpn"
 
   celery_monitoring:
     image: openwisp/openwisp-dashboard:latest
@@ -89,6 +91,8 @@ services:
       - postgres
       - redis
       - dashboard
+      - openvpn
+    network_mode: "container:openvpn"
 
   celerybeat:
     image: openwisp/openwisp-dashboard:latest
@@ -159,6 +163,7 @@ services:
       - openwisp_certs:/etc/ssl/mail
 
   openvpn:
+    container_name: openvpn
     image: openwisp/openwisp-openvpn:latest
     restart: always
     build:
@@ -172,6 +177,9 @@ services:
       - postgres
     cap_add:
       - NET_ADMIN
+    volumes:
+      - openwisp_ssh:/home/openwisp/.ssh
+
 
   postgres:
     image: postgis/postgis:15-3.4-alpine

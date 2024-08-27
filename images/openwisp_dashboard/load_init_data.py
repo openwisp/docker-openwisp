@@ -105,12 +105,12 @@ def create_default_vpn(ca, cert):
 def create_default_vpn_template(vpn):
     """Creates default vpn client template."""
     template_name = os.environ['VPN_CLIENT_NAME']
-    if Template.objects.filter(name=template_name).exists():
-        return Template.objects.get(name=template_name)
+    if Template.objects.filter(vpn=vpn).exists():
+        return Template.objects.get(vpn=vpn)
 
     template = Template.objects.create(
         auto_cert=True,
-        name=vpn,
+        name=template_name,
         type='vpn',
         tags='Management, VPN',
         backend='netjsonconfig.OpenWrt',
