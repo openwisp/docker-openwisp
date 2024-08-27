@@ -282,10 +282,6 @@ class TestServices(TestUtilities, unittest.TestCase):
         # url_list tests
         for url in url_list:
             self.base_driver.get(f"{self.config['app_url']}{url}")
-            # console_error_check method should be called twice
-            # to avoid the "beforeunload' chrome issue
-            # https://stackoverflow.com/questions/10680544/beforeunload-chrome-issue
-            self.console_error_check()
             self.assertEqual([], self.console_error_check())
             self.assertIn('OpenWISP', self.base_driver.title)
         # change_form_list tests
