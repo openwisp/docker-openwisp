@@ -59,7 +59,7 @@ ARG OPENWISP_NOTIFICATION_SOURCE=default
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
-ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/fix-django-allauth-dep
+ARG OPENWISP_USERS_SOURCE=https://github.com/openwisp/openwisp-users/tarball/dcd828d46401ccba47cfa6e3141b8eef59ab9de6
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
