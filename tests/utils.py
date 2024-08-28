@@ -201,6 +201,14 @@ class TestUtilities(TestConfig):
             logs = driver.get_log('browser')
             for logentry in logs:
                 if logentry['level'] == 'SEVERE':
+                    # Ignore error generated due to "leaflet" issue
+                    # https://github.com/makinacorpus/django-leaflet/pull/380
+                    if 'leaflet' in logentry['message']:
+                        continue
+                    # Ignore error generated due to "beforeunload" chrome issue
+                    # https://stackoverflow.com/questions/10680544/beforeunload-chrome-issue
+                    if 'beforeunload' in logentry['message']:
+                        continue
                     console_logs.append(logentry['message'])
         return console_logs
 

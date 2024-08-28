@@ -1,5 +1,6 @@
 # Initial data for running the tests
 
+from openwisp_controller.config.models import Config, Device
 from openwisp_radius.models import (
     OrganizationRadiusSettings,
     RadiusGroup,
@@ -58,6 +59,20 @@ def create_default_radiusUser(admin, radGroup):
     return radiusUser
 
 
+def create_device(organization):
+    if Device.objects.filter(name='test-device').exists():
+        return Device.objects.get(name='test-device')
+    device = Device(
+        name='test-device', mac_address='11:22:33:44:55:66', organization=organization
+    )
+    device.full_clean()
+    device.save()
+    config = Config(device=device, backend='netjsonconfig.OpenWrt')
+    config.full_clean()
+    config.save()
+    return device
+
+
 def setup():
     defOrg = get_organization()
     admin = get_admin()
@@ -65,6 +80,7 @@ def setup():
     create_default_organizationUser(defOrg, admin)
     create_default_radiusUser(admin, radGroup)
     set_default_radius_token(defOrg)
+    create_device(defOrg)
 
 
 if __name__ == '__main__':
