@@ -6,10 +6,12 @@ from urllib import error as urlerror
 from urllib import request
 
 from selenium import webdriver
-from selenium.common.exceptions import NoAlertPresentException, NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from utils import TestUtilities
 
 
@@ -195,10 +197,9 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.get_resource('test-device', '/admin/config/device/')
         self._wait_for_element()
         self.base_driver.find_element(By.CSS_SELECTOR, 'ul.tabs li.charts').click()
-        self._wait_for_element()
         try:
-            self.base_driver.switch_to.alert
-        except NoAlertPresentException:
+            WebDriverWait(self.base_driver, 3).until(EC.alert_is_present())
+        except TimeoutException:
             # No alert means that the request to fetch
             # monitoring charts was successful.
             pass
