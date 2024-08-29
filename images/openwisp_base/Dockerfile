@@ -8,7 +8,7 @@ FROM python:3.12-slim-bullseye AS system
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
     libcairo2 apt-utils libpangocairo-1.0-0 \
-    gdal-bin gettext fping openssh-client net-tools && \
+    gdal-bin gettext fping openssh-client && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 # hadolint ignore=DL3008, DL3009
 RUN apt-get update && \
