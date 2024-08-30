@@ -13,9 +13,11 @@ import json
 import os
 
 import django
+import redis
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 django.setup()
+from django.conf import settings
 
 
 def create_admin():
@@ -80,8 +82,8 @@ def create_default_cert(ca):
 def create_default_vpn(ca, cert):
     """Creates default vpn."""
     vpn_name = os.environ['VPN_NAME']
-    if Vpn.objects.filter(name=vpn_name).exists():
-        return Vpn.objects.get(name=vpn_name)
+    if Vpn.objects.exists():
+        return Vpn.objects.first()
 
     vpn = Vpn(
         ca=ca,
@@ -99,6 +101,10 @@ def create_default_vpn(ca, cert):
         vpn.config = json.load(json_file)
     vpn.full_clean()
     vpn.save()
+    redis_client.set('openwisp_default_vpn_uuid', str(vpn.id), ex=None)
+    redis_client.set('openwisp_default_vpn_key', str(vpn.key), ex=None)
+    # Force RDB save to avoid data loss
+    redis_client.save()
     return vpn
 
 
@@ -180,6 +186,26 @@ def create_ssh_key_template():
     return template
 
 
+def create_default_topology(vpn):
+    """Creates Topology object for the default VPN."""
+    if Topology.objects.exists():
+        return Topology.objects.first()
+    if vpn.backend == 'openwisp_controller.vpn_backends.OpenVpn':
+        parser = 'netdiff.OpenvpnParser'
+    topology = Topology(
+        label=f'{vpn.name} ({vpn.get_backend_display()})',
+        parser=parser,
+        strategy='receive',
+    )
+    topology.full_clean()
+    topology.save()
+    redis_client.set('default_openvpn_topology_uuid', str(topology.id), ex=None)
+    redis_client.set('default_openvpn_topology_key', str(topology.key), ex=None)
+    # Force RDB save to avoid data loss
+    redis_client.save()
+    return topology
+
+
 if __name__ == '__main__':
     from django.contrib.auth import get_user_model
     from swapper import load_model
@@ -190,6 +216,11 @@ if __name__ == '__main__':
     Vpn = load_model('config', 'Vpn')
     Credentials = load_model('connection', 'Credentials')
     User = get_user_model()
+    # We don't write with Django's cache mechanism because
+    # it serializes the data and augment's it with Django specific
+    # metadata. This creates unnecessary overhead when we are
+    # reading data using redis-cli.
+    redis_client = redis.Redis.from_url(settings.CACHES['default']['LOCATION'])
 
     create_admin()
     # Steps for creating new vpn client template with all the
@@ -204,3 +235,7 @@ if __name__ == '__main__':
 
     create_default_credentials()
     create_ssh_key_template()
+
+    if os.environ.get('USE_OPENWISP_TOPOLOGY', False):
+        Topology = load_model('topology', 'Topology')
+        create_default_topology(default_vpn)

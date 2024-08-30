@@ -208,6 +208,11 @@ class TestServices(TestUtilities, unittest.TestCase):
             # an error is shown.
             self.fail('An alert was found on the device chart page.')
 
+    def test_default_topology(self):
+        self.login()
+        self._wait_for_element()
+        self.get_resource('test-device', '/admin/topology/topology/')
+
     def test_create_prefix_users(self):
         self.login()
         prefix_objname = 'automated-prefix-test-01'

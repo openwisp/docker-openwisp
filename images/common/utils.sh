@@ -200,6 +200,11 @@ function postfix_config {
 	newaliases
 }
 
+get_redis_value() {
+    local key="$1"
+    echo -en "GET $key\r\n" | nc redis 6379 | awk 'NR==2 {gsub(/\r/, ""); print}'
+}
+
 function openvpn_preconfig {
 	mkdir -p /dev/net
 	if [ ! -c /dev/net/tun ]; then
@@ -215,9 +220,14 @@ function openvpn_preconfig {
 }
 
 function openvpn_config {
-	export QUERY=$(psql -qAtc "SELECT id,key FROM config_vpn where name='${VPN_NAME}';")
-	export UUID=$(echo "$QUERY" | cut -d'|' -f1)
-	export KEY=$(echo "$QUERY" | cut -d'|' -f2)
+	# Fectch UUID and Key of the default VPN only if they
+	# are not already set. The user may override the UUID and Key
+	# by setting them in the environment variables to use deploy
+	# a different VPN server.
+	if [ -z "$UUID" ]; then
+		export UUID=$(get_redis_value "openwisp_default_vpn_uuid")
+		export KEY=$(get_redis_value "openwisp_default_vpn_key")
+	fi
 }
 
 function openvpn_config_checksum {
@@ -238,4 +248,15 @@ function openvpn_config_download {
 function crl_download {
 	export CAid=$(psql -qAtc "SELECT ca_id FROM config_vpn where name='${VPN_NAME}';")
 	wget -qO revoked.crl --no-check-certificate ${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CAid}.crl
+}
+
+function init_send_network_topology {
+	if [ -z "$TOPOLOGY_UUID" ]; then
+		export TOPOLOGY_UUID=$(get_redis_value "default_openvpn_topology_uuid")
+		export TOPOLOGY_KEY=$(get_redis_value "default_openvpn_topology_key")
+	fi
+	(
+		crontab -l
+		echo "*/$TOPLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh"
+	) | crontab -
 }
