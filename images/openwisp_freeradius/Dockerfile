@@ -1,4 +1,4 @@
-FROM freeradius/freeradius-server:3.2.5-alpine
+FROM freeradius/freeradius-server:3.2.6-alpine
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache --update tzdata~=2022f-r1 \
