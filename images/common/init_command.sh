@@ -40,6 +40,11 @@ elif [ "$MODULE_NAME" = 'openvpn' ]; then
 		echo "0 3 * * 7 sh /revokelist.sh"
 	) | crontab -
 	crond
+	# Schedule send topology script only when
+	# network topology module is enabled.
+	if [ "$USE_OPENWISP_TOPOLOGY" == "True" ]; then
+		init_send_network_topology
+	fi
 	# Supervisor is used to start the service because OpenVPN
 	# needs to restart after crl list is updated or configurations
 	# are changed. If OpenVPN as the service keeping the

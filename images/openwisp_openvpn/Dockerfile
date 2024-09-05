@@ -2,8 +2,8 @@
 FROM kylemanna/openvpn:2.4
 
 RUN apk add --no-cache \
+            curl~=7.79.1-r1 \
             tzdata~=2022a-r0 \
-            postgresql-client~=12.10-r0 \
             supervisor~=4.2.0-r0 && \
     rm -rf /var/cache/apk/* /tmp/*
 CMD ["sh", "init_command.sh"]
@@ -24,7 +24,7 @@ ENV MODULE_NAME=openvpn \
     DB_SSLCERT=None \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
-    VPN_NAME=default
+    TOPLOGY_UPDATE_INTERVAL=3
 
 # hadolint ignore=DL3045
 COPY ./common/init_command.sh \
