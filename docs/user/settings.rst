@@ -944,6 +944,17 @@ OpenVPN
 - **Valid Values:** STRING.
 - **Default:** ``default-management-vpn``.
 
+Topology
+--------
+
+``TOPOLOGY_UPDATE_INTERVAL``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Interval in minutes to upload the topology data to the
+  OpenWISP,
+- **Valid Values:** INTEGER.
+- **Default:** ``3``.
+
 X509 Certificates
 -----------------
 

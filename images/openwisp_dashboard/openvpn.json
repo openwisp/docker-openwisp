@@ -33,7 +33,7 @@
             "user": "nobody",
             "group": "nogroup",
             "mute": 0,
-            "status": "",
+            "status": "/var/log/tun0.status",
             "status_version": 1,
             "mute_replay_warnings": false,
             "secret": "",
