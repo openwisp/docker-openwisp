@@ -391,6 +391,15 @@ try:
 except ImportError:
     pass
 
+if env_bool(os.environ['USE_OPENWISP_RADIUS']):
+    REST_AUTH = {
+        'SESSION_LOGIN': False,
+        'PASSWORD_RESET_SERIALIZER': (
+            'openwisp_radius.api.serializers.PasswordResetSerializer'
+        ),
+        'REGISTER_SERIALIZER': 'openwisp_radius.api.serializers.RegisterSerializer',
+    }
+
 if (
     not env_bool(os.environ['USE_OPENWISP_RADIUS'])
     and 'openwisp_radius' in INSTALLED_APPS

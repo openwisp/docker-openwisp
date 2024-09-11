@@ -5,6 +5,7 @@ import unittest
 from urllib import error as urlerror
 from urllib import request
 
+import requests
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options as ChromiumOptions
@@ -418,6 +419,27 @@ class TestServices(TestUtilities, unittest.TestCase):
 
         with self.subTest('Test celery_monitoring container'):
             _test_celery_task_registered('celery_monitoring')
+
+    def test_radius_user_registration(self):
+        """Ensure users can register using the RADIUS API."""
+        url = f'{self.config["api_url"]}/api/v1/radius/organization/default/account/'
+        response = requests.post(
+            url,
+            json={
+                'username': 'signup-user',
+                'email': 'user@signup.com',
+                'password1': 'rLx6OH%[',
+                'password2': 'rLx6OH%[',
+            },
+            verify=False,
+        )
+        self.assertEqual(response.status_code, 201)
+        # Delete the created user
+        self.login()
+        self.get_resource(
+            'signup-user', '/admin/openwisp_users/user/', 'field-username'
+        )
+        self.objects_to_delete.append(self.base_driver.current_url)
 
     def test_freeradius(self):
         """Ensure freeradius service is working correctly."""
