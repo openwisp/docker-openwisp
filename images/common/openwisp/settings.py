@@ -43,10 +43,6 @@ ALLOWED_HOSTS = [
     os.environ['API_INTERNAL'],
 ] + os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
-OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ[
-    'OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS'
-].split(',')
-
 AUTH_USER_MODEL = 'openwisp_users.User'
 SITE_ID = 1
 LOGIN_REDIRECT_URL = 'admin:index'
@@ -391,11 +387,20 @@ try:
 except ImportError:
     pass
 
-if (
-    not env_bool(os.environ['USE_OPENWISP_RADIUS'])
-    and 'openwisp_radius' in INSTALLED_APPS
-):
+if env_bool(os.environ['USE_OPENWISP_RADIUS']):
+    REST_AUTH = {
+        'SESSION_LOGIN': False,
+        'PASSWORD_RESET_SERIALIZER': (
+            'openwisp_radius.api.serializers.PasswordResetSerializer'
+        ),
+        'REGISTER_SERIALIZER': 'openwisp_radius.api.serializers.RegisterSerializer',
+    }
+    OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ[
+        'OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS'
+    ].split(',')
+elif 'openwisp_radius' in INSTALLED_APPS:
     INSTALLED_APPS.remove('openwisp_radius')
+
 if (
     not env_bool(os.environ['USE_OPENWISP_TOPOLOGY'])
     and 'openwisp_network_topology' in INSTALLED_APPS

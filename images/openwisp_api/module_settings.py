@@ -70,3 +70,6 @@ EXTENDED_APPS = [
     'django_x509',
     'django_loci',
 ]
+
+LOGIN_REDIRECT_URL = 'account_change_password'
+ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
