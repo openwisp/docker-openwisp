@@ -1,22 +1,24 @@
 FROM nginx:1.27.0-alpine
 
+# hadolint ignore=DL3018
 RUN apk add --update --no-cache \
-            openssl~=3.0.15-r0 \
-            certbot~=1.32.0-r0 \
-            certbot-nginx~=1.32.0-r0 && \
+            py3-pip \
+            certbot \
+            certbot-nginx && \
     rm -rf /var/cache/apk/* /tmp/*
 
 WORKDIR /etc/nginx/
 CMD ["sh", "init_command.sh"]
 EXPOSE 80 443
 
+# DL3018
 COPY ./common/services.py \
     ./common/init_command.sh \
     ./common/utils.sh \
     ./openwisp_nginx/ \
     /etc/nginx/
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
 
 ENV MODULE_NAME=nginx \
     PYTHONUNBUFFERED=1 \
