@@ -1,13 +1,14 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
+OPENWISP_VERSION = 24.09.0a
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 
 default: compose-build
 
 USER = registry.gitlab.com/openwisp/docker-openwisp
-TAG  = latest
+TAG = edge
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
 SKIP_TESTS ?= false
@@ -18,7 +19,7 @@ pull:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		docker pull --quiet $(USER)/$${image}:$(TAG) &> /dev/null; \
+		docker pull --quiet $(USER)/$${image}:$(TAG); \
 		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:latest; \
 	done
 
@@ -111,3 +112,7 @@ publish:
 		docker push $(USER)/$${image}:$(TAG); \
 		docker rmi $(USER)/$${image}:$(TAG); \
 	done
+
+release:
+	make publish TAG=latest SKIP_TESTS=true
+	make publish TAG=$(OPENWISP_VERSION) SKIP_BUILD=true SKIP_TESTS=true
