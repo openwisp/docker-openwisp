@@ -1,0 +1,48 @@
+---
+name: Versioned release
+
+on:
+  release:
+    types:
+      - published
+      - edited
+
+jobs:
+  build:
+    name: CI Build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup testing environment
+        run: |
+          sudo pip3 install -r requirements-test.txt
+
+      - name: Build Images
+        run: make compose-build nfs-build
+
+      # the following action is equivalent to
+      # echo "$DOCKER_HUB_SECRET" | docker login --username "$DOCKER_HUB_USERNAME" --password-stdin
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_SECRET }}
+
+      - name: Release to Docker Hub
+        run: |
+          make release USER=docker.io/openwisp
+
+      - name: Login to GitLab Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.gitlab.com
+          username: ${{ secrets.GITLAB_DOCKER_REGISTRY_USER }}
+          password: ${{ secrets.GITLAB_DOCKER_REGISTRY_TOKEN }}
+
+      - name: Release to GitLab Container Registry
+        run: |
+          make release SKIP_BUILD=true
