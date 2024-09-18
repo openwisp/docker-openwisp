@@ -1,6 +1,7 @@
 FROM nginx:1.27.0-alpine
 
 RUN apk add --update --no-cache \
+            openssl~=3.1.7-r0 \
             py3-pip~=23.3.1-r0 \
             certbot~=2.7.4-r0 \
             certbot-nginx~=2.7.4-r0 && \
