@@ -37,7 +37,7 @@ elif [ "$MODULE_NAME" = 'openvpn' ]; then
 	echo "*/1 * * * * sh /openvpn.sh" | crontab -
 	(
 		crontab -l
-		echo "0 3 * * 7 sh /revokelist.sh"
+		echo "0 0 * * * sh /revokelist.sh"
 	) | crontab -
 	crond
 	# Schedule send topology script only when
