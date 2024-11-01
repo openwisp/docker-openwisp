@@ -241,7 +241,7 @@ function openvpn_config_download {
 	curl --silent --retry 10 --retry-delay 5 --retry-max-time 300\
 		--insecure --output vpn.tar.gz \
 		${API_INTERNAL}/controller/vpn/download-config/$UUID/?key=$KEY
-	curl --silent --insecure -outputO checksum \
+	curl --silent --insecure --output checksum \
 		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
 	tar xzf vpn.tar.gz
 	chmod 600 *.pem
