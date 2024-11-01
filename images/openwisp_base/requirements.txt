@@ -6,7 +6,7 @@ sentry-sdk
 supervisor~=4.2  # allows 4.x and > 4.2
 django-cors-headers~=4.4
 django-pipeline~=3.1
-uwsgi~=2.0.27
+uwsgi~=2.0.28
 django-celery-email~=3.0.0
 tldextract~=5.1.2
 # these add support for object storage
