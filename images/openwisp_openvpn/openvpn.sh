@@ -2,6 +2,7 @@
 
 # This script will be called by cronjob to
 # update OpenVPN configurations periodically.
+cd /
 source /utils.sh
 
 openvpn_config
