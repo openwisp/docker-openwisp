@@ -20,7 +20,7 @@ def radius_tasks():
     management.call_command("deactivate_expired_users")
     management.call_command(
         "delete_old_radiusbatch_users",
-        older_than_months=int(os.environ['CRON_DELETE_OLD_RADIUSBATCH_USERS']),
+        older_than_days=int(os.environ['CRON_DELETE_OLD_RADIUSBATCH_USERS']),
     )
 
 
