@@ -445,10 +445,10 @@ framework.
 ``CRON_DELETE_OLD_RADIUSBATCH_USERS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** (Value in months) Deactivates expired user accounts
-  which were created temporarily and have an expiration date set.
+- **Explanation:** (Value in days) Deactivates expired user accounts which
+  were created temporarily and have an expiration date set.
 - **Valid Values:** INTEGER.
-- **Default:** ``12``.
+- **Default:** ``365``.
 
 ``DEBUG_MODE``
 ~~~~~~~~~~~~~~
