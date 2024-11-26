@@ -32,7 +32,7 @@ RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
 ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.1.0
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=1.1.0
+ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=1.1.1
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=1.1.0
