@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'openwisp_notifications',
     # openwisp-ipam
     'openwisp_ipam',
+    # openwisp-network-topology
+    'openwisp_network_topology',
     'openwisp_utils.admin_theme',
     # admin
     'django.contrib.admin',

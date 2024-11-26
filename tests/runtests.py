@@ -171,6 +171,46 @@ class TestServices(TestUtilities, unittest.TestCase):
         label = 'automated-selenium-test-02'
         self.login()
         self.create_network_topology(label)
+        self.get_resource(label, path, select_field='field-label')
+        # Click on "Visualize topology graph" button
+        try:
+            WebDriverWait(self.base_driver, 2).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'input.visualizelink'))
+            )
+        except TimeoutException:
+            self.fail('Topology visualize button not found.')
+        else:
+            self.base_driver.find_element(
+                By.CSS_SELECTOR, 'input.visualizelink'
+            ).click()
+        # Click on sidebar handle
+        try:
+            WebDriverWait(self.base_driver, 2).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'button.sideBarHandle')
+                )
+            )
+        except TimeoutException:
+            self.fail('Topology visualize button not found.')
+        else:
+            self.base_driver.find_element(
+                By.CSS_SELECTOR, 'button.sideBarHandle'
+            ).click()
+        # Verify topology label
+        try:
+            WebDriverWait(self.base_driver, 2).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, '.njg-valueLabel'))
+            )
+        except TimeoutException:
+            self.fail('Topology visualize button not found.')
+        else:
+            self.assertEqual(
+                self.base_driver.find_element(
+                    By.CSS_SELECTOR, '.njg-valueLabel'
+                ).text.lower(),
+                label,
+            )
+        self.assertEqual(len(self.console_error_check()), 0)
         self.action_on_resource(label, path, 'delete_selected')
         self.assertNotIn('<li>Nodes: ', self.base_driver.page_source)
         self.action_on_resource(label, path, 'update_selected')
