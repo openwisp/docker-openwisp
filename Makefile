@@ -1,7 +1,7 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
-OPENWISP_VERSION = 24.09.0a
+OPENWISP_VERSION = 24.11.1
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 
@@ -110,7 +110,9 @@ publish:
 		# and pushes the newly tagged image to a Docker registry under the user's namespace. \
 		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
-		docker rmi $(USER)/$${image}:$(TAG); \
+		if [ "$(TAG)" != "latest" ]; then \
+			docker rmi $(USER)/$${image}:$(TAG); \
+		fi; \
 	done
 
 release:
