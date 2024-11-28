@@ -29,7 +29,7 @@ Features
   size.
 - Implemented static file minification.
 - Introduced a consent mechanism for the `collection of usage metrics
-  <https://openwisp.io/docs/dev/utils/user/metric-collection.html>`_.
+  <https://openwisp.io/docs/stable/utils/user/metric-collection.html>`_.
 
 Changes
 ~~~~~~~
