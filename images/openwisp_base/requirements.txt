@@ -12,4 +12,4 @@ tldextract~=5.1.2
 # these add support for object storage
 # (eg: Amazon S3, GCS)
 django-storages~=1.14.4
-boto3~=1.35.55
+boto3~=1.35.71
