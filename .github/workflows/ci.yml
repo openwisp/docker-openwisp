@@ -40,7 +40,7 @@ jobs:
           edge
           ./.env
           EOF
-          ) || (cat /opt/openwisp/autoinstall.log && exit 1)
+          ) || (docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs && exit 1)
 
       - name: Build Images
         id: build_images
