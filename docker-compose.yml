@@ -179,6 +179,8 @@ services:
       - postgres
     cap_add:
       - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
     healthcheck:
       test: ["CMD", "pgrep", "-f", "openvpn"]
       interval: 30s
