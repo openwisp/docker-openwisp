@@ -54,7 +54,7 @@ error_msg_with_continue() {
 
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
-	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make &>>$LOG_FILE
+	apt --yes install curl python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make &>>$LOG_FILE
 	check_status $? "Python dependencies installation failed."
 }
 
@@ -243,7 +243,7 @@ init_setup() {
 		echo -e "  - 2GB RAM (Minimum)"
 		echo -e "  - Root privileges"
 		echo -e "  - Supported systems"
-		echo -e "    - Debian: 10 & 11"
+		echo -e "    - Debian: 10, 11 & 12"
 		echo -e "    - Ubuntu 18.04, 18.10, 20.04 & 22.04"
 		echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
 	fi
@@ -291,7 +291,7 @@ init_help() {
 	echo -e "  - 2GB RAM (Minimum)"
 	echo -e "  - Root privileges"
 	echo -e "  - Supported systems"
-	echo -e "    - Debian: 10 & 11"
+	echo -e "    - Debian: 10, 11 & 12"
 	echo -e "    - Ubuntu 18.04, 18.10, 20.04, 22.04\n"
 	echo -e "  -i\--install : (default) Install OpenWISP"
 	echo -e "  -u\--upgrade : Change OpenWISP version already setup with this script"
