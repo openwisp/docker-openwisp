@@ -54,8 +54,16 @@ error_msg_with_continue() {
 
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
-	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make &>>$LOG_FILE
+	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl &>>$LOG_FILE
 	check_status $? "Python dependencies installation failed."
+}
+
+get_version_from_user() {
+	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
+	read openwisp_version
+	if [[ -z "$openwisp_version" ]]; then
+		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq .tag_name | tr -d '"')
+	fi
 }
 
 setup_docker() {
@@ -91,9 +99,7 @@ download_docker_openwisp() {
 
 setup_docker_openwisp() {
 	echo -e ${GRN}"\nOpenWISP Configuration:"${NON}
-	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
-	read openwisp_version
-	if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
+	get_version_from_user
 	echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
 	read env_path
 	if [[ ! -f "$env_path" ]]; then
@@ -177,9 +183,7 @@ setup_docker_openwisp() {
 
 upgrade_docker_openwisp() {
 	echo -e ${GRN}"\nOpenWISP Configuration:"${NON}
-	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
-	read openwisp_version
-	if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
+	get_version_from_user
 	echo ""
 
 	download_docker_openwisp "$openwisp_version"
