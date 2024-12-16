@@ -54,7 +54,7 @@ error_msg_with_continue() {
 
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
-	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl &>>$LOG_FILE
+	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl jq &>>$LOG_FILE
 	check_status $? "Python dependencies installation failed."
 }
 
@@ -62,7 +62,7 @@ get_version_from_user() {
 	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
 	read openwisp_version
 	if [[ -z "$openwisp_version" ]]; then
-		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq .tag_name | tr -d '"')
+		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)
 	fi
 }
 
