@@ -125,6 +125,8 @@ class TestServices(TestUtilities, unittest.TestCase):
         if cls.config['driver'] == 'chromium':
             options = ChromiumOptions()
             options.add_argument('--ignore-certificate-errors')
+            options.add_argument('--no-sandbox')
+            options.add_argument('--disable-dev-shm-usage')
             if cls.config['headless']:
                 options.add_argument('--headless')
             options.add_argument(f'--remote-debugging-port={5003 + 100}')
