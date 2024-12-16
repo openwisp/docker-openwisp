@@ -53,9 +53,11 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             GIT_BRANCH="${{ github.head_ref }}"
+            GIT_PATH="https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
           else
             GIT_BRANCH="${{ github.ref_name }}"
           fi
+          echo "GIT_PATH=$GIT_PATH" >> $GITHUB_ENV
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
 
       - name: Use auto-install script to upgrade containers to latest version
