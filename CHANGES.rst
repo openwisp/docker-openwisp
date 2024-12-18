@@ -1,6 +1,21 @@
 Changelog
 =========
 
+Version 24.11.2 [2024-12-18]
+----------------------------
+
+Bugfixes
+~~~~~~~~
+
+- Resolved an issue in the ``docker-compose`` configuration for the
+  ``openvpn`` service by adding the ``/dev/net/tun`` device.
+- Fixed the auto-install script to support installations from forked
+  repositories.
+- Fixed the auto-install script to ensure installation of the latest
+  released version from GitHub.
+- Added missing dependencies ``curl`` and ``jq`` to the auto-install
+  script to prevent installation failures.
+
 Version 24.11.1 [2024-11-27]
 ----------------------------
 
