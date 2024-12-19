@@ -15,6 +15,9 @@ Bugfixes
   released version from GitHub.
 - Added missing dependencies ``curl`` and ``jq`` to the auto-install
   script to prevent installation failures.
+- Resolved issues in the ``openwisp-postfix`` image by upgrading to
+  ``postfix~=3.9.1-r0``.
+- Bumped ``boto3~=1.35.82``.
 
 Version 24.11.1 [2024-11-27]
 ----------------------------
