@@ -111,7 +111,7 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(2/5) Enter API domain (blank for api.${domain}): "${NON}
 		read api_domain
 		# VPN domain
-		echo -ne ${GRN}"(3/5) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON}
+		echo -ne ${GRN}"(3/5) Enter OpenVPN domain (blank for openvpn.${domain}, N to disable module): "${NON}
 		read vpn_domain
 		# Site manager email
 		echo -ne ${GRN}"(4/5) Site manager email: "${NON}
@@ -147,7 +147,7 @@ setup_docker_openwisp() {
 		fi
 		# VPN domain
 		if [[ -z "$vpn_domain" ]]; then
-			set_env "VPN_DOMAIN" "vpn.${domain}"
+			set_env "VPN_DOMAIN" "openvpn.${domain}"
 		elif [[ "${vpn_domain,,}" == "n" ]]; then
 			set_env "VPN_DOMAIN" "example.com"
 		else
