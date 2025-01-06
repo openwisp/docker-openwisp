@@ -18,6 +18,7 @@ import redis
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 django.setup()
 from django.conf import settings  # noqa
+from openwisp.utils import env_bool
 
 
 def create_admin():
