@@ -254,6 +254,6 @@ if __name__ == '__main__':
     create_default_credentials()
     create_ssh_key_template()
 
-    if os.environ.get('USE_OPENWISP_TOPOLOGY', False) == "True":
+    if env_bool(os.environ.get('USE_OPENWISP_TOPOLOGY')):
         Topology = load_model('topology', 'Topology')
         create_default_topology(default_vpn)
