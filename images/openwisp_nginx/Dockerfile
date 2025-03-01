@@ -1,4 +1,4 @@
-FROM nginx:1.27.3-alpine
+FROM nginx:1.27.4-alpine
 
 RUN apk add --update --no-cache \
             openssl~=3.3.2-r1 \
