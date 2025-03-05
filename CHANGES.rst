@@ -47,6 +47,8 @@ Dependencies
   <https://github.com/openwisp/openwisp-network-topology/releases/tag/1.1.0>`__).
 - Upgraded to OpenWISP Firmware Upgrader 1.1.x (see `changelog
   <https://github.com/openwisp/openwisp-firmware-upgrader/releases/tag/1.1.0>`__).
+- Upgraded to OpenWISP RADIUS 1.1.x (see `changelog
+  <https://github.com/openwisp/openwisp-radius/releases/tag/1.1.0>`__).
 - Updated auto-install script to support Debian 12.
 - Updated auto-install script to support Ubuntu 22.04.
 - Updated base image of ``openwisp/openwisp-nginx`` to
