@@ -47,7 +47,7 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         - driver (selenium.webdriver, optional): The Selenium WebDriver
           instance. Defaults to `self.base_driver`.
         """
-        expected_msg = "Could not find any address related to this location."
+        expected_msg = 'Could not find any address related to this location.'
         if not driver:
             driver = self.base_driver
         time.sleep(2)  # Wait for the alert to appear
@@ -70,7 +70,7 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
             driver = self.base_driver
         # Scroll to the top of the page. This will ensure that the save
         # button is visible and clickable.
-        driver.execute_script("window.scrollTo(0, 0);")
+        driver.execute_script('window.scrollTo(0, 0);')
         self.find_element(By.NAME, '_save', driver=driver).click()
 
     def create_superuser(
@@ -142,9 +142,7 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        path = (
-            f'//a[contains(text(), "{name}")]/../../' '/input[@name="_selected_action"]'
-        )
+        path = f'//a[contains(text(), "{name}")]/../..//input[@name="_selected_action"]'
         self.find_element(By.XPATH, path, driver=driver).click()
 
     def action_on_resource(self, name, path, option, driver=None):
@@ -207,7 +205,7 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        self.open("/admin/geo/location/add/", driver=driver)
+        self.open('/admin/geo/location/add/', driver=driver)
         self.find_element(By.NAME, 'organization', driver=driver).find_element(
             By.XPATH, '//option[text()="default"]'
         ).click()
@@ -221,7 +219,7 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
         self._wait_until_page_ready()
         self.objects_to_delete.append(driver.current_url)
-        self.open("/admin/geo/location/", driver=driver)
+        self.open('/admin/geo/location/', driver=driver)
         self._wait_until_page_ready()
 
     def add_mobile_location_point(self, location_name, driver=None):
@@ -288,7 +286,7 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        self.open("/admin/topology/topology/add/", driver=driver)
+        self.open('/admin/topology/topology/add/', driver=driver)
         self.find_element(By.NAME, 'label', driver=driver).send_keys(label)
         # We can leave the organization empty for creating shared object
         self.find_element(By.NAME, 'parser', driver=driver).find_element(
