@@ -6,11 +6,8 @@ from urllib import error as urlerror
 from urllib import request
 
 import requests
-from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from utils import TestUtilities
@@ -70,6 +67,9 @@ class TestServices(TestUtilities, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.failed_test = False
+        cls.live_server_url = cls.config['app_url']
+        cls.admin_username = cls.config['username']
+        cls.admin_password = cls.config['password']
         # Django Test Setup
         if cls.config['load_init_data']:
             test_data_file = os.path.join(
@@ -105,38 +105,13 @@ class TestServices(TestUtilities, unittest.TestCase):
             )
         # Create base drivers (Firefox)
         if cls.config['driver'] == 'firefox':
-            profile = webdriver.FirefoxProfile()
-            profile.accept_untrusted_certs = True
-            options = webdriver.FirefoxOptions()
-            options.set_capability("loggingPrefs", {'browser': 'ALL'})
-            if cls.config['headless']:
-                options.add_argument('-headless')
-            cls.base_driver = webdriver.Firefox(
-                options=options,
-                service_log_path='/tmp/geckodriver_base_driver.log',
-                firefox_profile=profile,
-            )
-            cls.second_driver = webdriver.Firefox(
-                options=options,
-                service_log_path='/tmp/geckodriver_second_driver.log',
-                firefox_profile=profile,
-            )
+            cls.base_driver = cls.get_firefox_webdriver()
+            cls.second_driver = cls.get_firefox_webdriver()
         # Create base drivers (Chromium)
         if cls.config['driver'] == 'chromium':
-            options = ChromiumOptions()
-            options.add_argument('--ignore-certificate-errors')
-            options.add_argument('--no-sandbox')
-            options.add_argument('--disable-dev-shm-usage')
-            if cls.config['headless']:
-                options.add_argument('--headless')
-            options.add_argument(f'--remote-debugging-port={5003 + 100}')
-            capabilities = DesiredCapabilities.CHROME
-            capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
-            options.set_capability('cloud:options', capabilities)
-            cls.base_driver = webdriver.Chrome(options=options)
-            cls.second_driver = webdriver.Chrome(options=options)
-        cls.base_driver.set_window_size(1366, 768)
-        cls.second_driver.set_window_size(1366, 768)
+            cls.base_driver = cls.get_chrome_webdriver()
+            cls.second_driver = cls.get_chrome_webdriver()
+        cls.web_driver = cls.base_driver
 
     @classmethod
     def tearDownClass(cls):
@@ -175,59 +150,30 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.create_network_topology(label)
         self.get_resource(label, path, select_field='field-label')
         # Click on "Visualize topology graph" button
-        try:
-            WebDriverWait(self.base_driver, 2).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'input.visualizelink'))
-            )
-        except TimeoutException:
-            self.fail('Topology visualize button not found.')
-        else:
-            self.base_driver.find_element(
-                By.CSS_SELECTOR, 'input.visualizelink'
-            ).click()
+        self.find_element(By.CSS_SELECTOR, 'input.visualizelink').click()
         # Click on sidebar handle
-        try:
-            WebDriverWait(self.base_driver, 2).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, 'button.sideBarHandle')
-                )
-            )
-        except TimeoutException:
-            self.fail('Topology visualize button not found.')
-        else:
-            self.base_driver.find_element(
-                By.CSS_SELECTOR, 'button.sideBarHandle'
-            ).click()
+        self.find_element(By.CSS_SELECTOR, 'button.sideBarHandle').click()
         # Verify topology label
-        try:
-            WebDriverWait(self.base_driver, 2).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, '.njg-valueLabel'))
-            )
-        except TimeoutException:
-            self.fail('Topology visualize button not found.')
-        else:
-            self.assertEqual(
-                self.base_driver.find_element(
-                    By.CSS_SELECTOR, '.njg-valueLabel'
-                ).text.lower(),
-                label,
-            )
+        self.assertEqual(
+            self.find_element(By.CSS_SELECTOR, '.njg-valueLabel').text.lower(),
+            label,
+        )
         self.assertEqual(len(self.console_error_check()), 0)
         self.action_on_resource(label, path, 'delete_selected')
-        self.assertNotIn('<li>Nodes: ', self.base_driver.page_source)
+        self.assertNotIn('<li>Nodes: ', self.web_driver.page_source)
         self.action_on_resource(label, path, 'update_selected')
 
         self.action_on_resource(label, path, 'delete_selected')
-        self._wait_for_element()
-        self.assertIn('<li>Nodes: ', self.base_driver.page_source)
+        self._wait_until_page_ready()
+        self.assertIn('<li>Nodes: ', self.web_driver.page_source)
 
     def test_admin_login(self):
         self.login()
         self.login(driver=self.second_driver)
         try:
-            self.base_driver.find_element(By.CLASS_NAME, 'logout')
-            self.second_driver.find_element(By.CLASS_NAME, 'logout')
-        except NoSuchElementException:
+            self.find_element(By.CLASS_NAME, 'logout')
+            self.find_element(By.CLASS_NAME, 'logout', driver=self.second_driver)
+        except TimeoutError:
             message = (
                 'Login failed. Credentials used were username: '
                 f"{self.config['username']} & Password: {self.config['password']}"
@@ -236,10 +182,8 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     def test_device_monitoring_charts(self):
         self.login()
-        self._wait_for_element()
         self.get_resource('test-device', '/admin/config/device/')
-        self._wait_for_element()
-        self.base_driver.find_element(By.CSS_SELECTOR, 'ul.tabs li.charts').click()
+        self.find_element(By.CSS_SELECTOR, 'ul.tabs li.charts').click()
         try:
             WebDriverWait(self.base_driver, 3).until(EC.alert_is_present())
         except TimeoutException:
@@ -253,30 +197,27 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     def test_default_topology(self):
         self.login()
-        self._wait_for_element()
-        self.get_resource('test-device', '/admin/topology/topology/')
+        self.get_resource(
+            'test-device', '/admin/topology/topology/', select_field='field-label'
+        )
 
     def test_create_prefix_users(self):
         self.login()
         prefix_objname = 'automated-prefix-test-01'
         # Create prefix users
-        self.base_driver.get(
-            f"{self.config['app_url']}/admin/openwisp_radius/radiusbatch/add/"
-        )
-        self._wait_for_element()
-        self.base_driver.find_element(By.NAME, 'strategy').find_element(
+        self.open('/admin/openwisp_radius/radiusbatch/add/')
+        self.find_element(By.NAME, 'strategy').find_element(
             By.XPATH, '//option[@value="prefix"]'
         ).click()
-        self.base_driver.find_element(By.NAME, 'organization').find_element(
+        self.find_element(By.NAME, 'organization').find_element(
             By.XPATH, '//option[text()="default"]'
         ).click()
-        self.base_driver.find_element(By.NAME, 'name').send_keys(prefix_objname)
-        self.base_driver.find_element(By.NAME, 'prefix').send_keys('automated-prefix')
-        self.base_driver.find_element(By.NAME, 'number_of_users').send_keys('1')
-        self.base_driver.find_element(By.NAME, '_save').click()
+        self.find_element(By.NAME, 'name').send_keys(prefix_objname)
+        self.find_element(By.NAME, 'prefix').send_keys('automated-prefix')
+        self.find_element(By.NAME, 'number_of_users').send_keys('1')
+        self.find_element(By.NAME, '_save').click()
         # Check PDF available
         self.get_resource(prefix_objname, '/admin/openwisp_radius/radiusbatch/')
-        self._wait_for_element()
         self.objects_to_delete.append(self.base_driver.current_url)
         prefix_pdf_file_path = self.base_driver.find_element(
             By.XPATH, '//a[text()="Download User Credentials"]'
@@ -323,19 +264,19 @@ class TestServices(TestUtilities, unittest.TestCase):
             ['default', '/admin/pki/ca/'],
             ['default', '/admin/pki/cert/'],
             ['default', '/admin/openwisp_users/organization/'],
-            ['test_superuser2', '/admin/openwisp_users/user/'],
+            ['test_superuser2', '/admin/openwisp_users/user/', 'field-username'],
         ]
         self.login()
         self.create_mobile_location('automated-selenium-location01')
         self.create_superuser('sample@email.com', 'test_superuser2')
         # url_list tests
         for url in url_list:
-            self.base_driver.get(f"{self.config['app_url']}{url}")
+            self.open(url)
             self.assertEqual([], self.console_error_check())
             self.assertIn('OpenWISP', self.base_driver.title)
         # change_form_list tests
         for change_form in change_form_list:
-            self.get_resource(change_form[0], change_form[1])
+            self.get_resource(*change_form)
             self.assertEqual([], self.console_error_check())
             self.assertIn('OpenWISP', self.base_driver.title)
 
@@ -353,11 +294,11 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.get_resource(
             location_name, '/admin/geo/location/', driver=self.second_driver
         )
-        self.base_driver.find_element(By.NAME, 'is_mobile').click()
-        mark = len(self.base_driver.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
+        self.find_element(By.NAME, 'is_mobile', driver=self.base_driver).click()
+        mark = len(self.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
         self.assertEqual(mark, 0)
         self.add_mobile_location_point(location_name, driver=self.second_driver)
-        mark = len(self.base_driver.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
+        mark = len(self.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
         self.assertEqual(mark, 1)
 
     def test_add_superuser(self):
@@ -366,15 +307,16 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.create_superuser()
         self.assertEqual(
             'The user “test_superuser” was changed successfully.',
-            self.base_driver.find_element(By.CLASS_NAME, 'success').text,
+            self.find_element(By.CLASS_NAME, 'success').text,
         )
 
     def test_forgot_password(self):
         """Test forgot password to ensure that postfix is working properly."""
-        self.base_driver.get(f"{self.config['app_url']}/accounts/password/reset/")
-        self.base_driver.find_element(By.NAME, 'email').send_keys('admin@example.com')
-        self.base_driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-        self._wait_for_element()
+
+        self.open('/accounts/password/reset/')
+        self.find_element(By.NAME, 'email').send_keys('admin@example.com')
+        self.find_element(By.XPATH, '//button[@type="submit"]').click()
+        self._wait_until_page_ready()
         self.assertIn(
             'We have sent you an email. If you have not received '
             'it please check your spam folder. Otherwise contact us '
