@@ -171,8 +171,8 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.login()
         self.login(driver=self.second_driver)
         try:
-            self.find_element(By.CLASS_NAME, 'logout')
-            self.find_element(By.CLASS_NAME, 'logout', driver=self.second_driver)
+            self.wait_for_presence(By.CLASS_NAME, 'logout')
+            self.wait_for_presence(By.CLASS_NAME, 'logout', driver=self.second_driver)
         except TimeoutError:
             message = (
                 'Login failed. Credentials used were username: '
@@ -295,10 +295,18 @@ class TestServices(TestUtilities, unittest.TestCase):
             location_name, '/admin/geo/location/', driver=self.second_driver
         )
         self.find_element(By.NAME, 'is_mobile', driver=self.base_driver).click()
-        mark = len(self.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
+        mark = len(
+            self.find_elements(
+                By.CLASS_NAME, 'leaflet-marker-icon', wait_for='invisibility'
+            )
+        )
         self.assertEqual(mark, 0)
         self.add_mobile_location_point(location_name, driver=self.second_driver)
-        mark = len(self.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
+        mark = len(
+            self.find_elements(
+                By.CLASS_NAME, 'leaflet-marker-icon', wait_for='presence'
+            )
+        )
         self.assertEqual(mark, 1)
 
     def test_add_superuser(self):
