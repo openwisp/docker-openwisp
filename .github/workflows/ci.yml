@@ -77,10 +77,14 @@ jobs:
         # and environment variables remain intact, it is essential to
         # execute the test from this directory.
         run: |
-          (make develop-pythontests && make stop) || (docker compose logs && exit 1)
+          (make develop-pythontests && make stop)
         working-directory: /opt/openwisp/docker-openwisp
         env:
           SELENIUM_HEADLESS: 1
+
+      - name: Print docker logs
+        if: ${{ failure() }}
+        run: docker compose logs
 
       # the following action is equivalent to
       # echo "$DOCKER_HUB_SECRET" | docker login --username "$DOCKER_HUB_USERNAME" --password-stdin
