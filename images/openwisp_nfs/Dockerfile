@@ -2,7 +2,7 @@ FROM alpine:3.21
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache --update --verbose \
-            tzdata~=2025a-r0 \
+            tzdata~=2025b-r0 \
             nfs-utils~=2.6.4-r3 && \
     rm -rf /var/cache/apk/* /tmp/*
 
