@@ -159,9 +159,10 @@ class TestServices(TestUtilities, unittest.TestCase):
             label,
         )
         try:
-            self.assertEqual(len(self.console_error_check()), 0)
+            console_logs = self.console_error_check()
+            self.assertEqual(len(console_logs), 0)
         except AssertionError:
-            print(self.console_error_check())
+            print('Browser console logs', console_logs)
             self.fail()
         self.action_on_resource(label, path, 'delete_selected')
         self.assertNotIn('<li>Nodes: ', self.web_driver.page_source)
@@ -489,4 +490,7 @@ class TestServices(TestUtilities, unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    suite = unittest.TestSuite()
+    suite.addTest(TestServices('test_topology_graph'))
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(suite)
