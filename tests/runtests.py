@@ -158,7 +158,11 @@ class TestServices(TestUtilities, unittest.TestCase):
             self.find_element(By.CSS_SELECTOR, '.njg-valueLabel').text.lower(),
             label,
         )
-        self.assertEqual(len(self.console_error_check()), 0)
+        try:
+            self.assertEqual(len(self.console_error_check()), 0)
+        except AssertionError:
+            print(self.console_error_check())
+            self.fail()
         self.action_on_resource(label, path, 'delete_selected')
         self.assertNotIn('<li>Nodes: ', self.web_driver.page_source)
         self.action_on_resource(label, path, 'update_selected')
