@@ -3,6 +3,7 @@ import os
 import ssl
 import subprocess
 import time
+from time import sleep
 
 import docker
 from openwisp_utils.tests import SeleniumTestMixin
@@ -38,6 +39,14 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         # Override TestSeleniumMixin setUp which uses
         # Django methods to create superuser
         return
+
+    def login(self, username=None, password=None, driver=None):
+        super().login(username, password, driver)
+        # Workaround for JS logic in chart-utils.js
+        # which fails to perform a XHR request
+        # during automated tests, it seems that the
+        # lack of pause causes the request to fail randomly
+        sleep(0.5)
 
     def _ignore_location_alert(self, driver=None):
         """Accept alerts related to location not found.
