@@ -72,7 +72,7 @@ jobs:
 
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
-        uses: openwisp/openwisp-utils/.github/actions/retry-command@selenium-chromedriver
+        uses: openwisp/openwisp-utils/.github/actions/retry-command@master
         with:
           delay_seconds: 30
           max_attempts: 5
