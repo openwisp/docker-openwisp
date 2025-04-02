@@ -1,8 +1,8 @@
-FROM freeradius/freeradius-server:3.2.6-alpine
+FROM freeradius/freeradius-server:3.2.7-alpine
 
 # hadolint ignore=DL3018
-RUN apk add --no-cache --update tzdata~=2022f-r1 \
-                                postgresql-client~=13.12-r0 && \
+RUN apk add --no-cache --update tzdata~=2024b-r1 \
+                                postgresql17-client~=17.4-r0 && \
     rm -rf /var/cache/apk/* /tmp/*
 
 RUN addgroup -S freerad && \
