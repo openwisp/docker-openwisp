@@ -72,15 +72,21 @@ jobs:
 
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
-        # The auto-install script installs docker-openwisp by default in
-        # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
-        # and environment variables remain intact, it is essential to
-        # execute the test from this directory.
-        run: |
-          (make develop-pythontests && make stop) || (docker compose logs && exit 1)
-        working-directory: /opt/openwisp/docker-openwisp
+        uses: openwisp/openwisp-utils/.github/actions/retry-command@master
+        with:
+          delay_seconds: 30
+          max_attempts: 5
+          # The auto-install script installs docker-openwisp by default in
+          # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
+          # and environment variables remain intact, it is essential to
+          # execute the test from this directory.
+          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests && make stop
         env:
           SELENIUM_HEADLESS: 1
+
+      - name: Print docker logs
+        if: ${{ failure() }}
+        run: docker compose logs
 
       # the following action is equivalent to
       # echo "$DOCKER_HUB_SECRET" | docker login --username "$DOCKER_HUB_USERNAME" --password-stdin

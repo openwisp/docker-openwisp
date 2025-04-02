@@ -6,11 +6,8 @@ from urllib import error as urlerror
 from urllib import request
 
 import requests
-from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver.chrome.options import Options as ChromiumOptions
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from utils import TestUtilities
@@ -70,6 +67,9 @@ class TestServices(TestUtilities, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.failed_test = False
+        cls.live_server_url = cls.config['app_url']
+        cls.admin_username = cls.config['username']
+        cls.admin_password = cls.config['password']
         # Django Test Setup
         if cls.config['load_init_data']:
             test_data_file = os.path.join(
@@ -105,38 +105,13 @@ class TestServices(TestUtilities, unittest.TestCase):
             )
         # Create base drivers (Firefox)
         if cls.config['driver'] == 'firefox':
-            profile = webdriver.FirefoxProfile()
-            profile.accept_untrusted_certs = True
-            options = webdriver.FirefoxOptions()
-            options.set_capability("loggingPrefs", {'browser': 'ALL'})
-            if cls.config['headless']:
-                options.add_argument('-headless')
-            cls.base_driver = webdriver.Firefox(
-                options=options,
-                service_log_path='/tmp/geckodriver_base_driver.log',
-                firefox_profile=profile,
-            )
-            cls.second_driver = webdriver.Firefox(
-                options=options,
-                service_log_path='/tmp/geckodriver_second_driver.log',
-                firefox_profile=profile,
-            )
+            cls.base_driver = cls.get_firefox_webdriver()
+            cls.second_driver = cls.get_firefox_webdriver()
         # Create base drivers (Chromium)
         if cls.config['driver'] == 'chromium':
-            options = ChromiumOptions()
-            options.add_argument('--ignore-certificate-errors')
-            options.add_argument('--no-sandbox')
-            options.add_argument('--disable-dev-shm-usage')
-            if cls.config['headless']:
-                options.add_argument('--headless')
-            options.add_argument(f'--remote-debugging-port={5003 + 100}')
-            capabilities = DesiredCapabilities.CHROME
-            capabilities['goog:loggingPrefs'] = {'browser': 'ALL'}
-            options.set_capability('cloud:options', capabilities)
-            cls.base_driver = webdriver.Chrome(options=options)
-            cls.second_driver = webdriver.Chrome(options=options)
-        cls.base_driver.set_window_size(1366, 768)
-        cls.second_driver.set_window_size(1366, 768)
+            cls.base_driver = cls.get_chrome_webdriver()
+            cls.second_driver = cls.get_chrome_webdriver()
+        cls.web_driver = cls.base_driver
 
     @classmethod
     def tearDownClass(cls):
@@ -175,59 +150,35 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.create_network_topology(label)
         self.get_resource(label, path, select_field='field-label')
         # Click on "Visualize topology graph" button
-        try:
-            WebDriverWait(self.base_driver, 2).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'input.visualizelink'))
-            )
-        except TimeoutException:
-            self.fail('Topology visualize button not found.')
-        else:
-            self.base_driver.find_element(
-                By.CSS_SELECTOR, 'input.visualizelink'
-            ).click()
+        self.find_element(By.CSS_SELECTOR, 'input.visualizelink').click()
         # Click on sidebar handle
-        try:
-            WebDriverWait(self.base_driver, 2).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, 'button.sideBarHandle')
-                )
-            )
-        except TimeoutException:
-            self.fail('Topology visualize button not found.')
-        else:
-            self.base_driver.find_element(
-                By.CSS_SELECTOR, 'button.sideBarHandle'
-            ).click()
+        self.find_element(By.CSS_SELECTOR, 'button.sideBarHandle').click()
         # Verify topology label
+        self.assertEqual(
+            self.find_element(By.CSS_SELECTOR, '.njg-valueLabel').text.lower(),
+            label,
+        )
         try:
-            WebDriverWait(self.base_driver, 2).until(
-                EC.visibility_of_element_located((By.CSS_SELECTOR, '.njg-valueLabel'))
-            )
-        except TimeoutException:
-            self.fail('Topology visualize button not found.')
-        else:
-            self.assertEqual(
-                self.base_driver.find_element(
-                    By.CSS_SELECTOR, '.njg-valueLabel'
-                ).text.lower(),
-                label,
-            )
-        self.assertEqual(len(self.console_error_check()), 0)
+            console_logs = self.console_error_check()
+            self.assertEqual(len(console_logs), 0)
+        except AssertionError:
+            print('Browser console logs', console_logs)
+            self.fail()
         self.action_on_resource(label, path, 'delete_selected')
-        self.assertNotIn('<li>Nodes: ', self.base_driver.page_source)
+        self.assertNotIn('<li>Nodes: ', self.web_driver.page_source)
         self.action_on_resource(label, path, 'update_selected')
 
         self.action_on_resource(label, path, 'delete_selected')
-        self._wait_for_element()
-        self.assertIn('<li>Nodes: ', self.base_driver.page_source)
+        self._wait_until_page_ready()
+        self.assertIn('<li>Nodes: ', self.web_driver.page_source)
 
     def test_admin_login(self):
         self.login()
         self.login(driver=self.second_driver)
         try:
-            self.base_driver.find_element(By.CLASS_NAME, 'logout')
-            self.second_driver.find_element(By.CLASS_NAME, 'logout')
-        except NoSuchElementException:
+            self.wait_for_presence(By.CLASS_NAME, 'logout')
+            self.wait_for_presence(By.CLASS_NAME, 'logout', driver=self.second_driver)
+        except TimeoutError:
             message = (
                 'Login failed. Credentials used were username: '
                 f"{self.config['username']} & Password: {self.config['password']}"
@@ -236,10 +187,8 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     def test_device_monitoring_charts(self):
         self.login()
-        self._wait_for_element()
         self.get_resource('test-device', '/admin/config/device/')
-        self._wait_for_element()
-        self.base_driver.find_element(By.CSS_SELECTOR, 'ul.tabs li.charts').click()
+        self.find_element(By.CSS_SELECTOR, 'ul.tabs li.charts').click()
         try:
             WebDriverWait(self.base_driver, 3).until(EC.alert_is_present())
         except TimeoutException:
@@ -253,30 +202,27 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     def test_default_topology(self):
         self.login()
-        self._wait_for_element()
-        self.get_resource('test-device', '/admin/topology/topology/')
+        self.get_resource(
+            'test-device', '/admin/topology/topology/', select_field='field-label'
+        )
 
     def test_create_prefix_users(self):
         self.login()
         prefix_objname = 'automated-prefix-test-01'
         # Create prefix users
-        self.base_driver.get(
-            f"{self.config['app_url']}/admin/openwisp_radius/radiusbatch/add/"
-        )
-        self._wait_for_element()
-        self.base_driver.find_element(By.NAME, 'strategy').find_element(
+        self.open('/admin/openwisp_radius/radiusbatch/add/')
+        self.find_element(By.NAME, 'strategy').find_element(
             By.XPATH, '//option[@value="prefix"]'
         ).click()
-        self.base_driver.find_element(By.NAME, 'organization').find_element(
+        self.find_element(By.NAME, 'organization').find_element(
             By.XPATH, '//option[text()="default"]'
         ).click()
-        self.base_driver.find_element(By.NAME, 'name').send_keys(prefix_objname)
-        self.base_driver.find_element(By.NAME, 'prefix').send_keys('automated-prefix')
-        self.base_driver.find_element(By.NAME, 'number_of_users').send_keys('1')
-        self.base_driver.find_element(By.NAME, '_save').click()
+        self.find_element(By.NAME, 'name').send_keys(prefix_objname)
+        self.find_element(By.NAME, 'prefix').send_keys('automated-prefix')
+        self.find_element(By.NAME, 'number_of_users').send_keys('1')
+        self.find_element(By.NAME, '_save').click()
         # Check PDF available
         self.get_resource(prefix_objname, '/admin/openwisp_radius/radiusbatch/')
-        self._wait_for_element()
         self.objects_to_delete.append(self.base_driver.current_url)
         prefix_pdf_file_path = self.base_driver.find_element(
             By.XPATH, '//a[text()="Download User Credentials"]'
@@ -323,19 +269,19 @@ class TestServices(TestUtilities, unittest.TestCase):
             ['default', '/admin/pki/ca/'],
             ['default', '/admin/pki/cert/'],
             ['default', '/admin/openwisp_users/organization/'],
-            ['test_superuser2', '/admin/openwisp_users/user/'],
+            ['test_superuser2', '/admin/openwisp_users/user/', 'field-username'],
         ]
         self.login()
         self.create_mobile_location('automated-selenium-location01')
         self.create_superuser('sample@email.com', 'test_superuser2')
         # url_list tests
         for url in url_list:
-            self.base_driver.get(f"{self.config['app_url']}{url}")
+            self.open(url)
             self.assertEqual([], self.console_error_check())
             self.assertIn('OpenWISP', self.base_driver.title)
         # change_form_list tests
         for change_form in change_form_list:
-            self.get_resource(change_form[0], change_form[1])
+            self.get_resource(*change_form)
             self.assertEqual([], self.console_error_check())
             self.assertIn('OpenWISP', self.base_driver.title)
 
@@ -353,11 +299,19 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.get_resource(
             location_name, '/admin/geo/location/', driver=self.second_driver
         )
-        self.base_driver.find_element(By.NAME, 'is_mobile').click()
-        mark = len(self.base_driver.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
+        self.find_element(By.NAME, 'is_mobile', driver=self.base_driver).click()
+        mark = len(
+            self.find_elements(
+                By.CLASS_NAME, 'leaflet-marker-icon', wait_for='invisibility'
+            )
+        )
         self.assertEqual(mark, 0)
         self.add_mobile_location_point(location_name, driver=self.second_driver)
-        mark = len(self.base_driver.find_elements(By.CLASS_NAME, 'leaflet-marker-icon'))
+        mark = len(
+            self.find_elements(
+                By.CLASS_NAME, 'leaflet-marker-icon', wait_for='presence'
+            )
+        )
         self.assertEqual(mark, 1)
 
     def test_add_superuser(self):
@@ -366,15 +320,16 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.create_superuser()
         self.assertEqual(
             'The user “test_superuser” was changed successfully.',
-            self.base_driver.find_element(By.CLASS_NAME, 'success').text,
+            self.find_element(By.CLASS_NAME, 'success').text,
         )
 
     def test_forgot_password(self):
         """Test forgot password to ensure that postfix is working properly."""
-        self.base_driver.get(f"{self.config['app_url']}/accounts/password/reset/")
-        self.base_driver.find_element(By.NAME, 'email').send_keys('admin@example.com')
-        self.base_driver.find_element(By.XPATH, '//button[@type="submit"]').click()
-        self._wait_for_element()
+
+        self.open('/accounts/password/reset/')
+        self.find_element(By.NAME, 'email').send_keys('admin@example.com')
+        self.find_element(By.XPATH, '//button[@type="submit"]').click()
+        self._wait_until_page_ready()
         self.assertIn(
             'We have sent you an email. If you have not received '
             'it please check your spam folder. Otherwise contact us '
@@ -385,61 +340,61 @@ class TestServices(TestUtilities, unittest.TestCase):
     def test_celery(self):
         """Ensure celery and celery-beat tasks are registered."""
         expected_output_list = [
-            "djcelery_email_send_multiple",
-            "openwisp.tasks.radius_tasks",
-            "openwisp.tasks.save_snapshot",
-            "openwisp.tasks.update_topology",
-            "openwisp_controller.config.tasks.change_devices_templates",
-            "openwisp_controller.config.tasks.create_vpn_dh",
-            "openwisp_controller.config.tasks.invalidate_devicegroup_cache_change",
-            "openwisp_controller.config.tasks.invalidate_devicegroup_cache_delete",
-            "openwisp_controller.config.tasks.invalidate_vpn_server_devices_cache_change",  # noqa: E501
-            "openwisp_controller.config.tasks.trigger_vpn_server_endpoint",
-            "openwisp_controller.config.tasks.update_template_related_config_status",
-            "openwisp_controller.connection.tasks.auto_add_credentials_to_devices",
-            "openwisp_controller.connection.tasks.launch_command",
-            "openwisp_controller.connection.tasks.update_config",
-            "openwisp_controller.subnet_division.tasks.provision_extra_ips",
-            "openwisp_controller.subnet_division.tasks.provision_subnet_ip_for_existing_devices",  # noqa: E501
-            "openwisp_controller.subnet_division.tasks.update_subnet_division_index",
-            "openwisp_controller.subnet_division.tasks.update_subnet_name_description",
-            "openwisp_firmware_upgrader.tasks.batch_upgrade_operation",
-            "openwisp_firmware_upgrader.tasks.create_all_device_firmwares",
-            "openwisp_firmware_upgrader.tasks.create_device_firmware",
-            "openwisp_firmware_upgrader.tasks.upgrade_firmware",
-            "openwisp_monitoring.check.tasks.auto_create_config_check",
-            "openwisp_monitoring.check.tasks.auto_create_iperf3_check",
-            "openwisp_monitoring.check.tasks.auto_create_ping",
-            "openwisp_monitoring.check.tasks.perform_check",
-            "openwisp_monitoring.check.tasks.run_checks",
-            "openwisp_monitoring.device.tasks.delete_wifi_clients_and_sessions",
-            "openwisp_monitoring.device.tasks.offline_device_close_session",
-            "openwisp_monitoring.device.tasks.trigger_device_checks",
-            "openwisp_monitoring.device.tasks.write_device_metrics",
-            "openwisp_monitoring.device.tasks.handle_disabled_organization",
-            "openwisp_monitoring.monitoring.tasks.delete_timeseries",
-            "openwisp_monitoring.monitoring.tasks.migrate_timeseries_database",
-            "openwisp_monitoring.monitoring.tasks.timeseries_batch_write",
-            "openwisp_monitoring.monitoring.tasks.timeseries_write",
-            "openwisp_monitoring.monitoring.tasks.delete_timeseries",
-            "openwisp_notifications.tasks.delete_ignore_object_notification",
-            "openwisp_notifications.tasks.delete_notification",
-            "openwisp_notifications.tasks.delete_obsolete_objects",
-            "openwisp_notifications.tasks.delete_old_notifications",
-            "openwisp_notifications.tasks.ns_organization_created",
-            "openwisp_notifications.tasks.ns_organization_user_deleted",
-            "openwisp_notifications.tasks.ns_register_unregister_notification_type",
-            "openwisp_notifications.tasks.update_org_user_notificationsetting",
-            "openwisp_notifications.tasks.update_superuser_notification_settings",
-            "openwisp_radius.tasks.cleanup_stale_radacct",
-            "openwisp_radius.tasks.convert_called_station_id",
-            "openwisp_radius.tasks.deactivate_expired_users",
-            "openwisp_radius.tasks.delete_old_postauth",
-            "openwisp_radius.tasks.delete_old_radacct",
-            "openwisp_radius.tasks.delete_old_radiusbatch_users",
-            "openwisp_radius.tasks.delete_unverified_users",
-            "openwisp_radius.tasks.perform_change_of_authorization",
-            "openwisp_radius.tasks.send_login_email",
+            'djcelery_email_send_multiple',
+            'openwisp.tasks.radius_tasks',
+            'openwisp.tasks.save_snapshot',
+            'openwisp.tasks.update_topology',
+            'openwisp_controller.config.tasks.change_devices_templates',
+            'openwisp_controller.config.tasks.create_vpn_dh',
+            'openwisp_controller.config.tasks.invalidate_devicegroup_cache_change',
+            'openwisp_controller.config.tasks.invalidate_devicegroup_cache_delete',
+            'openwisp_controller.config.tasks.invalidate_vpn_server_devices_cache_change',  # noqa: E501
+            'openwisp_controller.config.tasks.trigger_vpn_server_endpoint',
+            'openwisp_controller.config.tasks.update_template_related_config_status',
+            'openwisp_controller.connection.tasks.auto_add_credentials_to_devices',
+            'openwisp_controller.connection.tasks.launch_command',
+            'openwisp_controller.connection.tasks.update_config',
+            'openwisp_controller.subnet_division.tasks.provision_extra_ips',
+            'openwisp_controller.subnet_division.tasks.provision_subnet_ip_for_existing_devices',  # noqa: E501
+            'openwisp_controller.subnet_division.tasks.update_subnet_division_index',
+            'openwisp_controller.subnet_division.tasks.update_subnet_name_description',
+            'openwisp_firmware_upgrader.tasks.batch_upgrade_operation',
+            'openwisp_firmware_upgrader.tasks.create_all_device_firmwares',
+            'openwisp_firmware_upgrader.tasks.create_device_firmware',
+            'openwisp_firmware_upgrader.tasks.upgrade_firmware',
+            'openwisp_monitoring.check.tasks.auto_create_config_check',
+            'openwisp_monitoring.check.tasks.auto_create_iperf3_check',
+            'openwisp_monitoring.check.tasks.auto_create_ping',
+            'openwisp_monitoring.check.tasks.perform_check',
+            'openwisp_monitoring.check.tasks.run_checks',
+            'openwisp_monitoring.device.tasks.delete_wifi_clients_and_sessions',
+            'openwisp_monitoring.device.tasks.offline_device_close_session',
+            'openwisp_monitoring.device.tasks.trigger_device_checks',
+            'openwisp_monitoring.device.tasks.write_device_metrics',
+            'openwisp_monitoring.device.tasks.handle_disabled_organization',
+            'openwisp_monitoring.monitoring.tasks.delete_timeseries',
+            'openwisp_monitoring.monitoring.tasks.migrate_timeseries_database',
+            'openwisp_monitoring.monitoring.tasks.timeseries_batch_write',
+            'openwisp_monitoring.monitoring.tasks.timeseries_write',
+            'openwisp_monitoring.monitoring.tasks.delete_timeseries',
+            'openwisp_notifications.tasks.delete_ignore_object_notification',
+            'openwisp_notifications.tasks.delete_notification',
+            'openwisp_notifications.tasks.delete_obsolete_objects',
+            'openwisp_notifications.tasks.delete_old_notifications',
+            'openwisp_notifications.tasks.ns_organization_created',
+            'openwisp_notifications.tasks.ns_organization_user_deleted',
+            'openwisp_notifications.tasks.ns_register_unregister_notification_type',
+            'openwisp_notifications.tasks.update_org_user_notificationsetting',
+            'openwisp_notifications.tasks.update_superuser_notification_settings',
+            'openwisp_radius.tasks.cleanup_stale_radacct',
+            'openwisp_radius.tasks.convert_called_station_id',
+            'openwisp_radius.tasks.deactivate_expired_users',
+            'openwisp_radius.tasks.delete_old_postauth',
+            'openwisp_radius.tasks.delete_old_radacct',
+            'openwisp_radius.tasks.delete_old_radiusbatch_users',
+            'openwisp_radius.tasks.delete_unverified_users',
+            'openwisp_radius.tasks.perform_change_of_authorization',
+            'openwisp_radius.tasks.send_login_email',
         ]
 
         def _test_celery_task_registered(container_name):
@@ -487,9 +442,9 @@ class TestServices(TestUtilities, unittest.TestCase):
         """Ensure freeradius service is working correctly."""
         token_page = (
             f"{self.config['api_url']}/api/v1/radius/"
-            "organization/default/account/token/"
+            'organization/default/account/token/'
         )
-        request_body = "username=admin&password=admin".encode('utf-8')
+        request_body = 'username=admin&password=admin'.encode('utf-8')
         request_info = request.Request(token_page, data=request_body)
         try:
             response = request.urlopen(request_info, context=self.ctx)
@@ -535,4 +490,7 @@ class TestServices(TestUtilities, unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    suite = unittest.TestSuite()
+    suite.addTest(TestServices('test_topology_graph'))
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(suite)
