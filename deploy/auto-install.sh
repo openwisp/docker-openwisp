@@ -247,8 +247,8 @@ init_setup() {
 		echo -e "  - 2GB RAM (Minimum)"
 		echo -e "  - Root privileges"
 		echo -e "  - Supported systems"
-		echo -e "    - Debian: 10 & 11"
-		echo -e "    - Ubuntu 18.04, 18.10, 20.04 & 22.04"
+		echo -e "    - Debian: 11 & 12"
+		echo -e "    - Ubuntu 22.04 & 24.04"
 		echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
 	fi
 
@@ -265,11 +265,11 @@ init_setup() {
 	apt -qq --yes install lsb-release &>>$LOG_FILE
 	system_id=$(lsb_release --id --short)
 	system_release=$(lsb_release --release --short)
-	incompatible_message="$system_id $system_release is not support. Installation might fail, continue anyway? (Y/n): "
+	incompatible_message="$system_id $system_release is not supported. Installation might fail, continue anyway? (Y/n): "
 
 	if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
 		case "$system_release" in
-		18.04 | 20.04 | 22.04 | 10 | 11 | 12)
+		22.04 | 24.04 | 11 | 12)
 			if [[ "$1" == "upgrade" ]]; then
 				report_ok && upgrade_debian
 			else
@@ -295,8 +295,8 @@ init_help() {
 	echo -e "  - 2GB RAM (Minimum)"
 	echo -e "  - Root privileges"
 	echo -e "  - Supported systems"
-	echo -e "    - Debian: 10 & 11"
-	echo -e "    - Ubuntu 18.04, 18.10, 20.04, 22.04\n"
+	echo -e "    - Debian: 11 & 12"
+	echo -e "    - Ubuntu 22.04 & 24.04\n"
 	echo -e "  -i\--install : (default) Install OpenWISP"
 	echo -e "  -u\--upgrade : Change OpenWISP version already setup with this script"
 	echo -e "  -h\--help    : See this help message"
