@@ -80,7 +80,11 @@ MIDDLEWARE += [
 # HTML minification with django pipeline
 PIPELINE = {'PIPELINE_ENABLED': True}
 # static files minification and invalidation with django-compress-staticfiles
-STATICFILES_STORAGE = 'openwisp_utils.storage.CompressStaticFilesStorage'
+STORAGES = {
+    'staticfiles': {
+        'BACKEND': 'openwisp_utils.storage.CompressStaticFilesStorage',
+    },
+}
 BROTLI_STATIC_COMPRESSION = False
 # pregenerate static gzip files to save CPU
 GZIP_STATIC_COMPRESSION = True
