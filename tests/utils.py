@@ -3,13 +3,12 @@ import os
 import ssl
 import subprocess
 import time
+from time import sleep
 
 import docker
+from openwisp_utils.tests import SeleniumTestMixin
 from selenium.common.exceptions import NoAlertPresentException
-from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 
 
 class TestConfig:
@@ -30,34 +29,24 @@ class TestConfig:
         config = json.load(json_file)
 
 
-class TestUtilities(TestConfig):
+class TestUtilities(SeleniumTestMixin, TestConfig):
     """Utility functions for testing."""
 
     objects_to_delete = []
+    browser = 'chrome'
+
+    def setUp(self):
+        # Override TestSeleniumMixin setUp which uses
+        # Django methods to create superuser
+        return
 
     def login(self, username=None, password=None, driver=None):
-        """Log in to the admin dashboard.
-
-        Parameters:
-
-        - username (str, optional): The username to use for login.
-          Defaults to the value in the config.
-        - password (str, optional): The password to use for login.
-          Defaults to the value in the config.
-        - driver (selenium.webdriver, optional): The Selenium WebDriver
-          instance. Defaults to `self.base_driver`.
-        """
-        if not driver:
-            driver = self.base_driver
-        if not username:
-            username = self.config['username']
-        if not password:
-            password = self.config['password']
-        driver.get(f"{self.config['app_url']}/admin/login/")
-        if 'admin/login' in driver.current_url:
-            driver.find_element(By.NAME, 'username').send_keys(username)
-            driver.find_element(By.NAME, 'password').send_keys(password)
-            driver.find_element(By.XPATH, "//input[@type='submit']").click()
+        super().login(username, password, driver)
+        # Workaround for JS logic in chart-utils.js
+        # which fails to perform a XHR request
+        # during automated tests, it seems that the
+        # lack of pause causes the request to fail randomly
+        sleep(0.5)
 
     def _ignore_location_alert(self, driver=None):
         """Accept alerts related to location not found.
@@ -67,7 +56,7 @@ class TestUtilities(TestConfig):
         - driver (selenium.webdriver, optional): The Selenium WebDriver
           instance. Defaults to `self.base_driver`.
         """
-        expected_msg = "Could not find any address related to this location."
+        expected_msg = 'Could not find any address related to this location.'
         if not driver:
             driver = self.base_driver
         time.sleep(2)  # Wait for the alert to appear
@@ -88,9 +77,10 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        save_btn = driver.find_element(By.NAME, '_save')
-        actions = ActionChains(driver)
-        actions.move_to_element(save_btn).click().perform()
+        # Scroll to the top of the page. This will ensure that the save
+        # button is visible and clickable.
+        driver.execute_script('window.scrollTo(0, 0);')
+        self.find_element(By.NAME, '_save', driver=driver).click()
 
     def create_superuser(
         self,
@@ -114,17 +104,17 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(f"{self.config['app_url']}/admin/openwisp_users/user/add/")
-        self._wait_for_element()
-        driver.find_element(By.NAME, 'username').send_keys(username)
-        driver.find_element(By.NAME, 'email').send_keys(email)
-        driver.find_element(By.NAME, 'password1').send_keys(password)
-        driver.find_element(By.NAME, 'password2').send_keys(password)
-        driver.find_element(By.NAME, 'is_superuser').click()
+        self.open('/admin/openwisp_users/user/add/', driver=driver)
+        self.find_element(By.NAME, 'username', driver=driver).send_keys(username)
+        self.find_element(By.NAME, 'email', driver=driver).send_keys(email)
+        self.find_element(By.NAME, 'password1', driver=driver).send_keys(password)
+        self.find_element(By.NAME, 'password2', driver=driver).send_keys(password)
+        self.find_element(By.NAME, 'is_superuser', driver=driver).click()
         self._click_save_btn(driver)
         self.objects_to_delete.append(driver.current_url)
         self._click_save_btn(driver)
-        self._wait_for_element()
+        self._wait_until_page_ready()
+        self.wait_for_visibility(By.ID, 'content', driver=driver, timeout=10)
 
     def get_resource(self, resource_name, path, select_field='field-name', driver=None):
         """Navigate to a resource's change form page.
@@ -140,12 +130,15 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(f"{self.config['app_url']}{path}")
-        resources = driver.find_elements(By.CLASS_NAME, select_field)
+        self.open(path, driver=driver)
+        resources = self.find_elements(
+            By.CLASS_NAME, select_field, wait_for='presence', driver=driver
+        )
         for resource in resources:
             if len(resource.find_elements(By.LINK_TEXT, resource_name)):
                 resource.find_element(By.LINK_TEXT, resource_name).click()
                 break
+        self._wait_until_page_ready()
 
     def select_resource(self, name, driver=None):
         """Select a resource by name.
@@ -158,10 +151,8 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        path = (
-            f'//a[contains(text(), "{name}")]/../../' '/input[@name="_selected_action"]'
-        )
-        driver.find_element(By.XPATH, path).click()
+        path = f'//a[contains(text(), "{name}")]/../..//input[@name="_selected_action"]'
+        self.find_element(By.XPATH, path, driver=driver).click()
 
     def action_on_resource(self, name, path, option, driver=None):
         """Perform an action on a resource.
@@ -176,12 +167,13 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(f"{self.config['app_url']}{path}")
+        self.open(path, driver=driver)
         self.select_resource(name)
-        driver.find_element(By.NAME, 'action').find_element(
-            By.XPATH, f'//option[@value="{option}"]'
+        self.find_element(By.NAME, 'action', driver=driver).find_element(
+            By.XPATH,
+            f'//option[@value="{option}"]',
         ).click()
-        driver.find_element(By.NAME, 'index').click()
+        self.find_element(By.NAME, 'index', driver=driver).click()
 
     def console_error_check(self, driver=None):
         """Check for JavaScript errors in the console.
@@ -197,19 +189,18 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         console_logs = []
-        if self.config['driver'] == 'chromium':
-            logs = driver.get_log('browser')
-            for logentry in logs:
-                if logentry['level'] == 'SEVERE':
-                    # Ignore error generated due to "leaflet" issue
-                    # https://github.com/makinacorpus/django-leaflet/pull/380
-                    if 'leaflet' in logentry['message']:
-                        continue
-                    # Ignore error generated due to "beforeunload" chrome issue
-                    # https://stackoverflow.com/questions/10680544/beforeunload-chrome-issue
-                    if 'beforeunload' in logentry['message']:
-                        continue
-                    console_logs.append(logentry['message'])
+        logs = self.get_browser_logs(driver=driver)
+        for logentry in logs:
+            if logentry['level'] == 'SEVERE':
+                # Ignore error generated due to "leaflet" issue
+                # https://github.com/makinacorpus/django-leaflet/pull/380
+                if 'leaflet' in logentry['message']:
+                    continue
+                # Ignore error generated due to "beforeunload" chrome issue
+                # https://stackoverflow.com/questions/10680544/beforeunload-chrome-issue
+                if 'beforeunload' in logentry['message']:
+                    continue
+                console_logs.append(logentry['message'])
         return console_logs
 
     def create_mobile_location(self, location_name, driver=None):
@@ -223,22 +214,22 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(f"{self.config['app_url']}/admin/geo/location/add/")
-        driver.find_element(By.NAME, 'organization').find_element(
+        self.open('/admin/geo/location/add/', driver=driver)
+        self.find_element(By.NAME, 'organization', driver=driver).find_element(
             By.XPATH, '//option[text()="default"]'
         ).click()
-        driver.find_element(By.NAME, 'name').send_keys(location_name)
-        driver.find_element(By.NAME, 'type').find_element(
+        self.find_element(By.NAME, 'name', driver=driver).send_keys(location_name)
+        self.find_element(By.NAME, 'type', driver=driver).find_element(
             By.XPATH, '//option[@value="outdoor"]'
         ).click()
-        driver.find_element(By.NAME, 'is_mobile').click()
+        self.find_element(By.NAME, 'is_mobile', driver=driver).click()
         self._ignore_location_alert(driver)
         self._click_save_btn(driver)
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
-        self._wait_for_element()
+        self._wait_until_page_ready()
         self.objects_to_delete.append(driver.current_url)
-        driver.get(f"{self.config['app_url']}/admin/geo/location/")
-        self._wait_for_element()
+        self.open('/admin/geo/location/', driver=driver)
+        self._wait_until_page_ready()
 
     def add_mobile_location_point(self, location_name, driver=None):
         """Add a point on the map for an existing mobile location.
@@ -252,11 +243,13 @@ class TestUtilities(TestConfig):
         if not driver:
             driver = self.base_driver
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
-        driver.find_element(By.NAME, 'is_mobile').click()
+        self.find_element(By.NAME, 'is_mobile', driver=driver).click()
         self._ignore_location_alert(driver)
-        driver.find_element(By.CLASS_NAME, 'leaflet-draw-draw-marker').click()
-        driver.find_element(By.ID, 'id_geometry-map').click()
-        driver.find_element(By.NAME, 'is_mobile').click()
+        self.find_element(
+            By.CLASS_NAME, 'leaflet-draw-draw-marker', driver=driver
+        ).click()
+        self.find_element(By.ID, 'id_geometry-map', driver=driver).click()
+        self.find_element(By.NAME, 'is_mobile', driver=driver).click()
         self._ignore_location_alert(driver)
         self._click_save_btn(driver)
         self.get_resource(location_name, '/admin/geo/location/', driver=driver)
@@ -302,32 +295,17 @@ class TestUtilities(TestConfig):
         """
         if not driver:
             driver = self.base_driver
-        driver.get(f"{self.config['app_url']}/admin/topology/topology/add/")
-        driver.find_element(By.NAME, 'label').send_keys(label)
-        driver.find_element(
-            by=By.CSS_SELECTOR, value='#select2-id_organization-container'
-        ).click()
-        driver.find_element(By.NAME, 'parser').find_element(
+        self.open('/admin/topology/topology/add/', driver=driver)
+        self.find_element(By.NAME, 'label', driver=driver).send_keys(label)
+        # We can leave the organization empty for creating shared object
+        self.find_element(By.NAME, 'parser', driver=driver).find_element(
             By.XPATH, '//option[text()="NetJSON NetworkGraph"]'
         ).click()
-        driver.find_element(By.NAME, 'url').send_keys(topology_url)
+        self.find_element(By.NAME, 'url', driver=driver).send_keys(topology_url)
         self._click_save_btn(driver)
         self.get_resource(
             label, '/admin/topology/topology/', 'field-label', driver=driver
         )
-        self._wait_for_element()
+        self._wait_until_page_ready()
         self.objects_to_delete.append(driver.current_url)
-        driver.get(f"{self.config['app_url']}/admin/topology/topology/")
-        self._wait_for_element()
-
-    def _wait_for_element(self, element_id='content'):
-        """Wait for an element to be visible on the page.
-
-        Parameters:
-
-        - element_id (str, optional): The ID of the element to wait for.
-          Defaults to 'content'.
-        """
-        WebDriverWait(self.base_driver, 10).until(
-            EC.visibility_of_element_located((By.ID, element_id))
-        )
+        self._wait_until_page_ready()

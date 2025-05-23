@@ -3,9 +3,9 @@
 export DEBIAN_FRONTEND=noninteractive
 export INSTALL_PATH=/opt/openwisp/docker-openwisp
 export LOG_FILE=/opt/openwisp/autoinstall.log
-export GIT_PATH=https://github.com/openwisp/docker-openwisp.git
 export ENV_USER=/opt/openwisp/config.env
 export ENV_BACKUP=/opt/openwisp/backup.env
+export GIT_PATH=${GIT_PATH:-https://github.com/openwisp/docker-openwisp.git}
 
 # Terminal colors
 export RED='\033[1;31m'
@@ -54,8 +54,16 @@ error_msg_with_continue() {
 
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
-	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make &>>$LOG_FILE
+	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl jq &>>$LOG_FILE
 	check_status $? "Python dependencies installation failed."
+}
+
+get_version_from_user() {
+	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
+	read openwisp_version
+	if [[ -z "$openwisp_version" ]]; then
+		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)
+	fi
 }
 
 setup_docker() {
@@ -91,9 +99,7 @@ download_docker_openwisp() {
 
 setup_docker_openwisp() {
 	echo -e ${GRN}"\nOpenWISP Configuration:"${NON}
-	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
-	read openwisp_version
-	if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
+	get_version_from_user
 	echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
 	read env_path
 	if [[ ! -f "$env_path" ]]; then
@@ -105,7 +111,7 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(2/5) Enter API domain (blank for api.${domain}): "${NON}
 		read api_domain
 		# VPN domain
-		echo -ne ${GRN}"(3/5) Enter OpenVPN domain (blank for vpn.${domain}, N to disable module): "${NON}
+		echo -ne ${GRN}"(3/5) Enter OpenVPN domain (blank for openvpn.${domain}, N to disable module): "${NON}
 		read vpn_domain
 		# Site manager email
 		echo -ne ${GRN}"(4/5) Site manager email: "${NON}
@@ -141,7 +147,7 @@ setup_docker_openwisp() {
 		fi
 		# VPN domain
 		if [[ -z "$vpn_domain" ]]; then
-			set_env "VPN_DOMAIN" "vpn.${domain}"
+			set_env "VPN_DOMAIN" "openvpn.${domain}"
 		elif [[ "${vpn_domain,,}" == "n" ]]; then
 			set_env "VPN_DOMAIN" "example.com"
 		else
@@ -177,9 +183,7 @@ setup_docker_openwisp() {
 
 upgrade_docker_openwisp() {
 	echo -e ${GRN}"\nOpenWISP Configuration:"${NON}
-	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
-	read openwisp_version
-	if [[ -z "$openwisp_version" ]]; then openwisp_version=latest; fi
+	get_version_from_user
 	echo ""
 
 	download_docker_openwisp "$openwisp_version"
@@ -243,8 +247,8 @@ init_setup() {
 		echo -e "  - 2GB RAM (Minimum)"
 		echo -e "  - Root privileges"
 		echo -e "  - Supported systems"
-		echo -e "    - Debian: 10 & 11"
-		echo -e "    - Ubuntu 18.04, 18.10, 20.04 & 22.04"
+		echo -e "    - Debian: 11 & 12"
+		echo -e "    - Ubuntu 22.04 & 24.04"
 		echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
 	fi
 
@@ -261,11 +265,11 @@ init_setup() {
 	apt -qq --yes install lsb-release &>>$LOG_FILE
 	system_id=$(lsb_release --id --short)
 	system_release=$(lsb_release --release --short)
-	incompatible_message="$system_id $system_release is not support. Installation might fail, continue anyway? (Y/n): "
+	incompatible_message="$system_id $system_release is not supported. Installation might fail, continue anyway? (Y/n): "
 
 	if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
 		case "$system_release" in
-		18.04 | 20.04 | 22.04 | 10 | 11 | 12)
+		22.04 | 24.04 | 11 | 12)
 			if [[ "$1" == "upgrade" ]]; then
 				report_ok && upgrade_debian
 			else
@@ -291,8 +295,8 @@ init_help() {
 	echo -e "  - 2GB RAM (Minimum)"
 	echo -e "  - Root privileges"
 	echo -e "  - Supported systems"
-	echo -e "    - Debian: 10 & 11"
-	echo -e "    - Ubuntu 18.04, 18.10, 20.04, 22.04\n"
+	echo -e "    - Debian: 11 & 12"
+	echo -e "    - Ubuntu 22.04 & 24.04\n"
 	echo -e "  -i\--install : (default) Install OpenWISP"
 	echo -e "  -u\--upgrade : Change OpenWISP version already setup with this script"
 	echo -e "  -h\--help    : See this help message"

@@ -26,16 +26,16 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
 RUN pip install --no-cache-dir --user --upgrade pip~=24.1.2 setuptools~=70.3.0 wheel~=0.43.0
-ARG OPENWISP_MONITORING_SOURCE=openwisp-monitoring~=1.1.0
+ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/tarball/1.2"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE=openwisp-firmware-upgrader~=1.1.0
+ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/tarball/1.2"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE=openwisp-network-topology~=1.1.1
+ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/tarball/1.2"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE=openwisp-radius~=1.1.0
+ARG OPENWISP_RADIUS_SOURCE="https://github.com/openwisp/openwisp-radius/tarball/1.2"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
@@ -73,7 +73,7 @@ RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
     fi
 
-ARG DJANGO_SOURCE=django~=4.2.0
+ARG DJANGO_SOURCE=django~=5.2.0
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${DJANGO_SOURCE}
 

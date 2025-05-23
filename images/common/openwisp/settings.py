@@ -129,6 +129,10 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_DOMAIN = ROOT_DOMAIN
 
+# Required for API request from Django admin
+CSRF_COOKIE_DOMAIN = ROOT_DOMAIN
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
 WSGI_APPLICATION = 'openwisp.wsgi.application'
 ASGI_APPLICATION = 'openwisp.asgi.application'
 
@@ -242,7 +246,6 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = os.environ['DJANGO_LANGUAGE_CODE']
 TIME_ZONE = os.environ['TZ']
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)

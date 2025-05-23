@@ -14,6 +14,7 @@ import os
 
 import django
 import redis
+from openwisp.utils import env_bool
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'openwisp.settings')
 django.setup()
@@ -254,6 +255,6 @@ if __name__ == '__main__':
     create_default_credentials()
     create_ssh_key_template()
 
-    if os.environ.get('USE_OPENWISP_TOPOLOGY', False):
+    if env_bool(os.environ.get('USE_OPENWISP_TOPOLOGY')):
         Topology = load_model('topology', 'Topology')
         create_default_topology(default_vpn)
