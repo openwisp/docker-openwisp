@@ -460,6 +460,30 @@ framework.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
+``REDIS_CACHE_URL``
+~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Redis database URL for Django cache.
+- **Valid Values:** STRING.
+- **Default:**
+  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/0``.
+
+``CHANNEL_REDIS_URL``
+~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Redis database URL for Django channel's layer.
+- **Valid Values:** STRING.
+- **Default:**
+  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/1``.
+
+``CELERY_BROKER_URL``
+~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Redis database URL for celery broker.
+- **Valid Values:** STRING.
+- **Default:**
+  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/2``.
+
 DJANGO_LOG_LEVEL
 ~~~~~~~~~~~~~~~~
 
@@ -1044,12 +1068,26 @@ Misc Services
 - **Valid Values:** INTEGER.
 - **Default:** ``6379``.
 
+``REDIS_USER``
+~~~~~~~~~~~~~~
+
+- **Explanation:** Redis username, optional.
+- **Valid Values:** STRING.
+- **Default:** ``""`` (empty string).
+
 ``REDIS_PASS``
 ~~~~~~~~~~~~~~
 
 - **Explanation:** Redis password, optional.
 - **Valid Values:** STRING.
 - **Default:** ``None``.
+
+``REDIS_USE_TLS``
+~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Whether to use TLS for redis connection.
+- **Valid Values:** ``True``, ``False``.
+- **Default:** ``False``.
 
 ``DASHBOARD_APP_SERVICE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
