@@ -214,12 +214,12 @@ def create_default_topology(vpn):
         topology = Topology(
             label=topology_label,
             parser=parser,
-            strategy='receive',
+            strategy="receive",
         )
         topology.full_clean()
         topology.save()
-    redis_client.set('default_openvpn_topology_uuid', str(topology.id), ex=None)
-    redis_client.set('default_openvpn_topology_key', str(topology.key), ex=None)
+    redis_client.set("default_openvpn_topology_uuid", str(topology.id), ex=None)
+    redis_client.set("default_openvpn_topology_key", str(topology.key), ex=None)
     # Force RDB save to avoid data loss
     redis_client.save()
     return topology
