@@ -23,19 +23,19 @@ def is_string_env_json(env_json):
 
 
 def is_string_env_bool(env):
-    return env.lower() in ['true', 'yes', 'false', 'no']
+    return env.lower() in ["true", "yes", "false", "no"]
 
 
 def env_bool(env):
-    return env.lower() in ['true', 'yes']
+    return env.lower() in ["true", "yes"]
 
 
 def request_scheme():
     # os.environ['SSL_CERT_MODE'] can have different
     # values: True | False | External | SelfSigned
-    if os.environ['SSL_CERT_MODE'] in ['False', 'false', 'FALSE', 'No', 'no', 'NO']:
-        return 'http'
-    return 'https'
+    if os.environ["SSL_CERT_MODE"] in ["False", "false", "FALSE", "No", "no", "NO"]:
+        return "http"
+    return "https"
 
 
 def openwisp_controller_urls():
@@ -43,7 +43,7 @@ def openwisp_controller_urls():
     # modules -- used in urls.py
     from openwisp_controller.urls import urlpatterns as controller_urls
 
-    exclude = ['openwisp_users.accounts.urls']
+    exclude = ["openwisp_users.accounts.urls"]
     for url in controller_urls[:]:
         if url.urlconf_module.__name__ in exclude:
             controller_urls.remove(url)
