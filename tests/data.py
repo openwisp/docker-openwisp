@@ -11,17 +11,17 @@ from openwisp_users.models import Organization, OrganizationUser, User
 
 def get_organization():
     """Fetch default organization."""
-    return Organization.objects.get(slug='default')
+    return Organization.objects.get(slug="default")
 
 
 def get_admin():
     """Fetch superuser: admin."""
-    return User.objects.get(username='admin')
+    return User.objects.get(username="admin")
 
 
 def get_default_radius_group():
     """Fetch "default-users" radius group."""
-    return RadiusGroup.objects.get(name='default-users')
+    return RadiusGroup.objects.get(name="default-users")
 
 
 def set_default_radius_token(radiusOrg):
@@ -30,7 +30,7 @@ def set_default_radius_token(radiusOrg):
     if not radiusConf.exists():
         radiusConf = OrganizationRadiusSettings()
         radiusConf.organization = radiusOrg
-        radiusConf.token = 'defaultapitoken'
+        radiusConf.token = "defaultapitoken"
         radiusConf.save()
     return radiusConf
 
@@ -49,7 +49,7 @@ def create_default_organizationUser(defOrg, admin):
 
 def create_default_radiusUser(admin, radGroup):
     """Add superuser "admin" to "default-users" radius user group."""
-    radiusUser = RadiusUserGroup.objects.filter(username='admin')
+    radiusUser = RadiusUserGroup.objects.filter(username="admin")
     if not radiusUser.exists():
         radiusUser = RadiusUserGroup()
         radiusUser.group = radGroup
@@ -60,14 +60,14 @@ def create_default_radiusUser(admin, radGroup):
 
 
 def create_device(organization):
-    if Device.objects.filter(name='test-device').exists():
-        return Device.objects.get(name='test-device')
+    if Device.objects.filter(name="test-device").exists():
+        return Device.objects.get(name="test-device")
     device = Device(
-        name='test-device', mac_address='11:22:33:44:55:66', organization=organization
+        name="test-device", mac_address="11:22:33:44:55:66", organization=organization
     )
     device.full_clean()
     device.save()
-    config = Config(device=device, backend='netjsonconfig.OpenWrt')
+    config = Config(device=device, backend="netjsonconfig.OpenWrt")
     config.full_clean()
     config.save()
     return device
@@ -83,5 +83,5 @@ def setup():
     create_device(defOrg)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setup()

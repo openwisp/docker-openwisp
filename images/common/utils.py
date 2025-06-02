@@ -80,8 +80,8 @@ def pack_uwsgi_vars(var):
 
     - bytes: The packed uWSGI packet.
     """
-    encoded_vars = [(k.encode('utf-8'), v.encode('utf-8')) for k, v in var.items()]
-    packed_vars = b''.join(
+    encoded_vars = [(k.encode("utf-8"), v.encode("utf-8")) for k, v in var.items()]
+    packed_vars = b"".join(
         bytes(UwsgiVar(len(k), k, len(v), v)) for k, v in encoded_vars
     )
     packet_header = bytes(UwsgiPacketHeader(0, len(packed_vars), 0))
@@ -107,12 +107,12 @@ def parse_addr(addr, default_port=3030):
         if addr.isdigit():
             port = addr
         else:
-            parts = urlsplit(f'//{addr}')
+            parts = urlsplit(f"//{addr}")
             host = parts.hostname
             port = parts.port
     elif isinstance(addr, (list, tuple, set)):
         host, port = addr
-    return (host or '127.0.0.1', int(port) if port else default_port)
+    return (host or "127.0.0.1", int(port) if port else default_port)
 
 
 def get_host_from_url(url):
@@ -126,16 +126,16 @@ def get_host_from_url(url):
 
     - tuple: A tuple containing the host and the remaining URL path.
     """
-    url = url.split('://')[-1]
+    url = url.split("://")[-1]
 
-    if url and url[0] != '/':
-        host, _, url = url.partition('/')
-        return (host, f'/{url}')
+    if url and url[0] != "/":
+        host, _, url = url.partition("/")
+        return (host, f"/{url}")
 
-    return '', url
+    return "", url
 
 
-def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
+def ask_uwsgi(uwsgi_addr, var, body="", timeout=0, udp=False):
     """Send a request to a uWSGI server and receive the response.
 
     Parameters:
@@ -151,7 +151,7 @@ def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
     - str: The response from the uWSGI server.
     """
     sock_type = socket.SOCK_DGRAM if udp else socket.SOCK_STREAM
-    if isinstance(uwsgi_addr, str) and '/' in uwsgi_addr:
+    if isinstance(uwsgi_addr, str) and "/" in uwsgi_addr:
         addr = uwsgi_addr
         s = socket.socket(family=socket.AF_UNIX, type=sock_type)
     else:
@@ -162,10 +162,10 @@ def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
         s.settimeout(timeout)
 
     if body is None:
-        body = ''
+        body = ""
 
     s.connect(addr)
-    s.send(pack_uwsgi_vars(var) + body.encode('utf8'))
+    s.send(pack_uwsgi_vars(var) + body.encode("utf8"))
     response = []
     while 1:
         data = s.recv(4096)
@@ -174,10 +174,10 @@ def ask_uwsgi(uwsgi_addr, var, body='', timeout=0, udp=False):
         response.append(data)
 
     s.close()
-    return b''.join(response).decode('utf8')
+    return b"".join(response).decode("utf8")
 
 
-def uwsgi_curl(uwsgi_addr, method='GET', body='', timeout=0, headers=(), udp=False):
+def uwsgi_curl(uwsgi_addr, method="GET", body="", timeout=0, headers=(), udp=False):
     """Send an HTTP-like request to a uWSGI server.
 
     Parameters:
@@ -197,7 +197,7 @@ def uwsgi_curl(uwsgi_addr, method='GET', body='', timeout=0, headers=(), udp=Fal
     host, uri = get_host_from_url(uwsgi_addr)
     parts_uri = urlsplit(uri)
 
-    if '/' not in uwsgi_addr:
+    if "/" not in uwsgi_addr:
         addr = parse_addr(addr=uwsgi_addr)
         if not host:
             host = addr[0]
@@ -206,19 +206,19 @@ def uwsgi_curl(uwsgi_addr, method='GET', body='', timeout=0, headers=(), udp=Fal
         port = None
 
     var = {
-        'SERVER_PROTOCOL': 'HTTP/1.1',
-        'PATH_INFO': parts_uri.path,
-        'REQUEST_METHOD': method.upper(),
-        'REQUEST_URI': uri,
-        'QUERY_STRING': parts_uri.query,
-        'HTTP_HOST': host,
+        "SERVER_PROTOCOL": "HTTP/1.1",
+        "PATH_INFO": parts_uri.path,
+        "REQUEST_METHOD": method.upper(),
+        "REQUEST_URI": uri,
+        "QUERY_STRING": parts_uri.query,
+        "HTTP_HOST": host,
     }
     for header in headers or ():
-        key, _, value = header.partition(':')
+        key, _, value = header.partition(":")
         var[f"HTTP_{key.strip().upper().replace('-', '_')}"] = value.strip()
-    var['SERVER_NAME'] = var['HTTP_HOST']
+    var["SERVER_NAME"] = var["HTTP_HOST"]
     if port:
-        var['SERVER_PORT'] = str(port)
+        var["SERVER_PORT"] = str(port)
 
     result = ask_uwsgi(uwsgi_addr=host, var=var, body=body, timeout=timeout, udp=udp)
     return result
