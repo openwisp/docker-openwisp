@@ -8,27 +8,27 @@ from django.urls import include, path, reverse_lazy
 from django.views.generic import RedirectView
 from openwisp.utils import env_bool, openwisp_controller_urls
 
-index_redirect_view = RedirectView.as_view(url=reverse_lazy('admin:index'))
+index_redirect_view = RedirectView.as_view(url=reverse_lazy("admin:index"))
 
 urlpatterns = [
-    path('', index_redirect_view, name='index'),
-    path('admin/', admin.site.urls),
-    path('accounts/', include('openwisp_users.accounts.urls')),
+    path("", index_redirect_view, name="index"),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("openwisp_users.accounts.urls")),
 ]
 
 urlpatterns += openwisp_controller_urls()
 
-if env_bool(os.environ['USE_OPENWISP_MONITORING']):
+if env_bool(os.environ["USE_OPENWISP_MONITORING"]):
     urlpatterns += [
-        path('', include('openwisp_monitoring.urls')),
+        path("", include("openwisp_monitoring.urls")),
     ]
 
-if env_bool(os.environ['USE_OPENWISP_TOPOLOGY']):
+if env_bool(os.environ["USE_OPENWISP_TOPOLOGY"]):
     from openwisp_network_topology.visualizer import urls as visualizer_urls
 
-    urlpatterns += [path('topology/', include(visualizer_urls))]
+    urlpatterns += [path("topology/", include(visualizer_urls))]
 
-if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
+if env_bool(os.environ["USE_OPENWISP_FIRMWARE"]):
     # When using S3_REVERSE_PROXY feature of django-private-storage,
     # the storage backend reverse the "serve_private_file" URL
     # pattern in order to proxy the file with the correct URL.
@@ -38,8 +38,8 @@ if env_bool(os.environ['USE_OPENWISP_FIRMWARE']):
 
     urlpatterns += [
         path(
-            '',
-            include((fw_private_storage_urls, 'firmware'), namespace='firmware'),
+            "",
+            include((fw_private_storage_urls, "firmware"), namespace="firmware"),
         )
     ]
 

@@ -9,18 +9,18 @@ from django.core import management
 @shared_task
 def radius_tasks():
     management.call_command(
-        "delete_old_radacct", int(os.environ['CRON_DELETE_OLD_RADACCT'])
+        "delete_old_radacct", int(os.environ["CRON_DELETE_OLD_RADACCT"])
     )
     management.call_command(
-        "delete_old_postauth", int(os.environ['CRON_DELETE_OLD_POSTAUTH'])
+        "delete_old_postauth", int(os.environ["CRON_DELETE_OLD_POSTAUTH"])
     )
     management.call_command(
-        "cleanup_stale_radacct", int(os.environ['CRON_CLEANUP_STALE_RADACCT'])
+        "cleanup_stale_radacct", int(os.environ["CRON_CLEANUP_STALE_RADACCT"])
     )
     management.call_command("deactivate_expired_users")
     management.call_command(
         "delete_old_radiusbatch_users",
-        older_than_days=int(os.environ['CRON_DELETE_OLD_RADIUSBATCH_USERS']),
+        older_than_days=int(os.environ["CRON_DELETE_OLD_RADIUSBATCH_USERS"]),
     )
 
 
