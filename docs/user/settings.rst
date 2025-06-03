@@ -479,7 +479,7 @@ framework.
 ``CELERY_BROKER_URL``
 ~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Redis database URL for celery broker.
+- **Explanation:** Allows freely redefining the Redis database URL for the Celery broker.
 - **Valid Values:** STRING.
 - **Default:**
   ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/2``.
