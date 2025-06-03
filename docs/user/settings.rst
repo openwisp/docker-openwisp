@@ -463,7 +463,7 @@ framework.
 ``REDIS_CACHE_URL``
 ~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Redis database URL for Django cache.
+- **Explanation:** Allows freely redefining the Redis database URL for the Django cache.
 - **Valid Values:** STRING.
 - **Default:**
   ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/0``.
