@@ -463,7 +463,8 @@ framework.
 ``REDIS_CACHE_URL``
 ~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Allows freely redefining the Redis database URL for the Django cache.
+- **Explanation:** Allows freely redefining the Redis database URL for the
+  Django cache.
 - **Valid Values:** STRING.
 - **Default:**
   ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/0``.
@@ -471,7 +472,8 @@ framework.
 ``CHANNEL_REDIS_URL``
 ~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Allows freely redefining the Redis database URL for Django Channels' layer.
+- **Explanation:** Allows freely redefining the Redis database URL for
+  Django Channels' layer.
 - **Valid Values:** STRING.
 - **Default:**
   ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/1``.
@@ -479,7 +481,8 @@ framework.
 ``CELERY_BROKER_URL``
 ~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Allows freely redefining the Redis database URL for the Celery broker.
+- **Explanation:** Allows freely redefining the Redis database URL for the
+  Celery broker.
 - **Valid Values:** STRING.
 - **Default:**
   ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/2``.
