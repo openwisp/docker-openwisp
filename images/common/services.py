@@ -47,12 +47,19 @@ def dashboard_status():
 
 def redis_status():
     kwargs = {}
+    redis_user = os.environ.get("REDIS_USER")
     redis_pass = os.environ.get("REDIS_PASS")
     redis_port = os.environ.get("REDIS_PORT", 6379)
+    redis_use_tls = os.environ.get("REDIS_USE_TLS", "False").lower() == "true"
+
+    if redis_user:
+        kwargs["username"] = redis_user
     if redis_pass:
         kwargs["password"] = redis_pass
     if redis_port:
         kwargs["port"] = redis_port
+    if redis_use_tls:
+        kwargs["ssl"] = redis_use_tls
     rs = redis.Redis(os.environ["REDIS_HOST"], **kwargs)
     try:
         rs.ping()

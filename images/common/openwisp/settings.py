@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+from urllib.parse import quote
 
 import tldextract
 from openwisp.utils import (
@@ -138,17 +139,27 @@ ASGI_APPLICATION = "openwisp.asgi.application"
 
 REDIS_HOST = os.environ["REDIS_HOST"]
 REDIS_PORT = os.environ.get("REDIS_PORT", 6379)
+REDIS_USER = os.environ.get("REDIS_USER")
 REDIS_PASS = os.environ.get("REDIS_PASS")
+REDIS_SCHEME = (
+    "rediss" if env_bool(os.environ.get("REDIS_USE_TLS", "False")) else "redis"
+)
 
-if not REDIS_PASS:
-    CHANNEL_REDIS_HOST = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
-else:
-    CHANNEL_REDIS_HOST = f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/1"
+# Build base Redis URL
 
-if not REDIS_PASS:
-    CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/2"
+if REDIS_USER and REDIS_PASS:
+    credentials = f"{quote(REDIS_USER)}:{quote(REDIS_PASS)}@"
+elif REDIS_PASS:
+    # Password only
+    credentials = f":{quote(REDIS_PASS)}@"
 else:
-    CELERY_BROKER_URL = f"redis://:{REDIS_PASS}@{REDIS_HOST}:{REDIS_PORT}/2"
+    credentials = ""
+REDIS_BASE_URL = f"{REDIS_SCHEME}://{credentials}{REDIS_HOST}:{REDIS_PORT}"
+
+REDIS_CACHE_URL = os.environ.get("REDIS_CACHE_URL", f"{REDIS_BASE_URL}/0")
+CHANNEL_REDIS_HOST = os.environ.get("CHANNEL_REDIS_URL", f"{REDIS_BASE_URL}/1")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", f"{REDIS_BASE_URL}/2")
+
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_BROKER_TRANSPORT_OPTIONS = {"max_retries": 10}
@@ -203,7 +214,7 @@ CHANNEL_LAYERS = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
+        "LOCATION": REDIS_CACHE_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
