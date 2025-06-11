@@ -163,6 +163,12 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", f"{REDIS_BASE_URL}/2")
 CELERY_TASK_ACKS_LATE = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_BROKER_TRANSPORT_OPTIONS = {"max_retries": 10}
+if env_bool(os.environ.get("REDIS_USE_TLS", "False")):
+    import ssl
+
+    CELERY_BROKER_USE_SSL = {
+        "ssl_cert_reqs": ssl.CERT_REQUIRED,
+    }
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
