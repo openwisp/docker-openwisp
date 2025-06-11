@@ -14,6 +14,7 @@ import os
 
 import django
 import redis
+import redis.exceptions
 from openwisp.utils import env_bool
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openwisp.settings")
@@ -114,8 +115,6 @@ def create_default_vpn(ca, cert):
     redis_client.set("openwisp_default_vpn_uuid", str(vpn.id), ex=None)
     redis_client.set("openwisp_default_vpn_key", str(vpn.key), ex=None)
     redis_client.set("openwisp_default_vpn_ca_uuid", str(ca.id), ex=None)
-    # Force RDB save to avoid data loss
-    redis_client.save()
     return vpn
 
 
@@ -220,8 +219,6 @@ def create_default_topology(vpn):
         topology.save()
     redis_client.set("default_openvpn_topology_uuid", str(topology.id), ex=None)
     redis_client.set("default_openvpn_topology_key", str(topology.key), ex=None)
-    # Force RDB save to avoid data loss
-    redis_client.save()
     return topology
 
 
@@ -258,3 +255,11 @@ if __name__ == "__main__":
     if env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
         Topology = load_model("topology", "Topology")
         create_default_topology(default_vpn)
+
+    try:
+        # Force RDB save to avoid data loss
+        redis_client.save()
+    except redis.exceptions.ResponseError:
+        # Redis server may not support RDB save command,
+        # so we ignore the error.
+        pass
