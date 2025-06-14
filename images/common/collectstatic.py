@@ -1,7 +1,7 @@
-"""Calls `collectstatic` only when dependencies have changed. This helps speed up the startup sequence when using public cloud providers.
+"""Call `collectstatic` only when dependencies have changed.
 
-This behavior can be disabled by setting the env var
-`COLLECTSTATIC_WHEN_DEPS_CHANGE` to `False`.
+This helps speed up startup on cloud platforms. To disable this behavior,
+set the `COLLECTSTATIC_WHEN_DEPS_CHANGE` environment variable to `False`.
 """
 
 import hashlib
