@@ -1168,7 +1168,7 @@ NFS Server
 ``COLLECTSTATIC_WHEN_DEPS_CHANGE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Controls whether ``collectstatic`` is run automatically at container startup
-  based on a change in Python dependencies.
+- **Explanation:** Controls whether ``collectstatic`` is run automatically
+  at container startup based on a change in Python dependencies.
 - **Valid Values:** ``true``, ``false``
 - **Default:** ``true``

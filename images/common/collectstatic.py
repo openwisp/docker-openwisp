@@ -1,11 +1,8 @@
-""""
-Calls `collectstatic` only when dependencies have changed.
-This helps speed up the startup sequence when using
-public cloud providers.
+"""Calls `collectstatic` only when dependencies have changed. This helps speed up the startup sequence when using public cloud providers.
 
 This behavior can be disabled by setting the env var
 `COLLECTSTATIC_WHEN_DEPS_CHANGE` to `False`.
-""""
+"""
 
 import hashlib
 import os
