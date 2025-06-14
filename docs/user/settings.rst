@@ -1164,3 +1164,11 @@ NFS Server
 - **Valid Values:** STRING.
 - **Default:**
   ``10.0.0.0/8(rw,fsid=0,insecure,no_root_squash,no_subtree_check,sync)``.
+
+``COLLECTSTATIC_WHEN_DEPS_CHANGE``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Controls whether ``collectstatic`` is run automatically at container startup
+  based on a change in Python dependencies.
+- **Valid Values:** ``true``, ``false``
+- **Default:** ``true``
