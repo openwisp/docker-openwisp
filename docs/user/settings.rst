@@ -1164,3 +1164,12 @@ NFS Server
 - **Valid Values:** STRING.
 - **Default:**
   ``10.0.0.0/8(rw,fsid=0,insecure,no_root_squash,no_subtree_check,sync)``.
+
+``COLLECTSTATIC_WHEN_DEPS_CHANGE``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Description:** Runs ``collectstatic`` at container startup only if
+  Python dependencies have changed. Set to ``false`` if you're using the
+  development version of the OpenWISP python modules.
+- **Accepted Values:** ``true``, ``false``
+- **Default:** ``true``
