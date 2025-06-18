@@ -26,22 +26,28 @@ def get_pip_freeze_hash():
         sys.exit(1)
 
 
+def run_collectstatic():
+    print("Running collectstatic...")
+    try:
+        subprocess.run(
+            ["python", "manage.py", "collectstatic", "--noinput"], check=True
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error running 'collectstatic': {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def main():
     if os.environ.get("COLLECTSTATIC_WHEN_DEPS_CHANGE", "true").lower() == "false":
-        print("COLLECTSTATIC_WHEN_DEPS_CHANGE is false; skipping collectstatic.")
+        print("COLLECTSTATIC_WHEN_DEPS_CHANGE is false; running collectstatic.")
+        run_collectstatic()
         return
     redis_connection = redis.Redis.from_url(settings.CACHES["default"]["LOCATION"])
     current_pip_hash = get_pip_freeze_hash()
     cached_pip_hash = redis_connection.get("pip_freeze_hash")
     if cached_pip_hash is None or cached_pip_hash.decode() != current_pip_hash:
         print("pip freeze hash changed or missing, running collectstatic...")
-        try:
-            subprocess.run(
-                ["python", "manage.py", "collectstatic", "--noinput"], check=True
-            )
-            redis_connection.set("pip_freeze_hash", current_pip_hash)
-        except subprocess.CalledProcessError as e:
-            print(f"Error running 'collectstatic': {e}", file=sys.stderr)
-            sys.exit(1)
+        run_collectstatic()
+        redis_connection.set("pip_freeze_hash", current_pip_hash)
     else:
         print("pip freeze hash unchanged, skipping collectstatic.")
