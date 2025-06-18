@@ -27,7 +27,6 @@ def get_pip_freeze_hash():
 
 
 def run_collectstatic():
-    print("Running collectstatic...")
     try:
         subprocess.run(
             ["python", "manage.py", "collectstatic", "--noinput"], check=True
@@ -39,7 +38,6 @@ def run_collectstatic():
 
 def main():
     if os.environ.get("COLLECTSTATIC_WHEN_DEPS_CHANGE", "true").lower() == "false":
-        print("COLLECTSTATIC_WHEN_DEPS_CHANGE is false; running collectstatic.")
         run_collectstatic()
         return
     redis_connection = redis.Redis.from_url(settings.CACHES["default"]["LOCATION"])
