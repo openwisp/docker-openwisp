@@ -1,7 +1,7 @@
-"""Call `collectstatic` only when dependencies have changed.
+"""Run ``collectstatic`` only when dependencies have changed.
 
-This helps speed up startup on cloud platforms. To disable this behavior,
-set the `COLLECTSTATIC_WHEN_DEPS_CHANGE` environment variable to `False`.
+Speeds up startup time on cloud platforms. To disable this behavior, set
+the ``COLLECTSTATIC_WHEN_DEPS_CHANGE`` environment variable to ``False``.
 """
 
 import hashlib
@@ -46,8 +46,8 @@ def main():
     current_pip_hash = get_pip_freeze_hash()
     cached_pip_hash = redis_connection.get("pip_freeze_hash")
     if cached_pip_hash is None or cached_pip_hash.decode() != current_pip_hash:
-        print("pip freeze hash changed or missing, running collectstatic...")
+        print("Changes in Python dependencies detected, running collectstatic...")
         run_collectstatic()
         redis_connection.set("pip_freeze_hash", current_pip_hash)
     else:
-        print("pip freeze hash unchanged, skipping collectstatic.")
+        print("No changes in Python dependencies, skipping collectstatic...")

@@ -1168,7 +1168,8 @@ NFS Server
 ``COLLECTSTATIC_WHEN_DEPS_CHANGE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Controls whether ``collectstatic`` is run automatically
-  at container startup based on a change in Python dependencies.
-- **Valid Values:** ``true``, ``false``
+- **Description:** Runs ``collectstatic`` at container startup only if
+  Python dependencies have changed. Set to ``false`` if you're using the
+  development version of the OpenWISP python modules.
+- **Accepted Values:** ``true``, ``false``
 - **Default:** ``true``
