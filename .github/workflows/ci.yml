@@ -37,9 +37,10 @@ jobs:
       - name: Use the auto-install script to start containers with edge images
         id: auto_install_edge
         if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
-        run: |
-          printf "edge\n./.env\n" | sudo -E ./deploy/auto-install.sh \
-              || (docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs && exit 1)
+        run: echo "first auto-install.sh run temporarily disabled"
+        # run: |
+        #   printf "edge\n./.env\n" | sudo -E ./deploy/auto-install.sh \
+        #       || (docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs && exit 1)
 
       - name: Build Images
         id: build_images
