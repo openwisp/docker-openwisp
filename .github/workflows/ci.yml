@@ -38,11 +38,8 @@ jobs:
         id: auto_install_edge
         if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
         run: |
-          (sudo -E ./deploy/auto-install.sh <<EOF
-          edge
-          ./.env
-          EOF
-          ) || (docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs && exit 1)
+          printf "edge\n./.env\n" | sudo -E ./deploy/auto-install.sh \
+              || (docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs && exit 1)
 
       - name: Build Images
         id: build_images
@@ -67,10 +64,9 @@ jobs:
         if: ${{ !cancelled() && steps.set_git_branch.conclusion == 'success' }}
         # Do not remove the blank lines from the input.
         run: |
-          (GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade <<EOF
-          latest
-          EOF
-          ) || (cat /opt/openwisp/autoinstall.log && exit 1)
+          printf "latest\n" | \
+            GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
+            || (cat /opt/openwisp/autoinstall.log && exit 1)
 
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
