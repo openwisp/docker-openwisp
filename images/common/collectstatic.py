@@ -29,7 +29,7 @@ def get_pip_freeze_hash():
 def run_collectstatic():
     try:
         subprocess.run(
-            ["python", "manage.py", "collectstatic", "--noinput"], check=True
+            [sys.executable, "manage.py", "collectstatic", "--noinput"], check=True
         )
     except subprocess.CalledProcessError as e:
         print(f"Error running 'collectstatic': {e}", file=sys.stderr)
@@ -43,9 +43,13 @@ def main():
     redis_connection = redis.Redis.from_url(settings.CACHES["default"]["LOCATION"])
     current_pip_hash = get_pip_freeze_hash()
     cached_pip_hash = redis_connection.get("pip_freeze_hash")
-    if cached_pip_hash is None or cached_pip_hash.decode() != current_pip_hash:
+    if not cached_pip_hash or cached_pip_hash.decode() != current_pip_hash:
         print("Changes in Python dependencies detected, running collectstatic...")
         run_collectstatic()
         redis_connection.set("pip_freeze_hash", current_pip_hash)
     else:
         print("No changes in Python dependencies, skipping collectstatic...")
+
+
+if __name__ == "__main__":
+    main()
