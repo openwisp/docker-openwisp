@@ -247,7 +247,7 @@ init_setup() {
 		echo -e "  - 2GB RAM (Minimum)"
 		echo -e "  - Root privileges"
 		echo -e "  - Supported systems"
-		echo -e "    - Debian: 11 & 12"
+		echo -e "    - Debian: 11, 12 & 13"
 		echo -e "    - Ubuntu 22.04 & 24.04"
 		echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
 	fi
@@ -269,7 +269,7 @@ init_setup() {
 
 	if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
 		case "$system_release" in
-		22.04 | 24.04 | 11 | 12)
+		22.04 | 24.04 | 11 | 12 | 13)
 			if [[ "$1" == "upgrade" ]]; then
 				report_ok && upgrade_debian
 			else
@@ -295,7 +295,7 @@ init_help() {
 	echo -e "  - 2GB RAM (Minimum)"
 	echo -e "  - Root privileges"
 	echo -e "  - Supported systems"
-	echo -e "    - Debian: 11 & 12"
+	echo -e "    - Debian: 11, 12 & 13"
 	echo -e "    - Ubuntu 22.04 & 24.04\n"
 	echo -e "  -i\--install : (default) Install OpenWISP"
 	echo -e "  -u\--upgrade : Change OpenWISP version already setup with this script"
