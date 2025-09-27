@@ -870,7 +870,7 @@ Nginx
 - **Default:** ``""`` (empty string).
 
 ``NGINX_SSL_PORT``
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - **Explanation:** Nginx container external HTTPS port. Useful to set if,
   for example, OpenWISP is going to run behind a reverse proxy listening
@@ -879,7 +879,7 @@ Nginx
 - **Default:** ``443``.
 
 ``NGINX_PORT``
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 - **Explanation:** Nginx container external HTTP port. Useful to set if,
   for example, OpenWISP is going to run behind a reverse proxy listening
