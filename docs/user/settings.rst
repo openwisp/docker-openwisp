@@ -872,20 +872,18 @@ Nginx
 ``NGINX_SSL_PORT``
 ~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Nginx container external port. Useful to set if, for
-  example, OpenWISP is going to run behind a reverse proxy listening on
-  the default port on the same host. This variable is only applicable when
-  ``SSL_CERT_MODE`` is ``Yes`` or ``SelfSigned``.
+- **Explanation:** Nginx container external HTTPS port. Useful to set if,
+  for example, OpenWISP is going to run behind a reverse proxy listening
+  on port 443 on the same host.
 - **Valid Values:** ``INTEGER``.
 - **Default:** ``443``.
 
-``NGINX_80_PORT``
+``NGINX_PORT``
 ~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Nginx container external port. Useful to set if, for
-  example, OpenWISP is going to run behind a reverse proxy listening on
-  the default port on the same host. This variable is only applicable when
-  ``SSL_CERT_MODE`` is ``False``.
+- **Explanation:** Nginx container external HTTP port. Useful to set if,
+  for example, OpenWISP is going to run behind a reverse proxy listening
+  on port 80 on the same host.
 - **Valid Values:** ``INTEGER``.
 - **Default:** ``80``.
 
