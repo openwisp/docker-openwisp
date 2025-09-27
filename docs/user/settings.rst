@@ -869,6 +869,26 @@ Nginx
 - **Example:** ``index index.html index.htm;``.
 - **Default:** ``""`` (empty string).
 
+``NGINX_SSL_PORT``
+~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Nginx container external port. Useful to set if, for
+  example, OpenWISP is going to run behind a reverse proxy listening on
+  the default port on the same host. This variable is only applicable when
+  ``SSL_CERT_MODE`` is ``Yes`` or ``SelfSigned``.
+- **Valid Values:** ``INTEGER``.
+- **Default:** ``443``.
+
+``NGINX_80_PORT``
+~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Nginx container external port. Useful to set if, for
+  example, OpenWISP is going to run behind a reverse proxy listening on
+  the default port on the same host. This variable is only applicable when
+  ``SSL_CERT_MODE`` is ``False``.
+- **Valid Values:** ``INTEGER``.
+- **Default:** ``80``.
+
 ``NGINX_GZIP_SWITCH``
 ~~~~~~~~~~~~~~~~~~~~~
 
