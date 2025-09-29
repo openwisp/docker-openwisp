@@ -2,7 +2,7 @@ FROM alpine:3.22
 
 WORKDIR /opt/openwisp/
 RUN apk add --no-cache --upgrade \
-            openssl~=3.5.2-r0 \
+            openssl~=3.5.3-r1 \
             cyrus-sasl~=2.1.28-r8	\
             cyrus-sasl-login~=2.1.28-r8 && \
     apk add --no-cache \
