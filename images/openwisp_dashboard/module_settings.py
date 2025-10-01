@@ -89,7 +89,9 @@ BROTLI_STATIC_COMPRESSION = False
 # pregenerate static gzip files to save CPU
 GZIP_STATIC_COMPRESSION = True
 
-API_BASEURL = f'{request_scheme()}://{os.environ["API_DOMAIN"]}'
+HTTP_SCHEME = request_scheme()
+HTTP_PORT = os.environ["NGINX_SSL_PORT"] if HTTP_SCHEME == 'https' else os.environ["NGINX_PORT"]
+API_BASEURL = f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}:{HTTP_PORT}'
 
 OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = "openwisp_network_topology.urls"
 OPENWISP_MONITORING_API_URLCONF = "openwisp_monitoring.urls"
