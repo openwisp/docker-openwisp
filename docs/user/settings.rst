@@ -882,7 +882,7 @@ Nginx
 ``NGINX_PORT``
 ~~~~~~~~~~~~~~
 
-- **Explanation:** Nginx container external HTTP port. Change if, for   
+- **Explanation:** Nginx container external HTTP port. Change if, for
   example, OpenWISP runs behind a reverse proxy listening on port 80 on
   the same host. Non-default ports are incompatible with
   ``SSL_CERT_MODE=Yes``.
