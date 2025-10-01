@@ -51,11 +51,12 @@ ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
 ROOT_URLCONF = "openwisp.urls"
 HTTP_SCHEME = request_scheme()
 HTTP_PORT = os.environ["NGINX_SSL_PORT"] if HTTP_SCHEME == 'https' else os.environ["NGINX_PORT"]
+HTTP_PORT = "" if HTTP_PORT in ["80", "443"] else f":{HTTP_PORT}"
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-    f'{HTTP_SCHEME}://{os.environ["DASHBOARD_DOMAIN"]}:{HTTP_PORT}',
-    f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}:{HTTP_PORT}',
+    f'{HTTP_SCHEME}://{os.environ["DASHBOARD_DOMAIN"]}{HTTP_PORT}',
+    f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}{HTTP_PORT}',
 ] + os.environ["DJANGO_CORS_HOSTS"].split(",")
 CORS_ALLOW_CREDENTIALS = True
 
