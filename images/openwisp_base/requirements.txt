@@ -4,7 +4,7 @@ django-redis
 psycopg2
 sentry-sdk
 supervisor~=4.2  # allows 4.x and > 4.2
-django-cors-headers~=4.7
+django-cors-headers~=4.9
 django-pipeline~=4.0
 uwsgi~=2.0.30
 django-celery-email~=3.0.0
