@@ -50,8 +50,14 @@ LOGIN_REDIRECT_URL = "admin:index"
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
 ROOT_URLCONF = "openwisp.urls"
 HTTP_SCHEME = request_scheme()
-HTTP_PORT = os.environ["NGINX_SSL_PORT"] if HTTP_SCHEME == 'https' else os.environ["NGINX_PORT"]
-HTTP_PORT = "" if HTTP_PORT in ["80", "443"] else f":{HTTP_PORT}"
+HTTP_PORT = os.environ["NGINX_SSL_PORT"] if HTTP_SCHEME == "https" else os.environ["NGINX_PORT"]
+if (
+    HTTP_SCHEME == "http" and HTTP_PORT == "80" or
+    HTTP_SCHEME == "https" and (HTTP_PORT == "443" or os.environ["SSL_CERT_MODE"].lower() == "external")
+):
+    HTTP_PORT = ""
+else:
+    HTTP_PORT = f":{HTTP_PORT}"
 
 # CORS
 CORS_ALLOWED_ORIGINS = [

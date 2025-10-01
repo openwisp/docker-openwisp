@@ -90,8 +90,9 @@ BROTLI_STATIC_COMPRESSION = False
 GZIP_STATIC_COMPRESSION = True
 
 HTTP_SCHEME = request_scheme()
-HTTP_PORT = os.environ["NGINX_SSL_PORT"] if HTTP_SCHEME == 'https' else os.environ["NGINX_PORT"]
-API_BASEURL = f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}:{HTTP_PORT}'
+HTTP_PORT = os.environ["NGINX_SSL_PORT"] if HTTP_SCHEME == "https" else os.environ["NGINX_PORT"]
+HTTP_PORT = "" if HTTP_SCHEME == "https" and os.environ["SSL_CERT_MODE"].lower() == "external" else f":{HTTP_PORT}"
+API_BASEURL = f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}{HTTP_PORT}'
 
 OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = "openwisp_network_topology.urls"
 OPENWISP_MONITORING_API_URLCONF = "openwisp_monitoring.urls"
