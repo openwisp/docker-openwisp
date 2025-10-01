@@ -20,6 +20,8 @@ COPY ./common/services.py \
 
 RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
 
+ARG NGINX_SSL_PORT=443
+
 ENV MODULE_NAME=nginx \
     PYTHONUNBUFFERED=1 \
     DOLLAR=$ \
@@ -43,6 +45,7 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
     NGINX_CUSTOM_FILE=False \
     NINGX_REAL_REMOTE_ADDR='$real_ip' \
+    NGINX_SSL_PORT=$NGINX_SSL_PORT \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     API_APP_PORT=8001 \
