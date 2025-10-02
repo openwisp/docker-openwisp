@@ -5,6 +5,7 @@ import sys
 from urllib.parse import quote
 
 import tldextract
+
 from openwisp.utils import (
     env_bool,
     is_string_env_bool,
@@ -50,10 +51,16 @@ LOGIN_REDIRECT_URL = "admin:index"
 ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL
 ROOT_URLCONF = "openwisp.urls"
 HTTP_SCHEME = request_scheme()
-HTTP_PORT = os.getenv("NGINX_SSL_PORT", "443") if HTTP_SCHEME == "https" else os.getenv("NGINX_PORT", "80")
+HTTP_PORT = (
+    os.getenv("NGINX_SSL_PORT", "443")
+    if HTTP_SCHEME == "https"
+    else os.getenv("NGINX_PORT", "80")
+)
 if (
-    HTTP_SCHEME == "http" and HTTP_PORT == "80" or
-    HTTP_SCHEME == "https" and (HTTP_PORT == "443" or os.environ["SSL_CERT_MODE"].lower() == "external")
+    HTTP_SCHEME == "http"
+    and HTTP_PORT == "80"
+    or HTTP_SCHEME == "https"
+    and (HTTP_PORT == "443" or os.environ["SSL_CERT_MODE"].lower() == "external")
 ):
     HTTP_PORT = ""
 else:
