@@ -44,6 +44,7 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
     NGINX_CUSTOM_FILE=False \
     NINGX_REAL_REMOTE_ADDR='$real_ip' \
+    NGINX_SSL_PORT=443 \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     API_APP_PORT=8001 \

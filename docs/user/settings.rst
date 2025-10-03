@@ -83,13 +83,13 @@ properly on your system.
 ``SSL_CERT_MODE``
 ~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Flag to enable or disable HTTPs. If it is set to
+- **Explanation:** Flag to enable or disable HTTPS. If it is set to
   ``Yes``, letsencrypt certificates are automatically fetched with the
   help of certbot and a cronjob to ensure they stay updated is added. If
-  it is set to ``SelfSigned``, self-signed certificates are used and
-  cronjob for the certificates is set. If set to ``No``, site is
-  accessible via HTTP, if set if ``EXTERNAL``, it tells HTTPs is used but
-  managed by external tool like loadbalancer / provider. Setting this
+  it is set to ``SelfSigned``, self-signed certificates are used and a
+  cronjob for the certificates is set. If set to ``No``, the site is
+  accessible via HTTP. If set to ``External``, it tells HTTPS is used but
+  managed by an external tool like a loadbalancer/provider. Setting this
   option as ``No`` is not recommended and might break some features, only
   do it when you know what you are doing.
 - **Valid Values:** ``External``, ``Yes``, ``SelfSigned``, ``No``.
@@ -868,6 +868,26 @@ Nginx
   variable is only applicable when ``SSL_CERT_MODE`` is ``False``.
 - **Example:** ``index index.html index.htm;``.
 - **Default:** ``""`` (empty string).
+
+``NGINX_SSL_PORT``
+~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Nginx container external HTTPS port. Change if, for
+  example, OpenWISP runs behind a reverse proxy listening on port 443 on
+  the same host. Non-default ports are incompatible with
+  ``SSL_CERT_MODE=Yes``.
+- **Valid Values:** ``INTEGER``.
+- **Default:** ``443``.
+
+``NGINX_PORT``
+~~~~~~~~~~~~~~
+
+- **Explanation:** Nginx container external HTTP port. Change if, for
+  example, OpenWISP runs behind a reverse proxy listening on port 80 on
+  the same host. Non-default ports are incompatible with
+  ``SSL_CERT_MODE=Yes``.
+- **Valid Values:** ``INTEGER``.
+- **Default:** ``80``.
 
 ``NGINX_GZIP_SWITCH``
 ~~~~~~~~~~~~~~~~~~~~~
