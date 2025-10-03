@@ -38,13 +38,27 @@ def request_scheme():
     return "https"
 
 
-def openwisp_controller_urls():
-    # Setting correct urlpatterns for the
-    # modules -- used in urls.py
+def openwisp_controller_urls(prefix=""):
+    # Setting correct urlpatterns for the modules -- used in urls.py
+    from django.urls import include, path
     from openwisp_controller.urls import urlpatterns as controller_urls
 
     exclude = ["openwisp_users.accounts.urls"]
+    urls = []
+
     for url in controller_urls[:]:
         if url.urlconf_module.__name__ in exclude:
-            controller_urls.remove(url)
-    return controller_urls
+            continue
+
+        # add prefix to avoid namespace conflicts between containers
+        if hasattr(url, 'namespace') and url.namespace and prefix:
+            namespace = f"{prefix}-{url.namespace}"
+            if hasattr(url, 'url_patterns'):
+                url = path(
+                    url.pattern._route,
+                    include((url.url_patterns, url.app_name), namespace=namespace)
+                )
+
+        urls.append(url)
+
+    return urls
