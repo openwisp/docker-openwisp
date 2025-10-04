@@ -51,12 +51,12 @@ def openwisp_controller_urls(prefix=""):
             continue
 
         # add prefix to avoid namespace conflicts between containers
-        if hasattr(url, 'namespace') and url.namespace and prefix:
+        if hasattr(url, "namespace") and url.namespace and prefix:
             namespace = f"{prefix}-{url.namespace}"
-            if hasattr(url, 'url_patterns'):
+            if hasattr(url, "url_patterns"):
                 url = path(
                     url.pattern._route,
-                    include((url.url_patterns, url.app_name), namespace=namespace)
+                    include((url.url_patterns, url.app_name), namespace=namespace),
                 )
 
         urls.append(url)
