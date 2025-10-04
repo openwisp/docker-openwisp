@@ -5,7 +5,7 @@ from django.urls import include, path
 from openwisp.utils import env_bool, openwisp_controller_urls
 from openwisp_users.api.urls import get_api_urls as users_api
 
-urlpatterns = openwisp_controller_urls() + [
+urlpatterns = openwisp_controller_urls("api") + [
     path("admin/", admin.site.urls),
     path("api/v1/", include((users_api(), "users"))),
     path("api/v1/", include("openwisp_utils.api.urls")),
@@ -26,7 +26,7 @@ if env_bool(os.environ["USE_OPENWISP_FIRMWARE"]):
         path("", include("openwisp_firmware_upgrader.urls")),
         path(
             "",
-            include((fw_private_storage_urls, "firmware"), namespace="firmware"),
+            include((fw_private_storage_urls, "firmware"), namespace="api-firmware"),
         ),
     ]
 
