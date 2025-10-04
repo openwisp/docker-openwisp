@@ -122,6 +122,16 @@ and requires less prior knowledge about OpenWISP & networking.
        git clone https://github.com/openwisp/docker-openwisp.git
        cd docker-openwisp
 
+   If you want to use a ``release`` different than ``edge``, run
+
+   .. code-block:: bash
+
+       git checkout <release>
+
+   and set ``TAG=<version>`` in the ``Makefile``. For ``git checkout``
+   you'll need to specify the exact release number (``latest`` won't
+   work).
+
 3. Configure:
 
    Please refer to the :doc:`settings` and :doc:`customization` pages to
@@ -139,6 +149,9 @@ and requires less prior knowledge about OpenWISP & networking.
 
        If you want to shutdown services for maintenance or any other
        purposes, please use ``make stop``.
+
+If you don't want to pull new images each time you run ``make start``, set
+``SKIP_PULL ?= true`` in the ``Makefile``.
 
 If you are facing errors during the installation process, :doc:`read the
 FAQ <faq>` for known issues.
