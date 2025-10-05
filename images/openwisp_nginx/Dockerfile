@@ -1,10 +1,11 @@
-FROM nginx:1.29.0-alpine
+FROM nginx:1.29.1-alpine
 
+# hadolint ignore=DL3018
 RUN apk add --update --no-cache \
-            openssl~=3.5.3-r1 \
             py3-pip~=25.1.1-r0 \
             certbot~=4.0.0-r0 \
-            certbot-nginx~=4.0.0-r1 && \
+            certbot-nginx~=4.0.0-r1 \
+            openssl && \
     rm -rf /var/cache/apk/* /tmp/*
 
 WORKDIR /etc/nginx/
