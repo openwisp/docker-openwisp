@@ -16,6 +16,7 @@ COPY ./common/init_command.sh \
     ./common/utils.sh ./
 COPY ./openwisp_freeradius/raddb/ /etc/raddb/
 RUN chown -R freerad:root /opt/etc/raddb/ && \
+    chmod -R go-w /opt/etc/raddb/ && \
     chown -R freerad:root /opt/var/log/
 
 ENV TZ=UTC \
