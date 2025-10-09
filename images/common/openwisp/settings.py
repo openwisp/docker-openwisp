@@ -5,7 +5,6 @@ import sys
 from urllib.parse import quote
 
 import tldextract
-
 from openwisp.utils import (
     env_bool,
     is_string_env_bool,
