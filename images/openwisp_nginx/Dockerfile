@@ -1,10 +1,10 @@
-FROM nginx:1.29.1-alpine
+FROM nginx:1.29.2-alpine
 
 # hadolint ignore=DL3018
 RUN apk add --update --no-cache \
-            py3-pip~=25.1.1-r0 \
-            certbot~=4.0.0-r0 \
-            certbot-nginx~=4.0.0-r1 \
+            py3-pip \
+            certbot \
+            certbot-nginx \
             openssl && \
     rm -rf /var/cache/apk/* /tmp/*
 
@@ -44,6 +44,7 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
     NGINX_CUSTOM_FILE=False \
     NINGX_REAL_REMOTE_ADDR='$real_ip' \
+    NGINX_SSL_PORT=443 \
     # USWGI pass_port
     DASHBOARD_APP_PORT=8000 \
     API_APP_PORT=8001 \
