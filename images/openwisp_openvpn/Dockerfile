@@ -1,10 +1,11 @@
 # hadolint ignore=DL3007
 FROM kylemanna/openvpn:2.4
 
+# hadolint ignore=DL3018
 RUN apk add --no-cache \
-            curl~=7.79.1-r1 \
-            tzdata~=2022a-r0 \
-            supervisor~=4.2.0-r0 && \
+            curl \
+            tzdata \
+            supervisor && \
     rm -rf /var/cache/apk/* /tmp/*
 CMD ["sh", "init_command.sh"]
 EXPOSE 1194
