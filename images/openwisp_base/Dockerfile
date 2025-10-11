@@ -148,10 +148,10 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     # SSH Credentials Configurations
     SSH_PRIVATE_KEY_PATH=/home/openwisp/.ssh/id_ed25519 \
     SSH_PUBLIC_KEY_PATH=/home/openwisp/.ssh/id_ed25519.pub \
-    # VPN Configurations
-    VPN_DOMAIN=openvpn.example.com \
-    VPN_NAME=default \
-    VPN_CLIENT_NAME=default-management-vpn \
+    # OpenVPN Configurations
+    OPENVPN_DOMAIN=openvpn.example.com \
+    OPENVPN_NAME=default \
+    OPENVPN_CLIENT_NAME=default-management-vpn \
     X509_NAME_CA=default \
     X509_NAME_CERT=default \
     X509_COUNTRY_CODE=IN \
