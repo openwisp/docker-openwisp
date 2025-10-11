@@ -450,8 +450,8 @@ if not env_bool(os.environ["USE_OPENWISP_MONITORING"]):
         INSTALLED_APPS.remove("openwisp_monitoring.device")
     if "openwisp_monitoring.check" in INSTALLED_APPS:
         INSTALLED_APPS.remove("openwisp_monitoring.check")
-if EMAIL_BACKEND == "post_office.EmailBackend":
-    INSTALLED_APPS.append("post_office")
+if EMAIL_BACKEND == "djcelery_email.backends.CeleryEmailBackend":
+    INSTALLED_APPS.append("djcelery_email")
 if env_bool(os.environ.get("METRIC_COLLECTION", "True")):
     INSTALLED_APPS.append("openwisp_utils.metric_collection")
 
