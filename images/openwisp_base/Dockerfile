@@ -30,16 +30,16 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
-ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/tarball/1.2"
+ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/tarball/1.2"
+ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/tarball/1.2"
+ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="https://github.com/openwisp/openwisp-radius/tarball/1.2"
+ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
