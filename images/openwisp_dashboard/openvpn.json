@@ -1,82 +1,82 @@
 {
-    "openvpn": [
-        {
-            "server": "10.8.0.0 255.255.255.0",
-            "name": "default",
-            "mode": "server",
-            "proto": "udp",
-            "port": 1194,
-            "dev_type": "tun",
-            "dev": "tun0",
-            "local": "",
-            "comp_lzo": "no",
-            "auth": "SHA1",
-            "cipher": "none",
-            "engine": "",
-            "ca": "ca.pem",
-            "cert": "cert.pem",
-            "key": "key.pem",
-            "pkcs12": "",
-            "ns_cert_type": "",
-            "mtu_disc": "no",
-            "mtu_test": false,
-            "fragment": 0,
-            "mssfix": 1450,
-            "keepalive": "10 120",
-            "persist_tun": true,
-            "persist_key": true,
-            "tun_ipv6": false,
-            "up": "",
-            "up_delay": 0,
-            "down": "",
-            "script_security": 1,
-            "user": "nobody",
-            "group": "nogroup",
-            "mute": 0,
-            "status": "/var/log/tun0.status",
-            "status_version": 1,
-            "mute_replay_warnings": false,
-            "secret": "",
-            "reneg_sec": 0,
-            "tls_timeout": 2,
-            "tls_cipher": "",
-            "remote_cert_tls": "",
-            "float": false,
-            "fast_io": true,
-            "log": "",
-            "verb": 3,
-            "topology": "p2p",
-            "tls_server": true,
-            "dh": "dh.pem",
-            "crl_verify": "revoked.crl",
-            "duplicate_cn": false,
-            "client_to_client": false,
-            "client_cert_not_required": false,
-            "username_as_common_name": false,
-            "auth_user_pass_verify": "",
-            "tls_auth": ""
-        }
-    ],
-    "files": [
-        {
-            "path": "ca.pem",
-            "mode": "0644",
-            "contents": "{{ ca }}"
-        },
-        {
-            "path": "cert.pem",
-            "mode": "0644",
-            "contents": "{{ cert }}"
-        },
-        {
-            "path": "key.pem",
-            "mode": "0644",
-            "contents": "{{ key }}"
-        },
-        {
-            "path": "dh.pem",
-            "mode": "0644",
-            "contents": "{{ dh }}"
-        }
-    ]
+  "openvpn": [
+    {
+      "server": "10.8.0.0 255.255.255.0",
+      "name": "default",
+      "mode": "server",
+      "proto": "udp",
+      "port": 1194,
+      "dev_type": "tun",
+      "dev": "tun0",
+      "local": "",
+      "comp_lzo": "no",
+      "auth": "SHA1",
+      "cipher": "none",
+      "engine": "",
+      "ca": "ca.pem",
+      "cert": "cert.pem",
+      "key": "key.pem",
+      "pkcs12": "",
+      "ns_cert_type": "",
+      "mtu_disc": "no",
+      "mtu_test": false,
+      "fragment": 0,
+      "mssfix": 1450,
+      "keepalive": "10 120",
+      "persist_tun": true,
+      "persist_key": true,
+      "tun_ipv6": false,
+      "up": "",
+      "up_delay": 0,
+      "down": "",
+      "script_security": 1,
+      "user": "nobody",
+      "group": "nogroup",
+      "mute": 0,
+      "status": "/var/log/tun0.status",
+      "status_version": 1,
+      "mute_replay_warnings": false,
+      "secret": "",
+      "reneg_sec": 0,
+      "tls_timeout": 2,
+      "tls_cipher": "",
+      "remote_cert_tls": "",
+      "float": false,
+      "fast_io": true,
+      "log": "",
+      "verb": 3,
+      "topology": "p2p",
+      "tls_server": true,
+      "dh": "dh.pem",
+      "crl_verify": "revoked.crl",
+      "duplicate_cn": false,
+      "client_to_client": false,
+      "client_cert_not_required": false,
+      "username_as_common_name": false,
+      "auth_user_pass_verify": "",
+      "tls_auth": ""
+    }
+  ],
+  "files": [
+    {
+      "path": "ca.pem",
+      "mode": "0644",
+      "contents": "{{ ca }}"
+    },
+    {
+      "path": "cert.pem",
+      "mode": "0644",
+      "contents": "{{ cert }}"
+    },
+    {
+      "path": "key.pem",
+      "mode": "0644",
+      "contents": "{{ key }}"
+    },
+    {
+      "path": "dh.pem",
+      "mode": "0644",
+      "contents": "{{ dh }}"
+    }
+  ]
 }
