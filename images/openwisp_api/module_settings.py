@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     "openwisp_network_topology",
     # openwisp-firmware-upgrader
     "openwisp_firmware_upgrader",
-    # openwisp radius
+    # openwisp-radius
     "dj_rest_auth",
     "dj_rest_auth.registration",
     "openwisp_radius",

@@ -1,625 +1,625 @@
 {
-    "created": "2017-07-19T16:35:33.296000Z",
-    "id": "36d5ba3e-1364-49d2-9e29-1f6dceb7cbbb",
-    "label": "Test Topology (OLSRd2)",
-    "parser": "netdiff.NetJsonParser",
-    "protocol": "olsrv2",
-    "type": "NetworkGraph",
-    "version": "0.14.1-1",
-    "links": [
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2018-07-04T15:20:52.178000Z",
-                "hopcount": 2,
-                "modified": "2018-07-07T07:46:22.300000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.24.1",
-                "status": "up",
-                "status_changed": "2018-07-07T07:46:22.300000Z",
-                "target_addr": "0.0.0.0/0",
-                "type": "attached"
-            },
-            "source": "id_10.27.24.1",
-            "target": "id_10.27.24.1_0.0.0.0/0"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2018-04-07T23:55:02.581000Z",
-                "hopcount": 2,
-                "modified": "2018-04-22T10:05:01.766000Z",
-                "outgoing_tree": "true",
-                "source_addr": "10.3.5.3",
-                "status": "up",
-                "status_changed": "2018-04-22T10:05:01.766000Z",
-                "target_addr": "10.27.22.0/24",
-                "type": "lan"
-            },
-            "source": "id_10.3.5.3_10.27.22.0/24",
-            "target": "id_10.3.5.3"
-        },
-        {
-            "cost": 2105088.0,
-            "properties": {
-                "created": "2018-04-23T10:40:01.946000Z",
-                "in_cost": 2105088,
-                "in_text": "1020bit/s",
-                "modified": "2018-05-04T10:20:02.559000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.253.61",
-                "status": "up",
-                "status_changed": "2018-05-04T10:20:02.559000Z",
-                "target_addr": "10.3.5.3",
-                "type": "node"
-            },
-            "source": "id_10.27.253.61",
-            "target": "id_10.3.5.3"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2017-08-20T17:10:02.521000Z",
-                "hopcount": 2,
-                "modified": "2018-02-24T19:04:14.572000Z",
-                "outgoing_tree": "true",
-                "source_addr": "10.27.22.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:14.572000Z",
-                "target_addr": "10.27.22.0/24",
-                "type": "attached"
-            },
-            "source": "id_10.27.22.1",
-            "target": "id_10.27.22.1_10.27.22.0/24"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2018-06-28T23:29:31.780000Z",
-                "hopcount": 2,
-                "modified": "2018-09-18T13:15:02.837652Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.23.1",
-                "status": "up",
-                "status_changed": "2018-09-18T13:15:02.837666Z",
-                "target_addr": "10.27.23.0/24",
-                "type": "attached"
-            },
-            "source": "id_10.27.23.1",
-            "target": "id_10.27.23.1_10.27.23.0/24"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2017-07-19T16:44:21.590000Z",
-                "hopcount": 2,
-                "modified": "2018-02-24T19:04:15.826000Z",
-                "outgoing_tree": "true",
-                "source_addr": "10.27.10.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:15.826000Z",
-                "target_addr": "10.27.10.0/24",
-                "type": "attached"
-            },
-            "source": "id_10.27.10.1",
-            "target": "id_10.27.10.1_10.27.10.0/24"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2018-07-15T18:47:39.930000Z",
-                "hopcount": 2,
-                "modified": "2018-07-15T22:15:14.222000Z",
-                "outgoing_tree": "true",
-                "source_addr": "172.27.85.36",
-                "status": "up",
-                "status_changed": "2018-07-15T22:15:14.222000Z",
-                "target_addr": "10.27.23.0/24",
-                "type": "lan"
-            },
-            "source": "id_172.27.85.36_10.27.23.0/24",
-            "target": "id_172.27.85.36"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2018-04-23T22:10:00.759000Z",
-                "hopcount": 2,
-                "modified": "2018-05-08T19:10:01.494000Z",
-                "outgoing_tree": "true",
-                "source_addr": "10.3.5.3",
-                "status": "up",
-                "status_changed": "2018-05-08T19:10:01.494000Z",
-                "target_addr": "10.27.22.0/25",
-                "type": "attached"
-            },
-            "source": "id_10.3.5.3",
-            "target": "id_10.3.5.3_10.27.22.0/25"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2017-11-02T22:15:02.046000Z",
-                "hopcount": 2,
-                "modified": "2018-02-24T19:04:14.447000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.22.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:14.447000Z",
-                "target_addr": "0.0.0.0/0",
-                "type": "attached"
-            },
-            "source": "id_10.27.22.1_0.0.0.0/0",
-            "target": "id_10.27.22.1"
-        },
-        {
-            "cost": 2170624.0,
-            "properties": {
-                "created": "2017-07-19T16:44:21.731000Z",
-                "in_cost": 2105088,
-                "in_text": "1020bit/s",
-                "modified": "2018-02-24T19:04:15.594000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.253.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:15.594000Z",
-                "target_addr": "10.27.10.1",
-                "type": "node"
-            },
-            "source": "id_10.27.10.1",
-            "target": "id_10.27.253.1"
-        },
-        {
-            "cost": 2170624.0,
-            "properties": {
-                "created": "2017-08-20T17:10:02.763000Z",
-                "in_cost": 2105088,
-                "in_text": "1020bit/s",
-                "modified": "2018-02-24T19:04:14.909000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.253.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:14.910000Z",
-                "target_addr": "10.27.22.1",
-                "type": "node"
-            },
-            "source": "id_10.27.22.1",
-            "target": "id_10.27.253.1"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2017-07-19T16:44:22.636000Z",
-                "hopcount": 2,
-                "modified": "2018-02-24T19:04:16.038000Z",
-                "outgoing_tree": "true",
-                "source_addr": "10.27.0.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:16.038000Z",
-                "target_addr": "10.27.0.0/24",
-                "type": "lan"
-            },
-            "source": "id_10.27.0.1",
-            "target": "id_10.27.0.1_10.27.0.0/24"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2017-07-19T16:44:21.453000Z",
-                "hopcount": 2,
-                "modified": "2018-02-24T19:04:16.287000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.10.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:16.287000Z",
-                "target_addr": "0.0.0.0/0",
-                "type": "attached"
-            },
-            "source": "id_10.27.10.1_0.0.0.0/0",
-            "target": "id_10.27.10.1"
-        },
-        {
-            "cost": 2105088.0,
-            "properties": {
-                "created": "2017-08-20T17:10:02.639000Z",
-                "in_cost": 2105088,
-                "in_text": "1020bit/s",
-                "links": [
-                    {
-                        "cost": 2105088,
-                        "cost_text": "1020bit/s",
-                        "in_cost": 2105088,
-                        "in_text": "1020bit/s",
-                        "interface": "vpnbas",
-                        "outgoing_tree": "true",
-                        "source_addr": "10.27.253.3",
-                        "target_addr": "10.27.253.49"
-                    }
-                ],
-                "modified": "2018-02-24T19:04:15.149000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.22.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:15.149000Z",
-                "target_addr": "10.27.10.1",
-                "type": "node"
-            },
-            "source": "id_10.27.22.1",
-            "target": "id_10.27.10.1"
-        },
-        {
-            "cost": 2105088.0,
-            "properties": {
-                "created": "2017-07-19T16:44:22Z",
-                "in_cost": 2105088,
-                "in_text": "1020bit/s",
-                "links": [
-                    {
-                        "cost": 2105088,
-                        "cost_text": "1020bit/s",
-                        "in_cost": 2105088,
-                        "in_text": "1020bit/s",
-                        "interface": "vpnbas",
-                        "outgoing_tree": "true",
-                        "source_addr": "10.27.253.43",
-                        "target_addr": "10.27.253.3"
-                    }
-                ],
-                "modified": "2018-02-24T19:04:17.410000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.10.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:17.410000Z",
-                "target_addr": "10.27.0.1",
-                "type": "node"
-            },
-            "source": "id_10.27.10.1",
-            "target": "id_10.27.0.1"
-        },
-        {
-            "cost": 2309888.0,
-            "properties": {
-                "created": "2017-07-19T16:44:22.269000Z",
-                "in_cost": 2105088,
-                "in_text": "1020bit/s",
-                "links": [
-                    {
-                        "cost": 2105088,
-                        "cost_text": "1020bit/s",
-                        "in_cost": 2105088,
-                        "in_text": "1020bit/s",
-                        "interface": "vpnbas",
-                        "outgoing_tree": "true",
-                        "source_addr": "10.27.253.43",
-                        "target_addr": "10.27.253.1"
-                    }
-                ],
-                "modified": "2018-02-24T19:04:15.341000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.253.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:15.341000Z",
-                "target_addr": "10.27.0.1",
-                "type": "node"
-            },
-            "source": "id_10.27.253.1",
-            "target": "id_10.27.0.1"
-        },
-        {
-            "cost": 2105088.0,
-            "properties": {
-                "created": "2017-08-25T18:47:03.958000Z",
-                "in_cost": 2105088,
-                "in_text": "1020bit/s",
-                "links": [
-                    {
-                        "cost": 2105088,
-                        "cost_text": "1020bit/s",
-                        "in_cost": 2105088,
-                        "in_text": "1020bit/s",
-                        "interface": "vpnbas",
-                        "outgoing_tree": "true",
-                        "source_addr": "169.254.115.155",
-                        "target_addr": "10.27.253.43"
-                    }
-                ],
-                "modified": "2018-02-24T19:04:14.731000Z",
-                "outgoing_tree": "false",
-                "source_addr": "10.27.0.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:14.731000Z",
-                "target_addr": "10.27.22.1",
-                "type": "node"
-            },
-            "source": "id_10.27.22.1",
-            "target": "id_10.27.0.1"
-        },
-        {
-            "cost": 1.0,
-            "properties": {
-                "created": "2017-07-19T16:44:20.793000Z",
-                "hopcount": 2,
-                "modified": "2018-02-24T19:04:17.120000Z",
-                "outgoing_tree": "true",
-                "source_addr": "10.27.0.1",
-                "status": "up",
-                "status_changed": "2018-02-24T19:04:17.120000Z",
-                "target_addr": "0.0.0.0/0",
-                "type": "lan"
-            },
-            "source": "id_10.27.0.1_0.0.0.0/0",
-            "target": "id_10.27.0.1"
-        }
-    ],
-    "metric": "ff_dat_metric",
-    "modified": "2018-05-11T03:45:00.928000Z",
-    "nodes": [
-        {
-            "id": "id_10.27.24.1_10.27.24.0/24",
-            "label": "10.27.24.1 - 10.27.24.0/24",
-            "properties": {
-                "created": "2018-06-30T21:50:10.807000Z",
-                "modified": "2020-01-17T16:49:10.797938Z",
-                "router_addr": "10.27.24.1",
-                "router_id": "id_10.27.24.1",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_10.27.24.1_0.0.0.0/0",
-            "label": "10.27.24.1 - 0.0.0.0/0",
-            "properties": {
-                "created": "2018-06-30T21:50:10.722000Z",
-                "modified": "2020-01-17T16:49:10.782324Z",
-                "router_addr": "10.27.24.1",
-                "router_id": "id_10.27.24.1",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_10.3.5.3_0.0.0.0/0",
-            "label": "10.3.5.3 - 0.0.0.0/0",
-            "properties": {
-                "created": "2018-04-07T23:55:01.525000Z",
-                "modified": "2020-01-17T16:49:10.784182Z",
-                "router_addr": "10.3.5.3",
-                "router_id": "id_10.3.5.3",
-                "type": "lan"
-            }
-        },
-        {
-            "id": "id_10.27.24.1",
-            "label": "10.27.24.1",
-            "properties": {
-                "created": "2018-03-31T17:30:01.070000Z",
-                "dualstack_addr": "fd25:fc4:1261::1",
-                "dualstack_id": "id_fd25:fc4:1261::1",
-                "modified": "2020-01-17T16:49:10.785919Z",
-                "router_addr": "10.27.24.1",
-                "router_id": "id_10.27.24.1",
-                "type": "node"
-            }
-        },
-        {
-            "id": "id_10.3.5.3",
-            "label": "10.3.5.3",
-            "properties": {
-                "created": "2018-04-07T23:55:01.193000Z",
-                "dualstack_addr": "fd25:fc4:1261::1",
-                "dualstack_id": "id_fd25:fc4:1261::1",
-                "modified": "2020-01-17T16:49:10.787183Z",
-                "router_addr": "10.3.5.3",
-                "router_id": "id_10.3.5.3",
-                "type": "local"
-            }
-        },
-        {
-            "id": "id_172.27.85.36_10.27.23.0/24",
-            "label": "172.27.85.36 - 10.27.23.0/24",
-            "properties": {
-                "created": "2018-07-15T18:47:39.762000Z",
-                "modified": "2020-01-17T16:49:10.788011Z",
-                "router_addr": "172.27.85.36",
-                "router_id": "id_172.27.85.36",
-                "type": "lan"
-            }
-        },
-        {
-            "id": "id_10.27.253.61",
-            "label": "10.27.253.61",
-            "properties": {
-                "created": "2018-04-23T10:20:00.681000Z",
-                "dualstack_addr": "fe80::8c60:fcff:fe3b:5f9f",
-                "dualstack_id": "id_fe80::8c60:fcff:fe3b:5f9f",
-                "modified": "2020-01-17T16:49:10.788426Z",
-                "router_addr": "10.27.253.61",
-                "router_id": "id_10.27.253.61",
-                "type": "node"
-            }
-        },
-        {
-            "id": "id_10.3.5.3_10.27.22.0/24",
-            "label": "10.3.5.3 - 10.27.22.0/24",
-            "properties": {
-                "created": "2018-04-07T23:55:00.820000Z",
-                "modified": "2020-01-17T16:49:10.792987Z",
-                "router_addr": "10.3.5.3",
-                "router_id": "id_10.3.5.3",
-                "type": "lan"
-            }
-        },
-        {
-            "id": "id_10.27.22.1_0.0.0.0",
-            "label": "10.27.22.1 - 0.0.0.0",
-            "properties": {
-                "created": "2018-09-13T17:35:07.331000Z",
-                "modified": "2020-01-17T16:49:10.793818Z",
-                "router_addr": "10.27.22.1",
-                "router_id": "id_10.27.22.1",
-                "type": "lan"
-            }
-        },
-        {
-            "id": "id_10.27.22.1_10.27.22.0/24",
-            "label": "Kali Oppido Lucano",
-            "properties": {
-                "created": "2017-08-20T17:10:02.423000Z",
-                "modified": "2020-01-17T16:49:10.795115Z",
-                "router_addr": "10.27.22.1",
-                "router_id": "id_10.27.22.1",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_10.27.23.1_10.27.23.0/24",
-            "label": "10.27.23.1 - 10.27.23.0/24",
-            "properties": {
-                "created": "2018-06-23T12:19:39.852000Z",
-                "modified": "2020-01-17T16:49:10.796726Z",
-                "router_addr": "10.27.23.1",
-                "router_id": "id_10.27.23.1",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_10.27.10.1_10.27.10.0/24",
-            "label": "Syskrack-net",
-            "properties": {
-                "created": "2017-07-19T16:44:20.003000Z",
-                "modified": "2020-01-17T16:49:10.797127Z",
-                "router_addr": "10.27.10.1",
-                "router_id": "id_10.27.10.1",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_172.27.85.36",
-            "label": "172.27.85.36",
-            "properties": {
-                "created": "2018-07-15T18:47:39.836000Z",
-                "dualstack_addr": "fdd1:50f2:2dfa::1",
-                "dualstack_id": "id_fdd1:50f2:2dfa::1",
-                "modified": "2020-01-17T16:49:10.798336Z",
-                "router_addr": "172.27.85.36",
-                "router_id": "id_172.27.85.36",
-                "type": "local"
-            }
-        },
-        {
-            "id": "id_10.27.23.1",
-            "label": "10.27.23.1",
-            "properties": {
-                "created": "2018-06-23T12:19:39.743000Z",
-                "dualstack_addr": "fd02:c1d0:c7a7::1",
-                "dualstack_id": "id_fd02:c1d0:c7a7::1",
-                "modified": "2020-01-17T16:49:10.798739Z",
-                "router_addr": "10.27.23.1",
-                "router_id": "id_10.27.23.1",
-                "type": "node"
-            }
-        },
-        {
-            "id": "id_10.3.5.3_10.27.22.0/25",
-            "label": "10.3.5.3 - 10.27.22.0/25",
-            "properties": {
-                "created": "2018-04-22T10:05:02.029000Z",
-                "modified": "2020-01-17T16:49:10.801491Z",
-                "router_addr": "10.3.5.3",
-                "router_id": "id_10.3.5.3",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_10.27.0.1_0.0.0.0/0",
-            "properties": {
-                "created": "2017-07-19T16:44:19.439000Z",
-                "modified": "2020-01-17T16:49:10.816051Z",
-                "router_addr": "10.27.0.1",
-                "router_id": "id_10.27.0.1",
-                "type": "lan"
-            }
-        },
-        {
-            "id": "id_10.27.22.1",
-            "label": "Kali-Oppido-router",
-            "properties": {
-                "created": "2017-08-20T17:10:02.218000Z",
-                "dualstack_addr": "fe80::c66e:1fff:feff:223",
-                "dualstack_id": "id_fe80::c66e:1fff:feff:223",
-                "modified": "2020-01-17T16:49:10.816460Z",
-                "router_addr": "10.27.22.1",
-                "router_id": "id_10.27.22.1",
-                "type": "node"
-            }
-        },
-        {
-            "id": "id_10.27.253.1",
-            "properties": {
-                "created": "2017-07-19T16:44:20.129000Z",
-                "dualstack_addr": "fe80::d446:ecff:fefd:3abe",
-                "dualstack_id": "id_fe80::d446:ecff:fefd:3abe",
-                "modified": "2020-01-17T16:49:10.818089Z",
-                "router_addr": "10.27.253.1",
-                "router_id": "id_10.27.253.1",
-                "type": "node"
-            }
-        },
-        {
-            "id": "id_10.27.0.1_10.27.0.0/24",
-            "label": "Kali-Matera-net",
-            "properties": {
-                "created": "2017-07-19T16:44:20.660000Z",
-                "modified": "2020-01-17T16:49:10.826859Z",
-                "router_addr": "10.27.0.1",
-                "router_id": "id_10.27.0.1",
-                "type": "lan"
-            }
-        },
-        {
-            "id": "id_10.27.10.1_0.0.0.0/0",
-            "properties": {
-                "created": "2017-07-19T16:44:19.702000Z",
-                "modified": "2020-01-17T16:49:10.829051Z",
-                "router_addr": "10.27.10.1",
-                "router_id": "id_10.27.10.1",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_10.27.22.1_0.0.0.0/0",
-            "properties": {
-                "created": "2017-08-20T17:10:02.336000Z",
-                "modified": "2020-01-17T16:49:10.829505Z",
-                "router_addr": "10.27.22.1",
-                "router_id": "id_10.27.22.1",
-                "type": "attached"
-            }
-        },
-        {
-            "id": "id_10.27.10.1",
-            "label": "Syskrack-router",
-            "properties": {
-                "created": "2017-07-19T16:44:19.816000Z",
-                "dualstack_addr": "fdb5:a1cc:bb86::1",
-                "dualstack_id": "id_fdb5:a1cc:bb86::1",
-                "modified": "2020-01-17T16:49:10.829944Z",
-                "router_addr": "10.27.10.1",
-                "router_id": "id_10.27.10.1",
-                "type": "node"
-            }
-        },
-        {
-            "id": "id_10.27.0.1",
-            "label": "Kali-Matera-router",
-            "properties": {
-                "created": "2017-07-19T16:44:20.255000Z",
-                "dualstack_addr": "fd5c:257b:b54e::1",
-                "dualstack_id": "id_fd5c:257b:b54e::1",
-                "modified": "2020-01-17T16:49:10.830356Z",
-                "router_addr": "10.27.0.1",
-                "router_id": "id_10.27.0.1",
-                "type": "local"
-            }
-        }
-    ]
+  "created": "2017-07-19T16:35:33.296000Z",
+  "id": "36d5ba3e-1364-49d2-9e29-1f6dceb7cbbb",
+  "label": "Test Topology (OLSRd2)",
+  "parser": "netdiff.NetJsonParser",
+  "protocol": "olsrv2",
+  "type": "NetworkGraph",
+  "version": "0.14.1-1",
+  "links": [
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2018-07-04T15:20:52.178000Z",
+        "hopcount": 2,
+        "modified": "2018-07-07T07:46:22.300000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.24.1",
+        "status": "up",
+        "status_changed": "2018-07-07T07:46:22.300000Z",
+        "target_addr": "0.0.0.0/0",
+        "type": "attached"
+      },
+      "source": "id_10.27.24.1",
+      "target": "id_10.27.24.1_0.0.0.0/0"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2018-04-07T23:55:02.581000Z",
+        "hopcount": 2,
+        "modified": "2018-04-22T10:05:01.766000Z",
+        "outgoing_tree": "true",
+        "source_addr": "10.3.5.3",
+        "status": "up",
+        "status_changed": "2018-04-22T10:05:01.766000Z",
+        "target_addr": "10.27.22.0/24",
+        "type": "lan"
+      },
+      "source": "id_10.3.5.3_10.27.22.0/24",
+      "target": "id_10.3.5.3"
+    },
+    {
+      "cost": 2105088.0,
+      "properties": {
+        "created": "2018-04-23T10:40:01.946000Z",
+        "in_cost": 2105088,
+        "in_text": "1020bit/s",
+        "modified": "2018-05-04T10:20:02.559000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.253.61",
+        "status": "up",
+        "status_changed": "2018-05-04T10:20:02.559000Z",
+        "target_addr": "10.3.5.3",
+        "type": "node"
+      },
+      "source": "id_10.27.253.61",
+      "target": "id_10.3.5.3"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2017-08-20T17:10:02.521000Z",
+        "hopcount": 2,
+        "modified": "2018-02-24T19:04:14.572000Z",
+        "outgoing_tree": "true",
+        "source_addr": "10.27.22.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:14.572000Z",
+        "target_addr": "10.27.22.0/24",
+        "type": "attached"
+      },
+      "source": "id_10.27.22.1",
+      "target": "id_10.27.22.1_10.27.22.0/24"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2018-06-28T23:29:31.780000Z",
+        "hopcount": 2,
+        "modified": "2018-09-18T13:15:02.837652Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.23.1",
+        "status": "up",
+        "status_changed": "2018-09-18T13:15:02.837666Z",
+        "target_addr": "10.27.23.0/24",
+        "type": "attached"
+      },
+      "source": "id_10.27.23.1",
+      "target": "id_10.27.23.1_10.27.23.0/24"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2017-07-19T16:44:21.590000Z",
+        "hopcount": 2,
+        "modified": "2018-02-24T19:04:15.826000Z",
+        "outgoing_tree": "true",
+        "source_addr": "10.27.10.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:15.826000Z",
+        "target_addr": "10.27.10.0/24",
+        "type": "attached"
+      },
+      "source": "id_10.27.10.1",
+      "target": "id_10.27.10.1_10.27.10.0/24"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2018-07-15T18:47:39.930000Z",
+        "hopcount": 2,
+        "modified": "2018-07-15T22:15:14.222000Z",
+        "outgoing_tree": "true",
+        "source_addr": "172.27.85.36",
+        "status": "up",
+        "status_changed": "2018-07-15T22:15:14.222000Z",
+        "target_addr": "10.27.23.0/24",
+        "type": "lan"
+      },
+      "source": "id_172.27.85.36_10.27.23.0/24",
+      "target": "id_172.27.85.36"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2018-04-23T22:10:00.759000Z",
+        "hopcount": 2,
+        "modified": "2018-05-08T19:10:01.494000Z",
+        "outgoing_tree": "true",
+        "source_addr": "10.3.5.3",
+        "status": "up",
+        "status_changed": "2018-05-08T19:10:01.494000Z",
+        "target_addr": "10.27.22.0/25",
+        "type": "attached"
+      },
+      "source": "id_10.3.5.3",
+      "target": "id_10.3.5.3_10.27.22.0/25"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2017-11-02T22:15:02.046000Z",
+        "hopcount": 2,
+        "modified": "2018-02-24T19:04:14.447000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.22.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:14.447000Z",
+        "target_addr": "0.0.0.0/0",
+        "type": "attached"
+      },
+      "source": "id_10.27.22.1_0.0.0.0/0",
+      "target": "id_10.27.22.1"
+    },
+    {
+      "cost": 2170624.0,
+      "properties": {
+        "created": "2017-07-19T16:44:21.731000Z",
+        "in_cost": 2105088,
+        "in_text": "1020bit/s",
+        "modified": "2018-02-24T19:04:15.594000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.253.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:15.594000Z",
+        "target_addr": "10.27.10.1",
+        "type": "node"
+      },
+      "source": "id_10.27.10.1",
+      "target": "id_10.27.253.1"
+    },
+    {
+      "cost": 2170624.0,
+      "properties": {
+        "created": "2017-08-20T17:10:02.763000Z",
+        "in_cost": 2105088,
+        "in_text": "1020bit/s",
+        "modified": "2018-02-24T19:04:14.909000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.253.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:14.910000Z",
+        "target_addr": "10.27.22.1",
+        "type": "node"
+      },
+      "source": "id_10.27.22.1",
+      "target": "id_10.27.253.1"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2017-07-19T16:44:22.636000Z",
+        "hopcount": 2,
+        "modified": "2018-02-24T19:04:16.038000Z",
+        "outgoing_tree": "true",
+        "source_addr": "10.27.0.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:16.038000Z",
+        "target_addr": "10.27.0.0/24",
+        "type": "lan"
+      },
+      "source": "id_10.27.0.1",
+      "target": "id_10.27.0.1_10.27.0.0/24"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2017-07-19T16:44:21.453000Z",
+        "hopcount": 2,
+        "modified": "2018-02-24T19:04:16.287000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.10.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:16.287000Z",
+        "target_addr": "0.0.0.0/0",
+        "type": "attached"
+      },
+      "source": "id_10.27.10.1_0.0.0.0/0",
+      "target": "id_10.27.10.1"
+    },
+    {
+      "cost": 2105088.0,
+      "properties": {
+        "created": "2017-08-20T17:10:02.639000Z",
+        "in_cost": 2105088,
+        "in_text": "1020bit/s",
+        "links": [
+          {
+            "cost": 2105088,
+            "cost_text": "1020bit/s",
+            "in_cost": 2105088,
+            "in_text": "1020bit/s",
+            "interface": "vpnbas",
+            "outgoing_tree": "true",
+            "source_addr": "10.27.253.3",
+            "target_addr": "10.27.253.49"
+          }
+        ],
+        "modified": "2018-02-24T19:04:15.149000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.22.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:15.149000Z",
+        "target_addr": "10.27.10.1",
+        "type": "node"
+      },
+      "source": "id_10.27.22.1",
+      "target": "id_10.27.10.1"
+    },
+    {
+      "cost": 2105088.0,
+      "properties": {
+        "created": "2017-07-19T16:44:22Z",
+        "in_cost": 2105088,
+        "in_text": "1020bit/s",
+        "links": [
+          {
+            "cost": 2105088,
+            "cost_text": "1020bit/s",
+            "in_cost": 2105088,
+            "in_text": "1020bit/s",
+            "interface": "vpnbas",
+            "outgoing_tree": "true",
+            "source_addr": "10.27.253.43",
+            "target_addr": "10.27.253.3"
+          }
+        ],
+        "modified": "2018-02-24T19:04:17.410000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.10.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:17.410000Z",
+        "target_addr": "10.27.0.1",
+        "type": "node"
+      },
+      "source": "id_10.27.10.1",
+      "target": "id_10.27.0.1"
+    },
+    {
+      "cost": 2309888.0,
+      "properties": {
+        "created": "2017-07-19T16:44:22.269000Z",
+        "in_cost": 2105088,
+        "in_text": "1020bit/s",
+        "links": [
+          {
+            "cost": 2105088,
+            "cost_text": "1020bit/s",
+            "in_cost": 2105088,
+            "in_text": "1020bit/s",
+            "interface": "vpnbas",
+            "outgoing_tree": "true",
+            "source_addr": "10.27.253.43",
+            "target_addr": "10.27.253.1"
+          }
+        ],
+        "modified": "2018-02-24T19:04:15.341000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.253.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:15.341000Z",
+        "target_addr": "10.27.0.1",
+        "type": "node"
+      },
+      "source": "id_10.27.253.1",
+      "target": "id_10.27.0.1"
+    },
+    {
+      "cost": 2105088.0,
+      "properties": {
+        "created": "2017-08-25T18:47:03.958000Z",
+        "in_cost": 2105088,
+        "in_text": "1020bit/s",
+        "links": [
+          {
+            "cost": 2105088,
+            "cost_text": "1020bit/s",
+            "in_cost": 2105088,
+            "in_text": "1020bit/s",
+            "interface": "vpnbas",
+            "outgoing_tree": "true",
+            "source_addr": "169.254.115.155",
+            "target_addr": "10.27.253.43"
+          }
+        ],
+        "modified": "2018-02-24T19:04:14.731000Z",
+        "outgoing_tree": "false",
+        "source_addr": "10.27.0.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:14.731000Z",
+        "target_addr": "10.27.22.1",
+        "type": "node"
+      },
+      "source": "id_10.27.22.1",
+      "target": "id_10.27.0.1"
+    },
+    {
+      "cost": 1.0,
+      "properties": {
+        "created": "2017-07-19T16:44:20.793000Z",
+        "hopcount": 2,
+        "modified": "2018-02-24T19:04:17.120000Z",
+        "outgoing_tree": "true",
+        "source_addr": "10.27.0.1",
+        "status": "up",
+        "status_changed": "2018-02-24T19:04:17.120000Z",
+        "target_addr": "0.0.0.0/0",
+        "type": "lan"
+      },
+      "source": "id_10.27.0.1_0.0.0.0/0",
+      "target": "id_10.27.0.1"
+    }
+  ],
+  "metric": "ff_dat_metric",
+  "modified": "2018-05-11T03:45:00.928000Z",
+  "nodes": [
+    {
+      "id": "id_10.27.24.1_10.27.24.0/24",
+      "label": "10.27.24.1 - 10.27.24.0/24",
+      "properties": {
+        "created": "2018-06-30T21:50:10.807000Z",
+        "modified": "2020-01-17T16:49:10.797938Z",
+        "router_addr": "10.27.24.1",
+        "router_id": "id_10.27.24.1",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_10.27.24.1_0.0.0.0/0",
+      "label": "10.27.24.1 - 0.0.0.0/0",
+      "properties": {
+        "created": "2018-06-30T21:50:10.722000Z",
+        "modified": "2020-01-17T16:49:10.782324Z",
+        "router_addr": "10.27.24.1",
+        "router_id": "id_10.27.24.1",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_10.3.5.3_0.0.0.0/0",
+      "label": "10.3.5.3 - 0.0.0.0/0",
+      "properties": {
+        "created": "2018-04-07T23:55:01.525000Z",
+        "modified": "2020-01-17T16:49:10.784182Z",
+        "router_addr": "10.3.5.3",
+        "router_id": "id_10.3.5.3",
+        "type": "lan"
+      }
+    },
+    {
+      "id": "id_10.27.24.1",
+      "label": "10.27.24.1",
+      "properties": {
+        "created": "2018-03-31T17:30:01.070000Z",
+        "dualstack_addr": "fd25:fc4:1261::1",
+        "dualstack_id": "id_fd25:fc4:1261::1",
+        "modified": "2020-01-17T16:49:10.785919Z",
+        "router_addr": "10.27.24.1",
+        "router_id": "id_10.27.24.1",
+        "type": "node"
+      }
+    },
+    {
+      "id": "id_10.3.5.3",
+      "label": "10.3.5.3",
+      "properties": {
+        "created": "2018-04-07T23:55:01.193000Z",
+        "dualstack_addr": "fd25:fc4:1261::1",
+        "dualstack_id": "id_fd25:fc4:1261::1",
+        "modified": "2020-01-17T16:49:10.787183Z",
+        "router_addr": "10.3.5.3",
+        "router_id": "id_10.3.5.3",
+        "type": "local"
+      }
+    },
+    {
+      "id": "id_172.27.85.36_10.27.23.0/24",
+      "label": "172.27.85.36 - 10.27.23.0/24",
+      "properties": {
+        "created": "2018-07-15T18:47:39.762000Z",
+        "modified": "2020-01-17T16:49:10.788011Z",
+        "router_addr": "172.27.85.36",
+        "router_id": "id_172.27.85.36",
+        "type": "lan"
+      }
+    },
+    {
+      "id": "id_10.27.253.61",
+      "label": "10.27.253.61",
+      "properties": {
+        "created": "2018-04-23T10:20:00.681000Z",
+        "dualstack_addr": "fe80::8c60:fcff:fe3b:5f9f",
+        "dualstack_id": "id_fe80::8c60:fcff:fe3b:5f9f",
+        "modified": "2020-01-17T16:49:10.788426Z",
+        "router_addr": "10.27.253.61",
+        "router_id": "id_10.27.253.61",
+        "type": "node"
+      }
+    },
+    {
+      "id": "id_10.3.5.3_10.27.22.0/24",
+      "label": "10.3.5.3 - 10.27.22.0/24",
+      "properties": {
+        "created": "2018-04-07T23:55:00.820000Z",
+        "modified": "2020-01-17T16:49:10.792987Z",
+        "router_addr": "10.3.5.3",
+        "router_id": "id_10.3.5.3",
+        "type": "lan"
+      }
+    },
+    {
+      "id": "id_10.27.22.1_0.0.0.0",
+      "label": "10.27.22.1 - 0.0.0.0",
+      "properties": {
+        "created": "2018-09-13T17:35:07.331000Z",
+        "modified": "2020-01-17T16:49:10.793818Z",
+        "router_addr": "10.27.22.1",
+        "router_id": "id_10.27.22.1",
+        "type": "lan"
+      }
+    },
+    {
+      "id": "id_10.27.22.1_10.27.22.0/24",
+      "label": "Kali Oppido Lucano",
+      "properties": {
+        "created": "2017-08-20T17:10:02.423000Z",
+        "modified": "2020-01-17T16:49:10.795115Z",
+        "router_addr": "10.27.22.1",
+        "router_id": "id_10.27.22.1",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_10.27.23.1_10.27.23.0/24",
+      "label": "10.27.23.1 - 10.27.23.0/24",
+      "properties": {
+        "created": "2018-06-23T12:19:39.852000Z",
+        "modified": "2020-01-17T16:49:10.796726Z",
+        "router_addr": "10.27.23.1",
+        "router_id": "id_10.27.23.1",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_10.27.10.1_10.27.10.0/24",
+      "label": "Syskrack-net",
+      "properties": {
+        "created": "2017-07-19T16:44:20.003000Z",
+        "modified": "2020-01-17T16:49:10.797127Z",
+        "router_addr": "10.27.10.1",
+        "router_id": "id_10.27.10.1",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_172.27.85.36",
+      "label": "172.27.85.36",
+      "properties": {
+        "created": "2018-07-15T18:47:39.836000Z",
+        "dualstack_addr": "fdd1:50f2:2dfa::1",
+        "dualstack_id": "id_fdd1:50f2:2dfa::1",
+        "modified": "2020-01-17T16:49:10.798336Z",
+        "router_addr": "172.27.85.36",
+        "router_id": "id_172.27.85.36",
+        "type": "local"
+      }
+    },
+    {
+      "id": "id_10.27.23.1",
+      "label": "10.27.23.1",
+      "properties": {
+        "created": "2018-06-23T12:19:39.743000Z",
+        "dualstack_addr": "fd02:c1d0:c7a7::1",
+        "dualstack_id": "id_fd02:c1d0:c7a7::1",
+        "modified": "2020-01-17T16:49:10.798739Z",
+        "router_addr": "10.27.23.1",
+        "router_id": "id_10.27.23.1",
+        "type": "node"
+      }
+    },
+    {
+      "id": "id_10.3.5.3_10.27.22.0/25",
+      "label": "10.3.5.3 - 10.27.22.0/25",
+      "properties": {
+        "created": "2018-04-22T10:05:02.029000Z",
+        "modified": "2020-01-17T16:49:10.801491Z",
+        "router_addr": "10.3.5.3",
+        "router_id": "id_10.3.5.3",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_10.27.0.1_0.0.0.0/0",
+      "properties": {
+        "created": "2017-07-19T16:44:19.439000Z",
+        "modified": "2020-01-17T16:49:10.816051Z",
+        "router_addr": "10.27.0.1",
+        "router_id": "id_10.27.0.1",
+        "type": "lan"
+      }
+    },
+    {
+      "id": "id_10.27.22.1",
+      "label": "Kali-Oppido-router",
+      "properties": {
+        "created": "2017-08-20T17:10:02.218000Z",
+        "dualstack_addr": "fe80::c66e:1fff:feff:223",
+        "dualstack_id": "id_fe80::c66e:1fff:feff:223",
+        "modified": "2020-01-17T16:49:10.816460Z",
+        "router_addr": "10.27.22.1",
+        "router_id": "id_10.27.22.1",
+        "type": "node"
+      }
+    },
+    {
+      "id": "id_10.27.253.1",
+      "properties": {
+        "created": "2017-07-19T16:44:20.129000Z",
+        "dualstack_addr": "fe80::d446:ecff:fefd:3abe",
+        "dualstack_id": "id_fe80::d446:ecff:fefd:3abe",
+        "modified": "2020-01-17T16:49:10.818089Z",
+        "router_addr": "10.27.253.1",
+        "router_id": "id_10.27.253.1",
+        "type": "node"
+      }
+    },
+    {
+      "id": "id_10.27.0.1_10.27.0.0/24",
+      "label": "Kali-Matera-net",
+      "properties": {
+        "created": "2017-07-19T16:44:20.660000Z",
+        "modified": "2020-01-17T16:49:10.826859Z",
+        "router_addr": "10.27.0.1",
+        "router_id": "id_10.27.0.1",
+        "type": "lan"
+      }
+    },
+    {
+      "id": "id_10.27.10.1_0.0.0.0/0",
+      "properties": {
+        "created": "2017-07-19T16:44:19.702000Z",
+        "modified": "2020-01-17T16:49:10.829051Z",
+        "router_addr": "10.27.10.1",
+        "router_id": "id_10.27.10.1",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_10.27.22.1_0.0.0.0/0",
+      "properties": {
+        "created": "2017-08-20T17:10:02.336000Z",
+        "modified": "2020-01-17T16:49:10.829505Z",
+        "router_addr": "10.27.22.1",
+        "router_id": "id_10.27.22.1",
+        "type": "attached"
+      }
+    },
+    {
+      "id": "id_10.27.10.1",
+      "label": "Syskrack-router",
+      "properties": {
+        "created": "2017-07-19T16:44:19.816000Z",
+        "dualstack_addr": "fdb5:a1cc:bb86::1",
+        "dualstack_id": "id_fdb5:a1cc:bb86::1",
+        "modified": "2020-01-17T16:49:10.829944Z",
+        "router_addr": "10.27.10.1",
+        "router_id": "id_10.27.10.1",
+        "type": "node"
+      }
+    },
+    {
+      "id": "id_10.27.0.1",
+      "label": "Kali-Matera-router",
+      "properties": {
+        "created": "2017-07-19T16:44:20.255000Z",
+        "dualstack_addr": "fd5c:257b:b54e::1",
+        "dualstack_id": "id_fd5c:257b:b54e::1",
+        "modified": "2020-01-17T16:49:10.830356Z",
+        "router_addr": "10.27.0.1",
+        "router_id": "id_10.27.0.1",
+        "type": "local"
+      }
+    }
+  ]
 }
