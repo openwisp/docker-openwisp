@@ -7,7 +7,7 @@ supervisor>=4.3.0,<4.4.0
 django-cors-headers>=4.9.0,<4.10.0
 django-pipeline>=4.1.0,<4.2.0
 uwsgi>=2.0.30,<2.1.0
-django-celery-email~=3.0.0
+django-celery-email-reboot>=4.1.0,<5.0.0
 tldextract>=5.3.0,<5.4.0
 # these add support for object storage
 # (eg: Amazon S3, GCS)

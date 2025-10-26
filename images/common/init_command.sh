@@ -18,6 +18,7 @@ if [ "$MODULE_NAME" = 'dashboard' ]; then
 	start_uwsgi
 elif [ "$MODULE_NAME" = 'postfix' ]; then
 	postfix_config
+	postfix set-permissions
 	postfix start
 	rsyslogd -n
 elif [ "$MODULE_NAME" = 'freeradius' ]; then

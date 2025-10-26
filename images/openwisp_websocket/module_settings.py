@@ -24,8 +24,12 @@ INSTALLED_APPS = [
     "openwisp_ipam",
     # openwisp-network-topology
     "openwisp_network_topology",
-    "openwisp_utils.admin_theme",
+    # openwisp-radius
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+    "openwisp_radius",
     # admin
+    "openwisp_utils.admin_theme",
     "django.contrib.admin",
     "django.forms",
     # other dependencies
@@ -35,6 +39,7 @@ INSTALLED_APPS = [
     # rest framework
     "rest_framework",
     "rest_framework_gis",
+    "rest_framework.authtoken",
     "django_filters",
     # other packages
     "private_storage",

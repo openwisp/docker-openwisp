@@ -18,24 +18,28 @@ RUN apt-get update && \
 
 RUN useradd --system --password '' --create-home --shell /bin/bash \
     --gid root --uid 1001 openwisp
+RUN mkdir /home/openwisp/.ssh && \
+    mkdir -p /tmp && chmod 1777 /tmp
+RUN chown -R openwisp:root /home/openwisp/
 USER openwisp:root
 
 FROM system AS openwisp_python
 
 ENV PATH="${PATH}:/home/openwisp/.local/bin"
-ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
-RUN pip install --no-cache-dir --user --upgrade pip~=24.1.2 setuptools~=70.3.0 wheel~=0.43.0
-ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/tarball/1.2"
+
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
+ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/tarball/1.2"
+ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/tarball/1.2"
+ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="https://github.com/openwisp/openwisp-radius/tarball/1.2"
+ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
@@ -88,9 +92,8 @@ COPY --chown=openwisp:root ./common/ /opt/openwisp/
 RUN mkdir /opt/openwisp/static && \
     mkdir /opt/openwisp/media && \
     mkdir /opt/openwisp/private && \
-    mkdir /opt/openwisp/logs && \
-    mkdir /home/openwisp/.ssh && \
-    chown -R openwisp:root /opt/openwisp && \
+    mkdir /opt/openwisp/logs
+RUN chown -R openwisp:root /opt/openwisp && \
     chown -R openwisp:root /home/openwisp/.ssh
 # Maintain backward compatibility with code written for ansible-openwisp2
 RUN ln -s /opt/openwisp/openwisp /opt/openwisp/openwisp2
