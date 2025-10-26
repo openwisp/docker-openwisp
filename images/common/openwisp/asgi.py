@@ -28,6 +28,13 @@ if env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
 
     routes.extend(network_topology_routes)
 
+if env_bool(os.environ.get("USE_OPENWISP_FIRMWARE")):
+    from openwisp_firmware_upgrader.routing import (  # noqa: E402
+        websocket_urlpatterns as firmware_upgrader_routes,
+    )
+
+    routes.extend(firmware_upgrader_routes)
+
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
