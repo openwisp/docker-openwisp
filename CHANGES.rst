@@ -35,6 +35,10 @@ Dependencies
   <https://github.com/openwisp/openwisp-firmware-upgrader/releases/tag/1.2.0>`__).
 - Upgraded to OpenWISP RADIUS 1.2.x (see `changelog
   <https://github.com/openwisp/openwisp-radius/releases/tag/1.2.0>`__).
+- Upgraded to OpenWISP Notifications 1.2.x (see `changelog
+  <https://github.com/openwisp/openwisp-notifications/releases/tag/1.2.0>`__).
+- Upgraded to Netjsonconfig 1.2.x (see `changelog
+  <https://github.com/openwisp/netjsonconfig/releases/tag/1.2.0>`__).
 - Updated auto-install script to support Debian 13.
 - Updated auto-install script to support Ubuntu 24.04.
 - Updated base image of ``openwisp/openwisp-nginx`` to
