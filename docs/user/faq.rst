@@ -1,12 +1,14 @@
-Docker OpenWISP FAQs
-====================
+######################
+ Docker OpenWISP FAQs
+######################
 
 .. contents:: **Table of Contents**:
     :depth: 1
     :local:
 
-1. Setup fails, it couldn't find the images on DockerHub?
----------------------------------------------------------
+***********************************************************
+ 1. Setup fails, it couldn't find the images on DockerHub?
+***********************************************************
 
 Answer: The setup requires following ports and destinations to be
 unblocked, if you are using a firewall or any external control to block
@@ -25,8 +27,9 @@ traffic, please whitelist:
 8 0      tcp      25         172.18.0.0/16          ``/usr/bin/docker-proxy``
 = ====== ======== ========== ====================== =====================================
 
-2. Makefile failed without any information, what's wrong?
----------------------------------------------------------
+***********************************************************
+ 2. Makefile failed without any information, what's wrong?
+***********************************************************
 
 Answer: You are using an old version of a requirement, please consider
 upgrading:
@@ -46,8 +49,9 @@ upgrading:
     $ uname -v # kernel-version
     #1 SMP Debian 4.19.181-1 (2021-03-19)
 
-3. Can I run the containers as the ``root`` or ``docker``
----------------------------------------------------------
+***********************************************************
+ 3. Can I run the containers as the ``root`` or ``docker``
+***********************************************************
 
 No, please do not run the Docker containers as these users.
 

@@ -1,5 +1,6 @@
-Quick Start Guide
-=================
+###################
+ Quick Start Guide
+###################
 
 This page explains how to deploy OpenWISP using the docker images provided
 by Docker OpenWISP.
@@ -8,15 +9,16 @@ by Docker OpenWISP.
     :depth: 1
     :local:
 
-Available Images
-----------------
+******************
+ Available Images
+******************
 
 The images are hosted on `Docker Hub
 <https://hub.docker.com/u/openwisp>`__ and `GitLab Container Registry
 <https://gitlab.com/openwisp/docker-openwisp/container_registry>`__.
 
 Image Tags
-~~~~~~~~~~
+==========
 
 All images are tagged using the following convention:
 
@@ -31,8 +33,9 @@ edge   This is the development version of OpenWISP.
        On Github, this corresponds to the current master branch.
 ====== =========================================================
 
-Auto Install Script
--------------------
+*********************
+ Auto Install Script
+*********************
 
 .. figure:: ../images/auto-install.png
     :target: ../../_images/auto-install.png
@@ -98,8 +101,9 @@ by using the following command
     - Still facing errors while installation? Please :doc:`read the FAQ
       <faq>`.
 
-Using Docker Compose
---------------------
+**********************
+ Using Docker Compose
+**********************
 
 This setup is suitable for single-server setup requirements. It is quicker
 and requires less prior knowledge about OpenWISP & networking.

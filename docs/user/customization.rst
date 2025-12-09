@@ -1,5 +1,6 @@
-Advanced Customization
-======================
+########################
+ Advanced Customization
+########################
 
 This page describes advanced customization options for the OpenWISP Docker
 images.
@@ -11,8 +12,9 @@ areas that can be customized.
     :depth: 1
     :local:
 
-Creating the ``customization`` Directory
-----------------------------------------
+******************************************
+ Creating the ``customization`` Directory
+******************************************
 
 The following commands will create the directory structure required for
 adding customizations. Execute these commands in the same location as the
@@ -32,8 +34,9 @@ for an example.
 
 .. _docker_custom_django_settings:
 
-Supplying Custom Django Settings
---------------------------------
+**********************************
+ Supplying Custom Django Settings
+**********************************
 
 The ``customization/configuration/django`` directory created in the
 previous section is mounted at ``/opt/openwisp/openwisp/configuration`` in
@@ -48,8 +51,9 @@ You can also put additional files in
 ``customization/configuration/django`` that need to be mounted at
 ``/opt/openwisp/openwisp/configuration`` in the containers.
 
-Supplying Custom CSS and JavaScript Files
------------------------------------------
+*******************************************
+ Supplying Custom CSS and JavaScript Files
+*******************************************
 
 If you want to use your custom styles, add custom JavaScript you can
 follow the following guide.
@@ -95,8 +99,9 @@ follow the following guide.
     2. You can create a ``maintenance.html`` file inside the ``customize``
        directory to have a custom maintenance page for scheduled downtime.
 
-Supplying Custom uWSGI configuration
-------------------------------------
+**************************************
+ Supplying Custom uWSGI configuration
+**************************************
 
 By default, you can only configure :ref:`"processes", "threads" and
 "listen" settings of uWSGI using environment variables
@@ -125,11 +130,12 @@ supply your uWSGI configuration by following these steps:
 
 .. _docker_nginx:
 
-Supplying Custom Nginx Configurations
--------------------------------------
+***************************************
+ Supplying Custom Nginx Configurations
+***************************************
 
 Docker
-~~~~~~
+======
 
 1. Create nginx your configuration file.
 2. Set ``NGINX_CUSTOM_FILE`` to ``True`` in ``.env`` file.
@@ -146,8 +152,9 @@ Docker
 
 .. _docker_freeradius:
 
-Supplying Custom Freeradius Configurations
-------------------------------------------
+********************************************
+ Supplying Custom Freeradius Configurations
+********************************************
 
 Note: ``/etc/raddb/clients.conf``, ``/etc/raddb/radiusd.conf``,
 ``/etc/raddb/sites-enabled/default``, ``/etc/raddb/mods-enabled/``,
@@ -159,7 +166,7 @@ including custom ``radiusd.conf`` and ``sites-enabled/default`` files.
 .. _docker-1:
 
 Docker
-~~~~~~
+======
 
 1. Create file configuration files that you want to edit / add to your
    container.
@@ -175,8 +182,9 @@ Docker
           PATH/TO/YOUR/DEFAULT:/etc/raddb/sites-enabled/default
       ...
 
-Supplying Custom Python Source Code
------------------------------------
+*************************************
+ Supplying Custom Python Source Code
+*************************************
 
 You can build the images and supply custom python source code by creating
 a file named ``.build.env`` in the root of the repository, then set the
@@ -206,8 +214,9 @@ written like this:
     DJANGO_SOURCE=https://github.com/<username>/Django/tarball/master
     OPENWISP_CONTROLLER_SOURCE=https://github.com/<username>/openwisp-controller/tarball/master
 
-Disabling Services
-------------------
+********************
+ Disabling Services
+********************
 
 - ``openwisp-dashboard``: You cannot disable the openwisp-dashboard. It is
   the heart of OpenWISP and performs core functionalities.

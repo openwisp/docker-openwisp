@@ -1,5 +1,6 @@
-Docker-OpenWISP
-===============
+#################
+ Docker-OpenWISP
+#################
 
 .. image:: https://github.com/openwisp/docker-openwisp/workflows/Automation%20Tests/badge.svg
     :target: https://github.com/openwisp/docker-openwisp/actions?query=workflow%3A%22Automation+Tests%22
@@ -23,8 +24,9 @@ in mind.
 .. image:: https://raw.githubusercontent.com/openwisp/docker-openwisp/master/docs/images/portainer-docker-list.png
     :target: https://raw.githubusercontent.com/openwisp/docker-openwisp/master/docs/images/portainer-docker-list.png
 
-Documentation
--------------
+***************
+ Documentation
+***************
 
 - `Usage documentation <https://openwisp.io/docs/stable/docker/>`_
 - `Developer documentation

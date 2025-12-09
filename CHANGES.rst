@@ -1,11 +1,13 @@
-Changelog
-=========
+###########
+ Changelog
+###########
 
-Version 25.10.0 [2025-10-24]
-----------------------------
+******************************
+ Version 25.10.0 [2025-10-24]
+******************************
 
 Features
-~~~~~~~~
+========
 
 - Added support for non-default external ports in the Nginx container
   `#496 <https://github.com/openwisp/docker-openwisp/issues/496>`_.
@@ -18,10 +20,10 @@ Features
   <https://github.com/openwisp/docker-openwisp/issues/463>`_.
 
 Changes
-~~~~~~~
+=======
 
 Dependencies
-++++++++++++
+------------
 
 - Upgraded to OpenWISP Users 1.2.x (see `changelog
   <https://github.com/openwisp/openwisp-users/releases/tag/1.2.0>`__).
@@ -61,7 +63,7 @@ Dependencies
 - Bumped ``boto3>=1.40.49,<1.41.0``.
 
 Bugfixes
-~~~~~~~~
+========
 
 - Fixed permissions issues in the Postfix container.
 - Fixed FreeRADIUS container exit caused by global write permissions.
@@ -73,11 +75,12 @@ Bugfixes
   <https://github.com/openwisp/docker-openwisp/issues/421>`_.
 - Updated auto-install script to suggest the correct VPN hostname.
 
-Version 24.11.2 [2024-12-18]
-----------------------------
+******************************
+ Version 24.11.2 [2024-12-18]
+******************************
 
 Bugfixes
-~~~~~~~~
+========
 
 - Resolved an issue in the ``docker-compose`` configuration for the
   ``openvpn`` service by adding the ``/dev/net/tun`` device.
@@ -91,19 +94,21 @@ Bugfixes
   ``postfix~=3.9.1-r0``.
 - Bumped ``boto3~=1.35.82``.
 
-Version 24.11.1 [2024-11-27]
-----------------------------
+******************************
+ Version 24.11.1 [2024-11-27]
+******************************
 
 Bugfixes
-~~~~~~~~
+========
 
 - Updated ``__openwisp_version__`` to ``24.11.1``.
 
-Version 24.11.0 [2024-11-27]
-----------------------------
+******************************
+ Version 24.11.0 [2024-11-27]
+******************************
 
 Features
-~~~~~~~~
+========
 
 - Added a default topology for the default VPN.
 - Added default credentials and SSH key template.
@@ -122,10 +127,10 @@ Features
   <https://openwisp.io/docs/stable/utils/user/metric-collection.html>`_.
 
 Changes
-~~~~~~~
+=======
 
 Dependencies
-++++++++++++
+------------
 
 - Upgraded to OpenWISP Users 1.1.x (see `changelog
   <https://github.com/openwisp/openwisp-users/releases/tag/1.1.0>`__).
@@ -153,7 +158,7 @@ Dependencies
   ``python:3.10.0-slim-buster``.
 
 Backward Incompatible Changes
-+++++++++++++++++++++++++++++
+-----------------------------
 
 - Merged the OpenWISP RADIUS container into the dashboard and API.
 - The ``CRON_DELETE_OLD_RADIUSBATCH_USERS`` variable now expects the
@@ -164,7 +169,7 @@ Backward Incompatible Changes
   ``CRON_DELETE_OLD_RADIUSBATCH_USERS``.
 
 Other Changes
-+++++++++++++
+-------------
 
 - Changed cron to update OpenVPN revoke list daily at midnight.
 - Added admin URLs to the API container.
@@ -178,7 +183,7 @@ Other Changes
 - Disabled nginx ``server_tokens`` for improved security.
 
 Bugfixes
-~~~~~~~~
+========
 
 - Fixed OpenVPN cron script to download configuration at the correct path.
 - Fixed project configuration issues in the OpenWISP RADIUS module.
