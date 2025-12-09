@@ -1,2 +1,3 @@
 docker>=7.1.0,<7.2.0
 openwisp-utils[qa,selenium]~=1.2.0
+sphinx<8.0.0
