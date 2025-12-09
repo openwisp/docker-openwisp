@@ -1,6 +1,5 @@
-#################
- Docker OpenWISP
-#################
+Docker OpenWISP
+===============
 
 .. seealso::
 

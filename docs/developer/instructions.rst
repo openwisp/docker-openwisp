@@ -1,6 +1,5 @@
-################
- Developer Docs
-################
+Developer Docs
+==============
 
 .. include:: ../partials/developer-docs.rst
 
@@ -10,9 +9,8 @@
 
 .. include:: ../partials/updating-host-file.rst
 
-*****************************
- Building and Running Images
-*****************************
+Building and Running Images
+---------------------------
 
 1. Install Docker.
 2. In the root directory of the repository, run ``make develop``. Once the
@@ -30,9 +28,8 @@
       by ``docker-openwisp``, please refer to the :ref:`makefile options
       <docker_make_options>`.
 
-***************
- Running Tests
-***************
+Running Tests
+-------------
 
 You can run tests using either ``geckodriver`` (Firefox) or
 ``chromedriver`` (Chromium).
@@ -40,14 +37,14 @@ You can run tests using either ``geckodriver`` (Firefox) or
 **Chromium is preferred as it also checks for console log errors.**
 
 Using Chromedriver
-==================
+~~~~~~~~~~~~~~~~~~
 
 Install WebDriver for Chromium for your browser version from
 https://chromedriver.chromium.org/home and extract ``chromedriver`` to one
 of directories from your ``$PATH`` (example: ``~/.local/bin/``).
 
 Using Geckodriver
-=================
+~~~~~~~~~~~~~~~~~
 
 Install Geckodriver for Firefox for your browser version from
 https://github.com/mozilla/geckodriver/releases and extract
@@ -55,7 +52,7 @@ https://github.com/mozilla/geckodriver/releases and extract
 ``~/.local/bin/``).
 
 Finish Setup and Run Tests
-==========================
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. Install test requirements:
 
@@ -90,9 +87,8 @@ Finish Setup and Run Tests
 
        python3 tests/runtests.py <TestSuite>.<TestCase>
 
-******************************
- Run Quality Assurance Checks
-******************************
+Run Quality Assurance Checks
+----------------------------
 
 We use `shfmt <https://github.com/mvdan/sh#shfmt>`__ to format shell
 scripts and `hadolint <https://github.com/hadolint/hadolint#install>`__ to
@@ -113,9 +109,8 @@ To run quality assurance checks, use the ``run-qa-checks`` script:
 
 .. _docker_make_options:
 
-******************
- Makefile Options
-******************
+Makefile Options
+----------------
 
 Most commonly used:
 

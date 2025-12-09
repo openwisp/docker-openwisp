@@ -1,6 +1,5 @@
-##############
- Architecture
-##############
+Architecture
+============
 
 A typical OpenWISP installation is made of multiple components (e.g.
 application servers, background workers, web servers, database, messaging
