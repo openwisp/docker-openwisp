@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Version 25.10.1 [2025-12-19]
+----------------------------
+
+- New images with bugifx releases of openwisp-utils and
+  openwisp-notifications.
+
 Version 25.10.0 [2025-10-24]
 ----------------------------
 
