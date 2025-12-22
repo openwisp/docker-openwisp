@@ -1,4 +1,4 @@
-FROM python:3.13-slim-trixie AS system
+FROM python:3.14-slim-trixie AS system
 
 # System requirements:
 # 1. gettext: Required by envsubst used in scripts
