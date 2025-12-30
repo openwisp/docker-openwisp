@@ -241,18 +241,20 @@ if __name__ == "__main__":
     create_admin()
     # Steps for creating new vpn client template with all the
     # required objects (CA, Certificate, VPN Server).
-    default_ca = create_default_ca()
-    default_cert = create_default_cert(default_ca)
-    default_vpn = create_default_vpn(
-        default_ca,
-        default_cert,
-    )
-    create_default_vpn_template(default_vpn)
+    is_vpn_enabled = os.environ.get("VPN_DOMAIN", "") != ""
+    if is_vpn_enabled:
+        default_ca = create_default_ca()
+        default_cert = create_default_cert(default_ca)
+        default_vpn = create_default_vpn(
+            default_ca,
+            default_cert,
+        )
+        create_default_vpn_template(default_vpn)
 
     create_default_credentials()
     create_ssh_key_template()
 
-    if env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
+    if is_vpn_enabled and env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
         Topology = load_model("topology", "Topology")
         create_default_topology(default_vpn)
 

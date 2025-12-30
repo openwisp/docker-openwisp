@@ -7,6 +7,7 @@ x-celery-depends-on: &celery-depends-on
     dashboard:
       condition: service_started
     openvpn:
+      required: false
       condition: service_healthy
 
 services:
@@ -81,7 +82,7 @@ services:
     env_file:
       - .env
     <<: *celery-depends-on
-    network_mode: "service:openvpn"
+    network_mode: "${CELERY_SERVICE_NETWORK_MODE}"
 
   celery_monitoring:
     image: openwisp/openwisp-dashboard:latest
@@ -95,7 +96,7 @@ services:
     env_file:
       - .env
     <<: *celery-depends-on
-    network_mode: "service:openvpn"
+    network_mode: "${CELERY_SERVICE_NETWORK_MODE}"
 
   celerybeat:
     image: openwisp/openwisp-dashboard:latest
@@ -167,7 +168,7 @@ services:
 
   openvpn:
     image: openwisp/openwisp-openvpn:latest
-    restart: always
+    restart: on-failure
     build:
       context: images
       dockerfile: openwisp_openvpn/Dockerfile
