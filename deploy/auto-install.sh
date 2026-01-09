@@ -147,11 +147,11 @@ setup_docker_openwisp() {
 		fi
 		# VPN domain
 		if [[ -z "$vpn_domain" ]]; then
-			set_env "VPN_DOMAIN" "openvpn.${domain}"
+			set_env "OPENVPN_DOMAIN" "openvpn.${domain}"
 		elif [[ "${vpn_domain,,}" == "n" ]]; then
-			set_env "VPN_DOMAIN" "example.com"
+			set_env "OPENVPN_DOMAIN" "example.com"
 		else
-			set_env "VPN_DOMAIN" "$vpn_domain"
+			set_env "OPENVPN_DOMAIN" "$vpn_domain"
 		fi
 		# Site manager email
 		set_env "EMAIL_DJANGO_DEFAULT" "$django_default_email"
