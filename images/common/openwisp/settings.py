@@ -75,6 +75,8 @@ CORS_ALLOW_CREDENTIALS = True
 if HTTP_SCHEME == "https":
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 if HTTP_SCHEME == "http":
     DJANGO_LOCI_GEOCODE_STRICT_TEST = False
 
