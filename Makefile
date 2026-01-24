@@ -23,7 +23,7 @@ pull:
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
 		docker pull --quiet $(USER)/$${image}:$(TAG); \
-		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:$${DOCKER_TAG}; \
+		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:$${DOCKER_TAG:-latest}; \
 	done
 
 # Build
