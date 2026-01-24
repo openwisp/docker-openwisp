@@ -12,7 +12,7 @@ x-celery-depends-on: &celery-depends-on
 
 services:
   dashboard:
-    image: openwisp/openwisp-dashboard:latest
+    image: openwisp/openwisp-dashboard:${DOCKER_TAG:-latest}
     restart: always
     build:
       context: images
@@ -35,7 +35,7 @@ services:
       - influxdb
 
   api:
-    image: openwisp/openwisp-api:latest
+    image: openwisp/openwisp-api:${DOCKER_TAG:-latest}
     restart: always
     build:
       context: images
@@ -55,7 +55,7 @@ services:
       - dashboard
 
   websocket:
-    image: openwisp/openwisp-websocket:latest
+    image: openwisp/openwisp-websocket:${DOCKER_TAG:-latest}
     restart: always
     build:
       context: images
@@ -70,7 +70,7 @@ services:
       - dashboard
 
   celery:
-    image: openwisp/openwisp-dashboard:latest
+    image: openwisp/openwisp-dashboard:${DOCKER_TAG:-latest}
     restart: always
     environment:
       - MODULE_NAME=celery
@@ -85,7 +85,7 @@ services:
     network_mode: "${CELERY_SERVICE_NETWORK_MODE-service:openvpn}"
 
   celery_monitoring:
-    image: openwisp/openwisp-dashboard:latest
+    image: openwisp/openwisp-dashboard:${DOCKER_TAG:-latest}
     restart: always
     environment:
       - MODULE_NAME=celery_monitoring
@@ -99,7 +99,7 @@ services:
     network_mode: "${CELERY_SERVICE_NETWORK_MODE-service:openvpn}"
 
   celerybeat:
-    image: openwisp/openwisp-dashboard:latest
+    image: openwisp/openwisp-dashboard:${DOCKER_TAG:-latest}
     restart: always
     environment:
       - MODULE_NAME=celerybeat
@@ -113,7 +113,7 @@ services:
       - dashboard
 
   nginx:
-    image: openwisp/openwisp-nginx:latest
+    image: openwisp/openwisp-nginx:${DOCKER_TAG:-latest}
     restart: always
     build:
       context: images
@@ -140,7 +140,7 @@ services:
       - websocket
 
   freeradius:
-    image: openwisp/openwisp-freeradius:latest
+    image: openwisp/openwisp-freeradius:${DOCKER_TAG:-latest}
     restart: always
     build:
       context: images
@@ -156,7 +156,7 @@ services:
       - dashboard
 
   postfix:
-    image: openwisp/openwisp-postfix:latest
+    image: openwisp/openwisp-postfix:${DOCKER_TAG:-latest}
     restart: always
     build:
       context: images
@@ -167,7 +167,7 @@ services:
       - openwisp_certs:/etc/ssl/mail
 
   openvpn:
-    image: openwisp/openwisp-openvpn:latest
+    image: openwisp/openwisp-openvpn:${DOCKER_TAG:-latest}
     restart: on-failure
     build:
       context: images

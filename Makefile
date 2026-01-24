@@ -1,6 +1,9 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
+include .env
+export
+
 OPENWISP_VERSION = 25.10.0
 SHELL := /bin/bash
 .SILENT: clean pull start stop
@@ -20,7 +23,7 @@ pull:
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
 		docker pull --quiet $(USER)/$${image}:$(TAG); \
-		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:latest; \
+		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:$${DOCKER_TAG}; \
 	done
 
 # Build
