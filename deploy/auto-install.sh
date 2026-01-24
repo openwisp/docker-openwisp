@@ -147,9 +147,11 @@ setup_docker_openwisp() {
 		fi
 		# VPN domain
 		if [[ -z "$vpn_domain" ]]; then
-			set_env "OPENVPN_DOMAIN" "openvpn.${domain}"
+			set_env "VPN_DOMAIN" "openvpn.${domain}"
+			set_env CELERY_SERVICE_NETWORK_MODE "service:openvpn"
 		elif [[ "${vpn_domain,,}" == "n" ]]; then
-			set_env "OPENVPN_DOMAIN" "example.com"
+			set_env "VPN_DOMAIN" ""
+			set_env CELERY_SERVICE_NETWORK_MODE ""
 		else
 			set_env "OPENVPN_DOMAIN" "$vpn_domain"
 		fi

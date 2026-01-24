@@ -399,6 +399,19 @@ framework.
 - **Valid Values:** STRING.
 - **Default:** ``--concurrency=1``.
 
+``CELERY_SERVICE_NETWORK_MODE``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Controls the Docker network mode for `celery` and
+  `celery_monitoring` workers. Default ``service:openvpn`` shares the
+  OpenVPN container's network namespace so workers can reach VPN-connected
+  devices. Set to an empty string ``""`` to use the default bridge network
+  when you need direct LAN access to devices (the auto-install script sets
+  this to ``""`` if OpenVPN is disabled).
+- **Valid Values:** Docker network mode (e.g. ``service:<name>``,
+  ``host``) or empty string (``""``).
+- **Default:** ``service:openvpn``
+
 ``OPENWISP_CUSTOM_OPENWRT_IMAGES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
