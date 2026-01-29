@@ -1040,7 +1040,7 @@ X509 Certificates
 - **Explanation:** ISO code of the country of issuance of the certificate.
 - **Valid Values:** Country code, see list `here
   <https://countrycode.org/>`__.
-- **Default:** ``IN``.
+- **Default:** ``CH``.
 
 ``X509_STATE``
 ~~~~~~~~~~~~~~
@@ -1048,14 +1048,14 @@ X509 Certificates
 - **Explanation:** Name of the state / province of issuance of the
   certificate.
 - **Valid Values:** STRING.
-- **Default:** ``Delhi``.
+- **Default:** ``Geneva``.
 
 ``X509_CITY``
 ~~~~~~~~~~~~~
 
 - **Explanation:** Name of the city of issuance of the certificate.
 - **Valid Values:** STRING.
-- **Default:** ``New Delhi``.
+- **Default:** ``Geneva``.
 
 ``X509_ORGANIZATION_NAME``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
