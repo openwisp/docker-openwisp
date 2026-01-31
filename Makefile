@@ -1,7 +1,7 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
-OPENWISP_VERSION = 25.10.1
+OPENWISP_VERSION = 25.10.2
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 

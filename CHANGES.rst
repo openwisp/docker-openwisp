@@ -1,6 +1,30 @@
 Changelog
 =========
 
+Version 25.10.2 [2026-01-31]
+----------------------------
+
+Changes
+~~~~~~~
+
+Dependencies
+++++++++++++
+
+- Bump python in /images/openwisp_base
+- Updated base debian image `#545
+  <https://github.com/openwisp/docker-openwisp/issues/545>`_
+- Update boto3 requirement in /images
+- Bump alpine from 3.22 to 3.23 in /images/openwisp_postfix
+- Bump nginx in /images/openwisp_nginx
+- Bump alpine from 3.22 to 3.23 in /images/openwisp_nfs
+
+Bugfixes
+~~~~~~~~
+
+- Made OpenVPN container optional `#490
+  <https://github.com/openwisp/docker-openwisp/issues/490>`_
+- Fixed duplicated conflicting `Referrer-Policy` header
+
 Version 25.10.1 [2025-12-19]
 ----------------------------
 
