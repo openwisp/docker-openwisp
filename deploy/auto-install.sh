@@ -153,7 +153,7 @@ setup_docker_openwisp() {
 			set_env "VPN_DOMAIN" ""
 			set_env CELERY_SERVICE_NETWORK_MODE ""
 		else
-			set_env "VPN_DOMAIN" "$vpn_domain"
+			set_env "OPENVPN_DOMAIN" "$vpn_domain"
 		fi
 		# Site manager email
 		set_env "EMAIL_DJANGO_DEFAULT" "$django_default_email"

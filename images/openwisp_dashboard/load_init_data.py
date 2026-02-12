@@ -83,7 +83,7 @@ def create_default_cert(ca):
 
 def create_default_vpn(ca, cert):
     """Creates default vpn."""
-    vpn_name = os.environ["VPN_NAME"]
+    vpn_name = os.environ["OPENVPN_NAME"]
     if Vpn.objects.exists():
         try:
             vpn = Vpn.objects.get(name=vpn_name)
@@ -104,7 +104,7 @@ def create_default_vpn(ca, cert):
                 "you may modify these settings and they will soon reflect "
                 "in your OpenVPN Server instance."
             ),
-            host=os.environ["VPN_DOMAIN"],
+            host=os.environ["OPENVPN_DOMAIN"],
             backend="openwisp_controller.vpn_backends.OpenVpn",
         )
         with open("openvpn.json", "r") as json_file:
@@ -120,7 +120,7 @@ def create_default_vpn(ca, cert):
 
 def create_default_vpn_template(vpn):
     """Creates default vpn client template."""
-    template_name = os.environ["VPN_CLIENT_NAME"]
+    template_name = os.environ["OPENVPN_CLIENT_NAME"]
     if Template.objects.filter(vpn=vpn).exists():
         return Template.objects.get(vpn=vpn)
 

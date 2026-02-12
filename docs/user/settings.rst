@@ -25,7 +25,7 @@ Additionally, you can search for the following prefixes:
 - ``DASHBOARD_``: Settings specific to the OpenWISP dashboard.
 - ``API_``: Settings specific to the OpenWISP API.
 - ``X509_``: Configurations related to x509 CA and certificates.
-- ``VPN_``: Default VPN and VPN template configurations.
+- ``OPENVPN_``: Default OpenVPN and OpenVPN template configurations.
 - ``CRON_``: Periodic task configurations.
 - ``EXPORT_``: NFS server configurations.
 
@@ -57,8 +57,8 @@ properly on your system.
 
 .. _vpn_domain:
 
-``VPN_DOMAIN``
-~~~~~~~~~~~~~~
+``OPENVPN_DOMAIN``
+~~~~~~~~~~~~~~~~~~
 
 - **Explanation:** Valid domain / IP address to reach the OpenVPN server.
 - **Valid Values:** Any valid domain or IP address.
@@ -988,15 +988,15 @@ Nginx
 OpenVPN
 -------
 
-``VPN_NAME``
-~~~~~~~~~~~~
+``OPENVPN_NAME``
+~~~~~~~~~~~~~~~~
 
-- **Explanation:** Name of the VPN Server that will be visible on the
+- **Explanation:** Name of the OpenVPN Server that will be visible on the
   OpenWISP dashboard.
 - **Valid Values:** STRING.
 - **Default:** ``default``.
 
-``VPN_CLIENT_NAME``
+``OPENVPN_CLIENT_NAME``
 ~~~~~~~~~~~~~~~~~~~
 
 - **Explanation:** Name of the VPN client template that will be visible on
