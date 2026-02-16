@@ -4,7 +4,7 @@
 include .env
 export
 
-OPENWISP_VERSION = 25.10.0
+RELEASE_VERSION = 25.10.0
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 
@@ -23,7 +23,7 @@ pull:
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
 		docker pull --quiet $(USER)/$${image}:$(TAG); \
-		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:$${DOCKER_TAG:-latest}; \
+		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:$${OPENWISP_VERSION:-edge}; \
 	done
 
 # Build
@@ -120,4 +120,4 @@ publish:
 
 release:
 	make publish TAG=latest SKIP_TESTS=true
-	make publish TAG=$(OPENWISP_VERSION) SKIP_BUILD=true SKIP_TESTS=true
+	make publish TAG=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true

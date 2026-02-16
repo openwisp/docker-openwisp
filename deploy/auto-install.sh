@@ -62,7 +62,7 @@ get_version_from_user() {
 	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
 	read openwisp_version
 	if [[ -z "$openwisp_version" ]]; then
-		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)
+		openwisp_version="latest"
 	fi
 }
 
@@ -128,7 +128,7 @@ setup_docker_openwisp() {
 
 	cd $INSTALL_PATH &>>$LOG_FILE
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >$INSTALL_PATH/VERSION
+	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	if [[ ! -f "$env_path" ]]; then
 		# Dashboard Domain
@@ -179,7 +179,7 @@ setup_docker_openwisp() {
 	start_step "Configuring docker-openwisp..."
 	report_ok
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start -C $INSTALL_PATH/ &>>$LOG_FILE	
 	check_status $? "Starting openwisp failed."
 }
 
@@ -192,7 +192,7 @@ upgrade_docker_openwisp() {
 
 	cd $INSTALL_PATH &>>$LOG_FILE
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >$INSTALL_PATH/VERSION
+	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	start_step "Configuring docker-openwisp..."
 	for config in $(grep '=' $ENV_BACKUP | cut -f1 -d'='); do
@@ -202,7 +202,7 @@ upgrade_docker_openwisp() {
 	report_ok
 
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start -C $INSTALL_PATH/ &>>$LOG_FILE	
 	check_status $? "Starting openwisp failed."
 }
 
