@@ -22,8 +22,9 @@ pull:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		docker pull --quiet $(USER)/$${image}:$(TAG); \
-		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:$${OPENWISP_VERSION:-edge}; \
+				version=$${OPENWISP_VERSION:-edge}; \
+				docker pull --quiet $(USER)/$${image}:$${version}; \
+				docker tag  $(USER)/$${image}:$${version} openwisp/$${image}:$${version}; \	
 	done
 
 # Build

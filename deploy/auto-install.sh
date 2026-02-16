@@ -87,7 +87,7 @@ download_docker_openwisp() {
 		rm -rf $INSTALL_PATH &>>$LOG_FILE
 	fi
 	if [ -z "$GIT_BRANCH" ]; then
-		if [[ "$openwisp_version" == "edge" ]]; then
+		if [[ "$openwisp_version" == "edge" || "$openwisp_version" == "latest" ]]; then
 			GIT_BRANCH="master"
 		else
 			GIT_BRANCH="$openwisp_version"
