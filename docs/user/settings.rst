@@ -72,14 +72,6 @@ properly on your system.
   <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`__.
 - **Default:** ``UTC``.
 
-``CERT_ADMIN_EMAIL``
-~~~~~~~~~~~~~~~~~~~~
-
-- **Explanation:** Required by certbot. Email used for registration and
-  recovery contact.
-- **Valid Values:** A comma separated list of valid email addresses.
-- **Default:** ``example@example.com``.
-
 ``SSL_CERT_MODE``
 ~~~~~~~~~~~~~~~~~
 
