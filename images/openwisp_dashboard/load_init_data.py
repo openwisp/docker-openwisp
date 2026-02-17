@@ -196,6 +196,19 @@ def create_ssh_key_template():
     return template
 
 
+def update_default_site():
+    """Update default site with DASHBOARD_DOMAIN."""
+    if "django.contrib.sites" in settings.INSTALLED_APPS:
+        from django.contrib.sites.models import Site
+
+        site = Site.objects.first()
+        dashboard_domain = os.environ.get("DASHBOARD_DOMAIN", "")
+        if site and "example.com" in [site.name, site.domain] and dashboard_domain:
+            site.name = dashboard_domain
+            site.domain = dashboard_domain
+            site.save()
+
+
 def create_default_topology(vpn):
     """Creates Topology object for the default VPN."""
     if vpn.backend == "openwisp_controller.vpn_backends.OpenVpn":
@@ -239,6 +252,7 @@ if __name__ == "__main__":
     redis_client = redis.Redis.from_url(settings.CACHES["default"]["LOCATION"])
 
     create_admin()
+    update_default_site()
     # Steps for creating new vpn client template with all the
     # required objects (CA, Certificate, VPN Server).
     is_vpn_enabled = os.environ.get("VPN_DOMAIN", "") != ""
