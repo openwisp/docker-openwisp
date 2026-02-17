@@ -11,6 +11,8 @@ default: compose-build
 
 USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG = edge
+OPENWISP_VERSION ?= edge
+IMAGE_OWNER ?= openwisp
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
 SKIP_TESTS ?= false
