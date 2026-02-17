@@ -2,7 +2,6 @@
 # the heading "Makefile Options".
 
 include .env
-export
 
 RELEASE_VERSION = 25.10.0
 SHELL := /bin/bash
@@ -22,9 +21,8 @@ pull:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-				version=$${OPENWISP_VERSION:-edge}; \
-				docker pull --quiet $(USER)/$${image}:$${version}; \
-				docker tag  $(USER)/$${image}:$${version} openwisp/$${image}:$${version}; \	
+		docker pull --quiet $(USER)/$${image}:$(OPENWISP_VERSION); \
+		docker tag  $(USER)/$${image}:$(OPENWISP_VERSION) $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION); \
 	done
 
 # Build
@@ -45,11 +43,13 @@ base-build:
 	             $$BUILD_ARGS; \
 	docker build --tag openwisp/openwisp-base:latest \
 	             --file ./images/openwisp_base/Dockerfile ./images/ \
-	             $$BUILD_ARGS
+	             $$BUILD_ARGS; \
+	docker tag openwisp/openwisp-base:latest $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION)
 
 nfs-build:
 	docker build --tag openwisp/openwisp-nfs:latest \
-	             --file ./images/openwisp_nfs/Dockerfile ./images/
+	             --file ./images/openwisp_nfs/Dockerfile ./images/; \
+	docker tag openwisp/openwisp-nfs:latest $(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION)
 
 compose-build: base-build
 	docker compose build --parallel
@@ -80,6 +80,8 @@ clean:
 				openwisp/openwisp-base:intermedia-system \
 				openwisp/openwisp-base:intermedia-python \
 				openwisp/openwisp-nfs:latest \
+				$(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
+				$(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
 				`docker images -f "dangling=true" -q` \
 				`docker images | grep openwisp/docker-openwisp | tr -s ' ' | cut -d ' ' -f 3` &> /dev/null
 
@@ -109,10 +111,7 @@ publish:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		# Docker images built locally are tagged "latest" by default. \
-		# This script updates the tag of each built image to a user-defined tag \
-		# and pushes the newly tagged image to a Docker registry under the user's namespace. \
-		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
+		docker tag $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION) $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
 		if [ "$(TAG)" != "latest" ]; then \
 			docker rmi $(USER)/$${image}:$(TAG); \

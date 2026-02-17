@@ -59,11 +59,11 @@ apt_dependenices_setup() {
 }
 
 get_version_from_user() {
-	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
-	read openwisp_version
-	if [[ -z "$openwisp_version" ]]; then
-		openwisp_version="latest"
-	fi
+    echo -ne ${GRN}"OpenWISP Version (leave blank for latest stable release): "${NON}
+    read openwisp_version
+    if [[ -z "$openwisp_version" ]]; then
+        openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)
+    fi
 }
 
 setup_docker() {
@@ -87,7 +87,7 @@ download_docker_openwisp() {
 		rm -rf $INSTALL_PATH &>>$LOG_FILE
 	fi
 	if [ -z "$GIT_BRANCH" ]; then
-		if [[ "$openwisp_version" == "edge" || "$openwisp_version" == "latest" ]]; then
+		if [[ "$openwisp_version" == "edge" ]]; then
 			GIT_BRANCH="master"
 		else
 			GIT_BRANCH="$openwisp_version"
@@ -179,7 +179,7 @@ setup_docker_openwisp() {
 	start_step "Configuring docker-openwisp..."
 	report_ok
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start -C $INSTALL_PATH/ &>>$LOG_FILE	
+	make start -C $INSTALL_PATH/ &>>$LOG_FILE
 	check_status $? "Starting openwisp failed."
 }
 
@@ -202,7 +202,7 @@ upgrade_docker_openwisp() {
 	report_ok
 
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start -C $INSTALL_PATH/ &>>$LOG_FILE	
+	make start -C $INSTALL_PATH/ &>>$LOG_FILE
 	check_status $? "Starting openwisp failed."
 }
 
