@@ -124,7 +124,7 @@ def create_default_vpn_template(vpn):
     if Template.objects.filter(vpn=vpn).exists():
         return Template.objects.get(vpn=vpn)
 
-    template = Template.objects.create(
+    template = Template(
         auto_cert=True,
         name=template_name,
         type="vpn",
@@ -134,6 +134,7 @@ def create_default_vpn_template(vpn):
         default=True,
     )
     template.full_clean()
+    template.config["openvpn"][0]["log"] = "/var/log/tun0.log"
     template.save()
     return template
 
