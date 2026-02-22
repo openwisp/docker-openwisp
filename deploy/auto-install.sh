@@ -103,6 +103,32 @@ setup_docker_openwisp() {
 	echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
 	read env_path
 	if [[ ! -f "$env_path" ]]; then
+		if [[ ! -f "$INSTALL_PATH/.env" ]] && docker volume inspect "docker-openwisp_postgres_data" &>/dev/null; then
+			{
+				echo -e "${RED}CRITICAL: Existing database volume detected!${NON}"
+				echo ""
+				echo "The Docker volume \"docker-openwisp_postgres_data\" already exists on this system."
+				echo "This likely means there is database data from a previous OpenWISP installation."
+				echo ""
+				echo "The auto-install script generates new database credentials during fresh installations."
+				echo "If it proceeds while this volume exists, the newly generated credentials will not"
+				echo "match the credentials stored in the existing database, making the database"
+				echo "inaccessible to OpenWISP."
+				echo ""
+				echo -e "${RED}⚠️  WARNING: The commands below will permanently delete the database volume and all"
+				echo -e "stored data. Run them only if you intentionally want to wipe the previous installation"
+				echo -e "or have a verified backup. Proceed at your own discretion.${NON}"
+				echo ""
+				echo "Cleanup commands:"
+				echo -e "  ${YLW}cd /opt/openwisp/docker-openwisp && docker compose down --volumes${NON}"
+				echo "or"
+				echo -e "  ${YLW}docker volume rm docker-openwisp_postgres_data${NON}"
+				echo ""
+				echo "Aborting installation to prevent credential mismatch."
+				echo -e "${RED}Check logs at $LOG_FILE${NON}"
+			} | tee -a "$LOG_FILE"
+			exit 1
+		fi
 		# Dashboard Domain
 		echo -ne ${GRN}"(1/5) Enter dashboard domain: "${NON}
 		read dashboard_domain
