@@ -1,7 +1,7 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
-include .env # The .env file can override variables in the Makefile, if needed
+include .env # The .env file can override ?= variables in the Makefile (e.g. OPENWISP_VERSION, IMAGE_OWNER)
 
 # RELEASE_VERSION: version string used when tagging a new release.
 RELEASE_VERSION = 25.10.0
@@ -124,5 +124,5 @@ publish:
 	done
 
 release:
-	make publish TAG=latest SKIP_TESTS=true
-	make publish TAG=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true
+	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
+	make publish TAG=$(RELEASE_VERSION) OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true
