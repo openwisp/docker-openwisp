@@ -1,8 +1,9 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
-include .env
+include .env # The .env file can override variables in the Makefile, if needed
 
+# RELEASE_VERSION: version string used when tagging a new release.
 RELEASE_VERSION = 25.10.0
 SHELL := /bin/bash
 .SILENT: clean pull start stop
@@ -11,6 +12,8 @@ default: compose-build
 
 USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG = edge
+# OPENWISP_VERSION: image tag used for pulling/pushing images (e.g. "edge", "latest", "25.10.0")
+# Can be overridden via .env or command line. Not the same as RELEASE_VERSION
 OPENWISP_VERSION ?= edge
 IMAGE_OWNER ?= openwisp
 SKIP_PULL ?= false
