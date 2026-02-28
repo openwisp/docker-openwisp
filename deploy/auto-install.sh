@@ -1,10 +1,7 @@
 #!/bin/bash
 
 export DEBIAN_FRONTEND=noninteractive
-export INSTALL_PATH=/opt/openwisp/docker-openwisp
-export LOG_FILE=/opt/openwisp/autoinstall.log
-export ENV_USER=/opt/openwisp/config.env
-export ENV_BACKUP=/opt/openwisp/backup.env
+export USER_INSTALL_PATH=/opt/openwisp
 export GIT_PATH=${GIT_PATH:-https://github.com/openwisp/docker-openwisp.git}
 
 # Terminal colors
@@ -72,8 +69,8 @@ setup_docker() {
 	if [ $? -eq 0 ]; then
 		report_ok
 	else
-		curl -fsSL 'https://get.docker.com' -o '/opt/openwisp/get-docker.sh' &>>$LOG_FILE
-		sh '/opt/openwisp/get-docker.sh' &>>$LOG_FILE
+		curl -fsSL 'https://get.docker.com' -o '${USER_INSTALL_PATH}/get-docker.sh' &>>$LOG_FILE
+		sh '${USER_INSTALL_PATH}/get-docker.sh' &>>$LOG_FILE
 		docker info &>/dev/null
 		check_status $? "Docker installation failed."
 	fi
@@ -251,7 +248,7 @@ init_setup() {
 		echo -e "  - Supported systems"
 		echo -e "    - Debian: 11, 12 & 13"
 		echo -e "    - Ubuntu 22.04 & 24.04"
-		echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
+		echo -e ${YLW}"\nYou can use -u\--upgrade ${USER_INSTALL_PATH} if you are upgrading from an older version.\n"${NON}
 	fi
 
 	if [ "$EUID" -ne 0 ]; then
@@ -259,7 +256,7 @@ init_setup() {
 		exit 1
 	fi
 
-	mkdir -p /opt/openwisp
+	mkdir -p ${USER_INSTALL_PATH}
 	echo "" >$LOG_FILE
 
 	start_step "Checking your system capabilities..."
@@ -299,8 +296,8 @@ init_help() {
 	echo -e "  - Supported systems"
 	echo -e "    - Debian: 11, 12 & 13"
 	echo -e "    - Ubuntu 22.04 & 24.04\n"
-	echo -e "  -i\--install : (default) Install OpenWISP"
-	echo -e "  -u\--upgrade : Change OpenWISP version already setup with this script"
+	echo -e "  -i\--install [install-path]: (default) Install OpenWISP. Default path is /opt/openwisp"
+	echo -e "  -u\--upgrade [install-path]: Change OpenWISP version already setup with this script"
 	echo -e "  -h\--help    : See this help message"
 	echo -e ${NON}
 }
@@ -313,8 +310,21 @@ while test $# != 0; do
 	-h | --help) action='help' ;;
 	*) action='help' ;;
 	esac
+	case "$1" in
+	-i | --install | -u | --upgrade)
+		if [[ -n "$2" ]]; then
+			USER_INSTALL_PATH=$(realpath -m "$2")
+		fi
+		shift
+		;;
+	esac
 	shift
 done
+
+export INSTALL_PATH=${USER_INSTALL_PATH}/docker-openwisp
+export LOG_FILE=${USER_INSTALL_PATH}/autoinstall.log
+export ENV_USER=${USER_INSTALL_PATH}/config.env
+export ENV_BACKUP=${USER_INSTALL_PATH}/backup.env
 
 ## Init script
 if [[ "$action" == "help" ]]; then
