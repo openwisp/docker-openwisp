@@ -12,7 +12,7 @@
       "comp_lzo": "no",
       "auth": "SHA1",
       "data_ciphers": "AES-128-GCM:none",
-      "data_ciphers_fallback": "AES-128-GCM:none",
+      "data_ciphers_fallback": "AES-128-GCM",
       "cipher": "AES-128-GCM",
       "engine": "",
       "ca": "ca.pem",
