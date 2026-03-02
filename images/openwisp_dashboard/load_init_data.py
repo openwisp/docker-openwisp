@@ -133,9 +133,12 @@ def create_default_vpn_template(vpn):
         vpn=vpn,
         default=True,
     )
+    # The config field is auto-generated on full_clean()
     template.full_clean()
-    if template.config.get("openvpn", []) and len(template.config["openvpn"]) > 0:
+    if template.config.get("openvpn"):
         template.config["openvpn"][0]["log"] = "/var/log/tun0.log"
+    # Verify that the config is still valid.
+    template.full_clean()
     template.save()
     return template
 
@@ -203,13 +206,15 @@ def update_default_site():
     if "django.contrib.sites" in settings.INSTALLED_APPS:
         from django.contrib.sites.models import Site
 
-        site = Site.objects.get(pk=settings.SITE_ID)
+        try:
+            site = Site.objects.get(pk=settings.SITE_ID)
+        except Site.DoesNotExist:
+            # Optionally log a message here if desired
+            return
         dashboard_domain = os.environ.get("DASHBOARD_DOMAIN", "")
         if (
-            site
-            and (site.name == "example.com" or site.domain == "example.com")
-            and dashboard_domain
-        ):
+            site.name == "example.com" or site.domain == "example.com"
+        ) and dashboard_domain:
             site.name = dashboard_domain
             site.domain = dashboard_domain
             site.full_clean()
