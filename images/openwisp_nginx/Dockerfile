@@ -1,4 +1,4 @@
-FROM nginx:1.29.4-alpine
+FROM nginx:1.29.5-alpine
 
 # hadolint ignore=DL3018
 RUN apk add --update --no-cache \
@@ -26,7 +26,6 @@ ENV MODULE_NAME=nginx \
     DOLLAR=$ \
     TZ=UTC \
     SSL_CERT_MODE=Yes \
-    CERT_ADMIN_EMAIL=example@example.com \
     NGINX_HTTP2=http2 \
     NGINX_CLIENT_BODY_SIZE=30 \
     NGINX_ADMIN_ALLOW_NETWORK=all \
