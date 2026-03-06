@@ -1,5 +1,5 @@
 # hadolint ignore=DL3007
-FROM kylemanna/openvpn:2.4
+FROM lisenet/openvpn:2.6.17
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
