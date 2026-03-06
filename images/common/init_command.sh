@@ -58,6 +58,9 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 		nginx -g 'daemon off;'
 	fi
 	envsubst </etc/nginx/nginx.template.conf >/etc/nginx/nginx.conf
+	sed -i '/__UNSET__/d; /^worker_rlimit_nofile *$/d; /^[ \t]*$/d' /etc/nginx/nginx.conf
+	NGINX_EVENTS_BLOCK=$(printf "%b" "$NGINX_EVENTS_BLOCK")
+	echo "$NGINX_EVENTS_BLOCK"
 	envsubst_create_config /etc/nginx/openwisp.internal.template.conf internal INTERNAL
 	if [ "$SSL_CERT_MODE" = 'Yes' ]; then
 		nginx_prod

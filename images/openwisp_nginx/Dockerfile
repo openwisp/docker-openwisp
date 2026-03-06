@@ -42,6 +42,9 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_MIN_LENGTH=1000 \
     NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
     NGINX_CUSTOM_FILE=False \
+    NGINX_WORKER_PROCESSES=1 \
+    NGINX_WORKER_CONNECTIONS=1024 \
+    NGINX_EVENTS_BLOCK='' \
     NINGX_REAL_REMOTE_ADDR='$real_ip' \
     NGINX_SSL_PORT=443 \
     # USWGI pass_port
