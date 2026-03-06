@@ -8,8 +8,10 @@ from utils import uwsgi_curl
 
 
 def database_status():
+    import psycopg
+
     try:
-        psycopg2.connect(
+        psycopg.connect(
             dbname=os.environ["DB_NAME"],
             user=os.environ["DB_USER"],
             password=os.environ["DB_PASS"],
@@ -20,7 +22,7 @@ def database_status():
             sslkey=os.environ["DB_SSLKEY"],
             sslrootcert=os.environ["DB_SSLROOTCERT"],
         )
-    except psycopg2.OperationalError:
+    except psycopg.OperationalError:
         time.sleep(3)
         return False
     else:
@@ -74,8 +76,6 @@ if __name__ == "__main__":
     arguments = sys.argv[1:]
     # Database Connection
     if "database" in arguments:
-        import psycopg2
-
         print("Waiting for database to become available...")
         connected = False
         while not connected:

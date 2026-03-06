@@ -1,7 +1,7 @@
 channels_redis
 service_identity
 django-redis
-psycopg2
+psycopg[binary,pool]
 sentry-sdk
 supervisor>=4.3.0,<4.4.0
 django-cors-headers>=4.9.0,<4.10.0
