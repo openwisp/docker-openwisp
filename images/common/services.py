@@ -11,7 +11,7 @@ def database_status():
     import psycopg
 
     try:
-        psycopg.connect(
+        with psycopg.connect(
             dbname=os.environ["DB_NAME"],
             user=os.environ["DB_USER"],
             password=os.environ["DB_PASS"],
@@ -21,7 +21,8 @@ def database_status():
             sslcert=os.environ["DB_SSLCERT"],
             sslkey=os.environ["DB_SSLKEY"],
             sslrootcert=os.environ["DB_SSLROOTCERT"],
-        )
+        ):
+            pass
     except psycopg.OperationalError:
         time.sleep(3)
         return False
