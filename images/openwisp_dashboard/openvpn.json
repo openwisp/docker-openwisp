@@ -11,7 +11,18 @@
       "local": "",
       "comp_lzo": "no",
       "auth": "SHA1",
-      "cipher": "none",
+      "data_ciphers": [
+          {
+              "cipher": "AES-128-GCM",
+              "optional": false
+          },
+          {
+              "cipher": "none",
+              "optional": false
+          }
+      ],
+      "data_ciphers_fallback": "AES-128-GCM",
+      "cipher": "AES-128-GCM",
       "engine": "",
       "ca": "ca.pem",
       "cert": "cert.pem",
