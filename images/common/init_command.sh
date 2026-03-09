@@ -58,9 +58,9 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 		nginx -g 'daemon off;'
 	fi
 	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
-	NGINX_WORKER_RLIMIT_NOFILE="${NGINX_WORKER_RLIMIT_NOFILE:-__UNSET__}"
+	export NGINX_WORKER_RLIMIT_NOFILE="${NGINX_WORKER_RLIMIT_NOFILE:-__UNSET__}"
 	envsubst </etc/nginx/nginx.template.conf >/etc/nginx/nginx.conf
-	sed -i '/__UNSET__/d; /^worker_rlimit_nofile *$/d; /^[ \t]*$/d' /etc/nginx/nginx.conf
+	sed -i '/__UNSET__/d; /^worker_rlimit_nofile *$/d; /^[[:space:]]*$/d' /etc/nginx/nginx.conf
 	envsubst_create_config /etc/nginx/openwisp.internal.template.conf internal INTERNAL
 	if [ "$SSL_CERT_MODE" = 'Yes' ]; then
 		nginx_prod
