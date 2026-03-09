@@ -57,7 +57,7 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 	if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
 		nginx -g 'daemon off;'
 	fi
-	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
+	export NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
 	export NGINX_WORKER_RLIMIT_NOFILE="${NGINX_WORKER_RLIMIT_NOFILE:-__UNSET__}"
 	envsubst </etc/nginx/nginx.template.conf >/etc/nginx/nginx.conf
 	sed -i '/__UNSET__/d; /^worker_rlimit_nofile *$/d; /^[[:space:]]*$/d' /etc/nginx/nginx.conf
