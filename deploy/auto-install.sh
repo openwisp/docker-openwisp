@@ -11,17 +11,17 @@ export YLW='\033[1;33m'
 export BLU='\033[1;34m'
 export NON='\033[0m'
 
-start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>>$LOG_FILE; }
+start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>>"$LOG_FILE"; }
 report_ok() { echo -e ${GRN}" done"${NON}; }
 report_error() { echo -e ${RED}" error"${NON}; }
 get_env() { grep "^$1" "$2" | cut -d'=' -f 2-50; }
 set_env() {
-	line=$(grep -n "^$1=" $INSTALL_PATH/.env)
+	line=$(grep -n "^$1=" "$INSTALL_PATH/.env")
 	if [ -z "$line" ]; then
-		echo "$1=$2" >>$INSTALL_PATH/.env
+		echo "$1=$2" >>"$INSTALL_PATH/.env"
 	else
 		line_number=$(echo $line | cut -f1 -d:)
-		eval $(echo "awk -i inplace 'NR=="${line_number}" {\$0=\"${1}=${2}\"}1' $INSTALL_PATH/.env")
+		eval $(echo "awk -i inplace 'NR=="${line_number}" {\$0=\"${1}=${2}\"}1' \"$INSTALL_PATH/.env\"")
 	fi
 }
 
@@ -51,7 +51,7 @@ error_msg_with_continue() {
 
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
-	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl jq &>>$LOG_FILE
+	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl jq &>>"$LOG_FILE"
 	check_status $? "Python dependencies installation failed."
 }
 
@@ -69,8 +69,8 @@ setup_docker() {
 	if [ $? -eq 0 ]; then
 		report_ok
 	else
-		curl -fsSL 'https://get.docker.com' -o '${USER_INSTALL_PATH}/get-docker.sh' &>>$LOG_FILE
-		sh '${USER_INSTALL_PATH}/get-docker.sh' &>>$LOG_FILE
+		curl -fsSL 'https://get.docker.com' -o "${USER_INSTALL_PATH}/get-docker.sh" &>>"$LOG_FILE"
+		sh "${USER_INSTALL_PATH}/get-docker.sh" &>>"$LOG_FILE"
 		docker info &>/dev/null
 		check_status $? "Docker installation failed."
 	fi
@@ -79,9 +79,9 @@ setup_docker() {
 download_docker_openwisp() {
 	local openwisp_version="$1"
 	start_step "Downloading docker-openwisp..."
-	if [[ -f $INSTALL_PATH/.env ]]; then
-		mv $INSTALL_PATH/.env $ENV_BACKUP &>>$LOG_FILE
-		rm -rf $INSTALL_PATH &>>$LOG_FILE
+	if [[ -f "$INSTALL_PATH/.env" ]]; then
+		mv "$INSTALL_PATH/.env" "$ENV_BACKUP" &>>"$LOG_FILE"
+		rm -rf "$INSTALL_PATH" &>>"$LOG_FILE"
 	fi
 	if [ -z "$GIT_BRANCH" ]; then
 		if [[ "$openwisp_version" == "edge" ]]; then
@@ -91,7 +91,7 @@ download_docker_openwisp() {
 		fi
 	fi
 
-	git clone $GIT_PATH $INSTALL_PATH --depth 1 --branch $GIT_BRANCH &>>$LOG_FILE
+	git clone "$GIT_PATH" "$INSTALL_PATH" --depth 1 --branch "$GIT_BRANCH" &>>"$LOG_FILE"
 }
 
 setup_docker_openwisp() {
@@ -117,15 +117,15 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(5/5) Use Let's Encrypt SSL? (y/N, blank for no): "${NON}
 		read use_letsencrypt
 	else
-		cp $env_path $ENV_USER &>>$LOG_FILE
+		cp "$env_path" "$ENV_USER" &>>"$LOG_FILE"
 	fi
 	echo ""
 
 	download_docker_openwisp "$openwisp_version"
 
-	cd $INSTALL_PATH &>>$LOG_FILE
+	cd "$INSTALL_PATH" &>>"$LOG_FILE"
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >$INSTALL_PATH/VERSION
+	echo $openwisp_version >"$INSTALL_PATH/VERSION"
 
 	if [[ ! -f "$env_path" ]]; then
 		# Dashboard Domain
@@ -155,8 +155,8 @@ setup_docker_openwisp() {
 		# Site manager email
 		set_env "EMAIL_DJANGO_DEFAULT" "$django_default_email"
 		# Set random secret values
-		python3 $INSTALL_PATH/build.py change-secret-key >/dev/null
-		python3 $INSTALL_PATH/build.py change-database-credentials >/dev/null
+		python3 "$INSTALL_PATH/build.py" change-secret-key >/dev/null
+		python3 "$INSTALL_PATH/build.py" change-database-credentials >/dev/null
 		# SSL Configuration
 		use_letsencrypt_lower=$(echo "$use_letsencrypt" | tr '[:upper:]' '[:lower:]')
 		if [[ "$use_letsencrypt_lower" == "y" || "$use_letsencrypt_lower" == "yes" ]]; then
@@ -169,14 +169,14 @@ setup_docker_openwisp() {
 		set_env "POSTFIX_ALLOWED_SENDER_DOMAINS" "$hostname"
 		set_env "POSTFIX_MYHOSTNAME" "$hostname"
 	else
-		mv $ENV_USER $INSTALL_PATH/.env &>>$LOG_FILE
-		rm -rf $ENV_USER &>>$LOG_FILE
+		mv "$ENV_USER" "$INSTALL_PATH/.env" &>>"$LOG_FILE"
+		rm -rf "$ENV_USER" &>>"$LOG_FILE"
 	fi
 
 	start_step "Configuring docker-openwisp..."
 	report_ok
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start TAG=$(cat "$INSTALL_PATH/VERSION") -C "$INSTALL_PATH/" &>>"$LOG_FILE"
 	check_status $? "Starting openwisp failed."
 }
 
@@ -187,19 +187,19 @@ upgrade_docker_openwisp() {
 
 	download_docker_openwisp "$openwisp_version"
 
-	cd $INSTALL_PATH &>>$LOG_FILE
+	cd "$INSTALL_PATH" &>>"$LOG_FILE"
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >$INSTALL_PATH/VERSION
+	echo $openwisp_version >"$INSTALL_PATH/VERSION"
 
 	start_step "Configuring docker-openwisp..."
-	for config in $(grep '=' $ENV_BACKUP | cut -f1 -d'='); do
+	for config in $(grep '=' "$ENV_BACKUP" | cut -f1 -d'='); do
 		value=$(get_env "$config" "$ENV_BACKUP")
 		set_env "$config" "$value"
 	done
 	report_ok
 
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start TAG=$(cat "$INSTALL_PATH/VERSION") -C "$INSTALL_PATH/" &>>"$LOG_FILE"
 	check_status $? "Starting openwisp failed."
 }
 
@@ -256,12 +256,12 @@ init_setup() {
 		exit 1
 	fi
 
-	mkdir -p ${USER_INSTALL_PATH}
-	echo "" >$LOG_FILE
+	mkdir -p "${USER_INSTALL_PATH}"
+	echo "" >"$LOG_FILE"
 
 	start_step "Checking your system capabilities..."
-	apt update &>>$LOG_FILE
-	apt -qq --yes install lsb-release &>>$LOG_FILE
+	apt update &>>"$LOG_FILE"
+	apt -qq --yes install lsb-release &>>"$LOG_FILE"
 	system_id=$(lsb_release --id --short)
 	system_release=$(lsb_release --release --short)
 	incompatible_message="$system_id $system_release is not supported. Installation might fail, continue anyway? (Y/n): "
@@ -312,10 +312,11 @@ while test $# != 0; do
 	esac
 	case "$1" in
 	-i | --install | -u | --upgrade)
-		if [[ -n "$2" ]]; then
+		# Check if next argument exists and is not another flag (starts with -)
+		if [[ -n "$2" && "$2" != -* ]]; then
 			USER_INSTALL_PATH=$(realpath -m "$2")
+			shift
 		fi
-		shift
 		;;
 	esac
 	shift
