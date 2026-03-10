@@ -19,6 +19,7 @@ services:
       dockerfile: openwisp_dashboard/Dockerfile
       args:
         DASHBOARD_APP_PORT: 8000
+        OPENWISP_VERSION: ${OPENWISP_VERSION:-edge}
     env_file:
       - .env
     volumes:
@@ -42,6 +43,7 @@ services:
       dockerfile: openwisp_api/Dockerfile
       args:
         API_APP_PORT: 8001
+        OPENWISP_VERSION: ${OPENWISP_VERSION:-edge}
     env_file:
       - .env
     volumes:
@@ -62,6 +64,7 @@ services:
       dockerfile: openwisp_websocket/Dockerfile
       args:
         WEBSOCKET_APP_PORT: 8002
+        OPENWISP_VERSION: ${OPENWISP_VERSION:-edge}
     env_file:
       - .env
     volumes:

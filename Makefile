@@ -1,7 +1,8 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
-include .env # The .env file can override ?= variables in the Makefile (e.g. OPENWISP_VERSION, IMAGE_OWNER)
+# The .env file can override ?= variables in the Makefile (e.g. OPENWISP_VERSION, IMAGE_OWNER)
+include .env 
 
 # RELEASE_VERSION: version string used when tagging a new release.
 RELEASE_VERSION = 25.10.0
@@ -46,15 +47,13 @@ base-build:
 	             --file ./images/openwisp_base/Dockerfile \
 	             --target PYTHON ./images/ \
 	             $$BUILD_ARGS; \
-	docker build --tag openwisp/openwisp-base:latest \
+	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_base/Dockerfile ./images/ \
-	             $$BUILD_ARGS; \
-	docker tag openwisp/openwisp-base:latest $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION)
+	             $$BUILD_ARGS
 
 nfs-build:
-	docker build --tag openwisp/openwisp-nfs:latest \
-	             --file ./images/openwisp_nfs/Dockerfile ./images/; \
-	docker tag openwisp/openwisp-nfs:latest $(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION)
+	docker build --tag $(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
+	             --file ./images/openwisp_nfs/Dockerfile ./images/
 
 compose-build: base-build
 	docker compose build --parallel
@@ -81,10 +80,8 @@ clean:
 	docker compose stop &> /dev/null
 	docker compose down --remove-orphans --volumes --rmi all &> /dev/null
 	docker compose rm -svf &> /dev/null
-	docker rmi --force openwisp/openwisp-base:latest \
-				openwisp/openwisp-base:intermedia-system \
+	docker rmi --force openwisp/openwisp-base:intermedia-system \
 				openwisp/openwisp-base:intermedia-python \
-				openwisp/openwisp-nfs:latest \
 				$(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
 				$(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
 				`docker images -f "dangling=true" -q` \

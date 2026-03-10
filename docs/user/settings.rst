@@ -37,6 +37,18 @@ Essential
 You will need to adapt these values to get the docker images working
 properly on your system.
 
+.._openwisp_version:
+
+``OPENWISP_VERSION``
+~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** The version of OpenWISP to use. It can be set to a
+  specific version (e.g. ``25.10.0``) or to ``edge`` to always use the
+  latest development version.
+- **Valid Values:** ``edge``, ``latest``, or a semantic version string
+  (e.g., ``25.10.0``)
+- **Default:** ``edge``
+
 .. _dashboard_domain:
 
 ``DASHBOARD_DOMAIN``
@@ -1081,6 +1093,14 @@ X509 Certificates
 
 Misc Services
 -------------
+
+``IMAGE_OWNER``
+~~~~~~~~~~~~~~~
+
+- **Explanation:** Docker registry namespace for OpenWISP images. Change
+  this only if you are using custom-built images or a private registry.
+- **Valid Values:** A valid Docker registry namespace.
+- **Default:** ``openwisp``
 
 ``REDIS_HOST``
 ~~~~~~~~~~~~~~
