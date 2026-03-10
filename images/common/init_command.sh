@@ -57,8 +57,13 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 	if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
 		nginx -g 'daemon off;'
 	fi
+	# Expand escape sequences in the optional events block so it can be injected
+	# correctly into the nginx configuration template.
 	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
 	export NGINX_EVENTS_BLOCK
+	# Use a sentinel value when the variable is unset. Since envsubst cannot
+	# conditionally omit directives, we later remove any line containing this
+	# sentinel from the generated nginx.conf.
 	export NGINX_WORKER_RLIMIT_NOFILE="${NGINX_WORKER_RLIMIT_NOFILE:-__UNSET__}"
 	envsubst </etc/nginx/nginx.template.conf >/etc/nginx/nginx.conf
     # Remove incomplete worker_rlimit_nofile directives if env var is unset or empty
