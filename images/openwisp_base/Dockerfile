@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bullseye AS system
+FROM python:3.14-slim-trixie AS system
 
 # System requirements:
 # 1. gettext: Required by envsubst used in scripts
@@ -18,24 +18,28 @@ RUN apt-get update && \
 
 RUN useradd --system --password '' --create-home --shell /bin/bash \
     --gid root --uid 1001 openwisp
+RUN mkdir /home/openwisp/.ssh && \
+    mkdir -p /tmp && chmod 1777 /tmp
+RUN chown -R openwisp:root /home/openwisp/
 USER openwisp:root
 
 FROM system AS openwisp_python
 
 ENV PATH="${PATH}:/home/openwisp/.local/bin"
-ENV PYTHONPATH=/home/openwisp/.local/lib/python3.10/site-packages
 
-RUN pip install --no-cache-dir --user --upgrade pip~=24.1.2 setuptools~=70.3.0 wheel~=0.43.0
-ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/tarball/1.2"
+
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
+ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/tarball/1.2"
+ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/tarball/1.2"
+ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="https://github.com/openwisp/openwisp-radius/tarball/1.2"
+ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
@@ -88,9 +92,8 @@ COPY --chown=openwisp:root ./common/ /opt/openwisp/
 RUN mkdir /opt/openwisp/static && \
     mkdir /opt/openwisp/media && \
     mkdir /opt/openwisp/private && \
-    mkdir /opt/openwisp/logs && \
-    mkdir /home/openwisp/.ssh && \
-    chown -R openwisp:root /opt/openwisp && \
+    mkdir /opt/openwisp/logs
+RUN chown -R openwisp:root /opt/openwisp && \
     chown -R openwisp:root /home/openwisp/.ssh
 # Maintain backward compatibility with code written for ansible-openwisp2
 RUN ln -s /opt/openwisp/openwisp /opt/openwisp/openwisp2
@@ -154,9 +157,9 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     VPN_CLIENT_NAME=default-management-vpn \
     X509_NAME_CA=default \
     X509_NAME_CERT=default \
-    X509_COUNTRY_CODE=IN \
-    X509_STATE=Delhi \
-    X509_CITY="New Delhi" \
+    X509_COUNTRY_CODE=CH \
+    X509_STATE=Geneva \
+    X509_CITY=Geneva \
     X509_ORGANIZATION_NAME=OpenWISP \
     X509_ORGANIZATION_UNIT_NAME=OpenWISP \
     X509_EMAIL=certificate@example.com \

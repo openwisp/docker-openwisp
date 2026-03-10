@@ -4,19 +4,19 @@ updates:
     directories:
       - "**/*"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     commit-message:
       prefix: "[deps] "
   - package-ecosystem: "docker"
     directories:
       - "**/*"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
     commit-message:
       prefix: "[deps] "
-  - package-ecosystem: "github-actions" # Check for GitHub Actions updates
-    directory: "/" # The root directory where the Ansible role is located
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: "monthly" # Check for updates weekly
+      interval: "weekly"
     commit-message:
       prefix: "[ci] "

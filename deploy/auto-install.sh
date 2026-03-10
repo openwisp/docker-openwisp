@@ -114,8 +114,8 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(4/5) Site manager email: "${NON}
 		read django_default_email
 		# SSL Configuration
-		echo -ne ${GRN}"(5/5) Enter letsencrypt email (leave blank for self-signed certificate): "${NON}
-		read letsencrypt_email
+		echo -ne ${GRN}"(5/5) Use Let's Encrypt SSL? (y/N, blank for no): "${NON}
+		read use_letsencrypt
 	else
 		cp $env_path $ENV_USER &>>$LOG_FILE
 	fi
@@ -145,8 +145,10 @@ setup_docker_openwisp() {
 		# VPN domain
 		if [[ -z "$vpn_domain" ]]; then
 			set_env "VPN_DOMAIN" "openvpn.${domain}"
+			set_env CELERY_SERVICE_NETWORK_MODE "service:openvpn"
 		elif [[ "${vpn_domain,,}" == "n" ]]; then
-			set_env "VPN_DOMAIN" "example.com"
+			set_env "VPN_DOMAIN" ""
+			set_env CELERY_SERVICE_NETWORK_MODE ""
 		else
 			set_env "VPN_DOMAIN" "$vpn_domain"
 		fi
@@ -156,11 +158,11 @@ setup_docker_openwisp() {
 		python3 $INSTALL_PATH/build.py change-secret-key >/dev/null
 		python3 $INSTALL_PATH/build.py change-database-credentials >/dev/null
 		# SSL Configuration
-		set_env "CERT_ADMIN_EMAIL" "$letsencrypt_email"
-		if [[ -z "$letsencrypt_email" ]]; then
-			set_env "SSL_CERT_MODE" "SelfSigned"
-		else
+		use_letsencrypt_lower=$(echo "$use_letsencrypt" | tr '[:upper:]' '[:lower:]')
+		if [[ "$use_letsencrypt_lower" == "y" || "$use_letsencrypt_lower" == "yes" ]]; then
 			set_env "SSL_CERT_MODE" "Yes"
+		else
+			set_env "SSL_CERT_MODE" "SelfSigned"
 		fi
 		# Other
 		hostname=$(echo "$django_default_email" | cut -d @ -f 2)

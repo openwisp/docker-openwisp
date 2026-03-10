@@ -1,13 +1,13 @@
 {
-    "driver": "chromium",
-    "headless": true,
-    "app_url": "https://dashboard.openwisp.org",
-    "api_url": "https://api.openwisp.org",
-    "load_init_data": true,
-    "logs": false,
-    "logs_file": "/tmp/odocker.log",
-    "username": "admin",
-    "password": "admin",
-    "services_max_retries": 25,
-    "services_delay_retries": 5
+  "driver": "chromium",
+  "headless": true,
+  "app_url": "https://dashboard.openwisp.org",
+  "api_url": "https://api.openwisp.org",
+  "load_init_data": true,
+  "logs": false,
+  "logs_file": "/tmp/odocker.log",
+  "username": "admin",
+  "password": "admin",
+  "services_max_retries": 25,
+  "services_delay_retries": 5
 }

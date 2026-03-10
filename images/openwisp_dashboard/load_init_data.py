@@ -124,7 +124,7 @@ def create_default_vpn_template(vpn):
     if Template.objects.filter(vpn=vpn).exists():
         return Template.objects.get(vpn=vpn)
 
-    template = Template.objects.create(
+    template = Template(
         auto_cert=True,
         name=template_name,
         type="vpn",
@@ -133,6 +133,11 @@ def create_default_vpn_template(vpn):
         vpn=vpn,
         default=True,
     )
+    # The config field is auto-generated on full_clean()
+    template.full_clean()
+    if template.config.get("openvpn"):
+        template.config["openvpn"][0]["log"] = "/var/log/tun0.log"
+    # Verify that the config is still valid.
     template.full_clean()
     template.save()
     return template
@@ -196,6 +201,26 @@ def create_ssh_key_template():
     return template
 
 
+def update_default_site():
+    """Update default site with DASHBOARD_DOMAIN."""
+    if "django.contrib.sites" in settings.INSTALLED_APPS:
+        from django.contrib.sites.models import Site
+
+        try:
+            site = Site.objects.get(pk=settings.SITE_ID)
+        except Site.DoesNotExist:
+            # Optionally log a message here if desired
+            return
+        dashboard_domain = os.environ.get("DASHBOARD_DOMAIN", "")
+        if (
+            site.name == "example.com" or site.domain == "example.com"
+        ) and dashboard_domain:
+            site.name = dashboard_domain
+            site.domain = dashboard_domain
+            site.full_clean()
+            site.save()
+
+
 def create_default_topology(vpn):
     """Creates Topology object for the default VPN."""
     if vpn.backend == "openwisp_controller.vpn_backends.OpenVpn":
@@ -239,20 +264,23 @@ if __name__ == "__main__":
     redis_client = redis.Redis.from_url(settings.CACHES["default"]["LOCATION"])
 
     create_admin()
+    update_default_site()
     # Steps for creating new vpn client template with all the
     # required objects (CA, Certificate, VPN Server).
-    default_ca = create_default_ca()
-    default_cert = create_default_cert(default_ca)
-    default_vpn = create_default_vpn(
-        default_ca,
-        default_cert,
-    )
-    create_default_vpn_template(default_vpn)
+    is_vpn_enabled = os.environ.get("VPN_DOMAIN", "") != ""
+    if is_vpn_enabled:
+        default_ca = create_default_ca()
+        default_cert = create_default_cert(default_ca)
+        default_vpn = create_default_vpn(
+            default_ca,
+            default_cert,
+        )
+        create_default_vpn_template(default_vpn)
 
     create_default_credentials()
     create_ssh_key_template()
 
-    if env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
+    if is_vpn_enabled and env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
         Topology = load_model("topology", "Topology")
         create_default_topology(default_vpn)
 
