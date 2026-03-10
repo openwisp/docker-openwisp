@@ -59,7 +59,7 @@ apt_dependenices_setup() {
 }
 
 get_version_from_user() {
-	echo -ne ${GRN}"OpenWISP Version (leave blank for latest stable release): "${NON}
+	echo -ne "${GRN}OpenWISP Version (leave blank for latest stable release): ${NON}"
 	read openwisp_version
 	if [[ -z "$openwisp_version" ]]; then
 		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)

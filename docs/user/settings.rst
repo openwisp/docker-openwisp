@@ -37,7 +37,7 @@ Essential
 You will need to adapt these values to get the docker images working
 properly on your system.
 
-.._openwisp_version:
+.. _openwisp_version:
 
 ``OPENWISP_VERSION``
 ~~~~~~~~~~~~~~~~~~~~
