@@ -99,7 +99,7 @@ by using the following command
     sudo bash auto-install.sh --upgrade
 
     # If you used a custom installation path:
-    sudo bash auto-install.sh --upgrade --install /path/to/install
+    sudo bash auto-install.sh --upgrade /path/to/install
 
 .. note::
 
