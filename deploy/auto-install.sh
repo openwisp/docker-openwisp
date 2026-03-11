@@ -122,10 +122,9 @@ setup_docker_openwisp() {
 	echo ""
 
 	download_docker_openwisp "$openwisp_version"
-
-	cd "$INSTALL_PATH" &>>"$LOG_FILE"
+	cd "$INSTALL_PATH" || exit 1
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >"$INSTALL_PATH/VERSION"
+	echo "$openwisp_version" >"$INSTALL_PATH/VERSION"
 
 	if [[ ! -f "$env_path" ]]; then
 		# Dashboard Domain
@@ -186,10 +185,9 @@ upgrade_docker_openwisp() {
 	echo ""
 
 	download_docker_openwisp "$openwisp_version"
-
-	cd "$INSTALL_PATH" &>>"$LOG_FILE"
+	cd "$INSTALL_PATH" || exit 1
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >"$INSTALL_PATH/VERSION"
+	echo "$openwisp_version" >"$INSTALL_PATH/VERSION"
 
 	start_step "Configuring docker-openwisp..."
 	for config in $(grep '=' "$ENV_BACKUP" | cut -f1 -d'='); do
