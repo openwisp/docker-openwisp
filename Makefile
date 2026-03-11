@@ -1,7 +1,11 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
-OPENWISP_VERSION = 25.10.0
+# The .env file can override ?= variables in the Makefile (e.g. OPENWISP_VERSION, IMAGE_OWNER)
+include .env 
+
+# RELEASE_VERSION: version string used when tagging a new release.
+RELEASE_VERSION = 25.10.0
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 
@@ -9,6 +13,10 @@ default: compose-build
 
 USER = registry.gitlab.com/openwisp/docker-openwisp
 TAG = edge
+# OPENWISP_VERSION: image tag used for pulling/pushing images (e.g. "edge", "latest", "25.10.0")
+# Can be overridden via .env or command line. Not the same as RELEASE_VERSION
+OPENWISP_VERSION ?= edge
+IMAGE_OWNER ?= openwisp
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
 SKIP_TESTS ?= false
@@ -19,8 +27,8 @@ pull:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		docker pull --quiet $(USER)/$${image}:$(TAG); \
-		docker tag  $(USER)/$${image}:$(TAG) openwisp/$${image}:latest; \
+		docker pull --quiet $(USER)/$${image}:$(OPENWISP_VERSION); \
+		docker tag  $(USER)/$${image}:$(OPENWISP_VERSION) $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION); \
 	done
 
 # Build
@@ -39,12 +47,12 @@ base-build:
 	             --file ./images/openwisp_base/Dockerfile \
 	             --target PYTHON ./images/ \
 	             $$BUILD_ARGS; \
-	docker build --tag openwisp/openwisp-base:latest \
+	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_base/Dockerfile ./images/ \
 	             $$BUILD_ARGS
 
 nfs-build:
-	docker build --tag openwisp/openwisp-nfs:latest \
+	docker build --tag $(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_nfs/Dockerfile ./images/
 
 compose-build: base-build
@@ -72,10 +80,10 @@ clean:
 	docker compose stop &> /dev/null
 	docker compose down --remove-orphans --volumes --rmi all &> /dev/null
 	docker compose rm -svf &> /dev/null
-	docker rmi --force openwisp/openwisp-base:latest \
-				openwisp/openwisp-base:intermedia-system \
+	docker rmi --force openwisp/openwisp-base:intermedia-system \
 				openwisp/openwisp-base:intermedia-python \
-				openwisp/openwisp-nfs:latest \
+				$(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
+				$(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
 				`docker images -f "dangling=true" -q` \
 				`docker images | grep openwisp/docker-openwisp | tr -s ' ' | cut -d ' ' -f 3` &> /dev/null
 
@@ -105,10 +113,7 @@ publish:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		# Docker images built locally are tagged "latest" by default. \
-		# This script updates the tag of each built image to a user-defined tag \
-		# and pushes the newly tagged image to a Docker registry under the user's namespace. \
-		docker tag openwisp/$${image}:latest $(USER)/$${image}:$(TAG); \
+		docker tag $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION) $(USER)/$${image}:$(TAG); \
 		docker push $(USER)/$${image}:$(TAG); \
 		if [ "$(TAG)" != "latest" ]; then \
 			docker rmi $(USER)/$${image}:$(TAG); \
@@ -116,5 +121,5 @@ publish:
 	done
 
 release:
-	make publish TAG=latest SKIP_TESTS=true
-	make publish TAG=$(OPENWISP_VERSION) SKIP_BUILD=true SKIP_TESTS=true
+	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
+	make publish TAG=$(RELEASE_VERSION) OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true
