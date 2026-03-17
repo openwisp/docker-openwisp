@@ -243,6 +243,12 @@ function openvpn_config_download {
 		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
 	tar xzf vpn.tar.gz
 	chmod 600 *.pem
+
+	# Dynamically locate the config file and standardize its name for supervisord
+	CONF_FILE=$(ls *.conf 2>/dev/null | head -n 1)
+	if [ -n "$CONF_FILE" ] && [ "$CONF_FILE" != "openvpn.conf" ]; then
+		mv "$CONF_FILE" openvpn.conf
+	fi
 }
 
 function crl_download {
