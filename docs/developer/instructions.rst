@@ -114,10 +114,10 @@ Makefile Options
 
 Most commonly used:
 
-- ``make start [USER=docker-username] [TAG=image-tag]``: Start OpenWISP
-  containers on your server.
-- ``make pull [USER=docker-username] [TAG=image-tag]``: Pull images from
-  the registry.
+- ``make start [IMAGE_OWNER=docker-username] [OPENWISP_VERSION=version]``:
+  Start OpenWISP containers on your server.
+- ``make pull [IMAGE_OWNER=docker-username] [OPENWISP_VERSION=version]``:
+  Pull images from the registry.
 - ``make stop``: Stop OpenWISP containers on your server.
 - ``make develop``: Bundle all the commands required to build the images
   and run containers.
@@ -128,8 +128,8 @@ Most commonly used:
 
 Other options:
 
-- ``make publish [USER=docker-username] [TAG=image-tag]``: Build, test,
-  and publish images.
+- ``make publish [IMAGE_OWNER=docker-username]
+  [OPENWISP_VERSION=version]``: Build, test, and publish images.
 - ``make python-build``: Generate a random Django secret and set it in the
   ``.env`` file.
 - ``make nfs-build``: Build the OpenWISP NFS server image.

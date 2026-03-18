@@ -1,7 +1,9 @@
 channels_redis
 service_identity
 django-redis
-psycopg2
+# pool is useful in prod deployments we include it
+# by default, but has to be configured manually
+psycopg[binary,pool]<4.0.0
 sentry-sdk
 supervisor>=4.3.0,<4.4.0
 django-cors-headers>=4.9.0,<4.10.0
