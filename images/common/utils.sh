@@ -243,11 +243,13 @@ function openvpn_config_download {
 		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
 	tar xzf vpn.tar.gz
 	chmod 600 *.pem
-
-	# Dynamically locate the config file and standardize its name for supervisord
-	CONF_FILE=$(ls *.conf 2>/dev/null | head -n 1)
-	if [ -n "$CONF_FILE" ] && [ "$CONF_FILE" != "openvpn.conf" ]; then
-		mv "$CONF_FILE" openvpn.conf
+	# Prefer a newly extracted non-standard filename and normalize it.
+	CONF_FILE=$(find . -maxdepth 1 -type f -name '*.conf' ! -name 'openvpn.conf' -print -quit)
+	if [ -n "$CONF_FILE" ]; then
+		mv -f -- "$CONF_FILE" openvpn.conf
+	elif [ ! -f openvpn.conf ]; then
+		echo "ERROR: no OpenVPN config file found after extraction" >&2
+		return 1
 	fi
 }
 
