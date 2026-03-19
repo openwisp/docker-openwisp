@@ -78,7 +78,7 @@ jobs:
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
           # execute the test from this directory.
-          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests && make stop
+          command: cd /opt/openwisp/docker-openwisp && sudo make develop-pythontests && make stop
         env:
           SELENIUM_HEADLESS: 1
 
