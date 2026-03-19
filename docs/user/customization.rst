@@ -188,7 +188,11 @@ Enabling Maintenance Mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To enable maintenance mode, create a ``maintenance.html`` file in the
-``customization/custom/maintenance.html`` created above.
+``customization/nginx/`` directory:
+
+.. code-block:: shell
+
+    customization/nginx/maintenance.html
 
 When this file is present, Nginx will automatically serve it instead of
 the application for incoming requests.

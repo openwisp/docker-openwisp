@@ -2,7 +2,7 @@
 # the heading "Makefile Options".
 
 # The .env file can override ?= variables in the Makefile (e.g. OPENWISP_VERSION, IMAGE_OWNER)
-include .env 
+include .env
 
 # RELEASE_VERSION: version string used when tagging a new release.
 RELEASE_VERSION = 25.10.0
