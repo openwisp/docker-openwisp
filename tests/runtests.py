@@ -237,6 +237,41 @@ class TestServices(TestUtilities, unittest.TestCase):
         except (urlerror.HTTPError, OSError, ConnectionResetError, ValueError) as error:
             self.fail(f"Cannot download PDF file: {error}")
 
+    def test_openvpn_config_whitespace_handling(self):
+        """Verify openvpn_config_download handles whitespace."""
+        import os
+        import shlex
+        import subprocess
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            u_path = os.path.join(repo_root, "images", "common", "utils.sh")
+            script = (
+                f"source {shlex.quote(u_path)}\n"
+                "curl() { true; }\n"
+                "tar() { touch 'my vpn with spaces.conf'; }\n"
+                "chmod() { true; }\n"
+                "UUID='x'; KEY='x'; API='http://x'\n"
+                "openvpn_config_download\n"
+                "if [ -f 'openvpn.conf' ]; then echo 'PASS'; fi\n"
+            )
+            script_path = os.path.join(tmpdir, "test_mock.sh")
+            with open(script_path, "w") as sf:
+                sf.write(script)
+            res = subprocess.run(
+                ["bash", script_path],
+                cwd=tmpdir,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(
+                res.returncode,
+                0,
+                f"Mock script failed:\nSTDOUT:\n{res.stdout}\nSTDERR:\n{res.stderr}",
+            )
+            self.assertIn("PASS", res.stdout)
+
     def test_console_errors(self):
         url_list = [
             "/admin/",
@@ -492,5 +527,6 @@ class TestServices(TestUtilities, unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(TestServices("test_topology_graph"))
+    suite.addTest(TestServices("test_openvpn_config_whitespace_handling"))
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
