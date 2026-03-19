@@ -94,8 +94,8 @@ follow the following guide.
 
 .. note::
 
-    After adding new files to ``customization/theme``, you must recreate
-    the dashboard container using the command above.
+    After adding, updating, or removing files in ``customization/theme``,
+    you must recreate the dashboard container using the command above.
 
     Alternatively, you can apply changes without recreating the container
     by running:

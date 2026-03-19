@@ -82,16 +82,28 @@ class TestServices(TestUtilities, unittest.TestCase):
         }
         if use_text_mode:
             kwargs["text"] = True
-        cmd = subprocess.Popen(cmd_args, **kwargs)
-        output, error = map(str, cmd.communicate())
+        cmd = subprocess.run(cmd_args, check=False, **kwargs)
+        output, error = map(str, (cmd.stdout, cmd.stderr))
         with open(cls.config["logs_file"], "a") as logs_file:
             logs_file.write(output)
             logs_file.write(error)
+        if cmd.returncode != 0:
+            raise RuntimeError(
+                f"docker compose command failed "
+                f"({cmd.returncode}): {' '.join(cmd_args)}"
+            )
         return output, error
 
     @classmethod
     def _setup_admin_theme_links(cls):
-        """Update Django settings to add ADMIN_THEME_LINKS and reload uwsgi."""
+        """Configure admin theme links during tests.
+
+        The default docker-compose setup does not allow injecting
+        OPENWISP_ADMIN_THEME_LINKS dynamically, so this method updates
+        Django settings inside the running container and reloads uWSGI.
+        This enables the Selenium tests to verify that a custom static CSS
+        file is served by the admin interface.
+        """
         css_path = os.path.join(
             cls.root_location,
             cls.config["custom_css_filename"],

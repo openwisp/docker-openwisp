@@ -40,11 +40,15 @@ def get_dir_shasum(directory_path):
         for fname in files:
             fpath = os.path.join(root, fname)
             relpath = os.path.relpath(fpath, directory_path)
-            hasher.update(relpath.encode())
             try:
+                file_hasher = hashlib.sha256()
                 with open(fpath, "rb") as fh:
                     for chunk in iter(lambda: fh.read(4096), b""):
-                        hasher.update(chunk)
+                        file_hasher.update(chunk)
+                relpath_bytes = relpath.encode()
+                hasher.update(len(relpath_bytes).to_bytes(8, "big"))
+                hasher.update(relpath_bytes)
+                hasher.update(file_hasher.digest())
             except OSError:
                 # If a file can't be read, skip it but continue hashing others
                 continue
