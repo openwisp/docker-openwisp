@@ -51,11 +51,12 @@ def get_dir_shasum(directory_path):
     return hasher.hexdigest()
 
 
-def run_collectstatic():
+def run_collectstatic(clear=False):
     try:
-        subprocess.run(
-            [sys.executable, "manage.py", "collectstatic", "--noinput"], check=True
-        )
+        cmd = [sys.executable, "manage.py", "collectstatic", "--noinput"]
+        if clear:
+            cmd.append("--clear")
+        subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error running 'collectstatic': {e}", file=sys.stderr)
         sys.exit(1)
@@ -63,7 +64,7 @@ def run_collectstatic():
 
 def main():
     if os.environ.get("COLLECTSTATIC_WHEN_DEPS_CHANGE", "true").lower() == "false":
-        run_collectstatic()
+        run_collectstatic(clear=True)
         return
     redis_connection = redis.Redis.from_url(settings.CACHES["default"]["LOCATION"])
     current_pip_hash = get_pip_freeze_hash()
@@ -81,7 +82,7 @@ def main():
             "Changes in Python dependencies or static_custom detected,"
             " running collectstatic..."
         )
-        run_collectstatic()
+        run_collectstatic(clear=static_changed)
         try:
             redis_connection.set("pip_freeze_hash", current_pip_hash)
             redis_connection.set("static_custom_hash", current_static_hash)
