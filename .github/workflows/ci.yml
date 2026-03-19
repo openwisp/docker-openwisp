@@ -68,6 +68,9 @@ jobs:
             GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
             || (cat /opt/openwisp/autoinstall.log && exit 1)
 
+      - name: Debugging with tmate
+        uses: mxschmitt/action-tmate@v3.23
+
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
         uses: openwisp/openwisp-utils/.github/actions/retry-command@master
@@ -78,7 +81,7 @@ jobs:
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
           # execute the test from this directory.
-          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests && make stop
+          command: cd /opt/openwisp/docker-openwisp && sudo make develop-pythontests && make stop
         env:
           SELENIUM_HEADLESS: 1
 

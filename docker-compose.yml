@@ -29,6 +29,7 @@ services:
       - openwisp_ssh:/home/openwisp/.ssh
       - influxdb_data:/var/lib/influxdb
       - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
+      - ./customization/theme:/opt/openwisp/static_custom:ro
     depends_on:
       - postgres
       - redis
@@ -128,7 +129,7 @@ services:
       - openwisp_media:/opt/openwisp/public/media:ro
       - openwisp_private_storage:/opt/openwisp/public/private:ro
       - openwisp_certs:/etc/letsencrypt
-      - ./customization/theme:/opt/openwisp/public/custom:ro
+      - ./customization/nginx:/opt/openwisp/public/custom:ro
     networks:
       default:
         aliases:

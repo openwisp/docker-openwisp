@@ -65,6 +65,72 @@ class TestServices(TestUtilities, unittest.TestCase):
         return super().failureException
 
     @classmethod
+    def _execute_docker_compose_command(cls, cmd_args, use_text_mode=False):
+        """Execute a docker compose command and log output.
+
+        Args:
+            cmd_args: List of command arguments for subprocess.Popen
+            use_text_mode: If True, use text mode for subprocess output
+
+        Returns:
+            Tuple of (output, error) from command execution
+        """
+        kwargs = {
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "cwd": cls.root_location,
+        }
+        if use_text_mode:
+            kwargs["text"] = True
+        cmd = subprocess.run(cmd_args, check=False, **kwargs)
+        output, error = map(str, (cmd.stdout, cmd.stderr))
+        with open(cls.config["logs_file"], "a") as logs_file:
+            logs_file.write(output)
+            logs_file.write(error)
+        if cmd.returncode != 0:
+            raise RuntimeError(
+                f"docker compose command failed "
+                f"({cmd.returncode}): {' '.join(cmd_args)}"
+            )
+        return output, error
+
+    @classmethod
+    def _setup_admin_theme_links(cls):
+        """Configure admin theme links during tests.
+
+        The default docker-compose setup does not allow injecting
+        OPENWISP_ADMIN_THEME_LINKS dynamically, so this method updates
+        Django settings inside the running container and reloads uWSGI.
+        This enables the Selenium tests to verify that a custom static CSS
+        file is served by the admin interface.
+        """
+        css_path = os.path.join(
+            cls.root_location,
+            cls.config["custom_css_filename"],
+        )
+        with open(css_path, "w") as custom_css_file:
+            custom_css_file.write("body{--openwisp-test: 1;}")
+        script = rf"""
+            grep -q OPENWISP_ADMIN_THEME_LINKS /opt/openwisp/openwisp/settings.py || \
+            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/x-icon\",\"href\":\"ui/openwisp/images/favicon.png\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
+            python collectstatic.py &&
+            uwsgi --reload uwsgi.pid
+        """  # noqa: E501
+        cls._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "exec",
+                "-T",
+                "dashboard",
+                "bash",
+                "-c",
+                script,
+            ],
+            use_text_mode=True,
+        )
+
+    @classmethod
     def setUpClass(cls):
         cls.failed_test = False
         cls.live_server_url = cls.config["app_url"]
@@ -76,7 +142,7 @@ class TestServices(TestUtilities, unittest.TestCase):
                 os.path.dirname(os.path.realpath(__file__)), "data.py"
             )
             entrypoint = "python manage.py shell --command='import data; data.setup()'"
-            cmd = subprocess.Popen(
+            cls._execute_docker_compose_command(
                 [
                     "docker",
                     "compose",
@@ -87,22 +153,12 @@ class TestServices(TestUtilities, unittest.TestCase):
                     "--volume",
                     f"{test_data_file}:/opt/openwisp/data.py",
                     "dashboard",
-                ],
-                universal_newlines=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=cls.root_location,
+                ]
             )
-            output, error = map(str, cmd.communicate())
-            with open(cls.config["logs_file"], "w") as logs_file:
-                logs_file.write(output)
-                logs_file.write(error)
-            subprocess.run(
+            cls._execute_docker_compose_command(
                 ["docker", "compose", "up", "--detach"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                cwd=cls.root_location,
             )
+        cls._setup_admin_theme_links()
         # Create base drivers (Firefox)
         if cls.config["driver"] == "firefox":
             cls.base_driver = cls.get_firefox_webdriver()
@@ -122,6 +178,13 @@ class TestServices(TestUtilities, unittest.TestCase):
                 print(f"Unable to delete resource at: {resource_link}")
         cls.second_driver.quit()
         cls.base_driver.quit()
+        # Remove the temporary custom CSS file created for testing
+        css_path = os.path.join(
+            cls.root_location,
+            cls.config["custom_css_filename"],
+        )
+        if os.path.exists(css_path):
+            os.remove(css_path)
         if cls.failed_test and cls.config["logs"]:
             cmd = subprocess.Popen(
                 ["docker", "compose", "logs"],
@@ -184,6 +247,16 @@ class TestServices(TestUtilities, unittest.TestCase):
                 f"{self.config['username']} & Password: {self.config['password']}"
             )
             self.fail(message)
+
+    def test_custom_static_files_loaded(self):
+        self.login()
+        self.open("/admin/")
+        # Check if the custom CSS variable is applied
+        value = self.web_driver.execute_script(
+            "return getComputedStyle(document.body)"
+            ".getPropertyValue('--openwisp-test');"
+        )
+        self.assertEqual(value, "1")
 
     def test_device_monitoring_charts(self):
         self.login()
@@ -490,7 +563,4 @@ class TestServices(TestUtilities, unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(TestServices("test_topology_graph"))
-    runner = unittest.TextTestRunner(verbosity=2)
-    runner.run(suite)
+    unittest.main(verbosity=2)
