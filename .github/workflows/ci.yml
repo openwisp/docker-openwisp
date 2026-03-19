@@ -68,6 +68,9 @@ jobs:
             GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
             || (cat /opt/openwisp/autoinstall.log && exit 1)
 
+      - name: Debugging with tmate
+        uses: mxschmitt/action-tmate@v3.23
+
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
         uses: openwisp/openwisp-utils/.github/actions/retry-command@master
