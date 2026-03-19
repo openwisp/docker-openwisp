@@ -240,13 +240,15 @@ class TestServices(TestUtilities, unittest.TestCase):
     def test_openvpn_config_whitespace_handling(self):
         """Verify openvpn_config_download handles whitespace."""
         import os
+        import shlex
         import subprocess
         import tempfile
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            u_path = os.path.abspath("images/common/utils.sh")
+            repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            u_path = os.path.join(repo_root, "images", "common", "utils.sh")
             script = (
-                f"source {u_path}\n"
+                f"source {shlex.quote(u_path)}\n"
                 "curl() { true; }\n"
                 "tar() { touch 'my vpn with spaces.conf'; }\n"
                 "chmod() { true; }\n"
@@ -262,6 +264,11 @@ class TestServices(TestUtilities, unittest.TestCase):
                 cwd=tmpdir,
                 capture_output=True,
                 text=True,
+            )
+            self.assertEqual(
+                res.returncode,
+                0,
+                f"Mock script failed:\nSTDOUT:\n{res.stdout}\nSTDERR:\n{res.stderr}",
             )
             self.assertIn("PASS", res.stdout)
 
