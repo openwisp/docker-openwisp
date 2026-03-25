@@ -10,5 +10,5 @@
   "password": "admin",
   "services_max_retries": 25,
   "services_delay_retries": 5,
-  "custom_css_filename": "customization/theme/custom-2hjsdf734653.css"
+  "custom_css_filename": "custom-openwisp-test.css"
 }
