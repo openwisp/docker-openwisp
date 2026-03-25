@@ -59,6 +59,8 @@ class Pretest(TestUtilities, unittest.TestCase):
 
 
 class TestServices(TestUtilities, unittest.TestCase):
+    custom_static_token = None
+
     @property
     def failureException(self):
         TestServices.failed_test = True
@@ -106,10 +108,14 @@ class TestServices(TestUtilities, unittest.TestCase):
         """
         css_path = os.path.join(
             cls.root_location,
+            "customization",
+            "theme",
             cls.config["custom_css_filename"],
         )
         with open(css_path, "w") as custom_css_file:
-            custom_css_file.write("body{--openwisp-test: 1;}")
+            custom_css_file.write(
+                f"body{{--openwisp-test: {cls.custom_static_token};}}"
+            )
         script = rf"""
             grep -q OPENWISP_ADMIN_THEME_LINKS /opt/openwisp/openwisp/settings.py || \
             printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/x-icon\",\"href\":\"ui/openwisp/images/favicon.png\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
@@ -181,6 +187,8 @@ class TestServices(TestUtilities, unittest.TestCase):
         # Remove the temporary custom CSS file created for testing
         css_path = os.path.join(
             cls.root_location,
+            "customization",
+            "theme",
             cls.config["custom_css_filename"],
         )
         if os.path.exists(css_path):
@@ -256,7 +264,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "return getComputedStyle(document.body)"
             ".getPropertyValue('--openwisp-test');"
         )
-        self.assertEqual(value, "1")
+        self.assertEqual(value.strip(), self.custom_static_token)
 
     def test_device_monitoring_charts(self):
         self.login()
