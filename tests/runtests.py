@@ -112,6 +112,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "theme",
             cls.config["custom_css_filename"],
         )
+        cls.custom_static_token = str(time.time_ns())
         with open(css_path, "w") as custom_css_file:
             custom_css_file.write(
                 f"body{{--openwisp-test: {cls.custom_static_token};}}"

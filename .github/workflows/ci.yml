@@ -73,9 +73,6 @@ jobs:
         run: |
           sudo chown -R $USER:$USER /opt/openwisp
 
-      - name: Debugging with tmate
-        uses: mxschmitt/action-tmate@v3.23
-
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
         uses: openwisp/openwisp-utils/.github/actions/retry-command@master
