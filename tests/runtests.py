@@ -112,6 +112,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "theme",
             cls.config["custom_css_filename"],
         )
+        cls.custom_static_token = str(time.time_ns())
         with open(css_path, "w") as custom_css_file:
             custom_css_file.write(
                 f"body{{--openwisp-test: {cls.custom_static_token};}}"
@@ -443,9 +444,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_firmware_upgrader.tasks.create_all_device_firmwares",
             "openwisp_firmware_upgrader.tasks.create_device_firmware",
             "openwisp_firmware_upgrader.tasks.upgrade_firmware",
-            "openwisp_monitoring.check.tasks.auto_create_config_check",
-            "openwisp_monitoring.check.tasks.auto_create_iperf3_check",
-            "openwisp_monitoring.check.tasks.auto_create_ping",
+            "openwisp_monitoring.check.tasks.auto_create_check",
             "openwisp_monitoring.check.tasks.perform_check",
             "openwisp_monitoring.check.tasks.run_checks",
             "openwisp_monitoring.device.tasks.delete_wifi_clients_and_sessions",
@@ -466,7 +465,6 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_notifications.tasks.ns_organization_user_deleted",
             "openwisp_notifications.tasks.ns_register_unregister_notification_type",
             "openwisp_notifications.tasks.update_org_user_notificationsetting",
-            "openwisp_notifications.tasks.update_superuser_notification_settings",
             "openwisp_radius.tasks.cleanup_stale_radacct",
             "openwisp_radius.tasks.convert_called_station_id",
             "openwisp_radius.tasks.deactivate_expired_users",
