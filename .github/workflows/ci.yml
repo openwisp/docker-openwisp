@@ -78,7 +78,7 @@ jobs:
         uses: openwisp/openwisp-utils/.github/actions/retry-command@master
         with:
           delay_seconds: 30
-          max_attempts: 5
+          max_attempts: 1
           # The auto-install script installs docker-openwisp by default in
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
