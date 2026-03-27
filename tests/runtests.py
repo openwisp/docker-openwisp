@@ -309,9 +309,11 @@ class TestServices(TestUtilities, unittest.TestCase):
         prefix_pdf_file_path = self.base_driver.find_element(
             By.XPATH, '//a[text()="Download User Credentials"]'
         ).get_property("href")
-        reqHeader = {
-            "Cookie": f"sessionid={self.base_driver.get_cookies()[0]['value']}"
-        }
+        reqHeader = {}
+        for cookies in self.base_driver.get_cookies():
+            if cookies["name"] == "sessionid":
+                reqHeader = {"Cookie": f"sessionid={cookies['value']}"}
+                break
         curlRequest = request.Request(prefix_pdf_file_path, headers=reqHeader)
         try:
             if request.urlopen(curlRequest, context=self.ctx).getcode() != 200:
@@ -408,9 +410,10 @@ class TestServices(TestUtilities, unittest.TestCase):
     def test_forgot_password(self):
         """Test forgot password to ensure that postfix is working properly."""
 
+        self.logout()
         self.open("/accounts/password/reset/")
         self.find_element(By.NAME, "email").send_keys("admin@example.com")
-        self.find_element(By.XPATH, '//button[@type="submit"]').click()
+        self.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
         self._wait_until_page_ready()
         self.assertIn(
             "We have sent you an email. If you have not received "
