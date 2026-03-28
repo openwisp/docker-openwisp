@@ -29,7 +29,10 @@ elif [ "$MODULE_NAME" = 'freeradius' ]; then
 		source docker-entrypoint.sh -X
 	fi
 elif [ "$MODULE_NAME" = 'openvpn' ]; then
-	if [[ -z "$VPN_DOMAIN" ]]; then exit; fi
+        if [ -z "$VPN_DOMAIN" ]; then
+            echo "WARNING: VPN_DOMAIN not set, skipping OpenVPN setup" >&2
+            exit 0
+        fi
 	wait_nginx_services
 	openvpn_preconfig
 	openvpn_config
