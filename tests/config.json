@@ -9,5 +9,6 @@
   "username": "admin",
   "password": "admin",
   "services_max_retries": 25,
-  "services_delay_retries": 5
+  "services_delay_retries": 5,
+  "custom_css_filename": "custom-openwisp-test.css"
 }
