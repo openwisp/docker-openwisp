@@ -322,6 +322,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         """Test forgot password to ensure that postfix is working properly."""
 
         self.logout()
+        time.sleep(0.3)
         self.open("/accounts/password/reset/")
         self.find_element(By.NAME, "email").send_keys("admin@example.com")
         self.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
