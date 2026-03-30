@@ -24,6 +24,7 @@ adding customizations. Execute these commands in the same location as the
     touch customization/configuration/django/__init__.py
     touch customization/configuration/django/custom_django_settings.py
     mkdir -p customization/theme
+    mkdir -p customization/nginx
 
 You can also refer to the `directory structure of Docker OpenWISP
 repository
@@ -84,16 +85,24 @@ follow the following guide.
 
 2. Create your custom CSS / Javascript file in ``customization/theme``
    directory created in the above section. E.g.
-   ``customization/theme/static/custom/css/custom-theme.css``.
-3. Start the nginx containers.
+   ``customization/theme/custom/css/custom-theme.css``.
+3. Recreate the dashboard container to apply the changes:
+
+.. code-block:: shell
+
+    docker compose up -d --force-recreate dashboard
 
 .. note::
 
-    1. You can edit the styles / JavaScript files now without restarting
-       the container, as long as file is in the correct place, it will be
-       picked.
-    2. You can create a ``maintenance.html`` file inside the ``customize``
-       directory to have a custom maintenance page for scheduled downtime.
+    After adding, updating, or removing files in ``customization/theme``,
+    you must recreate the dashboard container using the command above.
+
+    Alternatively, you can apply changes without recreating the container
+    by running:
+
+    .. code-block:: shell
+
+        docker compose exec dashboard bash -c "python collectstatic.py && uwsgi --reload uwsgi.pid"
 
 Supplying Custom uWSGI configuration
 ------------------------------------
@@ -174,6 +183,21 @@ Docker
           PATH/TO/YOUR/RADIUSD:/etc/raddb/radiusd.conf
           PATH/TO/YOUR/DEFAULT:/etc/raddb/sites-enabled/default
       ...
+
+Enabling Maintenance Mode
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To enable maintenance mode, create a ``maintenance.html`` file in the
+``customization/nginx/`` directory:
+
+.. code-block:: shell
+
+    customization/nginx/maintenance.html
+
+When this file is present, Nginx will automatically serve it instead of
+the application for incoming requests.
+
+To disable maintenance mode, simply remove the file.
 
 Supplying Custom Python Source Code
 -----------------------------------
