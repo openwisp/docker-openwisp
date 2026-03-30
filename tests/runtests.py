@@ -85,6 +85,11 @@ class TestServices(TestUtilities, unittest.TestCase):
         if use_text_mode:
             kwargs["text"] = True
         cmd = subprocess.run(cmd_args, check=False, **kwargs)
+        if use_text_mode:
+            output, error = cmd.stdout, cmd.stderr
+        else:
+            output = cmd.stdout.decode("utf-8", errors="replace") if cmd.stdout else ""
+            error = cmd.stderr.decode("utf-8", errors="replace") if cmd.stderr else ""
         output, error = map(str, (cmd.stdout, cmd.stderr))
         with open(cls.config["logs_file"], "a") as logs_file:
             logs_file.write(output)
