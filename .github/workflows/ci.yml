@@ -73,15 +73,12 @@ jobs:
         run: |
           sudo chown -R $USER:$USER /opt/openwisp
 
-      - name: Debug with tmate
-        uses: mxschmitt/action-tmate@v3
-
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
         uses: openwisp/openwisp-utils/.github/actions/retry-command@master
         with:
           delay_seconds: 30
-          max_attempts: 1
+          max_attempts: 5
           # The auto-install script installs docker-openwisp by default in
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
