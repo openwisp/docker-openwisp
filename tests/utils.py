@@ -9,6 +9,7 @@ import docker
 from openwisp_utils.tests import SeleniumTestMixin
 from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 
 
 class TestConfig:
@@ -40,6 +41,29 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         # Django methods to create superuser
         return
 
+    @classmethod
+    def get_chrome_webdriver(cls):
+        """Get Chrome WebDriver with custom options to prevent hangs.
+
+        This method overrides the parent class method to add specific
+        options that help prevent ChromeDriver hangs and timeouts,
+        particularly in CI/CD environments.
+        """
+        driver = super().get_chrome_webdriver()
+
+        # Set timeouts to prevent hangs
+        # Page load timeout: Maximum time to wait for a page to load
+        driver.set_page_load_timeout(60)
+
+        # Script timeout: Maximum time to wait for async scripts
+        driver.set_script_timeout(60)
+
+        # Implicit wait: Maximum time to wait for elements to appear
+        # Note: We keep this low as we use explicit waits in most places
+        driver.implicitly_wait(10)
+
+        return driver
+
     def login(self, username=None, password=None, driver=None):
         super().login(username, password, driver)
         # Workaround for JS logic in chart-utils.js
@@ -56,16 +80,23 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         - driver (selenium.webdriver, optional): The Selenium WebDriver
           instance. Defaults to `self.base_driver`.
         """
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+
         expected_msg = "Could not find any address related to this location."
         if not driver:
             driver = self.base_driver
-        time.sleep(2)  # Wait for the alert to appear
+
+        # Use explicit wait instead of sleep to handle alert timing
         try:
+            WebDriverWait(driver, 5).until(EC.alert_is_present())
             window_alert = driver.switch_to.alert
             if expected_msg in window_alert.text:
                 window_alert.accept()
         except NoAlertPresentException:
             pass  # No alert is okay.
+        except Exception:
+            pass  # Timeout or other exceptions are also okay
 
     def _click_save_btn(self, driver=None):
         """Click the save button in the admin interface.

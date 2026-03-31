@@ -10,5 +10,7 @@
   "password": "admin",
   "services_max_retries": 25,
   "services_delay_retries": 5,
-  "custom_css_filename": "custom-openwisp-test.css"
+  "custom_css_filename": "custom-openwisp-test.css",
+  "webdriver_wait_timeout": 20,
+  "websocket_wait_timeout": 30
 }

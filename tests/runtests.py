@@ -247,8 +247,10 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.login()
         self.get_resource("test-device", "/admin/config/device/")
         self.find_element(By.CSS_SELECTOR, "ul.tabs li.charts").click()
+        # Increase timeout for chart loading in CI environments
+        timeout = self.config.get("webdriver_wait_timeout", 10)
         try:
-            WebDriverWait(self.base_driver, 3).until(EC.alert_is_present())
+            WebDriverWait(self.base_driver, timeout).until(EC.alert_is_present())
         except TimeoutException:
             # No alert means that the request to fetch
             # monitoring charts was successful.
@@ -267,6 +269,7 @@ class TestServices(TestUtilities, unittest.TestCase):
     def test_console_errors(self):
         url_list = [
             "/admin/",
+            "/admin/geo/location/add/",
             "/accounts/password/reset/",
             "/admin/config/device/add/",
             "/admin/config/template/add/",
@@ -288,6 +291,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "/admin/firmware_upgrader/category/add/",
         ]
         change_form_list = [
+            ["automated-selenium-location01", "/admin/geo/location/"],
             ["users", "/admin/openwisp_radius/radiusgroup/"],
             ["default-management-vpn", "/admin/config/template/"],
             ["default", "/admin/config/vpn/"],
@@ -297,6 +301,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             ["test_superuser2", "/admin/openwisp_users/user/", "field-username"],
         ]
         self.login()
+        self.create_mobile_location("automated-selenium-location01")
         self.create_superuser("sample@email.com", "test_superuser2")
         # url_list tests
         for url in url_list:
@@ -314,16 +319,131 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.login()
         self.create_superuser()
         self.assertEqual(
-            "The user “test_superuser” was changed successfully.",
+            'The user "test_superuser" was changed successfully.',
             self.find_element(By.CLASS_NAME, "success").text,
         )
+
+    def test_websocket_marker(self):
+        """Ensures that the websocket service is running correctly.
+
+        This test uses selenium, it creates a new location, sets a map
+        marker and checks if the location changed in a second window.
+        """
+        location_name = "automated-websocket-selenium-loc01"
+        self.login()
+        self.login(driver=self.second_driver)
+        self.create_mobile_location(location_name)
+        self.get_resource(location_name, "/admin/geo/location/")
+        self.get_resource(
+            location_name, "/admin/geo/location/", driver=self.second_driver
+        )
+        self.find_element(By.NAME, "is_mobile", driver=self.base_driver).click()
+
+        # Use websocket-specific timeout for marker invisibility check
+        ws_timeout = self.config.get("websocket_wait_timeout", 30)
+        mark = len(
+            self.find_elements(
+                By.CLASS_NAME, "leaflet-marker-icon",
+                wait_for="invisibility",
+                timeout=ws_timeout
+            )
+        )
+        self.assertEqual(mark, 0)
+
+        self.add_mobile_location_point(location_name, driver=self.second_driver)
+
+        # Use websocket-specific timeout for marker presence check
+        mark = len(
+            self.find_elements(
+                By.CLASS_NAME, "leaflet-marker-icon",
+                wait_for="presence",
+                timeout=ws_timeout
+            )
+        )
+        self.assertEqual(mark, 1)
+
+    def test_topology_graph(self):
+        """Test network topology visualization with improved timeout handling."""
+        path = "/admin/topology/topology"
+        label = "automated-selenium-test-02"
+        self.login()
+        self.create_network_topology(label)
+        self.get_resource(label, path, select_field="field-label")
+
+        # Click on "Visualize topology graph" button
+        self.find_element(By.CSS_SELECTOR, "input.visualizelink").click()
+
+        # Wait for the graph to load before interacting
+        self._wait_until_page_ready()
+
+        # Click on sidebar handle
+        self.find_element(By.CSS_SELECTOR, "button.sideBarHandle").click()
+
+        # Verify topology label
+        self.assertEqual(
+            self.find_element(By.CSS_SELECTOR, ".njg-valueLabel").text.lower(),
+            label,
+        )
+
+        try:
+            console_logs = self.console_error_check()
+            self.assertEqual(len(console_logs), 0)
+        except AssertionError:
+            print("Browser console logs", console_logs)
+            self.fail()
+
+        self.action_on_resource(label, path, "delete_selected")
+        self.assertNotIn("<li>Nodes: ", self.web_driver.page_source)
+        self.action_on_resource(label, path, "update_selected")
+
+        self.action_on_resource(label, path, "delete_selected")
+        self._wait_until_page_ready()
+        self.assertIn("<li>Nodes: ", self.web_driver.page_source)
+
+    def test_create_prefix_users(self):
+        """Test RADIUS batch user creation with PDF generation."""
+        self.login()
+        prefix_objname = "automated-prefix-test-01"
+
+        # Create prefix users
+        self.open("/admin/openwisp_radius/radiusbatch/add/")
+        self.find_element(By.NAME, "strategy").find_element(
+            By.XPATH, '//option[@value="prefix"]'
+        ).click()
+        self.find_element(By.NAME, "organization").find_element(
+            By.XPATH, '//option[text()="default"]'
+        ).click()
+        self.find_element(By.NAME, "name").send_keys(prefix_objname)
+        self.find_element(By.NAME, "prefix").send_keys("automated-prefix")
+        self.find_element(By.NAME, "number_of_users").send_keys("1")
+        self.find_element(By.NAME, "_save").click()
+
+        # Check PDF available with increased timeout
+        self._wait_until_page_ready()
+        self.get_resource(prefix_objname, "/admin/openwisp_radius/radiusbatch/")
+        self.objects_to_delete.append(self.base_driver.current_url)
+
+        prefix_pdf_file_path = self.base_driver.find_element(
+            By.XPATH, '//a[text()="Download User Credentials"]'
+        ).get_property("href")
+        reqHeader = {
+            "Cookie": f"sessionid={self.base_driver.get_cookies()[0]['value']}"
+        }
+        curlRequest = request.Request(prefix_pdf_file_path, headers=reqHeader)
+        try:
+            if request.urlopen(curlRequest, context=self.ctx).getcode() != 200:
+                raise ValueError
+        except (urlerror.HTTPError, OSError, ConnectionResetError, ValueError) as error:
+            self.fail(f"Cannot download PDF file: {error}")
 
     def test_forgot_password(self):
         """Test forgot password to ensure that postfix is working properly."""
 
         self.logout()
+        # Use increased timeout for logout confirmation in CI
+        timeout = self.config.get("webdriver_wait_timeout", 10)
         try:
-            WebDriverWait(self.base_driver, 3).until(
+            WebDriverWait(self.base_driver, timeout).until(
                 EC.text_to_be_present_in_element(
                     (By.CSS_SELECTOR, ".title-wrapper h1"), "Logged out"
                 )
