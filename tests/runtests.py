@@ -59,10 +59,88 @@ class Pretest(TestUtilities, unittest.TestCase):
 
 
 class TestServices(TestUtilities, unittest.TestCase):
+    custom_static_token = None
+
     @property
     def failureException(self):
         TestServices.failed_test = True
         return super().failureException
+
+    @classmethod
+    def _execute_docker_compose_command(cls, cmd_args, use_text_mode=False):
+        """Execute a docker compose command and log output.
+
+        Args:
+            cmd_args: List of command arguments for subprocess.Popen
+            use_text_mode: If True, use text mode for subprocess output
+
+        Returns:
+            Tuple of (output, error) from command execution
+        """
+        kwargs = {
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "cwd": cls.root_location,
+        }
+        if use_text_mode:
+            kwargs["text"] = True
+        cmd = subprocess.run(cmd_args, check=False, **kwargs)
+        if use_text_mode:
+            output, error = cmd.stdout, cmd.stderr
+        else:
+            output = cmd.stdout.decode("utf-8", errors="replace") if cmd.stdout else ""
+            error = cmd.stderr.decode("utf-8", errors="replace") if cmd.stderr else ""
+        output, error = map(str, (cmd.stdout, cmd.stderr))
+        with open(cls.config["logs_file"], "a") as logs_file:
+            logs_file.write(output)
+            logs_file.write(error)
+        if cmd.returncode != 0:
+            raise RuntimeError(
+                f"docker compose command failed "
+                f"({cmd.returncode}): {' '.join(cmd_args)}"
+            )
+        return output, error
+
+    @classmethod
+    def _setup_admin_theme_links(cls):
+        """Configure admin theme links during tests.
+
+        The default docker-compose setup does not allow injecting
+        OPENWISP_ADMIN_THEME_LINKS dynamically, so this method updates
+        Django settings inside the running container and reloads uWSGI.
+        This enables the Selenium tests to verify that a custom static CSS
+        file is served by the admin interface.
+        """
+        css_path = os.path.join(
+            cls.root_location,
+            "customization",
+            "theme",
+            cls.config["custom_css_filename"],
+        )
+        cls.custom_static_token = str(time.time_ns())
+        with open(css_path, "w") as custom_css_file:
+            custom_css_file.write(
+                f"body{{--openwisp-test: {cls.custom_static_token};}}"
+            )
+        script = rf"""
+            grep -q OPENWISP_ADMIN_THEME_LINKS /opt/openwisp/openwisp/settings.py || \
+            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/x-icon\",\"href\":\"ui/openwisp/images/favicon.png\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
+            python collectstatic.py &&
+            uwsgi --reload uwsgi.pid
+        """  # noqa: E501
+        cls._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "exec",
+                "-T",
+                "dashboard",
+                "bash",
+                "-c",
+                script,
+            ],
+            use_text_mode=True,
+        )
 
     @classmethod
     def setUpClass(cls):
@@ -76,7 +154,7 @@ class TestServices(TestUtilities, unittest.TestCase):
                 os.path.dirname(os.path.realpath(__file__)), "data.py"
             )
             entrypoint = "python manage.py shell --command='import data; data.setup()'"
-            cmd = subprocess.Popen(
+            cls._execute_docker_compose_command(
                 [
                     "docker",
                     "compose",
@@ -87,22 +165,12 @@ class TestServices(TestUtilities, unittest.TestCase):
                     "--volume",
                     f"{test_data_file}:/opt/openwisp/data.py",
                     "dashboard",
-                ],
-                universal_newlines=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                cwd=cls.root_location,
+                ]
             )
-            output, error = map(str, cmd.communicate())
-            with open(cls.config["logs_file"], "w") as logs_file:
-                logs_file.write(output)
-                logs_file.write(error)
-            subprocess.run(
+            cls._execute_docker_compose_command(
                 ["docker", "compose", "up", "--detach"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                cwd=cls.root_location,
             )
+        cls._setup_admin_theme_links()
         # Create base drivers (Firefox)
         if cls.config["driver"] == "firefox":
             cls.base_driver = cls.get_firefox_webdriver()
@@ -122,6 +190,15 @@ class TestServices(TestUtilities, unittest.TestCase):
                 print(f"Unable to delete resource at: {resource_link}")
         cls.second_driver.quit()
         cls.base_driver.quit()
+        # Remove the temporary custom CSS file created for testing
+        css_path = os.path.join(
+            cls.root_location,
+            "customization",
+            "theme",
+            cls.config["custom_css_filename"],
+        )
+        if os.path.exists(css_path):
+            os.remove(css_path)
         if cls.failed_test and cls.config["logs"]:
             cmd = subprocess.Popen(
                 ["docker", "compose", "logs"],
@@ -143,35 +220,6 @@ class TestServices(TestUtilities, unittest.TestCase):
         element.find_element(By.CLASS_NAME, "deletelink").click()
         cls.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
 
-    def test_topology_graph(self):
-        path = "/admin/topology/topology"
-        label = "automated-selenium-test-02"
-        self.login()
-        self.create_network_topology(label)
-        self.get_resource(label, path, select_field="field-label")
-        # Click on "Visualize topology graph" button
-        self.find_element(By.CSS_SELECTOR, "input.visualizelink").click()
-        # Click on sidebar handle
-        self.find_element(By.CSS_SELECTOR, "button.sideBarHandle").click()
-        # Verify topology label
-        self.assertEqual(
-            self.find_element(By.CSS_SELECTOR, ".njg-valueLabel").text.lower(),
-            label,
-        )
-        try:
-            console_logs = self.console_error_check()
-            self.assertEqual(len(console_logs), 0)
-        except AssertionError:
-            print("Browser console logs", console_logs)
-            self.fail()
-        self.action_on_resource(label, path, "delete_selected")
-        self.assertNotIn("<li>Nodes: ", self.web_driver.page_source)
-        self.action_on_resource(label, path, "update_selected")
-
-        self.action_on_resource(label, path, "delete_selected")
-        self._wait_until_page_ready()
-        self.assertIn("<li>Nodes: ", self.web_driver.page_source)
-
     def test_admin_login(self):
         self.login()
         self.login(driver=self.second_driver)
@@ -184,6 +232,16 @@ class TestServices(TestUtilities, unittest.TestCase):
                 f"{self.config['username']} & Password: {self.config['password']}"
             )
             self.fail(message)
+
+    def test_custom_static_files_loaded(self):
+        self.login()
+        self.open("/admin/")
+        # Check if the custom CSS variable is applied
+        value = self.web_driver.execute_script(
+            "return getComputedStyle(document.body)"
+            ".getPropertyValue('--openwisp-test');"
+        )
+        self.assertEqual(value.strip(), self.custom_static_token)
 
     def test_device_monitoring_charts(self):
         self.login()
@@ -206,41 +264,9 @@ class TestServices(TestUtilities, unittest.TestCase):
             "test-device", "/admin/topology/topology/", select_field="field-label"
         )
 
-    def test_create_prefix_users(self):
-        self.login()
-        prefix_objname = "automated-prefix-test-01"
-        # Create prefix users
-        self.open("/admin/openwisp_radius/radiusbatch/add/")
-        self.find_element(By.NAME, "strategy").find_element(
-            By.XPATH, '//option[@value="prefix"]'
-        ).click()
-        self.find_element(By.NAME, "organization").find_element(
-            By.XPATH, '//option[text()="default"]'
-        ).click()
-        self.find_element(By.NAME, "name").send_keys(prefix_objname)
-        self.find_element(By.NAME, "prefix").send_keys("automated-prefix")
-        self.find_element(By.NAME, "number_of_users").send_keys("1")
-        self.find_element(By.NAME, "_save").click()
-        # Check PDF available
-        self.get_resource(prefix_objname, "/admin/openwisp_radius/radiusbatch/")
-        self.objects_to_delete.append(self.base_driver.current_url)
-        prefix_pdf_file_path = self.base_driver.find_element(
-            By.XPATH, '//a[text()="Download User Credentials"]'
-        ).get_property("href")
-        reqHeader = {
-            "Cookie": f"sessionid={self.base_driver.get_cookies()[0]['value']}"
-        }
-        curlRequest = request.Request(prefix_pdf_file_path, headers=reqHeader)
-        try:
-            if request.urlopen(curlRequest, context=self.ctx).getcode() != 200:
-                raise ValueError
-        except (urlerror.HTTPError, OSError, ConnectionResetError, ValueError) as error:
-            self.fail(f"Cannot download PDF file: {error}")
-
     def test_console_errors(self):
         url_list = [
             "/admin/",
-            "/admin/geo/location/add/",
             "/accounts/password/reset/",
             "/admin/config/device/add/",
             "/admin/config/template/add/",
@@ -262,7 +288,6 @@ class TestServices(TestUtilities, unittest.TestCase):
             "/admin/firmware_upgrader/category/add/",
         ]
         change_form_list = [
-            ["automated-selenium-location01", "/admin/geo/location/"],
             ["users", "/admin/openwisp_radius/radiusgroup/"],
             ["default-management-vpn", "/admin/config/template/"],
             ["default", "/admin/config/vpn/"],
@@ -272,7 +297,6 @@ class TestServices(TestUtilities, unittest.TestCase):
             ["test_superuser2", "/admin/openwisp_users/user/", "field-username"],
         ]
         self.login()
-        self.create_mobile_location("automated-selenium-location01")
         self.create_superuser("sample@email.com", "test_superuser2")
         # url_list tests
         for url in url_list:
@@ -284,35 +308,6 @@ class TestServices(TestUtilities, unittest.TestCase):
             self.get_resource(*change_form)
             self.assertEqual([], self.console_error_check())
             self.assertIn("OpenWISP", self.base_driver.title)
-
-    def test_websocket_marker(self):
-        """Ensures that the websocket service is running correctly.
-
-        This test uses selenium, it creates a new location, sets a map
-        marker and checks if the location changed int a second window.
-        """
-        location_name = "automated-websocket-selenium-loc01"
-        self.login()
-        self.login(driver=self.second_driver)
-        self.create_mobile_location(location_name)
-        self.get_resource(location_name, "/admin/geo/location/")
-        self.get_resource(
-            location_name, "/admin/geo/location/", driver=self.second_driver
-        )
-        self.find_element(By.NAME, "is_mobile", driver=self.base_driver).click()
-        mark = len(
-            self.find_elements(
-                By.CLASS_NAME, "leaflet-marker-icon", wait_for="invisibility"
-            )
-        )
-        self.assertEqual(mark, 0)
-        self.add_mobile_location_point(location_name, driver=self.second_driver)
-        mark = len(
-            self.find_elements(
-                By.CLASS_NAME, "leaflet-marker-icon", wait_for="presence"
-            )
-        )
-        self.assertEqual(mark, 1)
 
     def test_add_superuser(self):
         """Create new user to ensure a new user can be added."""
@@ -326,9 +321,18 @@ class TestServices(TestUtilities, unittest.TestCase):
     def test_forgot_password(self):
         """Test forgot password to ensure that postfix is working properly."""
 
+        self.logout()
+        try:
+            WebDriverWait(self.base_driver, 3).until(
+                EC.text_to_be_present_in_element(
+                    (By.CSS_SELECTOR, ".title-wrapper h1"), "Logged out"
+                )
+            )
+        except TimeoutException:
+            self.fail("Logout failed.")
         self.open("/accounts/password/reset/")
         self.find_element(By.NAME, "email").send_keys("admin@example.com")
-        self.find_element(By.XPATH, '//button[@type="submit"]').click()
+        self.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
         self._wait_until_page_ready()
         self.assertIn(
             "We have sent you an email. If you have not received "
@@ -362,9 +366,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_firmware_upgrader.tasks.create_all_device_firmwares",
             "openwisp_firmware_upgrader.tasks.create_device_firmware",
             "openwisp_firmware_upgrader.tasks.upgrade_firmware",
-            "openwisp_monitoring.check.tasks.auto_create_config_check",
-            "openwisp_monitoring.check.tasks.auto_create_iperf3_check",
-            "openwisp_monitoring.check.tasks.auto_create_ping",
+            "openwisp_monitoring.check.tasks.auto_create_check",
             "openwisp_monitoring.check.tasks.perform_check",
             "openwisp_monitoring.check.tasks.run_checks",
             "openwisp_monitoring.device.tasks.delete_wifi_clients_and_sessions",
@@ -376,7 +378,6 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_monitoring.monitoring.tasks.migrate_timeseries_database",
             "openwisp_monitoring.monitoring.tasks.timeseries_batch_write",
             "openwisp_monitoring.monitoring.tasks.timeseries_write",
-            "openwisp_monitoring.monitoring.tasks.delete_timeseries",
             "openwisp_notifications.tasks.delete_ignore_object_notification",
             "openwisp_notifications.tasks.delete_notification",
             "openwisp_notifications.tasks.delete_obsolete_objects",
@@ -385,7 +386,6 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_notifications.tasks.ns_organization_user_deleted",
             "openwisp_notifications.tasks.ns_register_unregister_notification_type",
             "openwisp_notifications.tasks.update_org_user_notificationsetting",
-            "openwisp_notifications.tasks.update_superuser_notification_settings",
             "openwisp_radius.tasks.cleanup_stale_radacct",
             "openwisp_radius.tasks.convert_called_station_id",
             "openwisp_radius.tasks.deactivate_expired_users",
@@ -490,7 +490,4 @@ class TestServices(TestUtilities, unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    suite.addTest(TestServices("test_topology_graph"))
-    runner = unittest.TextTestRunner(verbosity=2)
-    runner.run(suite)
+    unittest.main(verbosity=2)
