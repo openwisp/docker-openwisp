@@ -36,6 +36,14 @@ check_status() {
 	fi
 }
 
+# Returns true if the backup .env exists and contains app secrets
+has_backup_with_secrets() {
+	[[ -f "$ENV_BACKUP" ]] && \
+	[[ -n "$(get_env "DB_USER" "$ENV_BACKUP")" ]] && \
+	[[ -n "$(get_env "DB_PASS" "$ENV_BACKUP")" ]] && \
+	[[ -n "$(get_env "DJANGO_SECRET_KEY" "$ENV_BACKUP")" ]]
+}
+
 error_msg() {
 	report_error
 	echo -e ${RED}${1}${NON}
@@ -103,6 +111,19 @@ setup_docker_openwisp() {
 	echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
 	read env_path
 	if [[ ! -f "$env_path" ]]; then
+		# Prevent issues when users reinstall carelessly
+		if [[ ! -f "$INSTALL_PATH/.env" ]] && ! has_backup_with_secrets && docker volume inspect "docker-openwisp_postgres_data" &>/dev/null; then
+			{
+				echo -e "${RED}ERROR: Database volume exists but .env is missing.${NON}"
+				echo ""
+				echo "Generating new credentials would break access to the existing database."
+				echo ""
+				echo "Option 1 - Restore your previous .env and re-run this script."
+				echo "Option 2 - Wipe the database and start fresh (ALL DATA WILL BE LOST), e.g.:"
+				echo -e "  ${YLW}cd $INSTALL_PATH && docker compose down --volumes${NON}"
+			} | tee -a "$LOG_FILE"
+			exit 1
+		fi
 		# Dashboard Domain
 		echo -ne ${GRN}"(1/5) Enter dashboard domain: "${NON}
 		read dashboard_domain
@@ -157,9 +178,16 @@ setup_docker_openwisp() {
 		fi
 		# Site manager email
 		set_env "EMAIL_DJANGO_DEFAULT" "$django_default_email"
-		# Set random secret values
-		python3 $INSTALL_PATH/build.py change-secret-key >/dev/null
-		python3 $INSTALL_PATH/build.py change-database-credentials >/dev/null
+		# Set new secrets only if not previously set
+		if has_backup_with_secrets; then
+			for config in DB_USER DB_PASS DJANGO_SECRET_KEY; do
+				value=$(get_env "$config" "$ENV_BACKUP")
+				set_env "$config" "$value"
+			done
+		else
+			python3 $INSTALL_PATH/build.py change-secret-key >/dev/null
+			python3 $INSTALL_PATH/build.py change-database-credentials >/dev/null
+		fi
 		# SSL Configuration
 		use_letsencrypt_lower=$(echo "$use_letsencrypt" | tr '[:upper:]' '[:lower:]')
 		if [[ "$use_letsencrypt_lower" == "y" || "$use_letsencrypt_lower" == "yes" ]]; then
