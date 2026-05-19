@@ -138,3 +138,44 @@ else
 fi
 test "$crl_status" -eq 1
 wait "$slow_download_pid"
+
+test_config_download() (
+	config_test_dir=$(mktemp -d) || exit 1
+	trap 'rm -rf -- "$config_test_dir"' EXIT HUP INT TERM
+	mkdir "$config_test_dir/archive" "$config_test_dir/work"
+	printf '%s' 'new config' >"$config_test_dir/archive/my vpn.conf"
+	printf '%s' 'pem' >"$config_test_dir/archive/client.pem"
+	tar -czf "$config_test_dir/vpn.tar.gz" -C "$config_test_dir/archive" \
+		'my vpn.conf' client.pem
+	printf '%s' 'stale config' >"$config_test_dir/work/openvpn.conf"
+	cd "$config_test_dir/work"
+	curl() {
+		output_path=""
+		while [ "$#" -gt 0 ]; do
+			case "$1" in
+			--output)
+				output_path="$2"
+				shift 2
+				;;
+			*)
+				shift
+				;;
+			esac
+		done
+		case "$output_path" in
+		vpn.tar.gz) cp "$config_test_dir/vpn.tar.gz" "$output_path" ;;
+		checksum) printf '%s\n' checksum >"$output_path" ;;
+		*) return 1 ;;
+		esac
+	}
+	API_INTERNAL=https://api.internal
+	UUID=vpn-uuid
+	KEY=vpn-key
+	openvpn_config_download
+	test "$(cat openvpn.conf)" = 'new config'
+	test ! -f 'my vpn.conf'
+	test "$(cat checksum)" = checksum
+	test "$(stat -c '%a' client.pem)" = 600
+)
+
+test_config_download
