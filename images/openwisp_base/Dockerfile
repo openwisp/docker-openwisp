@@ -32,16 +32,16 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
 ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
+RUN pip install --no-cache-dir --user --upgrade "${OPENWISP_MONITORING_SOURCE}"
 ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
+RUN pip install --no-cache-dir --user --upgrade "${OPENWISP_FIRMWARE_SOURCE}"
 ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
+RUN pip install --no-cache-dir --user --upgrade "${OPENWISP_TOPOLOGY_SOURCE}"
 ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
+RUN pip install --no-cache-dir --user --upgrade "${OPENWISP_RADIUS_SOURCE}"
 
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
@@ -49,22 +49,22 @@ RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 ARG OPENWISP_IPAM_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
-  pip install --no-cache-dir --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
+  pip install --no-cache-dir --user --upgrade "${OPENWISP_IPAM_SOURCE}"; \
   fi
 ARG OPENWISP_CONTROLLER_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
-  pip install --no-cache-dir --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
+  pip install --no-cache-dir --user --upgrade "${OPENWISP_CONTROLLER_SOURCE}"; \
   fi
 ARG OPENWISP_NOTIFICATION_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
-  pip install --no-cache-dir --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
+  pip install --no-cache-dir --user --upgrade "${OPENWISP_NOTIFICATION_SOURCE}"; \
   fi
 ARG OPENWISP_USERS_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
-  pip install --no-cache-dir --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
+  pip install --no-cache-dir --user --upgrade --force-reinstall "${OPENWISP_USERS_SOURCE}"; \
   fi
 ARG OPENWISP_UTILS_SOURCE=default
 # hadolint ignore=DL3013
@@ -74,12 +74,12 @@ RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
 ARG DJANGO_X509_SOURCE=default
 # hadolint ignore=DL3013
 RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
-  pip install --no-cache-dir --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
+  pip install --no-cache-dir --user --upgrade --force-reinstall "${DJANGO_X509_SOURCE}"; \
   fi
 
 ARG DJANGO_SOURCE=django~=5.2.0
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir --user --upgrade ${DJANGO_SOURCE}
+RUN pip install --no-cache-dir --user --upgrade "${DJANGO_SOURCE}"
 
 COPY ./openwisp_base/requirements.txt /tmp/openwisp-deploy-requirements.txt
 RUN pip install --no-cache-dir --user --upgrade -r /tmp/openwisp-deploy-requirements.txt && \
@@ -89,7 +89,7 @@ ARG OPENWISP_VERSION=edge
 FROM system
 
 ARG OPENWISP_VERSION=edge
-ENV OPENWISP_VERSION=${OPENWISP_VERSION}
+ENV OPENWISP_VERSION="${OPENWISP_VERSION}"
 
 COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
 COPY --chown=openwisp:root ./common/ /opt/openwisp/
