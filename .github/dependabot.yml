@@ -1,15 +1,27 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
+    # Keep directories explicit to avoid overlapping scans that create duplicate PRs.
     directories:
-      - "**/*"
+      - "/"
+      - "/images/openwisp_base"
+      - "/images/openwisp_nginx"
     schedule:
       interval: "weekly"
     commit-message:
       prefix: "[deps] "
   - package-ecosystem: "docker"
+    # Keep directories explicit to avoid overlapping scans that create duplicate PRs.
     directories:
-      - "**/*"
+      - "/images/openwisp_api"
+      - "/images/openwisp_base"
+      - "/images/openwisp_dashboard"
+      - "/images/openwisp_freeradius"
+      - "/images/openwisp_nfs"
+      - "/images/openwisp_nginx"
+      - "/images/openwisp_openvpn"
+      - "/images/openwisp_postfix"
+      - "/images/openwisp_websocket"
     schedule:
       interval: "weekly"
     commit-message:
