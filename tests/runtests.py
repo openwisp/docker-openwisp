@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from urllib import error as urlerror
 from urllib import request
+from uuid import uuid4
 
 import requests
 from selenium.common.exceptions import TimeoutException
@@ -352,10 +353,12 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     def test_add_superuser(self):
         """Create new user to ensure a new user can be added."""
+        username = f"test_superuser_{uuid4().hex[:8]}"
+        email = f"{username}@example.com"
         self.login()
-        self.create_superuser()
+        self.create_superuser(email=email, username=username)
         self.assertEqual(
-            "The user “test_superuser” was changed successfully.",
+            f"The user “{username}” was changed successfully.",
             self.find_element(By.CLASS_NAME, "success").text,
         )
 
@@ -460,14 +463,125 @@ class TestServices(TestUtilities, unittest.TestCase):
         with self.subTest("Test celery_monitoring container"):
             _test_celery_task_registered("celery_monitoring")
 
+    def test_openvpn_revokelist_restart_logic(self):
+        """Ensure revokelist restart behavior only triggers on CRL changes."""
+
+        container_id = self.docker_compose_get_container_id("openvpn")
+        openvpn_container = self.docker_client.containers.get(container_id)
+        test_dir = "/tmp/openwisp-crl-test"
+
+        def _run_case(mode, seed_crl=None):
+            setup_existing = ""
+            if seed_crl is None:
+                setup_existing = f"rm -f {test_dir}/work/revoked.crl"
+            else:
+                setup_existing = (
+                    f"printf '%s\\n' '{seed_crl}' > {test_dir}/work/revoked.crl"
+                )
+
+            command = f"""
+set -eu
+rm -rf {test_dir}
+mkdir -p {test_dir}/bin {test_dir}/work
+cat > {test_dir}/bin/supervisorctl <<'EOF'
+#!/bin/sh
+printf '%s\\n' "$*" >> {test_dir}/supervisor.log
+EOF
+chmod +x {test_dir}/bin/supervisorctl
+cp /openvpn_utils.sh {test_dir}/openvpn_utils.sh
+cat >> {test_dir}/openvpn_utils.sh <<'EOF'
+
+openvpn_config() {{ :; }}
+
+crl_download_to() {{
+    output_path="${{1:-revoked.crl}}"
+    case "${{CRL_TEST_MODE}}" in
+        initial|unchanged)
+            printf '%s\\n' 'v1-initial-crl' > "$output_path"
+            ;;
+        changed)
+            printf '%s\\n' 'v2-changed-crl' > "$output_path"
+            ;;
+        fail)
+            return 1
+            ;;
+    esac
+}}
+EOF
+sed \
+    -e 's|^cd /$|cd {test_dir}/work|' \
+    -e 's|^source /utils.sh$|:|' \
+    -e 's|^[.] /utils.sh$|:|' \
+    -e 's|^source /openvpn_utils.sh$|. {test_dir}/openvpn_utils.sh|' \
+    -e 's|^[.] /openvpn_utils.sh$|. {test_dir}/openvpn_utils.sh|' \
+    /revokelist.sh > {test_dir}/revokelist.sh
+grep -Fx "cd {test_dir}/work" {test_dir}/revokelist.sh >/dev/null
+grep -Fx ":" {test_dir}/revokelist.sh >/dev/null
+grep -Fx ". {test_dir}/openvpn_utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx "cd /" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx "source /utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx "source /openvpn_utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx ". /utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx ". /openvpn_utils.sh" {test_dir}/revokelist.sh >/dev/null
+chmod +x {test_dir}/revokelist.sh
+{setup_existing}
+: > {test_dir}/supervisor.log
+CRL_TEST_MODE={mode} PATH={test_dir}/bin:$PATH \
+    sh {test_dir}/revokelist.sh > {test_dir}/stdout 2> {test_dir}/stderr
+"""
+            result = openvpn_container.exec_run(["sh", "-lc", command])
+            self.assertEqual(result.exit_code, 0, result.output.decode("utf-8"))
+
+            def _read(path):
+                read_result = openvpn_container.exec_run(
+                    ["sh", "-lc", f"cat {path} 2>/dev/null || true"]
+                )
+                return read_result.output.decode("utf-8")
+
+            return {
+                "stdout": _read(f"{test_dir}/stdout"),
+                "stderr": _read(f"{test_dir}/stderr"),
+                "supervisor": _read(f"{test_dir}/supervisor.log"),
+                "revoked_crl": _read(f"{test_dir}/work/revoked.crl"),
+            }
+
+        initial = _run_case("initial")
+        self.assertEqual(initial["stdout"], "")
+        self.assertEqual(initial["stderr"], "")
+        self.assertEqual(initial["supervisor"], "restart openvpn\n")
+        self.assertEqual(initial["revoked_crl"], "v1-initial-crl\n")
+
+        unchanged = _run_case("unchanged", seed_crl="v1-initial-crl")
+        self.assertEqual(unchanged["stdout"], "")
+        self.assertEqual(unchanged["stderr"], "")
+        self.assertEqual(unchanged["supervisor"], "")
+        self.assertEqual(unchanged["revoked_crl"], "v1-initial-crl\n")
+
+        changed = _run_case("changed", seed_crl="v1-initial-crl")
+        self.assertEqual(changed["stdout"], "")
+        self.assertEqual(changed["stderr"], "")
+        self.assertEqual(changed["supervisor"], "restart openvpn\n")
+        self.assertEqual(changed["revoked_crl"], "v2-changed-crl\n")
+
+        failed = _run_case("fail", seed_crl="v1-initial-crl")
+        self.assertEqual(failed["stdout"], "")
+        self.assertIn(
+            "Failed to download CRL, keeping existing revoked.crl",
+            failed["stderr"],
+        )
+        self.assertEqual(failed["supervisor"], "")
+        self.assertEqual(failed["revoked_crl"], "v1-initial-crl\n")
+
     def test_radius_user_registration(self):
         """Ensure users can register using the RADIUS API."""
-        url = f"{self.config['api_url']}/api/v1/radius/organization/default/account/"
+        username = f"signup-user-{uuid4().hex[:8]}"
+        email = f"{username}@signup.com"
+        url = f'{self.config["api_url"]}/api/v1/radius/organization/default/account/'
         response = requests.post(
             url,
             json={
-                "username": "signup-user",
-                "email": "user@signup.com",
+                "username": username,
+                "email": email,
                 "password1": "rLx6OH%[",
                 "password2": "rLx6OH%[",
             },
@@ -476,9 +590,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         # Delete the created user
         self.login()
-        self.get_resource(
-            "signup-user", "/admin/openwisp_users/user/", "field-username"
-        )
+        self.get_resource(username, "/admin/openwisp_users/user/", "field-username")
         self.objects_to_delete.append(self.base_driver.current_url)
 
     def test_freeradius(self):

@@ -30,16 +30,13 @@ elif [ "$MODULE_NAME" = 'freeradius' ]; then
 	fi
 elif [ "$MODULE_NAME" = 'openvpn' ]; then
 	if [[ -z "$VPN_DOMAIN" ]]; then exit; fi
+	source openvpn_utils.sh
 	wait_nginx_services
 	openvpn_preconfig
 	openvpn_config
 	openvpn_config_download
 	crl_download
-	echo "*/1 * * * * sh /openvpn.sh" | crontab -
-	(
-		crontab -l
-		echo "0 0 * * * sh /revokelist.sh"
-	) | crontab -
+	crontab /openvpn.crontab
 	crond
 	# Schedule send topology script only when
 	# network topology module is enabled.
