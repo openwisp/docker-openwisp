@@ -48,9 +48,10 @@ base-build:
 	             --target PYTHON ./images/ \
 	             $$BUILD_ARGS; \
 	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
-	             --file ./images/openwisp_base/Dockerfile ./images/ \
-							 --build-arg OPENWISP_VERSION=$(OPENWISP_VERSION) \
-	             $$BUILD_ARGS
+	             --file ./images/openwisp_base/Dockerfile \
+	             $$BUILD_ARGS \
+	             --build-arg OPENWISP_VERSION=$(OPENWISP_VERSION) \
+	             ./images/
 
 nfs-build:
 	docker build --tag $(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
