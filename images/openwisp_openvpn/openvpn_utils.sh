@@ -10,8 +10,7 @@ function openvpn_preconfig {
 	if [ ! -c /dev/net/tun ]; then
 		mknod /dev/net/tun c 10 200
 	fi
-	ip -6 route show default 2>/dev/null
-	if [ $? = 0 ]; then
+	if ip -6 route show default >/dev/null 2>&1; then
 		echo "Enabling IPv6 Forwarding"
 		sysctl -w net.ipv6.conf.all.disable_ipv6=0 || echo "Failed to enable IPv6 support"
 		sysctl -w net.ipv6.conf.default.forwarding=1 || echo "Failed to enable IPv6 Forwarding default"
