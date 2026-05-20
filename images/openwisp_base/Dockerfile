@@ -86,10 +86,9 @@ RUN pip install --no-cache-dir --user --upgrade -r /tmp/openwisp-deploy-requirem
     pip install --no-cache-dir --upgrade urllib3~=2.2.1
 
 FROM system
-ENV OPENWISP_VERSION="${OPENWISP_VERSION}"
 
 ARG OPENWISP_VERSION=edge
-ENV OPENWISP_VERSION=${OPENWISP_VERSION}
+ENV OPENWISP_VERSION="${OPENWISP_VERSION}"
 
 COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
 COPY --chown=openwisp:root ./common/ /opt/openwisp/
