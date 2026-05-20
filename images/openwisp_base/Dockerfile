@@ -88,7 +88,6 @@ RUN pip install --no-cache-dir --user --upgrade -r /tmp/openwisp-deploy-requirem
 FROM system
 
 ARG OPENWISP_VERSION=edge
-ENV OPENWISP_VERSION="${OPENWISP_VERSION}"
 
 COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
 COPY --chown=openwisp:root ./common/ /opt/openwisp/
@@ -96,6 +95,9 @@ RUN mkdir /opt/openwisp/static && \
     mkdir /opt/openwisp/media && \
     mkdir /opt/openwisp/private && \
     mkdir /opt/openwisp/logs
+RUN echo "${OPENWISP_VERSION}" > /opt/openwisp/OPENWISP_VERSION && \
+    chmod 444 /opt/openwisp/OPENWISP_VERSION
+
 RUN chown -R openwisp:root /opt/openwisp && \
     chown -R openwisp:root /home/openwisp/.ssh
 # Maintain backward compatibility with code written for ansible-openwisp2
