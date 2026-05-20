@@ -37,13 +37,15 @@ function openvpn_config_checksum {
 
 	remote_checksum=$(curl --silent --show-error --fail --insecure \
 		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY) || return 1
-	if [ -z "$remote_checksum" ] || [ ! -s checksum ]; then
+	if [ -z "$remote_checksum" ]; then
 		return 1
 	fi
 
-	local_checksum=$(cat checksum)
+	if [ -s checksum ]; then
+		local_checksum=$(cat checksum)
+	fi
 	if [ -z "$local_checksum" ]; then
-		return 1
+		local_checksum=""
 	fi
 
 	export OFILE="$remote_checksum"
@@ -53,13 +55,20 @@ function openvpn_config_checksum {
 function openvpn_config_download {
 	local tmp_tar
 	local tmp_checksum
+	local tmp_extract_dir
+	local expected_checksum
+	local actual_checksum
 
 	tmp_tar=$(mktemp /tmp/vpn-config.XXXXXX) || return 1
 	tmp_checksum=$(mktemp /tmp/vpn-checksum.XXXXXX) || {
 		rm -f "$tmp_tar"
 		return 1
 	}
-	trap 'rm -f "$tmp_tar" "$tmp_checksum"' EXIT HUP INT TERM
+	tmp_extract_dir=$(mktemp -d /tmp/vpn-config-dir.XXXXXX) || {
+		rm -f "$tmp_tar" "$tmp_checksum"
+		return 1
+	}
+	trap 'rm -f "$tmp_tar" "$tmp_checksum"; rm -rf "$tmp_extract_dir"' EXIT HUP INT TERM
 
 	curl --silent --show-error --fail --retry 10 --retry-delay 5 --retry-max-time 300 \
 		--insecure --output "$tmp_tar" \
@@ -68,15 +77,49 @@ function openvpn_config_download {
 
 	curl --silent --show-error --fail --insecure --output "$tmp_checksum" \
 		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY || return 1
-	test -s "$tmp_checksum" || return 1
+	test -s "$tmp_checksum" || {
+		echo "Downloaded OpenVPN checksum is empty" >&2
+		return 1
+	}
 
-	tar xzf "$tmp_tar" || return 1
-	set -- ./*.pem
+	expected_checksum=$(awk 'NF {print $1; exit}' "$tmp_checksum" | tr -d '\r')
+	if [ -z "$expected_checksum" ]; then
+		echo "Downloaded OpenVPN checksum is empty" >&2
+		return 1
+	fi
+
+	case "${#expected_checksum}" in
+		32)
+			actual_checksum=$(md5sum "$tmp_tar" | awk '{print $1}') || return 1
+			;;
+		40)
+			actual_checksum=$(sha1sum "$tmp_tar" | awk '{print $1}') || return 1
+			;;
+		64)
+			actual_checksum=$(sha256sum "$tmp_tar" | awk '{print $1}') || return 1
+			;;
+		128)
+			actual_checksum=$(sha512sum "$tmp_tar" | awk '{print $1}') || return 1
+			;;
+		*)
+			echo "Unsupported OpenVPN checksum format: $expected_checksum" >&2
+			return 1
+			;;
+	esac
+	if [ "$actual_checksum" != "$expected_checksum" ]; then
+		echo "Downloaded OpenVPN config checksum mismatch" >&2
+		return 1
+	fi
+
+	tar xzf "$tmp_tar" -C "$tmp_extract_dir" || return 1
+	set -- "$tmp_extract_dir"/*.pem
 	test -e "$1" || return 1
 	chmod 600 "$@" || return 1
+	cp -R "$tmp_extract_dir"/. / || return 1
 
 	mv "$tmp_checksum" checksum || return 1
 	rm -f "$tmp_tar"
+	rm -rf "$tmp_extract_dir"
 	trap - EXIT HUP INT TERM
 }
 
