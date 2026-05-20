@@ -125,8 +125,9 @@ function openvpn_config_download {
 
 function crl_download_to {
 	local output_path="${1:-revoked.crl}"
-	curl --silent --show-error --fail --insecure --output "$output_path" \
-	${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl
+	curl --silent --show-error --fail --retry 10 --retry-delay 5 --retry-max-time 300 \
+		--insecure --output "$output_path" \
+		${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl
 }
 
 function crl_download {
