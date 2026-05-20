@@ -54,7 +54,7 @@ function openvpn_config_download {
 	local tmp_tar
 	local tmp_checksum
 
-	tmp_tar=$(mktemp /tmp/vpn-config.XXXXXX.tar.gz) || return 1
+	tmp_tar=$(mktemp /tmp/vpn-config.XXXXXX) || return 1
 	tmp_checksum=$(mktemp /tmp/vpn-checksum.XXXXXX) || {
 		rm -f "$tmp_tar"
 		return 1
