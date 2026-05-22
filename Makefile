@@ -36,6 +36,7 @@ python-build: build.py
 	python build.py change-secret-key
 
 base-build:
+	python build.py generate-version $(OPENWISP_VERSION)
 	BUILD_ARGS_FILE=$$(cat .build.env 2>/dev/null); \
 	for build_arg in $$BUILD_ARGS_FILE; do \
 	    BUILD_ARGS+=" --build-arg $$build_arg"; \
@@ -50,7 +51,6 @@ base-build:
 	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_base/Dockerfile \
 	             $$BUILD_ARGS \
-	             --build-arg OPENWISP_VERSION=$(OPENWISP_VERSION) \
 	             ./images/
 
 nfs-build:
