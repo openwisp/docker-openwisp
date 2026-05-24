@@ -45,11 +45,10 @@ def update_makefile_version(new_version: str):
         flags=re.MULTILINE,
     )
     if updated == content:
-        print(
+        raise RuntimeError(
             f"WARNING: RELEASE_VERSION not found in {makefile_path}; "
             "no changes written."
         )
-        return
 
     with open(makefile_path, "w") as fh:
         fh.write(updated)

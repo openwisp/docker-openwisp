@@ -62,6 +62,7 @@ compose-build: base-build
 
 # Test
 runtests: develop-runtests
+	python build.py generate-version $${OPENWISP_VERSION:-edge}
 	docker compose stop
 
 develop-runtests:
