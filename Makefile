@@ -61,8 +61,9 @@ compose-build: base-build
 	docker compose build --parallel
 
 # Test
-runtests: develop-runtests
+runtests:
 	python build.py generate-version $${OPENWISP_VERSION:-edge}
+	make develop-runtests
 	docker compose stop
 
 develop-runtests:
