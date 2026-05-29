@@ -49,7 +49,7 @@ base-build:
 	             $$BUILD_ARGS; \
 	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_base/Dockerfile ./images/ \
-	             --build-arg OPENWISP_VERSION=$(OPENWISP_VERSION) \
+	             --build-arg OPENWISP_VERSION="$(OPENWISP_VERSION)" \
 	             $$BUILD_ARGS
 
 nfs-build:
