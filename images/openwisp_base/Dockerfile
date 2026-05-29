@@ -98,6 +98,9 @@ RUN chown -R openwisp:root /opt/openwisp && \
 # Maintain backward compatibility with code written for ansible-openwisp2
 RUN ln -s /opt/openwisp/openwisp /opt/openwisp/openwisp2
 
+ARG OPENWISP_VERSION=unknown
+RUN printf "%s\n" "${OPENWISP_VERSION}" > /opt/openwisp/openwisp/.version-info
+
 ENV DASHBOARD_APP_SERVICE=dashboard \
     PYTHONUNBUFFERED=1 \
     TZ=UTC \

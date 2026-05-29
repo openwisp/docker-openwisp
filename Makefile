@@ -42,13 +42,14 @@ base-build:
 	done; \
 	docker build --tag openwisp/openwisp-base:intermedia-system \
 	             --file ./images/openwisp_base/Dockerfile \
-	             --target SYSTEM ./images/; \
+	             --target system ./images/; \
 	docker build --tag openwisp/openwisp-base:intermedia-python \
 	             --file ./images/openwisp_base/Dockerfile \
-	             --target PYTHON ./images/ \
+	             --target openwisp_python ./images/ \
 	             $$BUILD_ARGS; \
 	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_base/Dockerfile ./images/ \
+	             --build-arg OPENWISP_VERSION=$(OPENWISP_VERSION) \
 	             $$BUILD_ARGS
 
 nfs-build:
