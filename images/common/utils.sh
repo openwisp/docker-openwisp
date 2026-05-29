@@ -257,6 +257,6 @@ function init_send_network_topology {
 	fi
 	(
 		crontab -l
-		echo "*/$TOPLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh"
+		echo "*/$TOPOLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh"
 	) | crontab -
 }
