@@ -25,7 +25,7 @@ ENV MODULE_NAME=openvpn \
     DB_SSLCERT=None \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
-    TOPLOGY_UPDATE_INTERVAL=3
+    TOPOLOGY_UPDATE_INTERVAL=3
 
 # hadolint ignore=DL3045
 COPY ./common/init_command.sh \
