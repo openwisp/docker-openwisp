@@ -351,7 +351,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             'python -c "import openwisp; print(openwisp.__openwisp_version__)"'
         )
         self.assertEqual(result.exit_code, 0)
-        python_version = result.output.decode("utf-8").strip()
+        python_version = result.output.decode("utf-8").strip().splitlines()[-1]
         self.assertNotEqual(python_version, "unknown")
 
         # 2. Verify .version-info file exists and matches
