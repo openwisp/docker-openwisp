@@ -90,7 +90,6 @@ class TestServices(TestUtilities, unittest.TestCase):
         else:
             output = cmd.stdout.decode("utf-8", errors="replace") if cmd.stdout else ""
             error = cmd.stderr.decode("utf-8", errors="replace") if cmd.stderr else ""
-        output, error = map(str, (cmd.stdout, cmd.stderr))
         with open(cls.config["logs_file"], "a") as logs_file:
             logs_file.write(output)
             logs_file.write(error)
@@ -207,7 +206,7 @@ class TestServices(TestUtilities, unittest.TestCase):
                 stderr=subprocess.PIPE,
                 cwd=cls.root_location,
             )
-            output, _ = map(str, cmd.communicate())
+            output, _ = cmd.communicate()
             print(f"One of the containers are down!\nOutput:\n{output}")
 
     @classmethod
@@ -482,7 +481,7 @@ class TestServices(TestUtilities, unittest.TestCase):
             stderr=subprocess.PIPE,
             cwd=self.root_location,
         )
-        output, error = map(str, cmd.communicate())
+        output, error = cmd.communicate()
         if "Exit" in output:
             self.fail(
                 f"One of the containers are down!\nOutput:\n{output}\nError:\n{error}"
