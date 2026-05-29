@@ -130,6 +130,10 @@ Other options:
 
 - ``make publish [IMAGE_OWNER=docker-username]
   [OPENWISP_VERSION=version]``: Build, test, and publish images.
+- ``make update-version VERSION=x.y.z``: Bump the release version in one
+  step — updates ``RELEASE_VERSION`` in the ``Makefile`` and rewrites
+  ``images/common/openwisp/_version.py`` to match. Use this whenever
+  cutting a new release instead of editing those files by hand.
 - ``make python-build``: Generate a random Django secret and set it in the
   ``.env`` file.
 - ``make nfs-build``: Build the OpenWISP NFS server image.

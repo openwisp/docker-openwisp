@@ -2,6 +2,7 @@
 # required during building the images. It is
 # used by Makefile.
 
+import os
 import random
 import re
 import sys
@@ -38,33 +39,28 @@ def update_makefile_version(new_version: str):
     with open(makefile_path, "r") as fh:
         content = fh.read()
 
+    if not re.search(r"^RELEASE_VERSION\s*=", content, flags=re.MULTILINE):
+        raise RuntimeError(
+            f"RELEASE_VERSION not found in {makefile_path}; no changes written."
+        )
+
     updated = re.sub(
         r"^(RELEASE_VERSION\s*=\s*).*$",
         rf"\g<1>{new_version}",
         content,
         flags=re.MULTILINE,
     )
-    if updated == content:
-        raise RuntimeError(
-            f"WARNING: RELEASE_VERSION not found in {makefile_path}; "
-            "no changes written."
-        )
 
     with open(makefile_path, "w") as fh:
         fh.write(updated)
 
 
-def generate_version_module(version: str):
-    # Generate images/common/openwisp/_version.py with the given version.
-
+def update_version_file(version: str):
     version_file = "images/common/openwisp/_version.py"
-    content = (
-        "# This file is auto-generated at Docker image build time.\n"
-        "# Do not edit manually.\n"
-        f'__version__ = "{version}"\n'
-    )
+    if not os.path.exists(version_file):
+        raise RuntimeError(f"{version_file} not found; no changes written.")
     with open(version_file, "w") as fh:
-        fh.write(content)
+        fh.write(f'__version__ = "{version}"\n')
 
 
 if __name__ == "__main__":
@@ -92,10 +88,4 @@ if __name__ == "__main__":
             print("update-version requires a version argument")
             sys.exit(1)
         update_makefile_version(new_version)
-    if "generate-version" in arguments:
-        try:
-            new_version = arguments[arguments.index("generate-version") + 1]
-        except IndexError:
-            print("generate-version requires a version argument")
-            sys.exit(1)
-        generate_version_module(new_version)
+        update_version_file(new_version)

@@ -5,7 +5,7 @@
 include .env
 
 # RELEASE_VERSION: version string used when tagging a new release.
-RELEASE_VERSION = 25.10.0
+RELEASE_VERSION = 25.10.3
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 
@@ -35,8 +35,14 @@ pull:
 python-build: build.py
 	python build.py change-secret-key
 
+update-version:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "ERROR: VERSION parameter required. Usage: make update-version VERSION=X.Y.Z"; \
+		exit 1; \
+	fi
+	python build.py update-version $(VERSION)
+
 base-build:
-	python build.py generate-version $(OPENWISP_VERSION)
 	BUILD_ARGS_FILE=$$(cat .build.env 2>/dev/null); \
 	for build_arg in $$BUILD_ARGS_FILE; do \
 	    BUILD_ARGS+=" --build-arg $$build_arg"; \
@@ -62,7 +68,6 @@ compose-build: base-build
 
 # Test
 runtests:
-	python build.py generate-version $${OPENWISP_VERSION:-edge}
 	make develop-runtests
 	docker compose stop
 
