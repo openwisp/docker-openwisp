@@ -345,7 +345,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         """Ensure __openwisp_version__ is properly injected and readable."""
         container_id = self.docker_compose_get_container_id("dashboard")
         dashboard_container = self.docker_client.containers.get(container_id)
-        
+
         # 1. Verify python module reads the version correctly and it's not unknown
         result = dashboard_container.exec_run(
             'python -c "import openwisp; print(openwisp.__openwisp_version__)"'
@@ -353,9 +353,11 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
         python_version = result.output.decode("utf-8").strip()
         self.assertNotEqual(python_version, "unknown")
-        
+
         # 2. Verify .version-info file exists and matches
-        result_file = dashboard_container.exec_run("cat /opt/openwisp/openwisp/.version-info")
+        result_file = dashboard_container.exec_run(
+            "cat /opt/openwisp/openwisp/.version-info"
+        )
         self.assertEqual(result_file.exit_code, 0)
         file_version = result_file.output.decode("utf-8").strip()
         self.assertEqual(python_version, file_version)
