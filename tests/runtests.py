@@ -6,7 +6,7 @@ from urllib import error as urlerror
 from urllib import request
 
 import requests
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -143,6 +143,43 @@ class TestServices(TestUtilities, unittest.TestCase):
         )
 
     @classmethod
+    def _cleanup_stale_test_data(cls):
+        """Delete test-created users that may remain from a previous failed run.
+
+        Runs before tests start so each CI attempt begins with a clean
+        slate. Uses the Django ORM directly (via docker compose exec) to
+        avoid any Selenium dependency during setup.
+        """
+        try:
+            cls._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "exec",
+                    "-T",
+                    "dashboard",
+                    "python",
+                    "manage.py",
+                    "shell",
+                    "-c",
+                    (
+                        "from openwisp_users.models import User; "
+                        "User.objects.filter("
+                        "username__in=['signup-user', 'test_superuser', "
+                        "'test_superuser2']"
+                        ").delete()"
+                    ),
+                ],
+                use_text_mode=True,
+            )
+        except Exception as e:
+            exc_type = type(e).__name__
+            print(
+                f"Warning: stale test data cleanup failed ({exc_type}: {e}). "
+                "Individual tests may fail if stale data is present."
+            )
+
+    @classmethod
     def setUpClass(cls):
         cls.failed_test = False
         cls.live_server_url = cls.config["app_url"]
@@ -171,6 +208,7 @@ class TestServices(TestUtilities, unittest.TestCase):
                 ["docker", "compose", "up", "--detach"],
             )
         cls._setup_admin_theme_links()
+        cls._cleanup_stale_test_data()
         # Create base drivers (Firefox)
         if cls.config["driver"] == "firefox":
             cls.base_driver = cls.get_firefox_webdriver()
@@ -186,8 +224,9 @@ class TestServices(TestUtilities, unittest.TestCase):
         for resource_link in cls.objects_to_delete:
             try:
                 cls._delete_object(resource_link)
-            except NoSuchElementException:
-                print(f"Unable to delete resource at: {resource_link}")
+            except Exception as e:
+                exc_type = type(e).__name__
+                print(f"Unable to delete resource at {resource_link}: {exc_type}: {e}")
         cls.second_driver.quit()
         cls.base_driver.quit()
         # Remove the temporary custom CSS file created for testing
@@ -419,7 +458,7 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     def test_radius_user_registration(self):
         """Ensure users can register using the RADIUS API."""
-        url = f'{self.config["api_url"]}/api/v1/radius/organization/default/account/'
+        url = f"{self.config['api_url']}/api/v1/radius/organization/default/account/"
         response = requests.post(
             url,
             json={
