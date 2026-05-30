@@ -1,5 +1,5 @@
 # hadolint ignore=DL3007
-FROM lisenet/openvpn:2.6.17
+FROM lisenet/openvpn:2.7.3
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
@@ -25,7 +25,7 @@ ENV MODULE_NAME=openvpn \
     DB_SSLCERT=None \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
-    TOPLOGY_UPDATE_INTERVAL=3
+    TOPOLOGY_UPDATE_INTERVAL=3
 
 # hadolint ignore=DL3045
 COPY ./common/init_command.sh \
