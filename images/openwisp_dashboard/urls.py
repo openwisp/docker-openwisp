@@ -37,10 +37,11 @@ if env_bool(os.environ["USE_OPENWISP_FIRMWARE"]):
     )
 
     urlpatterns += [
+        path("", include("openwisp_firmware_upgrader.urls")),
         path(
             "",
             include((fw_private_storage_urls, "firmware"), namespace="firmware"),
-        )
+        ),
     ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

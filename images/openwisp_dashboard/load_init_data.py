@@ -167,12 +167,9 @@ def create_default_credentials():
 
 
 def create_ssh_key_template():
-    if Template.objects.filter(
-        default=True, config__contains="/etc/dropbear/authorized_keys"
-    ).exists():
-        return Template.objects.filter(
-            default=True, config__contains="/etc/dropbear/authorized_keys"
-        ).first()
+    existing = Template.objects.filter(name="SSH Keys", default=True).first()
+    if existing:
+        return existing
     public_key_filepath = os.environ["SSH_PUBLIC_KEY_PATH"]
     try:
         with open(public_key_filepath, "r") as file:
