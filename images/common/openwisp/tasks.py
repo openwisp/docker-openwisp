@@ -17,7 +17,6 @@ def radius_tasks():
     management.call_command(
         "cleanup_stale_radacct", int(os.environ["CRON_CLEANUP_STALE_RADACCT"])
     )
-    management.call_command("deactivate_expired_users")
     management.call_command(
         "delete_old_radiusbatch_users",
         older_than_days=int(os.environ["CRON_DELETE_OLD_RADIUSBATCH_USERS"]),

@@ -80,6 +80,17 @@ notification_schedule = {
     },
 }
 
+users_schedule = {
+    "deactivate-expired-users": {
+        "task": "openwisp_users.tasks.deactivate_expired_users",
+        "schedule": crontab(hour=0, minute=1),
+    },
+    "expiration-reminder-email": {
+        "task": "openwisp_users.tasks.expiration_reminder_email",
+        "schedule": crontab(hour=0, minute=5),
+    },
+}
+
 if not os.environ.get("USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS", True):
     task_routes = {}
 
@@ -91,6 +102,7 @@ app = Celery(
         **radius_schedule,
         **topology_schedule,
         **notification_schedule,
+        **users_schedule,
         **monitoring_schedule,
         **metric_collection_schedule,
     },
