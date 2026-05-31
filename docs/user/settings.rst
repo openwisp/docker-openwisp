@@ -462,8 +462,10 @@ framework.
 ``CRON_DELETE_OLD_RADIUSBATCH_USERS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** (Value in days) Deactivates expired user accounts which
-  were created temporarily and have an expiration date set.
+- **Explanation:** (Value in days) Deletes RADIUS batch users (created
+  temporarily via RADIUS batch operations) older than the given number of
+  days. Expired-account *deactivation* is handled automatically by
+  openwisp-users and no longer depends on ``USE_OPENWISP_RADIUS``.
 - **Valid Values:** INTEGER.
 - **Default:** ``365``.
 
