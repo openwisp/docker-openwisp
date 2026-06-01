@@ -236,13 +236,47 @@ function openvpn_config_checksum {
 }
 
 function openvpn_config_download {
+	# Extract in isolation so stale files in / cannot be mistaken for
+	# files from the newly downloaded archive.
+	TMPDIR=$(mktemp -d) || return 1
 	curl --silent --retry 10 --retry-delay 5 --retry-max-time 300\
 		--insecure --output vpn.tar.gz \
-		${API_INTERNAL}/controller/vpn/download-config/$UUID/?key=$KEY
+		"${API_INTERNAL}/controller/vpn/download-config/${UUID}/?key=${KEY}" || {
+		rm -rf -- "$TMPDIR"
+		return 1
+	}
 	curl --silent --insecure --output checksum \
-		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
-	tar xzf vpn.tar.gz
-	chmod 600 *.pem
+		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}" || {
+		rm -rf -- "$TMPDIR"
+		return 1
+	}
+	tar xzf vpn.tar.gz -C "$TMPDIR" || {
+		rm -rf -- "$TMPDIR"
+		return 1
+	}
+	chmod 600 -- "$TMPDIR"/*.pem 2>/dev/null || true
+	# Supervisord always starts OpenVPN with openvpn.conf; normalize whatever
+	# config filename the archive contains, including names with whitespace.
+	CONF_FILE="$TMPDIR/openvpn.conf"
+	if [ ! -f "$CONF_FILE" ]; then
+		CONF_FILE=$(find "$TMPDIR" -maxdepth 1 -type f -name '*.conf' -print -quit)
+	fi
+	if [ -z "$CONF_FILE" ]; then
+		echo "ERROR: no OpenVPN config file found after extraction" >&2
+		rm -rf -- "$TMPDIR"
+		return 1
+	fi
+	mv -f -- "$CONF_FILE" openvpn.conf || {
+		rm -rf -- "$TMPDIR"
+		return 1
+	}
+	# Move the remaining extracted files, but leave any extra .conf files behind
+	# so only the normalized openvpn.conf is used at runtime.
+	find "$TMPDIR" -mindepth 1 -maxdepth 1 ! -name '*.conf' -exec mv -f -- {} . \; || {
+		rm -rf -- "$TMPDIR"
+		return 1
+	}
+	rm -rf -- "$TMPDIR"
 }
 
 function crl_download {

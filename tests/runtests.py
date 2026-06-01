@@ -10,7 +10,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from utils import TestUtilities
+from utils import TestConfig, TestUtilities
 
 
 class Pretest(TestUtilities, unittest.TestCase):
@@ -56,6 +56,60 @@ class Pretest(TestUtilities, unittest.TestCase):
                 time.sleep(delay_retries)
         else:
             self.fail(f"All celery workers are not online: {online_workers}")
+
+
+class OpenVPNContainerTest(TestConfig, unittest.TestCase):
+    def test_openvpn_config_download_with_whitespace_name(self):
+        """Ensure the OpenVPN container normalizes whitespace config names."""
+        script = r"""
+            set -e
+            TMPDIR=$(mktemp -d)
+            mkdir "$TMPDIR/archive" "$TMPDIR/work"
+            printf 'new config' > "$TMPDIR/archive/my vpn.conf"
+            printf 'pem' > "$TMPDIR/archive/client.pem"
+            tar -czf "$TMPDIR/vpn.tar.gz" -C "$TMPDIR/archive" \
+                'my vpn.conf' 'client.pem'
+            printf 'stale config' > "$TMPDIR/work/openvpn.conf"
+            cd "$TMPDIR/work"
+            source /utils.sh
+            curl() {
+                output=''
+                while [ "$#" -gt 0 ]; do
+                    if [ "$1" = '--output' ]; then
+                        shift
+                        output="$1"
+                    fi
+                    shift || true
+                done
+                if [ "$output" = 'vpn.tar.gz' ]; then
+                    cp "$TMPDIR/vpn.tar.gz" "$output"
+                elif [ "$output" = 'checksum' ]; then
+                    printf '%s\n' 'checksum' > "$output"
+                else
+                    return 1
+                fi
+            }
+            API_INTERNAL='https://api.internal'
+            UUID='vpn-uuid'
+            KEY='vpn-key'
+            openvpn_config_download
+            test "$(cat openvpn.conf)" = 'new config'
+            test ! -f 'my vpn.conf'
+            test "$(cat checksum)" = 'checksum'
+            test "$(stat -c '%a' client.pem)" = '600'
+            rm -rf "$TMPDIR"
+        """
+        res = subprocess.run(
+            ["docker", "compose", "exec", "-T", "openvpn", "sh", "-c", script],
+            cwd=self.root_location,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(
+            res.returncode,
+            0,
+            f"stdout:\n{res.stdout}\nstderr:\n{res.stderr}",
+        )
 
 
 class TestServices(TestUtilities, unittest.TestCase):
