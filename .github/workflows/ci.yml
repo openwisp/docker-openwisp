@@ -87,13 +87,21 @@ jobs:
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
           # execute the test from this directory.
-          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests && make stop
+          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests
         env:
           SELENIUM_HEADLESS: 1
 
       - name: Print docker logs
         if: ${{ failure() }}
         run: docker compose logs
+
+      - name: Stop containers
+        # Run teardown exactly once after the retry loop, regardless of the
+        # test outcome. Keeping `make stop` out of the retried command ensures
+        # a failed attempt never skips teardown and never tears the stack down
+        # between retries (which would make every subsequent retry fail).
+        if: ${{ always() && steps.auto_install_upgrade.conclusion == 'success' }}
+        run: cd /opt/openwisp/docker-openwisp && make stop
 
       # the following action is equivalent to
       # echo "$DOCKER_HUB_SECRET" | docker login --username "$DOCKER_HUB_USERNAME" --password-stdin
