@@ -5,7 +5,7 @@
 include .env
 
 # RELEASE_VERSION: version string used when tagging a new release.
-RELEASE_VERSION = 25.10.3
+RELEASE_VERSION = $(shell cat images/common/openwisp/VERSION)
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 
@@ -34,13 +34,6 @@ pull:
 # Build
 python-build: build.py
 	python build.py change-secret-key
-
-update-version:
-	@if [ -z "$(VERSION)" ]; then \
-		echo "ERROR: VERSION parameter required. Usage: make update-version VERSION=X.Y.Z"; \
-		exit 1; \
-	fi
-	python build.py update-version $(VERSION)
 
 base-build:
 	BUILD_ARGS_FILE=$$(cat .build.env 2>/dev/null); \
@@ -132,3 +125,10 @@ publish:
 release:
 	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
 	make publish TAG=$(RELEASE_VERSION) OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true
+
+bump:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "ERROR: VERSION parameter required. Usage: make bump VERSION=X.Y.Z"; \
+		exit 1; \
+	fi
+	python build.py bump-version "$(VERSION)"

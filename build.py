@@ -2,10 +2,12 @@
 # required during building the images. It is
 # used by Makefile.
 
-import os
 import random
 import re
 import sys
+from pathlib import Path
+
+VERSION_FILE = Path("images/common/openwisp/VERSION")
 
 
 def update_env_file(key, value):
@@ -32,60 +34,30 @@ def get_secret_key(allow_special_chars=True):
     return keygen
 
 
-def update_makefile_version(new_version: str):
-    # Update RELEASE_VERSION in the Makefile to new_version.
-
-    makefile_path = "Makefile"
-    with open(makefile_path, "r") as fh:
-        content = fh.read()
-
-    if not re.search(r"^RELEASE_VERSION\s*=", content, flags=re.MULTILINE):
-        raise RuntimeError(
-            f"RELEASE_VERSION not found in {makefile_path}; no changes written."
-        )
-
-    updated = re.sub(
-        r"^(RELEASE_VERSION\s*=\s*).*$",
-        rf"\g<1>{new_version}",
-        content,
-        flags=re.MULTILINE,
-    )
-
-    with open(makefile_path, "w") as fh:
-        fh.write(updated)
-
-
 def update_version_file(version: str):
-    version_file = "images/common/openwisp/_version.py"
-    if not os.path.exists(version_file):
-        raise RuntimeError(f"{version_file} not found; no changes written.")
-    with open(version_file, "w") as fh:
-        fh.write(f'__version__ = "{version}"\n')
+    if not VERSION_FILE.exists():
+        raise RuntimeError(f"{VERSION_FILE} not found; no changes written.")
+    VERSION_FILE.write_text(f"{version}\n")
 
 
 if __name__ == "__main__":
     arguments = sys.argv[1:]
     if "get-secret-key" in arguments:
         get_secret_key()
-
     if "change-secret-key" in arguments:
         keygen = get_secret_key()
         update_env_file("DJANGO_SECRET_KEY", keygen)
-
     if "default-secret-key" in arguments:
         update_env_file("DJANGO_SECRET_KEY", "default_secret_key")
-
     if "change-database-credentials" in arguments:
         keygen1 = get_secret_key(allow_special_chars=False)
         keygen2 = get_secret_key()
         update_env_file("DB_USER", keygen1)
         update_env_file("DB_PASS", keygen2)
-
-    if "update-version" in arguments:
+    if "bump-version" in arguments:
         try:
-            new_version = arguments[arguments.index("update-version") + 1]
+            new_version = arguments[arguments.index("bump-version") + 1]
         except IndexError:
-            print("update-version requires a version argument")
+            print("bump-version requires a version argument")
             sys.exit(1)
-        update_makefile_version(new_version)
         update_version_file(new_version)
