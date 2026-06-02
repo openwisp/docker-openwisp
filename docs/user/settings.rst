@@ -370,6 +370,25 @@ framework.
 - **Valid Values:** STRING
 - **Default:** ``--concurrency=1``
 
+``OPENWISP_FIRMWARE_CHECK_PENDING_PERIOD_MINUTES``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Period in minutes between scans of pending persistent
+  firmware upgrades whose ``next_retry_at`` has elapsed.
+- **Valid Values:** INTEGER.
+- **Default:** ``10``
+
+``OPENWISP_FIRMWARE_REMINDER_SCAN_PERIOD_DAYS``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Period in days between scans for long-running
+  persistent batches that need a pending-upgrade reminder
+  notification. The per-batch reminder cadence itself is controlled
+  upstream by ``OPENWISP_FIRMWARE_UPGRADER_PERSISTENT_REMINDER_PERIOD``
+  (default 60 days).
+- **Valid Values:** INTEGER.
+- **Default:** ``7``
+
 ``USE_OPENWISP_CELERY_MONITORING``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
