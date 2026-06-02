@@ -5,7 +5,7 @@
 include .env
 
 # RELEASE_VERSION: version string used when tagging a new release.
-RELEASE_VERSION = 25.10.0
+RELEASE_VERSION = $(shell cat images/common/openwisp/VERSION)
 SHELL := /bin/bash
 .SILENT: clean pull start stop
 
@@ -42,14 +42,15 @@ base-build:
 	done; \
 	docker build --tag openwisp/openwisp-base:intermedia-system \
 	             --file ./images/openwisp_base/Dockerfile \
-	             --target SYSTEM ./images/; \
+	             --target system ./images/; \
 	docker build --tag openwisp/openwisp-base:intermedia-python \
 	             --file ./images/openwisp_base/Dockerfile \
-	             --target PYTHON ./images/ \
+	             --target openwisp_python ./images/ \
 	             $$BUILD_ARGS; \
 	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
-	             --file ./images/openwisp_base/Dockerfile ./images/ \
-	             $$BUILD_ARGS
+	             --file ./images/openwisp_base/Dockerfile \
+	             $$BUILD_ARGS \
+	             ./images/
 
 nfs-build:
 	docker build --tag $(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
@@ -59,7 +60,8 @@ compose-build: base-build
 	docker compose build --parallel
 
 # Test
-runtests: develop-runtests
+runtests:
+	make develop-runtests
 	docker compose stop
 
 develop-runtests:
@@ -123,3 +125,10 @@ publish:
 release:
 	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
 	make publish TAG=$(RELEASE_VERSION) OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true
+
+bump:
+	@if [ -z "$(VERSION)" ]; then \
+		echo "ERROR: VERSION parameter required. Usage: make bump VERSION=X.Y.Z"; \
+		exit 1; \
+	fi
+	python build.py bump-version "$(VERSION)"
