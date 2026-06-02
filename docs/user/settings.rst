@@ -876,6 +876,17 @@ Nginx
 - **Example:** ``index index.html index.htm;``.
 - **Default:** ``""`` (empty string).
 
+``NGINX_HSTS_ENABLED``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Enables the ``Strict-Transport-Security`` header in
+  Nginx. When unset, this defaults to ``False`` with
+  ``SSL_CERT_MODE=SelfSigned`` and ``True`` otherwise. Disable it in local
+  development if the browser refuses to open self-signed HTTPS pages
+  because of HSTS.
+- **Valid Values:** ``True``, ``False``.
+- **Default:** ``True`` except when ``SSL_CERT_MODE=SelfSigned``.
+
 ``NGINX_80_CONFIG``
 ~~~~~~~~~~~~~~~~~~~
 

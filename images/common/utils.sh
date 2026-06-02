@@ -60,6 +60,21 @@ function create_dev_certs {
 	fi
 }
 
+function configure_hsts_header {
+	if [ -z "$NGINX_HSTS_ENABLED" ]; then
+		if [ "$SSL_CERT_MODE" = 'SelfSigned' ]; then
+			NGINX_HSTS_ENABLED=False
+		else
+			NGINX_HSTS_ENABLED=True
+		fi
+	fi
+	if [ "$NGINX_HSTS_ENABLED" = 'True' ]; then
+		export NGINX_HSTS_HEADER='add_header Strict-Transport-Security "max-age=31536000" always;'
+	else
+		export NGINX_HSTS_HEADER=''
+	fi
+}
+
 function nginx_dev {
 	envsubst_create_config /etc/nginx/openwisp.ssl.template.conf https DOMAIN
 	ssl_http_behaviour
