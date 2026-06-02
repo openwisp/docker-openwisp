@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - master
+      - gsoc26-persistent-scheduled-upgrades
 
 jobs:
   build:
