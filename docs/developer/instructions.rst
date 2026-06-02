@@ -141,3 +141,6 @@ Other options:
   debugging and analyzing failing container logs.
 - ``make develop-pythontests``: Similar to ``develop-runtests``, but it
   requires containers to be already running.
+- ``make bump VERSION=x.y.z``: Bump the release version in
+  ``images/common/openwisp/VERSION``. The ``Makefile`` reads
+  ``RELEASE_VERSION`` from this file.
