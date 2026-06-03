@@ -30,16 +30,18 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
-ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
+# Temporarily install the OpenWISP modules from their 1.3 development
+# branch until the 1.3 line is released; switch back to ~=1.3.0 then.
+ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
+ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
+ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
+ARG OPENWISP_RADIUS_SOURCE="https://github.com/openwisp/openwisp-radius/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
