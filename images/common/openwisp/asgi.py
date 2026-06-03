@@ -23,7 +23,7 @@ routes = []
 routes.extend(get_controller_routes())
 
 if env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
-    from openwisp_network_topology.routing import (  # noqa: E402
+    from openwisp_network_topology.routing import (
         websocket_urlpatterns as network_topology_routes,
     )
 

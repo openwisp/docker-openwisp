@@ -91,8 +91,9 @@ Run Quality Assurance Checks
 ----------------------------
 
 We use `shfmt <https://github.com/mvdan/sh#shfmt>`__ to format shell
-scripts and `hadolint <https://github.com/hadolint/hadolint#install>`__ to
-lint Dockerfiles.
+scripts, `hadolint <https://github.com/hadolint/hadolint#install>`__ to
+lint Dockerfiles, and `prettier <https://prettier.io>`__ to check
+formatting of YAML, JSON, CSS, JavaScript, and Markdown files.
 
 To format all files, run:
 
