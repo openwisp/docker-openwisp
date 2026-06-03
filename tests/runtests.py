@@ -429,13 +429,15 @@ class TestServices(TestUtilities, unittest.TestCase):
             "openwisp_notifications.tasks.update_org_user_notificationsetting",
             "openwisp_radius.tasks.cleanup_stale_radacct",
             "openwisp_radius.tasks.convert_called_station_id",
-            "openwisp_radius.tasks.deactivate_expired_users",
             "openwisp_radius.tasks.delete_old_postauth",
             "openwisp_radius.tasks.delete_old_radacct",
             "openwisp_radius.tasks.delete_old_radiusbatch_users",
             "openwisp_radius.tasks.delete_unverified_users",
             "openwisp_radius.tasks.perform_change_of_authorization",
             "openwisp_radius.tasks.send_login_email",
+            "openwisp_users.tasks.deactivate_expired_users",
+            "openwisp_users.tasks.expiration_reminder_email",
+            "openwisp_users.tasks.password_expiration_email",
         ]
 
         def _test_celery_task_registered(container_name):
