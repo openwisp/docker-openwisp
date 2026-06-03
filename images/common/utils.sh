@@ -97,7 +97,7 @@ wait_nginx_services() {
 }
 
 ssl_http_behaviour() {
-	if [ "$NGINX_HTTP_ALLOW" == "True" ]; then
+	if [ "$NGINX_HTTP_ALLOW" = "True" ]; then
 		envsubst_create_config /etc/nginx/openwisp.template.conf http DOMAIN
 	else
 		envsubst </etc/nginx/openwisp.ssl.80.template.conf >/etc/nginx/conf.d/openwisp.http.conf
@@ -230,23 +230,25 @@ openvpn_config() {
 }
 
 openvpn_config_checksum() {
-	export OFILE=$(curl --silent --insecure \
-		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY)
-	export NFILE=$(cat checksum)
+	OFILE=$(curl --silent --insecure \
+		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}")
+	export OFILE
+	NFILE=$(cat checksum)
+	export NFILE
 }
 
 openvpn_config_download() {
 	curl --silent --retry 10 --retry-delay 5 --retry-max-time 300 --insecure --output vpn.tar.gz \
-		${API_INTERNAL}/controller/vpn/download-config/$UUID/?key=$KEY
+		"${API_INTERNAL}/controller/vpn/download-config/${UUID}/?key=${KEY}"
 	curl --silent --insecure --output checksum \
-		${API_INTERNAL}/controller/vpn/checksum/$UUID/?key=$KEY
+		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}"
 	tar xzf vpn.tar.gz
-	chmod 600 *.pem
+	chmod 600 ./*.pem
 }
 
 crl_download() {
 	curl --silent --insecure --output revoked.crl \
-		${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl
+		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl"
 }
 
 init_send_network_topology() {
