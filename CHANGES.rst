@@ -1,6 +1,51 @@
 Changelog
 =========
 
+Version 25.10.3 [2026-06-03]
+----------------------------
+
+Changes
+~~~~~~~
+
+Other changes
++++++++++++++
+
+- Added more env variables in nginx image
+- Upgraded from psycopg2 to psycopg 3
+- Updated OpenVPN ciphers `#566
+  <https://github.com/openwisp/docker-openwisp/issues/566>`_
+- Improved default site name and OpenVPN template
+
+Dependencies
+++++++++++++
+
+- Bumped ``boto3>=1.43.17,<1.44.0``
+- Bumped nginx to ``1.31.1-alpine`` (was ``1.29.4-alpine``)
+- Upgraded OpenVPN base image from ``kylemanna/openvpn:2.4`` to
+  ``lisenet/openvpn:2.7.3``
+- Bumped ``django-celery-email-reboot>=4.2.1,<5.0.0``
+- Bumped ``tldextract>=5.3.1,<5.4.0``
+- Bumped ``uwsgi>=2.0.31,<2.1.0``
+- Bumped ``tldextract>=5.3.1,<5.4.0`` in the nginx image
+- Updated ``openwisp-utils[qa,selenium]`` from ``~=1.2.1`` to
+  ``>=1.2.2,<1.3.0``
+
+Bugfixes
+~~~~~~~~
+
+- Declared single source of truth for VERSION file `#570
+  <https://github.com/openwisp/docker-openwisp/issues/570>`_
+- Corrected TOPOLOGY_UPDATE_INTERVAL typo in OpenVPN config
+- Triggered changelog bot for backward incompatible changes (`#615
+  <https://github.com/openwisp/docker-openwisp/issues/615>`_)
+- Prevented DB credential mismatch on reinstallation `#562
+  <https://github.com/openwisp/docker-openwisp/issues/562>`_
+- Fixed compatibility of custom theme assets with collectstatic
+- Added DOCKER_TAG variable to match intended release version `#554
+  <https://github.com/openwisp/docker-openwisp/issues/554>`_
+- Updated auto-install script prompt for SSL certificate `#556
+  <https://github.com/openwisp/docker-openwisp/issues/556>`_
+
 Version 25.10.2 [2026-01-31]
 ----------------------------
 
