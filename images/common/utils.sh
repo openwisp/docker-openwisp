@@ -32,14 +32,12 @@ function create_prod_certs {
 	if [ ! -f /etc/letsencrypt/live/${DASHBOARD_DOMAIN}/privkey.pem ]; then
 		certbot certonly --standalone --noninteractive --agree-tos \
 			--rsa-key-size 4096 \
-			--domain ${DASHBOARD_DOMAIN} \
-			--email ${CERT_ADMIN_EMAIL}
+			--domain ${DASHBOARD_DOMAIN}
 	fi
 	if [ ! -f /etc/letsencrypt/live/${API_DOMAIN}/privkey.pem ]; then
 		certbot certonly --standalone --noninteractive --agree-tos \
 			--rsa-key-size 4096 \
-			--domain ${API_DOMAIN} \
-			--email ${CERT_ADMIN_EMAIL}
+			--domain ${API_DOMAIN}
 	fi
 }
 
@@ -259,6 +257,6 @@ function init_send_network_topology {
 	fi
 	(
 		crontab -l
-		echo "*/$TOPLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh"
+		echo "*/$TOPOLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh"
 	) | crontab -
 }

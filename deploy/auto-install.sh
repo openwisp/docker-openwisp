@@ -36,6 +36,14 @@ check_status() {
 	fi
 }
 
+# Returns true if the backup .env exists and contains app secrets
+has_backup_with_secrets() {
+	[[ -f "$ENV_BACKUP" ]] && \
+	[[ -n "$(get_env "DB_USER" "$ENV_BACKUP")" ]] && \
+	[[ -n "$(get_env "DB_PASS" "$ENV_BACKUP")" ]] && \
+	[[ -n "$(get_env "DJANGO_SECRET_KEY" "$ENV_BACKUP")" ]]
+}
+
 error_msg() {
 	report_error
 	echo -e ${RED}${1}${NON}
@@ -59,7 +67,7 @@ apt_dependenices_setup() {
 }
 
 get_version_from_user() {
-	echo -ne ${GRN}"OpenWISP Version (leave blank for latest): "${NON}
+	echo -ne "${GRN}OpenWISP Version (leave blank for latest stable release): ${NON}"
 	read openwisp_version
 	if [[ -z "$openwisp_version" ]]; then
 		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)
@@ -103,6 +111,19 @@ setup_docker_openwisp() {
 	echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
 	read env_path
 	if [[ ! -f "$env_path" ]]; then
+		# Prevent issues when users reinstall carelessly
+		if [[ ! -f "$INSTALL_PATH/.env" ]] && ! has_backup_with_secrets && docker volume inspect "docker-openwisp_postgres_data" &>/dev/null; then
+			{
+				echo -e "${RED}ERROR: Database volume exists but .env is missing.${NON}"
+				echo ""
+				echo "Generating new credentials would break access to the existing database."
+				echo ""
+				echo "Option 1 - Restore your previous .env and re-run this script."
+				echo "Option 2 - Wipe the database and start fresh (ALL DATA WILL BE LOST), e.g.:"
+				echo -e "  ${YLW}cd $INSTALL_PATH && docker compose down --volumes${NON}"
+			} | tee -a "$LOG_FILE"
+			exit 1
+		fi
 		# Dashboard Domain
 		echo -ne ${GRN}"(1/5) Enter dashboard domain: "${NON}
 		read dashboard_domain
@@ -117,8 +138,8 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(4/5) Site manager email: "${NON}
 		read django_default_email
 		# SSL Configuration
-		echo -ne ${GRN}"(5/5) Enter letsencrypt email (leave blank for self-signed certificate): "${NON}
-		read letsencrypt_email
+		echo -ne ${GRN}"(5/5) Use Let's Encrypt SSL? (y/N, blank for no): "${NON}
+		read use_letsencrypt
 	else
 		cp $env_path $ENV_USER &>>$LOG_FILE
 	fi
@@ -128,7 +149,7 @@ setup_docker_openwisp() {
 
 	cd $INSTALL_PATH &>>$LOG_FILE
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >$INSTALL_PATH/VERSION
+	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	if [[ ! -f "$env_path" ]]; then
 		# Dashboard Domain
@@ -157,15 +178,22 @@ setup_docker_openwisp() {
 		fi
 		# Site manager email
 		set_env "EMAIL_DJANGO_DEFAULT" "$django_default_email"
-		# Set random secret values
-		python3 $INSTALL_PATH/build.py change-secret-key >/dev/null
-		python3 $INSTALL_PATH/build.py change-database-credentials >/dev/null
-		# SSL Configuration
-		set_env "CERT_ADMIN_EMAIL" "$letsencrypt_email"
-		if [[ -z "$letsencrypt_email" ]]; then
-			set_env "SSL_CERT_MODE" "SelfSigned"
+		# Set new secrets only if not previously set
+		if has_backup_with_secrets; then
+			for config in DB_USER DB_PASS DJANGO_SECRET_KEY; do
+				value=$(get_env "$config" "$ENV_BACKUP")
+				set_env "$config" "$value"
+			done
 		else
+			python3 $INSTALL_PATH/build.py change-secret-key >/dev/null
+			python3 $INSTALL_PATH/build.py change-database-credentials >/dev/null
+		fi
+		# SSL Configuration
+		use_letsencrypt_lower=$(echo "$use_letsencrypt" | tr '[:upper:]' '[:lower:]')
+		if [[ "$use_letsencrypt_lower" == "y" || "$use_letsencrypt_lower" == "yes" ]]; then
 			set_env "SSL_CERT_MODE" "Yes"
+		else
+			set_env "SSL_CERT_MODE" "SelfSigned"
 		fi
 		# Other
 		hostname=$(echo "$django_default_email" | cut -d @ -f 2)
@@ -179,7 +207,7 @@ setup_docker_openwisp() {
 	start_step "Configuring docker-openwisp..."
 	report_ok
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start -C $INSTALL_PATH/ &>>$LOG_FILE
 	check_status $? "Starting openwisp failed."
 }
 
@@ -192,7 +220,7 @@ upgrade_docker_openwisp() {
 
 	cd $INSTALL_PATH &>>$LOG_FILE
 	check_status $? "docker-openwisp download failed."
-	echo $openwisp_version >$INSTALL_PATH/VERSION
+	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	start_step "Configuring docker-openwisp..."
 	for config in $(grep '=' $ENV_BACKUP | cut -f1 -d'='); do
@@ -202,7 +230,7 @@ upgrade_docker_openwisp() {
 	report_ok
 
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start TAG=$(cat $INSTALL_PATH/VERSION) -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start -C $INSTALL_PATH/ &>>$LOG_FILE
 	check_status $? "Starting openwisp failed."
 }
 

@@ -64,9 +64,18 @@ jobs:
         if: ${{ !cancelled() && steps.set_git_branch.conclusion == 'success' }}
         # Do not remove the blank lines from the input.
         run: |
-          printf "latest\n" | \
+          printf "edge\n" | \
             GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
             || (cat /opt/openwisp/autoinstall.log && exit 1)
+
+      # The test suite needs to create files during execution. Because the deploy
+      # script runs with `sudo`, the installation directory ends up owned by root,
+      # making it inaccessible to the unprivileged CI user. This step fixes the
+      # ownership so the test suite can write the required files.
+      - name: Fix permissions for CI user
+        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
+        run: |
+          sudo chown -R $USER:$USER /opt/openwisp
 
       - name: Test
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
@@ -78,7 +87,7 @@ jobs:
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
           # execute the test from this directory.
-          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests && make stop
+          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests
         env:
           SELENIUM_HEADLESS: 1
 
@@ -86,11 +95,19 @@ jobs:
         if: ${{ failure() }}
         run: docker compose logs
 
+      - name: Stop containers
+        # Run teardown exactly once after the retry loop, regardless of the
+        # test outcome. Keeping `make stop` out of the retried command ensures
+        # a failed attempt never skips teardown and never tears the stack down
+        # between retries (which would make every subsequent retry fail).
+        if: ${{ always() && steps.auto_install_upgrade.conclusion == 'success' }}
+        run: cd /opt/openwisp/docker-openwisp && make stop
+
       # the following action is equivalent to
       # echo "$DOCKER_HUB_SECRET" | docker login --username "$DOCKER_HUB_USERNAME" --password-stdin
       - name: Login to Docker Hub
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_SECRET }}
@@ -105,7 +122,7 @@ jobs:
 
       - name: Login to GitLab Container Registry
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: registry.gitlab.com
           username: ${{ secrets.GITLAB_DOCKER_REGISTRY_USER }}

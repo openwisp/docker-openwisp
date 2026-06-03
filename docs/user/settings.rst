@@ -37,6 +37,18 @@ Essential
 You will need to adapt these values to get the docker images working
 properly on your system.
 
+.. _openwisp_version:
+
+``OPENWISP_VERSION``
+~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** The version of OpenWISP to use. It can be set to a
+  specific version (e.g. ``25.10.0``) or to ``edge`` to always use the
+  latest development version.
+- **Valid Values:** ``edge``, ``latest``, or a semantic version string
+  (e.g., ``25.10.0``)
+- **Default:** ``edge``
+
 .. _dashboard_domain:
 
 ``DASHBOARD_DOMAIN``
@@ -71,14 +83,6 @@ properly on your system.
 - **Valid Values:** Find list of timezone database `here
   <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`__.
 - **Default:** ``UTC``.
-
-``CERT_ADMIN_EMAIL``
-~~~~~~~~~~~~~~~~~~~~
-
-- **Explanation:** Required by certbot. Email used for registration and
-  recovery contact.
-- **Valid Values:** A comma separated list of valid email addresses.
-- **Default:** ``example@example.com``.
 
 ``SSL_CERT_MODE``
 ~~~~~~~~~~~~~~~~~
@@ -1040,7 +1044,7 @@ X509 Certificates
 - **Explanation:** ISO code of the country of issuance of the certificate.
 - **Valid Values:** Country code, see list `here
   <https://countrycode.org/>`__.
-- **Default:** ``IN``.
+- **Default:** ``CH``.
 
 ``X509_STATE``
 ~~~~~~~~~~~~~~
@@ -1048,14 +1052,14 @@ X509 Certificates
 - **Explanation:** Name of the state / province of issuance of the
   certificate.
 - **Valid Values:** STRING.
-- **Default:** ``Delhi``.
+- **Default:** ``Geneva``.
 
 ``X509_CITY``
 ~~~~~~~~~~~~~
 
 - **Explanation:** Name of the city of issuance of the certificate.
 - **Valid Values:** STRING.
-- **Default:** ``New Delhi``.
+- **Default:** ``Geneva``.
 
 ``X509_ORGANIZATION_NAME``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1089,6 +1093,14 @@ X509 Certificates
 
 Misc Services
 -------------
+
+``IMAGE_OWNER``
+~~~~~~~~~~~~~~~
+
+- **Explanation:** Docker registry namespace for OpenWISP images. Change
+  this only if you are using custom-built images or a private registry.
+- **Valid Values:** A valid Docker registry namespace.
+- **Default:** ``openwisp``
 
 ``REDIS_HOST``
 ~~~~~~~~~~~~~~

@@ -1,5 +1,6 @@
 # hadolint ignore=DL3007
-FROM openwisp/openwisp-base:latest
+ARG OPENWISP_VERSION=edge
+FROM openwisp/openwisp-base:${OPENWISP_VERSION}
 
 WORKDIR /opt/openwisp/
 

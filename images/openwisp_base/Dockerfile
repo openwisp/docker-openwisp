@@ -30,16 +30,18 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
-ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
+# Temporarily install the OpenWISP modules from their 1.3 development
+# branch until the 1.3 line is released; switch back to ~=1.3.0 then.
+ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
+ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
+ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
+ARG OPENWISP_RADIUS_SOURCE="https://github.com/openwisp/openwisp-radius/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
@@ -157,9 +159,9 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     VPN_CLIENT_NAME=default-management-vpn \
     X509_NAME_CA=default \
     X509_NAME_CERT=default \
-    X509_COUNTRY_CODE=IN \
-    X509_STATE=Delhi \
-    X509_CITY="New Delhi" \
+    X509_COUNTRY_CODE=CH \
+    X509_STATE=Geneva \
+    X509_CITY=Geneva \
     X509_ORGANIZATION_NAME=OpenWISP \
     X509_ORGANIZATION_UNIT_NAME=OpenWISP \
     X509_EMAIL=certificate@example.com \

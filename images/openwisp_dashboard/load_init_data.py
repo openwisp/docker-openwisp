@@ -124,7 +124,7 @@ def create_default_vpn_template(vpn):
     if Template.objects.filter(vpn=vpn).exists():
         return Template.objects.get(vpn=vpn)
 
-    template = Template.objects.create(
+    template = Template(
         auto_cert=True,
         name=template_name,
         type="vpn",
@@ -133,6 +133,11 @@ def create_default_vpn_template(vpn):
         vpn=vpn,
         default=True,
     )
+    # The config field is auto-generated on full_clean()
+    template.full_clean()
+    if template.config.get("openvpn"):
+        template.config["openvpn"][0]["log"] = "/var/log/tun0.log"
+    # Verify that the config is still valid.
     template.full_clean()
     template.save()
     return template
@@ -162,12 +167,12 @@ def create_default_credentials():
 
 
 def create_ssh_key_template():
-    if Template.objects.filter(
-        default=True, config__contains="/etc/dropbear/authorized_keys"
-    ).exists():
-        return Template.objects.filter(
-            default=True, config__contains="/etc/dropbear/authorized_keys"
-        ).first()
+    # controller 1.3 stores "config" as a native JSONB field, so the old
+    # config__contains substring guard no longer matches and would insert a
+    # duplicate template on every startup; match by name instead.
+    existing = Template.objects.filter(name="SSH Keys", default=True).first()
+    if existing:
+        return existing
     public_key_filepath = os.environ["SSH_PUBLIC_KEY_PATH"]
     try:
         with open(public_key_filepath, "r") as file:
@@ -194,6 +199,26 @@ def create_ssh_key_template():
     template.full_clean()
     template.save()
     return template
+
+
+def update_default_site():
+    """Update default site with DASHBOARD_DOMAIN."""
+    if "django.contrib.sites" in settings.INSTALLED_APPS:
+        from django.contrib.sites.models import Site
+
+        try:
+            site = Site.objects.get(pk=settings.SITE_ID)
+        except Site.DoesNotExist:
+            # Optionally log a message here if desired
+            return
+        dashboard_domain = os.environ.get("DASHBOARD_DOMAIN", "")
+        if (
+            site.name == "example.com" or site.domain == "example.com"
+        ) and dashboard_domain:
+            site.name = dashboard_domain
+            site.domain = dashboard_domain
+            site.full_clean()
+            site.save()
 
 
 def create_default_topology(vpn):
@@ -239,6 +264,7 @@ if __name__ == "__main__":
     redis_client = redis.Redis.from_url(settings.CACHES["default"]["LOCATION"])
 
     create_admin()
+    update_default_site()
     # Steps for creating new vpn client template with all the
     # required objects (CA, Certificate, VPN Server).
     is_vpn_enabled = os.environ.get("VPN_DOMAIN", "") != ""

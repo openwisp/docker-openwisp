@@ -7,14 +7,8 @@ Docker-OpenWISP
 .. image:: https://img.shields.io/badge/registry-openwisp-blue.svg
     :target: https://gitlab.com/openwisp/docker-openwisp/container_registry
 
-.. image:: https://badges.gitter.im/openwisp/dockerize-openwisp.svg
-    :target: https://gitter.im/openwisp/dockerize-openwisp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-
 .. image:: https://img.shields.io/badge/support-orange.svg
-    :target: http://openwisp.org/support.html
-
-.. image:: https://img.shields.io/github/license/openwisp/docker-openwisp.svg
-    :target: https://github.com/openwisp/docker-openwisp/blob/master/LICENSE
+    :target: http://openwisp.org/support/
 
 This repository contains official docker images of OpenWISP. Designed with
 horizontal scaling, easily replicable deployments and user customization

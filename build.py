@@ -5,6 +5,9 @@
 import random
 import re
 import sys
+from pathlib import Path
+
+VERSION_FILE = Path("images/common/openwisp/VERSION")
 
 
 def update_env_file(key, value):
@@ -31,6 +34,12 @@ def get_secret_key(allow_special_chars=True):
     return keygen
 
 
+def update_version_file(version: str):
+    if not VERSION_FILE.exists():
+        raise RuntimeError(f"{VERSION_FILE} not found; no changes written.")
+    VERSION_FILE.write_text(f"{version}\n")
+
+
 if __name__ == "__main__":
     arguments = sys.argv[1:]
     if "get-secret-key" in arguments:
@@ -45,3 +54,10 @@ if __name__ == "__main__":
         keygen2 = get_secret_key()
         update_env_file("DB_USER", keygen1)
         update_env_file("DB_PASS", keygen2)
+    if "bump-version" in arguments:
+        try:
+            new_version = arguments[arguments.index("bump-version") + 1]
+        except IndexError:
+            print("bump-version requires a version argument")
+            sys.exit(1)
+        update_version_file(new_version)

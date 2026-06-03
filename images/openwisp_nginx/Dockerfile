@@ -1,4 +1,4 @@
-FROM nginx:1.29.4-alpine
+FROM nginx:1.31.1-alpine
 
 # hadolint ignore=DL3018
 RUN apk add --update --no-cache \
@@ -26,7 +26,6 @@ ENV MODULE_NAME=nginx \
     DOLLAR=$ \
     TZ=UTC \
     SSL_CERT_MODE=Yes \
-    CERT_ADMIN_EMAIL=example@example.com \
     NGINX_HTTP2=http2 \
     NGINX_CLIENT_BODY_SIZE=30 \
     NGINX_ADMIN_ALLOW_NETWORK=all \
@@ -43,6 +42,10 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_MIN_LENGTH=1000 \
     NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
     NGINX_CUSTOM_FILE=False \
+    NGINX_WORKER_PROCESSES=1 \
+    NGINX_WORKER_CONNECTIONS=1024 \
+    NGINX_WORKER_RLIMIT_NOFILE=__UNSET__ \
+    NGINX_EVENTS_BLOCK='' \
     NINGX_REAL_REMOTE_ADDR='$real_ip' \
     NGINX_SSL_PORT=443 \
     # USWGI pass_port
