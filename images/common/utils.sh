@@ -86,7 +86,7 @@ wait_nginx_services() {
 	set +e
 	while :; do
 		wget -qS ${DASHBOARD_INTERNAL}/admin/login/ 2>&1 | grep -q "200 OK"
-		if [[ $? = "0" ]]; then
+		if [ $? = 0 ]; then
 			FAILURE=0
 			echo "Connection with dashboard established."
 			break
