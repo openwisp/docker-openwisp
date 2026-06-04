@@ -382,10 +382,10 @@ framework.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **Explanation:** Period in days between scans for long-running
-  persistent batches that need a pending-upgrade reminder
-  notification. The per-batch reminder cadence itself is controlled
-  upstream by ``OPENWISP_FIRMWARE_UPGRADER_PERSISTENT_REMINDER_PERIOD``
-  (default 60 days).
+  persistent batches that need a pending-upgrade reminder notification.
+  The per-batch reminder cadence itself is controlled upstream by
+  ``OPENWISP_FIRMWARE_UPGRADER_PERSISTENT_REMINDER_PERIOD`` (default 60
+  days).
 - **Valid Values:** INTEGER.
 - **Default:** ``7``
 
