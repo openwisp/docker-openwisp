@@ -1,6 +1,25 @@
 Changelog
 =========
 
+Version 25.10.4 [2026-06-04]
+----------------------------
+
+Bugfixes
+~~~~~~~~
+
+- Various fixes to the notifications module (version 1.2.3). See the
+  `changelog
+  <https://github.com/openwisp/openwisp-notifications/releases/tag/1.2.3>`__
+  for more information.
+
+Changes
+~~~~~~~
+
+Dependencies
+++++++++++++
+
+- Bumped Python package pins in openwisp_base Dockerfile
+
 Version 25.10.3 [2026-06-02]
 ----------------------------
 
