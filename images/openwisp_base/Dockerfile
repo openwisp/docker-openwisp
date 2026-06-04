@@ -30,18 +30,19 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
-ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
+ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.1"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
+ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.1"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
+ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.2"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
+
 
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
@@ -77,7 +78,7 @@ RUN if [ "$DJANGO_X509_SOURCE" != "default" ]; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall ${DJANGO_X509_SOURCE}; \
     fi
 
-ARG DJANGO_SOURCE=django~=5.2.0
+ARG DJANGO_SOURCE=django~=5.2.15
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${DJANGO_SOURCE}
 
