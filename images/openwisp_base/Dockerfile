@@ -46,27 +46,27 @@ RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
 # otherwise these modules will have already been installed above
-ARG OPENWISP_IPAM_SOURCE=default
+ARG OPENWISP_IPAM_SOURCE="https://github.com/openwisp/openwisp-ipam/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
-ARG OPENWISP_CONTROLLER_SOURCE=default
+ARG OPENWISP_CONTROLLER_SOURCE="https://github.com/openwisp/openwisp-controller/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
     fi
-ARG OPENWISP_NOTIFICATION_SOURCE=default
+ARG OPENWISP_NOTIFICATION_SOURCE="https://github.com/openwisp/openwisp-notifications/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
-ARG OPENWISP_USERS_SOURCE=default
+ARG OPENWISP_USERS_SOURCE="https://github.com/openwisp/openwisp-users/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
-ARG OPENWISP_UTILS_SOURCE=default
+ARG OPENWISP_UTILS_SOURCE="https://github.com/openwisp/openwisp-utils/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall "${OPENWISP_UTILS_SOURCE}"; \
