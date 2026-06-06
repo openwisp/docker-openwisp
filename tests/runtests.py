@@ -502,6 +502,9 @@ crl_download_to() {{
         changed)
             printf '%s\\n' 'v2-changed-crl' > "$output_path"
             ;;
+        empty)
+            : > "$output_path"
+            ;;
         fail)
             return 1
             ;;
@@ -571,6 +574,15 @@ CRL_TEST_MODE={mode} PATH={test_dir}/bin:$PATH \
         )
         self.assertEqual(failed["supervisor"], "")
         self.assertEqual(failed["revoked_crl"], "v1-initial-crl\n")
+
+        empty = _run_case("empty", seed_crl="v1-initial-crl")
+        self.assertEqual(empty["stdout"], "")
+        self.assertIn(
+            "Failed to download CRL, keeping existing revoked.crl",
+            empty["stderr"],
+        )
+        self.assertEqual(empty["supervisor"], "")
+        self.assertEqual(empty["revoked_crl"], "v1-initial-crl\n")
 
     def test_openvpn_config_update_integrity_logic(self):
         """Ensure config update logic recovers local state and rejects mismatches."""
