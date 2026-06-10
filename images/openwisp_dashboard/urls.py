@@ -42,6 +42,12 @@ if env_bool(os.environ["USE_OPENWISP_FIRMWARE"]):
             include((fw_private_storage_urls, "firmware"), namespace="firmware"),
         )
     ]
+    # register the REST API URLs so admin templates can reverse the
+    # "upgrader" namespace (e.g. the upgrade-operation cancel button);
+    # nginx routes the actual requests to the API container.
+    urlpatterns += [
+        path("api/v1/", include("openwisp_firmware_upgrader.api.urls")),
+    ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()

@@ -13,6 +13,7 @@ radius_schedule, topology_schedule, monitoring_schedule, metric_collection_sched
     {},
     {},
 )
+firmware_schedule = {}
 task_routes = {}
 
 if env_bool(os.environ.get("USE_OPENWISP_CELERY_NETWORK")):
@@ -39,6 +40,22 @@ if env_bool(os.environ.get("USE_OPENWISP_FIRMWARE")) and env_bool(
     }
     task_routes["openwisp_firmware_upgrader.tasks.batch_upgrade_operation"] = {
         "queue": "firmware_upgrader"
+    }
+    check_pending_minutes = int(
+        os.environ.get("OPENWISP_FIRMWARE_CHECK_PENDING_PERIOD_MINUTES", "10")
+    )
+    reminder_scan_days = int(
+        os.environ.get("OPENWISP_FIRMWARE_REMINDER_SCAN_PERIOD_DAYS", "7")
+    )
+    firmware_schedule = {
+        "check_pending_upgrades": {
+            "task": "openwisp_firmware_upgrader.tasks.check_pending_upgrades",
+            "schedule": timedelta(minutes=check_pending_minutes),
+        },
+        "send_pending_upgrade_reminders": {
+            "task": "openwisp_firmware_upgrader.tasks.send_pending_upgrade_reminders",
+            "schedule": timedelta(days=reminder_scan_days),
+        },
     }
 
 if env_bool(os.environ.get("USE_OPENWISP_RADIUS")):
@@ -93,6 +110,7 @@ app = Celery(
         **notification_schedule,
         **monitoring_schedule,
         **metric_collection_schedule,
+        **firmware_schedule,
     },
 )
 app.config_from_object("django.conf:settings", namespace="CELERY")

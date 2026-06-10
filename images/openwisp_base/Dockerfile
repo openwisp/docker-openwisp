@@ -30,13 +30,13 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
-ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.2.0"
+ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/archive/584b29db6b8ee2657cdb14722c3b129afe9a417f.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.2.0"
+ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/tarball/issues/417-persistence-schema-fields"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.2.0"
+ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/archive/2f23a6c8a16af19643f1abba67d436da349be3e6.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
@@ -46,27 +46,27 @@ RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 # here we try to install custom versions of the modules only if the
 # supplied argument does not equal the default value, because
 # otherwise these modules will have already been installed above
-ARG OPENWISP_IPAM_SOURCE=default
+ARG OPENWISP_IPAM_SOURCE="https://github.com/openwisp/openwisp-ipam/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_IPAM_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade ${OPENWISP_IPAM_SOURCE}; \
     fi
-ARG OPENWISP_CONTROLLER_SOURCE=default
+ARG OPENWISP_CONTROLLER_SOURCE="https://github.com/openwisp/openwisp-controller/archive/e0ee749e22c7fa1445d8ce9ad1d289c08ce74feb.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_CONTROLLER_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade ${OPENWISP_CONTROLLER_SOURCE}; \
     fi
-ARG OPENWISP_NOTIFICATION_SOURCE=default
+ARG OPENWISP_NOTIFICATION_SOURCE="https://github.com/openwisp/openwisp-notifications/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_NOTIFICATION_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade ${OPENWISP_NOTIFICATION_SOURCE}; \
     fi
-ARG OPENWISP_USERS_SOURCE=default
+ARG OPENWISP_USERS_SOURCE="https://github.com/openwisp/openwisp-users/archive/refs/heads/1.3.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_USERS_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall ${OPENWISP_USERS_SOURCE}; \
     fi
-ARG OPENWISP_UTILS_SOURCE=default
+ARG OPENWISP_UTILS_SOURCE="https://github.com/openwisp/openwisp-utils/archive/764ea4917c2b52cddbf2e45ff9c67ac6e4c87261.tar.gz"
 # hadolint ignore=DL3013
 RUN if [ "$OPENWISP_UTILS_SOURCE" != "default" ] ; then \
         pip install --no-cache-dir --user --upgrade --force-reinstall "${OPENWISP_UTILS_SOURCE}"; \
@@ -175,4 +175,6 @@ ENV DASHBOARD_APP_SERVICE=dashboard \
     CRON_DELETE_OLD_POSTAUTH=365 \
     CRON_CLEANUP_STALE_RADACCT=365 \
     CRON_DELETE_OLD_RADIUSBATCH_USERS=365 \
+    OPENWISP_FIRMWARE_CHECK_PENDING_PERIOD_MINUTES=10 \
+    OPENWISP_FIRMWARE_REMINDER_SCAN_PERIOD_DAYS=7 \
     METRIC_COLLECTION=True
