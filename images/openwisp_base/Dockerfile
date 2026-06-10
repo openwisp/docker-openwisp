@@ -39,7 +39,7 @@ RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/archive/2f23a6c8a16af19643f1abba67d436da349be3e6.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="https://github.com/openwisp/openwisp-radius/archive/cd6a22b1d27a1b99b7155a120556e370fea98bfd.tar.gz"
+ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.2.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
