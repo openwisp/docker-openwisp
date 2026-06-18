@@ -1,4 +1,4 @@
-FROM nginx:1.31.1-alpine
+FROM nginx:1.31.2-alpine
 
 # hadolint ignore=DL3018
 RUN apk add --update --no-cache \
