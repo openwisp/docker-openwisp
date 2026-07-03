@@ -1,7 +1,46 @@
-FROM nginx:1.31.2-alpine
+ARG NGINX_VERSION=1.31.2
+
+# Build the nginx brotli module against nginx.org's nginx package used by this image.
+# Alpine's nginx module packages target Alpine's own nginx build.
+FROM nginx:${NGINX_VERSION}-alpine AS brotli-builder
+
+ARG NGINX_VERSION
+ARG NGX_BROTLI_VERSION=v1.0.0rc
+
+# hadolint ignore=DL3003,DL3018
+RUN apk add --update --no-cache \
+            brotli-dev \
+            build-base \
+            git \
+            linux-headers \
+            openssl-dev \
+            pcre2-dev \
+            zlib-dev && \
+    git clone --depth 1 --branch ${NGX_BROTLI_VERSION} --recurse-submodules \
+            https://github.com/google/ngx_brotli.git /tmp/ngx_brotli && \
+    wget -q https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+            -O /tmp/nginx-${NGINX_VERSION}.tar.gz && \
+    tar xzf /tmp/nginx-${NGINX_VERSION}.tar.gz -C /tmp && \
+    cd /tmp/nginx-${NGINX_VERSION} && \
+    ./configure \
+            --with-compat \
+            --with-cc-opt='-Wno-error=unterminated-string-initialization -Wno-error=vla-parameter' \
+            --add-dynamic-module=/tmp/ngx_brotli && \
+    make modules
+
+FROM nginx:${NGINX_VERSION}-alpine
+
+ARG NGINX_VERSION
+
+RUN mkdir -p /etc/nginx/modules
+
+COPY --from=brotli-builder \
+    /tmp/nginx-${NGINX_VERSION}/objs/ngx_http_brotli_static_module.so \
+    /etc/nginx/modules/ngx_http_brotli_static_module.so
 
 # hadolint ignore=DL3018
 RUN apk add --update --no-cache \
+            brotli-libs \
             py3-pip \
             certbot \
             certbot-nginx \
@@ -41,6 +80,7 @@ ENV MODULE_NAME=nginx \
     NGINX_GZIP_PROXIED=any \
     NGINX_GZIP_MIN_LENGTH=1000 \
     NGINX_GZIP_TYPES='text/plain image/svg+xml application/json application/javascript text/xml text/css application/xml application/x-font-ttf font/opentype' \
+    NGINX_BROTLI_SWITCH=on \
     NGINX_CUSTOM_FILE=False \
     NGINX_WORKER_PROCESSES=1 \
     NGINX_WORKER_CONNECTIONS=1024 \
