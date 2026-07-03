@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from urllib import error as urlerror
 from urllib import request
+from uuid import uuid4
 
 import requests
 from selenium.common.exceptions import TimeoutException
@@ -352,10 +353,12 @@ class TestServices(TestUtilities, unittest.TestCase):
 
     def test_add_superuser(self):
         """Create new user to ensure a new user can be added."""
+        username = f"test_superuser_{uuid4().hex[:8]}"
+        email = f"{username}@example.com"
         self.login()
-        self.create_superuser()
+        self.create_superuser(email=email, username=username)
         self.assertEqual(
-            "The user “test_superuser” was changed successfully.",
+            f"The user “{username}” was changed successfully.",
             self.find_element(By.CLASS_NAME, "success").text,
         )
 
@@ -460,14 +463,284 @@ class TestServices(TestUtilities, unittest.TestCase):
         with self.subTest("Test celery_monitoring container"):
             _test_celery_task_registered("celery_monitoring")
 
+    def test_openvpn_revokelist_restart_logic(self):
+        """Ensure revokelist restart behavior only triggers on CRL changes."""
+
+        container_id = self.docker_compose_get_container_id("openvpn")
+        openvpn_container = self.docker_client.containers.get(container_id)
+        test_dir = "/tmp/openwisp-crl-test"
+
+        def _run_case(mode, seed_crl=None):
+            setup_existing = ""
+            if seed_crl is None:
+                setup_existing = f"rm -f {test_dir}/work/revoked.crl"
+            else:
+                setup_existing = (
+                    f"printf '%s\\n' '{seed_crl}' > {test_dir}/work/revoked.crl"
+                )
+
+            command = f"""
+set -eu
+rm -rf {test_dir}
+mkdir -p {test_dir}/bin {test_dir}/work
+cat > {test_dir}/bin/supervisorctl <<'EOF'
+#!/bin/sh
+printf '%s\\n' "$*" >> {test_dir}/supervisor.log
+EOF
+chmod +x {test_dir}/bin/supervisorctl
+cp /openvpn_utils.sh {test_dir}/openvpn_utils.sh
+cat >> {test_dir}/openvpn_utils.sh <<'EOF'
+
+openvpn_config() {{ :; }}
+
+crl_download_to() {{
+    output_path="${{1:-revoked.crl}}"
+    case "${{CRL_TEST_MODE}}" in
+        initial|unchanged)
+            printf '%s\\n' 'v1-initial-crl' > "$output_path"
+            ;;
+        changed)
+            printf '%s\\n' 'v2-changed-crl' > "$output_path"
+            ;;
+        empty)
+            : > "$output_path"
+            ;;
+        fail)
+            return 1
+            ;;
+    esac
+}}
+EOF
+sed \
+    -e 's|^cd /$|cd {test_dir}/work|' \
+    -e 's|^source /utils.sh$|:|' \
+    -e 's|^[.] /utils.sh$|:|' \
+    -e 's|^source /openvpn_utils.sh$|. {test_dir}/openvpn_utils.sh|' \
+    -e 's|^[.] /openvpn_utils.sh$|. {test_dir}/openvpn_utils.sh|' \
+    /revokelist.sh > {test_dir}/revokelist.sh
+grep -Fx "cd {test_dir}/work" {test_dir}/revokelist.sh >/dev/null
+grep -Fx ":" {test_dir}/revokelist.sh >/dev/null
+grep -Fx ". {test_dir}/openvpn_utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx "cd /" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx "source /utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx "source /openvpn_utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx ". /utils.sh" {test_dir}/revokelist.sh >/dev/null
+! grep -Fx ". /openvpn_utils.sh" {test_dir}/revokelist.sh >/dev/null
+chmod +x {test_dir}/revokelist.sh
+{setup_existing}
+: > {test_dir}/supervisor.log
+CRL_TEST_MODE={mode} PATH={test_dir}/bin:$PATH \
+    sh {test_dir}/revokelist.sh > {test_dir}/stdout 2> {test_dir}/stderr
+"""
+            result = openvpn_container.exec_run(["sh", "-lc", command])
+            self.assertEqual(result.exit_code, 0, result.output.decode("utf-8"))
+
+            def _read(path):
+                read_result = openvpn_container.exec_run(
+                    ["sh", "-lc", f"cat {path} 2>/dev/null || true"]
+                )
+                return read_result.output.decode("utf-8")
+
+            return {
+                "stdout": _read(f"{test_dir}/stdout"),
+                "stderr": _read(f"{test_dir}/stderr"),
+                "supervisor": _read(f"{test_dir}/supervisor.log"),
+                "revoked_crl": _read(f"{test_dir}/work/revoked.crl"),
+            }
+
+        initial = _run_case("initial")
+        self.assertEqual(initial["stdout"], "")
+        self.assertEqual(initial["stderr"], "")
+        self.assertEqual(initial["supervisor"], "restart openvpn\n")
+        self.assertEqual(initial["revoked_crl"], "v1-initial-crl\n")
+
+        unchanged = _run_case("unchanged", seed_crl="v1-initial-crl")
+        self.assertEqual(unchanged["stdout"], "")
+        self.assertEqual(unchanged["stderr"], "")
+        self.assertEqual(unchanged["supervisor"], "")
+        self.assertEqual(unchanged["revoked_crl"], "v1-initial-crl\n")
+
+        changed = _run_case("changed", seed_crl="v1-initial-crl")
+        self.assertEqual(changed["stdout"], "")
+        self.assertEqual(changed["stderr"], "")
+        self.assertEqual(changed["supervisor"], "restart openvpn\n")
+        self.assertEqual(changed["revoked_crl"], "v2-changed-crl\n")
+
+        failed = _run_case("fail", seed_crl="v1-initial-crl")
+        self.assertEqual(failed["stdout"], "")
+        self.assertIn(
+            "Failed to download CRL, keeping existing revoked.crl",
+            failed["stderr"],
+        )
+        self.assertEqual(failed["supervisor"], "")
+        self.assertEqual(failed["revoked_crl"], "v1-initial-crl\n")
+
+        empty = _run_case("empty", seed_crl="v1-initial-crl")
+        self.assertEqual(empty["stdout"], "")
+        self.assertIn(
+            "Failed to download CRL, keeping existing revoked.crl",
+            empty["stderr"],
+        )
+        self.assertEqual(empty["supervisor"], "")
+        self.assertEqual(empty["revoked_crl"], "v1-initial-crl\n")
+
+    def test_openvpn_config_update_integrity_logic(self):
+        """Ensure config update logic recovers local state and rejects mismatches."""
+
+        container_id = self.docker_compose_get_container_id("openvpn")
+        openvpn_container = self.docker_client.containers.get(container_id)
+        test_dir = "/tmp/openwisp-config-test"
+
+        def _run_case(mode):
+            seed_checksum = ""
+            if mode == "mismatch":
+                seed_checksum = (
+                    f"printf '%s\\n' 'old-checksum' > {test_dir}/work/checksum"
+                )
+
+            command = f"""
+set -eu
+rm -rf {test_dir}
+mkdir -p {test_dir}/bin {test_dir}/work {test_dir}/payload
+cat > {test_dir}/bin/supervisorctl <<'EOF'
+#!/bin/sh
+printf '%s\\n' "$*" >> {test_dir}/supervisor.log
+EOF
+chmod +x {test_dir}/bin/supervisorctl
+cat > {test_dir}/bin/curl <<'EOF'
+#!/bin/sh
+set -eu
+output=""
+url=""
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --output)
+            output="$2"
+            shift 2
+            ;;
+        --retry|--retry-delay|--retry-max-time)
+            shift 2
+            ;;
+        --silent|--show-error|--fail|--insecure)
+            shift
+            ;;
+        *)
+            url="$1"
+            shift
+            ;;
+    esac
+done
+case "$url" in
+    */download-config/*)
+        cp "$OPENVPN_TEST_TAR" "$output"
+        ;;
+    */checksum/*)
+        if [ -n "$output" ]; then
+            printf '%s\\n' "$OPENVPN_REMOTE_CHECKSUM" > "$output"
+        else
+            printf '%s\\n' "$OPENVPN_REMOTE_CHECKSUM"
+        fi
+        ;;
+    *)
+        echo "Unexpected curl URL: $url" >&2
+        exit 1
+        ;;
+esac
+EOF
+chmod +x {test_dir}/bin/curl
+printf '%s\\n' 'old-ca' > {test_dir}/work/ca.pem
+printf '%s\\n' 'old-cert' > {test_dir}/work/cert.pem
+printf '%s\\n' 'old-key' > {test_dir}/work/key.pem
+printf '%s\\n' 'old-dh' > {test_dir}/work/dh.pem
+{seed_checksum}
+printf '%s\\n' 'new-ca' > {test_dir}/payload/ca.pem
+printf '%s\\n' 'new-cert' > {test_dir}/payload/cert.pem
+printf '%s\\n' 'new-key' > {test_dir}/payload/key.pem
+printf '%s\\n' 'new-dh' > {test_dir}/payload/dh.pem
+tar czf {test_dir}/payload.tar.gz -C {test_dir}/payload .
+ACTUAL_CHECKSUM=$(sha256sum {test_dir}/payload.tar.gz | awk '{{print $1}}')
+case "{mode}" in
+    mismatch)
+        REMOTE_CHECKSUM='0000000000000000000000000000000000000000000000000000000000000000'
+        ;;
+    missing_local_checksum)
+        REMOTE_CHECKSUM="$ACTUAL_CHECKSUM"
+        ;;
+esac
+sed \
+    -e 's|cp -R "\\$tmp_extract_dir"/. /|cp -R "$tmp_extract_dir"/. {test_dir}/work/|' \
+    /openvpn_utils.sh > {test_dir}/openvpn_utils.sh
+sed \
+    -e 's|^cd /$|cd {test_dir}/work|' \
+    -e 's|^[.] /utils.sh$|:|' \
+    -e 's|^[.] /openvpn_utils.sh$|. {test_dir}/openvpn_utils.sh|' \
+    /openvpn.sh > {test_dir}/openvpn.sh
+grep -Fx "cd {test_dir}/work" {test_dir}/openvpn.sh >/dev/null
+grep -Fx ":" {test_dir}/openvpn.sh >/dev/null
+grep -Fx ". {test_dir}/openvpn_utils.sh" {test_dir}/openvpn.sh >/dev/null
+grep -F 'cp -R "$tmp_extract_dir"/. {test_dir}/work/' \
+    {test_dir}/openvpn_utils.sh >/dev/null
+! grep -Fx "cd /" {test_dir}/openvpn.sh >/dev/null
+! grep -Fx ". /utils.sh" {test_dir}/openvpn.sh >/dev/null
+! grep -Fx ". /openvpn_utils.sh" {test_dir}/openvpn.sh >/dev/null
+chmod +x {test_dir}/openvpn.sh
+: > {test_dir}/supervisor.log
+OPENVPN_TEST_TAR={test_dir}/payload.tar.gz \
+OPENVPN_REMOTE_CHECKSUM="$REMOTE_CHECKSUM" \
+PATH={test_dir}/bin:$PATH \
+UUID=test-vpn KEY=test-key \
+    sh {test_dir}/openvpn.sh > {test_dir}/stdout 2> {test_dir}/stderr
+"""
+            result = openvpn_container.exec_run(["sh", "-lc", command])
+
+            def _read(path):
+                read_result = openvpn_container.exec_run(
+                    ["sh", "-lc", f"cat {path} 2>/dev/null || true"]
+                )
+                return read_result.output.decode("utf-8")
+
+            return {
+                "exit_code": result.exit_code,
+                "stdout": _read(f"{test_dir}/stdout"),
+                "stderr": _read(f"{test_dir}/stderr"),
+                "supervisor": _read(f"{test_dir}/supervisor.log"),
+                "ca_pem": _read(f"{test_dir}/work/ca.pem"),
+                "checksum": _read(f"{test_dir}/work/checksum"),
+            }
+
+        mismatch = _run_case("mismatch")
+        self.assertEqual(mismatch["exit_code"], 1)
+        self.assertEqual(mismatch["stdout"], "")
+        self.assertIn(
+            "Downloaded OpenVPN config checksum mismatch",
+            mismatch["stderr"],
+        )
+        self.assertIn(
+            "Failed to download updated OpenVPN configuration",
+            mismatch["stderr"],
+        )
+        self.assertEqual(mismatch["supervisor"], "")
+        self.assertEqual(mismatch["ca_pem"], "old-ca\n")
+        self.assertEqual(mismatch["checksum"], "old-checksum\n")
+
+        missing_local_checksum = _run_case("missing_local_checksum")
+        self.assertEqual(missing_local_checksum["exit_code"], 0)
+        self.assertEqual(missing_local_checksum["stdout"], "")
+        self.assertEqual(missing_local_checksum["stderr"], "")
+        self.assertEqual(missing_local_checksum["supervisor"], "restart openvpn\n")
+        self.assertEqual(missing_local_checksum["ca_pem"], "new-ca\n")
+        self.assertRegex(missing_local_checksum["checksum"].strip(), r"^[0-9a-f]{64}$")
+
     def test_radius_user_registration(self):
         """Ensure users can register using the RADIUS API."""
-        url = f"{self.config['api_url']}/api/v1/radius/organization/default/account/"
+        username = f"signup-user-{uuid4().hex[:8]}"
+        email = f"{username}@signup.com"
+        url = f'{self.config["api_url"]}/api/v1/radius/organization/default/account/'
         response = requests.post(
             url,
             json={
-                "username": "signup-user",
-                "email": "user@signup.com",
+                "username": username,
+                "email": email,
                 "password1": "rLx6OH%[",
                 "password2": "rLx6OH%[",
             },
@@ -476,9 +749,7 @@ class TestServices(TestUtilities, unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         # Delete the created user
         self.login()
-        self.get_resource(
-            "signup-user", "/admin/openwisp_users/user/", "field-username"
-        )
+        self.get_resource(username, "/admin/openwisp_users/user/", "field-username")
         self.objects_to_delete.append(self.base_driver.current_url)
 
     def test_freeradius(self):
