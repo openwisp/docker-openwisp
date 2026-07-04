@@ -126,8 +126,8 @@ class TestServices(SeleniumTestUtils, unittest.TestCase):
                 f"body{{--openwisp-test: {cls.custom_static_token};}}"
             )
         script = rf"""
-            grep -q OPENWISP_ADMIN_THEME_LINKS /opt/openwisp/openwisp/settings.py || \
-            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/x-icon\",\"href\":\"ui/openwisp/images/favicon.png\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
+            sed -i '/^OPENWISP_ADMIN_THEME_LINKS[[:space:]]*=/d' /opt/openwisp/openwisp/settings.py &&
+            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/svg+xml\",\"href\":\"ui/openwisp/images/favicon.svg\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
             python collectstatic.py &&
             uwsgi --reload uwsgi.pid
         """  # noqa: E501
