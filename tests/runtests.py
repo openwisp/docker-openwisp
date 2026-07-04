@@ -12,7 +12,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from utils import BaseTestUtils, SeleniumTestUtils
+from utils import BaseTestUtils, FunctionalTestUtils
 
 
 # 0 in the name is on purpose for alphabetical discovery
@@ -61,48 +61,13 @@ class Test0Preconditions(BaseTestUtils, unittest.TestCase):
             self.fail(f"All celery workers are not online: {online_workers}")
 
 
-class TestServices(SeleniumTestUtils, unittest.TestCase):
+class TestServices(FunctionalTestUtils, unittest.TestCase):
     custom_static_token = None
 
     @property
     def failureException(self):
         TestServices.failed_test = True
         return super().failureException
-
-    @classmethod
-    def _execute_docker_compose_command(cls, cmd_args, use_text_mode=False):
-        """Execute a docker compose command and log output.
-
-        Args:
-            cmd_args: List of command arguments for subprocess.Popen
-            use_text_mode: If True, use text mode for subprocess output
-
-        Returns:
-            Tuple of (output, error) from command execution
-        """
-        kwargs = {
-            "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE,
-            "cwd": cls.root_location,
-        }
-        if use_text_mode:
-            kwargs["text"] = True
-        cmd = subprocess.run(cmd_args, check=False, **kwargs)
-        if use_text_mode:
-            output, error = cmd.stdout, cmd.stderr
-        else:
-            output = cmd.stdout.decode("utf-8", errors="replace") if cmd.stdout else ""
-            error = cmd.stderr.decode("utf-8", errors="replace") if cmd.stderr else ""
-        output, error = map(str, (cmd.stdout, cmd.stderr))
-        with open(cls.config["logs_file"], "a") as logs_file:
-            logs_file.write(output)
-            logs_file.write(error)
-        if cmd.returncode != 0:
-            raise RuntimeError(
-                f"docker compose command failed "
-                f"({cmd.returncode}): {' '.join(cmd_args)}"
-            )
-        return output, error
 
     @classmethod
     def _setup_admin_theme_links(cls):
@@ -127,7 +92,7 @@ class TestServices(SeleniumTestUtils, unittest.TestCase):
             )
         script = rf"""
             sed -i '/^OPENWISP_ADMIN_THEME_LINKS[[:space:]]*=/d' /opt/openwisp/openwisp/settings.py &&
-            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/svg+xml\",\"href\":\"ui/openwisp/images/favicon.svg\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
+            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/svg+xml\",\"href\":\"/static/ui/openwisp/images/favicon.svg\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
             python collectstatic.py &&
             uwsgi --reload uwsgi.pid
         """  # noqa: E501
@@ -154,27 +119,7 @@ class TestServices(SeleniumTestUtils, unittest.TestCase):
         avoid any Selenium dependency during setup.
         """
         try:
-            cls._execute_docker_compose_command(
-                [
-                    "docker",
-                    "compose",
-                    "exec",
-                    "-T",
-                    "dashboard",
-                    "python",
-                    "manage.py",
-                    "shell",
-                    "-c",
-                    (
-                        "from openwisp_users.models import User; "
-                        "User.objects.filter("
-                        "username__in=['signup-user', 'test_superuser', "
-                        "'test_superuser2']"
-                        ").delete()"
-                    ),
-                ],
-                use_text_mode=True,
-            )
+            cls.delete_test_users("signup-user", "test_superuser", "test_superuser2")
         except Exception as e:
             exc_type = type(e).__name__
             print(
@@ -224,6 +169,12 @@ class TestServices(SeleniumTestUtils, unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        try:
+            cls.delete_test_users(*cls.test_usernames_to_delete)
+            cls.test_usernames_to_delete.clear()
+        except Exception as e:
+            exc_type = type(e).__name__
+            print(f"Unable to delete test users: {exc_type}: {e}")
         for resource_link in cls.objects_to_delete:
             try:
                 cls._delete_object(resource_link)
@@ -278,6 +229,13 @@ class TestServices(SeleniumTestUtils, unittest.TestCase):
     def test_custom_static_files_loaded(self):
         self.login()
         self.open("/admin/")
+        favicon_href = self.web_driver.find_element(
+            By.CSS_SELECTOR, 'link[rel="icon"]'
+        ).get_attribute("href")
+        self.assertRegex(
+            favicon_href,
+            r"/static/ui/openwisp/images/favicon(\.[0-9a-f]+)?\.svg$",
+        )
         # Check if the custom CSS variable is applied
         value = self.web_driver.execute_script(
             "return getComputedStyle(document.body)"
@@ -363,6 +321,7 @@ class TestServices(SeleniumTestUtils, unittest.TestCase):
     def test_forgot_password(self):
         """Test forgot password to ensure that postfix is working properly."""
 
+        self.login()
         self.logout()
         try:
             WebDriverWait(self.base_driver, 3).until(
@@ -464,23 +423,22 @@ class TestServices(SeleniumTestUtils, unittest.TestCase):
     def test_radius_user_registration(self):
         """Ensure users can register using the RADIUS API."""
         url = f"{self.config['api_url']}/api/v1/radius/organization/default/account/"
-        response = requests.post(
-            url,
-            json={
-                "username": "signup-user",
-                "email": "user@signup.com",
-                "password1": "rLx6OH%[",
-                "password2": "rLx6OH%[",
-            },
-            verify=False,
-        )
-        self.assertEqual(response.status_code, 201)
-        # Delete the created user
-        self.login()
-        self.get_resource(
-            "signup-user", "/admin/openwisp_users/user/", "field-username"
-        )
-        self.objects_to_delete.append(self.base_driver.current_url)
+        username = "signup-user"
+        try:
+            response = requests.post(
+                url,
+                json={
+                    "username": username,
+                    "email": "user@signup.com",
+                    "password1": "rLx6OH%[",
+                    "password2": "rLx6OH%[",
+                },
+                verify=False,
+                timeout=10,
+            )
+            self.assertEqual(response.status_code, 201, response.text)
+        finally:
+            self.delete_test_users(username)
 
     def test_freeradius(self):
         """Ensure freeradius service is working correctly."""

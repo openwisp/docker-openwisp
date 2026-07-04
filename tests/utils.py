@@ -14,6 +14,7 @@ from selenium.webdriver.common.by import By
 class BaseTestUtils:
     """Base class for setting up test parameters and utilities."""
 
+    docker_compose_timeout = 120
     docker_client = docker.from_env()
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -28,6 +29,52 @@ class BaseTestUtils:
         """Keep verbose unittest output focused on test names, not docstrings."""
         return None
 
+    @classmethod
+    def _execute_docker_compose_command(cls, cmd_args, use_text_mode=False):
+        """Execute a docker compose command and log output."""
+        kwargs = {
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "cwd": cls.root_location,
+        }
+        if use_text_mode:
+            kwargs["text"] = True
+        try:
+            cmd = subprocess.run(
+                cmd_args,
+                check=False,
+                timeout=cls.docker_compose_timeout,
+                **kwargs,
+            )
+        except subprocess.TimeoutExpired as e:
+            output = e.stdout or ""
+            error = e.stderr or ""
+            if isinstance(output, bytes):
+                output = output.decode("utf-8", errors="replace") if output else ""
+            if isinstance(error, bytes):
+                error = error.decode("utf-8", errors="replace") if error else ""
+            with open(cls.config["logs_file"], "a") as logs_file:
+                logs_file.write(output)
+                logs_file.write(error)
+            raise RuntimeError(
+                "docker compose command timed out "
+                f"after {cls.docker_compose_timeout}s: {' '.join(cmd_args)}"
+            )
+        if use_text_mode:
+            output, error = cmd.stdout, cmd.stderr
+        else:
+            output = cmd.stdout.decode("utf-8", errors="replace") if cmd.stdout else ""
+            error = cmd.stderr.decode("utf-8", errors="replace") if cmd.stderr else ""
+        with open(cls.config["logs_file"], "a") as logs_file:
+            logs_file.write(output)
+            logs_file.write(error)
+        if cmd.returncode != 0:
+            raise RuntimeError(
+                f"docker compose command failed "
+                f"({cmd.returncode}): {' '.join(cmd_args)}"
+            )
+        return output, error
+
     def docker_compose_get_container_id(self, container_name):
         """Get the Docker container ID for a specific container.
 
@@ -38,21 +85,43 @@ class BaseTestUtils:
         Returns:
             str: The ID of the Docker container.
         """
-        services_output = subprocess.Popen(
-            ["docker", "compose", "ps", "--quiet", container_name],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=self.root_location,
+        output, _ = self._execute_docker_compose_command(
+            ["docker", "compose", "ps", "--quiet", container_name]
         )
-        output, _ = services_output.communicate()
-        return output.rstrip().decode("utf-8")
+        return output.rstrip()
 
 
-class SeleniumTestUtils(SeleniumTestMixin, BaseTestUtils):
+class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
     """Utilities for functional testing."""
 
     objects_to_delete = []
+    test_usernames_to_delete = set()
     browser = "chrome"
+
+    @classmethod
+    def delete_test_users(cls, *usernames):
+        """Delete test-created users without relying on browser state."""
+        usernames = sorted(set(usernames))
+        if not usernames:
+            return
+        cls._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "exec",
+                "-T",
+                "dashboard",
+                "python",
+                "manage.py",
+                "shell",
+                "-c",
+                (
+                    "from openwisp_users.models import User; "
+                    f"User.objects.filter(username__in={usernames!r}).delete()"
+                ),
+            ],
+            use_text_mode=True,
+        )
 
     def setUp(self):
         # Override TestSeleniumMixin setUp which uses
@@ -130,7 +199,7 @@ class SeleniumTestUtils(SeleniumTestMixin, BaseTestUtils):
         self.find_element(By.NAME, "password2", driver=driver).send_keys(password)
         self.find_element(By.NAME, "is_superuser", driver=driver).click()
         self._click_save_btn(driver)
-        self.objects_to_delete.append(driver.current_url)
+        self.test_usernames_to_delete.add(username)
         self._click_save_btn(driver)
         self._wait_until_page_ready()
         self.wait_for_visibility(By.ID, "content", driver=driver, timeout=10)
