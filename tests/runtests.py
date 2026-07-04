@@ -12,10 +12,11 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from utils import TestUtilities
+from utils import BaseTestUtils, SeleniumTestUtils
 
 
-class Pretest(TestUtilities, unittest.TestCase):
+# 0 in the name is on purpose for alphabetical discovery
+class Test0Preconditions(BaseTestUtils, unittest.TestCase):
     """Checks to perform before tests"""
 
     def test_wait_for_services(self):
@@ -60,7 +61,7 @@ class Pretest(TestUtilities, unittest.TestCase):
             self.fail(f"All celery workers are not online: {online_workers}")
 
 
-class TestServices(TestUtilities, unittest.TestCase):
+class TestServices(SeleniumTestUtils, unittest.TestCase):
     custom_static_token = None
 
     @property
@@ -532,8 +533,8 @@ class TestServices(TestUtilities, unittest.TestCase):
             )
 
 
-class TestUtils(TestUtilities, unittest.TestCase):
-    """Other tests"""
+class TestLocalUtils(BaseTestUtils, unittest.TestCase):
+    """Tests for local utilities"""
 
     def test_update_version_updates_only_version_file(self):
         repository_root = Path(__file__).resolve().parents[1]

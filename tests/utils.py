@@ -11,12 +11,8 @@ from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver.common.by import By
 
 
-class TestConfig:
-    """Configuration class for setting up test parameters and utilities."""
-
-    def shortDescription(self):
-        """Return a short description for the test."""
-        return None
+class BaseTestUtils:
+    """Base class for setting up test parameters and utilities."""
 
     docker_client = docker.from_env()
     ctx = ssl.create_default_context()
@@ -28,9 +24,32 @@ class TestConfig:
     with open(config_file) as json_file:
         config = json.load(json_file)
 
+    def shortDescription(self):
+        """Keep verbose unittest output focused on test names, not docstrings."""
+        return None
 
-class TestUtilities(SeleniumTestMixin, TestConfig):
-    """Utility functions for testing."""
+    def docker_compose_get_container_id(self, container_name):
+        """Get the Docker container ID for a specific container.
+
+        Parameters:
+
+        - container_name (str): The name of the Docker container.
+
+        Returns:
+            str: The ID of the Docker container.
+        """
+        services_output = subprocess.Popen(
+            ["docker", "compose", "ps", "--quiet", container_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.root_location,
+        )
+        output, _ = services_output.communicate()
+        return output.rstrip().decode("utf-8")
+
+
+class SeleniumTestUtils(SeleniumTestMixin, BaseTestUtils):
+    """Utilities for functional testing."""
 
     objects_to_delete = []
     browser = "chrome"
@@ -253,25 +272,6 @@ class TestUtilities(SeleniumTestMixin, TestConfig):
         self._ignore_location_alert(driver)
         self._click_save_btn(driver)
         self.get_resource(location_name, "/admin/geo/location/", driver=driver)
-
-    def docker_compose_get_container_id(self, container_name):
-        """Get the Docker container ID for a specific container.
-
-        Parameters:
-
-        - container_name (str): The name of the Docker container.
-
-        Returns:
-            str: The ID of the Docker container.
-        """
-        services_output = subprocess.Popen(
-            ["docker", "compose", "ps", "--quiet", container_name],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            cwd=self.root_location,
-        )
-        output, _ = services_output.communicate()
-        return output.rstrip().decode("utf-8")
 
     def create_network_topology(
         self,
