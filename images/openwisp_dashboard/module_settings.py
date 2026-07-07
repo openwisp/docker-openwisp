@@ -85,10 +85,6 @@ STORAGES = {
         "BACKEND": "openwisp_utils.storage.CompressStaticFilesStorage",
     },
 }
-BROTLI_STATIC_COMPRESSION = False
-# pregenerate static gzip files to save CPU
-GZIP_STATIC_COMPRESSION = True
-
 HTTP_SCHEME = request_scheme()
 HTTP_PORT = (
     os.getenv("NGINX_SSL_PORT", "443")

@@ -951,6 +951,14 @@ Nginx
   application/x-font-ttf font/opentype``.
 - **Default:** ``\*``.
 
+``NGINX_BROTLI_SWITCH``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Enables or disables serving precompressed Brotli files
+  from the static files directory.
+- **Valid Values:** ``on``, ``off``.
+- **Default:** ``on``.
+
 ``NGINX_HTTPS_ALLOWED_IPS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
