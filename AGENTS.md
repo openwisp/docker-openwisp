@@ -47,6 +47,7 @@ If instructions conflict, repository config and CI workflows win first, docs nex
 ## Testing and QA
 
 - Use targeted checks while iterating, then run the documented full QA/test command before considering the change complete.
+- Keep helpers and classes used by only one test method inside that method. Promote them to class or module scope only when genuinely reused.
 
 ## Security Notes
 
