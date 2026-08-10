@@ -33,7 +33,7 @@ If instructions conflict, repository config and CI workflows win first, docs nex
 - Add an explanatory commit body only for substantial changes, new features, or non-obvious bug fixes. The releaser automatically publishes the subject of `[feature]`, `[change]`, `[change!]`, `[deps]`, and `[fix]` commits, including scoped variants, in the changelog. Write those subjects in clear, user-friendly language suitable for release notes.
 - Send new commits in response to review feedback instead of amending existing commits.
 
-## Development Notes
+## Development Rules
 
 - Preserve Docker image contracts, compose service names, environment variables, volumes, ports, and upgrade paths unless explicitly required.
 - Be careful with shell scripts, Docker layers, permissions, entrypoints, health checks, and generated configuration.
@@ -49,7 +49,7 @@ If instructions conflict, repository config and CI workflows win first, docs nex
 - Use targeted checks while iterating, then run the documented full QA/test command before considering the change complete.
 - Keep helpers and classes used by only one test method inside that method. Promote them to class or module scope only when genuinely reused.
 
-## Security Notes
+## Security Rules
 
 - Watch for exposed secrets, unsafe defaults, insecure permissions, unsafe shell expansion, path traversal, and accidental public ports.
 - Preserve validation and safe handling around environment files, mounted volumes, TLS material, credentials, and service configuration.
