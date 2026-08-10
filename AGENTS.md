@@ -35,6 +35,7 @@ If instructions conflict, repository config and CI workflows win first, docs nex
 
 ## Development Rules
 
+- Follow the DRY principle: do not duplicate information or code across files.
 - Preserve Docker image contracts, compose service names, environment variables, volumes, ports, and upgrade paths unless explicitly required.
 - Be careful with shell scripts, Docker layers, permissions, entrypoints, health checks, and generated configuration.
 - Avoid unnecessary blank lines inside functions or shell blocks.
