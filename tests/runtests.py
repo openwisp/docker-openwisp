@@ -494,7 +494,23 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
-    def test_makefile_pulls_from_docker_hub_and_fails_on_publish_error(self):
+    def test_workflows_publish_to_gitlab_registry(self):
+        repository_root = Path(__file__).resolve().parents[1]
+        registry = "registry.gitlab.com/openwisp/docker-openwisp"
+        ci_workflow = (repository_root / ".github" / "workflows" / "ci.yml").read_text()
+        release_workflow = (
+            repository_root / ".github" / "workflows" / "release.yml"
+        ).read_text()
+        self.assertIn(
+            f"make publish USER={registry} TAG=edge SKIP_BUILD=true SKIP_TESTS=true",
+            ci_workflow,
+        )
+        self.assertIn(
+            f"make release USER={registry} SKIP_BUILD=true",
+            release_workflow,
+        )
+
+    def test_makefile_pulls_from_docker_hub_and_fails_on_image_command_error(self):
         repository_root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -505,7 +521,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             docker_command.write_text(
                 "#!/bin/bash\n"
                 'printf "%s\\n" "$*" >> "$DOCKER_LOG"\n'
-                'if [ "$1" = "push" ] && [ "$FAIL_PUSH" = "true" ]; then\n'
+                'if [ "$1" = "$FAIL_COMMAND" ]; then\n'
                 "    exit 1\n"
                 "fi\n"
             )
@@ -515,14 +531,18 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             environment = os.environ.copy()
             environment["DOCKER_LOG"] = str(docker_log)
             environment["PATH"] = f"{bin_directory}:{environment['PATH']}"
-            pull = subprocess.run(
-                ["make", "pull", "OPENWISP_VERSION=25.10.4"],
-                cwd=tmpdir,
-                check=False,
-                capture_output=True,
-                text=True,
-                env=environment,
-            )
+
+            def run_make(*arguments):
+                return subprocess.run(
+                    ["make", *arguments],
+                    cwd=tmpdir,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+
+            pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
             self.assertEqual(pull.returncode, 0, pull.stderr)
             commands = docker_log.read_text().splitlines()
             self.assertEqual(
@@ -536,23 +556,33 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "The default pull registry must be Docker Hub.",
             )
 
-            docker_log.write_text("")
-            publish = subprocess.run(
-                [
-                    "make",
-                    "publish",
-                    "USER=docker.io/openwisp",
-                    "TAG=25.10.4",
-                    "OPENWISP_VERSION=25.10.4",
-                    "SKIP_BUILD=true",
-                    "SKIP_TESTS=true",
-                ],
-                cwd=tmpdir,
-                check=False,
-                capture_output=True,
-                text=True,
-                env=environment,
+            environment["FAIL_COMMAND"] = "pull"
+            failed_pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
+            self.assertNotEqual(
+                failed_pull.returncode,
+                0,
+                "A failed image pull must fail make pull.",
             )
+
+            environment["FAIL_COMMAND"] = "tag"
+            failed_pull_tag = run_make("pull", "OPENWISP_VERSION=25.10.4")
+            self.assertNotEqual(
+                failed_pull_tag.returncode,
+                0,
+                "A failed image tag must fail make pull.",
+            )
+
+            environment.pop("FAIL_COMMAND")
+            docker_log.write_text("")
+            publish_arguments = (
+                "publish",
+                "USER=docker.io/openwisp",
+                "TAG=25.10.4",
+                "OPENWISP_VERSION=25.10.4",
+                "SKIP_BUILD=true",
+                "SKIP_TESTS=true",
+            )
+            publish = run_make(*publish_arguments)
             self.assertEqual(publish.returncode, 0, publish.stderr)
             self.assertFalse(
                 any(
@@ -562,23 +592,16 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "Publishing must retain the source tags for another registry.",
             )
 
-            environment["FAIL_PUSH"] = "true"
-            failed_publish = subprocess.run(
-                [
-                    "make",
-                    "publish",
-                    "USER=registry.gitlab.com/openwisp/docker-openwisp",
-                    "TAG=25.10.4",
-                    "OPENWISP_VERSION=25.10.4",
-                    "SKIP_BUILD=true",
-                    "SKIP_TESTS=true",
-                ],
-                cwd=tmpdir,
-                check=False,
-                capture_output=True,
-                text=True,
-                env=environment,
+            environment["FAIL_COMMAND"] = "tag"
+            failed_publish_tag = run_make(*publish_arguments)
+            self.assertNotEqual(
+                failed_publish_tag.returncode,
+                0,
+                "A failed image tag must fail make publish.",
             )
+
+            environment["FAIL_COMMAND"] = "push"
+            failed_publish = run_make(*publish_arguments)
             self.assertNotEqual(
                 failed_publish.returncode,
                 0,

@@ -135,4 +135,4 @@ jobs:
       - name: Publish to GitLab Container Registry
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: |
-          make publish TAG=edge SKIP_BUILD=true SKIP_TESTS=true
+          make publish USER=registry.gitlab.com/openwisp/docker-openwisp TAG=edge SKIP_BUILD=true SKIP_TESTS=true
