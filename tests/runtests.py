@@ -494,6 +494,97 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
+    def test_makefile_pulls_from_docker_hub_and_fails_on_publish_error(self):
+        repository_root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            bin_directory = tmpdir / "bin"
+            bin_directory.mkdir()
+            docker_log = tmpdir / "docker.log"
+            docker_command = bin_directory / "docker"
+            docker_command.write_text(
+                "#!/bin/bash\n"
+                'printf "%s\\n" "$*" >> "$DOCKER_LOG"\n'
+                'if [ "$1" = "push" ] && [ "$FAIL_PUSH" = "true" ]; then\n'
+                "    exit 1\n"
+                "fi\n"
+            )
+            docker_command.chmod(0o755)
+            (tmpdir / "Makefile").write_text((repository_root / "Makefile").read_text())
+            (tmpdir / ".env").write_text("")
+            environment = os.environ.copy()
+            environment["DOCKER_LOG"] = str(docker_log)
+            environment["PATH"] = f"{bin_directory}:{environment['PATH']}"
+            pull = subprocess.run(
+                ["make", "pull", "OPENWISP_VERSION=25.10.4"],
+                cwd=tmpdir,
+                check=False,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            self.assertEqual(pull.returncode, 0, pull.stderr)
+            commands = docker_log.read_text().splitlines()
+            self.assertEqual(
+                len(commands), 18, "The Makefile must pull and tag all images."
+            )
+            self.assertTrue(
+                all(
+                    command.startswith("pull --quiet docker.io/openwisp/")
+                    for command in commands[::2]
+                ),
+                "The default pull registry must be Docker Hub.",
+            )
+
+            docker_log.write_text("")
+            publish = subprocess.run(
+                [
+                    "make",
+                    "publish",
+                    "USER=docker.io/openwisp",
+                    "TAG=25.10.4",
+                    "OPENWISP_VERSION=25.10.4",
+                    "SKIP_BUILD=true",
+                    "SKIP_TESTS=true",
+                ],
+                cwd=tmpdir,
+                check=False,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            self.assertEqual(publish.returncode, 0, publish.stderr)
+            self.assertFalse(
+                any(
+                    command.startswith("rmi ")
+                    for command in docker_log.read_text().splitlines()
+                ),
+                "Publishing must retain the source tags for another registry.",
+            )
+
+            environment["FAIL_PUSH"] = "true"
+            failed_publish = subprocess.run(
+                [
+                    "make",
+                    "publish",
+                    "USER=registry.gitlab.com/openwisp/docker-openwisp",
+                    "TAG=25.10.4",
+                    "OPENWISP_VERSION=25.10.4",
+                    "SKIP_BUILD=true",
+                    "SKIP_TESTS=true",
+                ],
+                cwd=tmpdir,
+                check=False,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            self.assertNotEqual(
+                failed_publish.returncode,
+                0,
+                "A failed registry upload must fail make publish.",
+            )
+
     def test_update_version_updates_only_version_file(self):
         repository_root = Path(__file__).resolve().parents[1]
         makefile_content = (
