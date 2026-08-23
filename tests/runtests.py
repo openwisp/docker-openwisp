@@ -477,7 +477,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ).communicate()
 
     def test_containers_down(self):
-        """Ensure all Compose services are running."""
+        """Ensure Compose succeeds and no container has stopped."""
         cmd = subprocess.Popen(
             ["docker", "compose", "ps"],
             universal_newlines=True,
@@ -485,10 +485,11 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             stderr=subprocess.PIPE,
             cwd=self.root_location,
         )
-        output, error = map(str, cmd.communicate())
+        output, error = cmd.communicate()
+        self.assertEqual(cmd.returncode, 0, error)
         if "Exit" in output:
             self.fail(
-                f"One of the containers are down!\nOutput:\n{output}\nError:\n{error}"
+                f"One of the containers is down!\nOutput:\n{output}\nError:\n{error}"
             )
 
 
