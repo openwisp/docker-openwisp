@@ -265,6 +265,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         )
 
     def test_console_errors(self):
+        """Ensure key account and admin pages have no browser console errors."""
         url_list = [
             "/admin/",
             "/accounts/password/reset/",
@@ -298,16 +299,16 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         ]
         self.login()
         self.create_superuser("sample@email.com", "test_superuser2")
-        # url_list tests
         for url in url_list:
-            self.open(url)
-            self.assertEqual([], self.console_error_check())
-            self.assertIn("OpenWISP", self.base_driver.title)
-        # change_form_list tests
+            with self.subTest(url=url):
+                self.open(url)
+                self.assertEqual([], self.console_error_check())
+                self.assertIn("OpenWISP", self.base_driver.title)
         for change_form in change_form_list:
-            self.get_resource(*change_form)
-            self.assertEqual([], self.console_error_check())
-            self.assertIn("OpenWISP", self.base_driver.title)
+            with self.subTest(resource=change_form[0], path=change_form[1]):
+                self.get_resource(*change_form)
+                self.assertEqual([], self.console_error_check())
+                self.assertIn("OpenWISP", self.base_driver.title)
 
     def test_add_superuser(self):
         """Create new user to ensure a new user can be added."""
@@ -476,7 +477,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ).communicate()
 
     def test_containers_down(self):
-        """Ensure freeradius service is working correctly."""
+        """Ensure all Compose services are running."""
         cmd = subprocess.Popen(
             ["docker", "compose", "ps"],
             universal_newlines=True,
@@ -511,6 +512,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         )
 
     def test_makefile_pulls_from_docker_hub_and_fails_on_image_command_error(self):
+        """Verify Docker Hub pulls and Makefile command failure propagation."""
         repository_root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -556,21 +558,15 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "The default pull registry must be Docker Hub.",
             )
 
-            environment["FAIL_COMMAND"] = "pull"
-            failed_pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
-            self.assertNotEqual(
-                failed_pull.returncode,
-                0,
-                "A failed image pull must fail make pull.",
-            )
-
-            environment["FAIL_COMMAND"] = "tag"
-            failed_pull_tag = run_make("pull", "OPENWISP_VERSION=25.10.4")
-            self.assertNotEqual(
-                failed_pull_tag.returncode,
-                0,
-                "A failed image tag must fail make pull.",
-            )
+            for command in ("pull", "tag"):
+                with self.subTest(target="pull", command=command):
+                    environment["FAIL_COMMAND"] = command
+                    failed_pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
+                    self.assertNotEqual(
+                        failed_pull.returncode,
+                        0,
+                        f"A failed image {command} must fail make pull.",
+                    )
 
             environment.pop("FAIL_COMMAND")
             docker_log.write_text("")
@@ -592,23 +588,18 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "Publishing must retain the source tags for another registry.",
             )
 
-            environment["FAIL_COMMAND"] = "tag"
-            failed_publish_tag = run_make(*publish_arguments)
-            self.assertNotEqual(
-                failed_publish_tag.returncode,
-                0,
-                "A failed image tag must fail make publish.",
-            )
-
-            environment["FAIL_COMMAND"] = "push"
-            failed_publish = run_make(*publish_arguments)
-            self.assertNotEqual(
-                failed_publish.returncode,
-                0,
-                "A failed registry upload must fail make publish.",
-            )
+            for command in ("tag", "push"):
+                with self.subTest(target="publish", command=command):
+                    environment["FAIL_COMMAND"] = command
+                    failed_publish = run_make(*publish_arguments)
+                    self.assertNotEqual(
+                        failed_publish.returncode,
+                        0,
+                        f"A failed image {command} must fail make publish.",
+                    )
 
     def test_update_version_updates_only_version_file(self):
+        """Verify version updates and rejected legacy bump commands."""
         repository_root = Path(__file__).resolve().parents[1]
         makefile_content = (
             "RELEASE_VERSION = $(shell cat images/common/openwisp/VERSION)\n"
@@ -622,36 +613,39 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             makefile.write_text((repository_root / "Makefile").read_text())
             (tmpdir / ".env").write_text("")
             (tmpdir / "build.py").write_text((repository_root / "build.py").read_text())
-            result = subprocess.run(
-                ["make", "bump", "VERSION=26.01.0"],
-                cwd=tmpdir,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            missing_argument = subprocess.run(
-                ["make", "bump"],
-                cwd=tmpdir,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            old_target = subprocess.run(
-                [
-                    "make",
-                    "bump-version",
-                ],
-                cwd=tmpdir,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertNotEqual(missing_argument.returncode, 0)
-            self.assertNotEqual(old_target.returncode, 0)
-            self.assertEqual(version_file.read_text(), "26.01.0\n")
-            self.assertIn(makefile_content, makefile.read_text())
-            self.assertFalse((version_file.parent / "_version.py").exists())
+
+            with self.subTest(command="bump with version"):
+                result = subprocess.run(
+                    ["make", "bump", "VERSION=26.01.0"],
+                    cwd=tmpdir,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(version_file.read_text(), "26.01.0\n")
+                self.assertIn(makefile_content, makefile.read_text())
+                self.assertFalse((version_file.parent / "_version.py").exists())
+
+            with self.subTest(command="bump without version"):
+                missing_argument = subprocess.run(
+                    ["make", "bump"],
+                    cwd=tmpdir,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(missing_argument.returncode, 0)
+
+            with self.subTest(command="legacy bump-version"):
+                old_target = subprocess.run(
+                    ["make", "bump-version"],
+                    cwd=tmpdir,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(old_target.returncode, 0)
 
 
 if __name__ == "__main__":
