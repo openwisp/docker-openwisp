@@ -14,10 +14,15 @@ is_dev_mode() {
 
 configure_dev_mode() {
 	if is_dev_mode; then
-		export DEBUG_MODE=True
-		export METRIC_COLLECTION=False
-		export NGINX_HTTP_ALLOW=True
+		DEBUG_MODE=${DEBUG_MODE:-True}
+		METRIC_COLLECTION=${METRIC_COLLECTION:-False}
+		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-True}
+	else
+		DEBUG_MODE=${DEBUG_MODE:-False}
+		METRIC_COLLECTION=${METRIC_COLLECTION:-True}
+		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-False}
 	fi
+	export DEBUG_MODE METRIC_COLLECTION NGINX_HTTP_ALLOW
 }
 
 default_psql_vars() {

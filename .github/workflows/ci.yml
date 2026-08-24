@@ -28,7 +28,7 @@ jobs:
           sudo chmod +x /usr/local/bin/shfmt
           echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
           # disable metric collection during builds
-          sed -i 's/METRIC_COLLECTION=True/METRIC_COLLECTION=False/' .env
+          printf '\nMETRIC_COLLECTION=False\n' >> .env
           # ERROR: Cannot uninstall urllib3 2.0.7, RECORD file not found. Hint: The package was installed by debian.
           sudo apt remove python3-urllib3 python3-typing-extensions python3-packaging
           sudo pip3 install -r requirements-test.txt
@@ -72,6 +72,7 @@ jobs:
             || (cat /opt/openwisp/autoinstall.log && exit 1)
 
       - name: Enable development profile for tests
+        id: enable_development_profile
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
         run: |
           sed -i 's/DEV_MODE=False/DEV_MODE=True/' /opt/openwisp/docker-openwisp/.env
@@ -82,12 +83,12 @@ jobs:
       # making it inaccessible to the unprivileged CI user. This step fixes the
       # ownership so the test suite can write the required files.
       - name: Fix permissions for CI user
-        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
+        if: ${{ !cancelled() && steps.enable_development_profile.conclusion == 'success' }}
         run: |
           sudo chown -R $USER:$USER /opt/openwisp
 
       - name: Test
-        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
+        if: ${{ !cancelled() && steps.enable_development_profile.conclusion == 'success' }}
         uses: openwisp/openwisp-utils/.github/actions/retry-command@master
         with:
           delay_seconds: 30

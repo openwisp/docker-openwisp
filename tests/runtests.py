@@ -247,6 +247,38 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         self.base_driver.get(https_url)
         self.assertIn("OpenWISP", self.base_driver.title)
 
+    def test_redis_tls_certificate_policy(self):
+        for dev_mode, expected_certificate_requirement in (
+            ("False", "True"),
+            ("True", "False"),
+        ):
+            with self.subTest(dev_mode=dev_mode):
+                output, _ = self._execute_docker_compose_command(
+                    [
+                        "docker",
+                        "compose",
+                        "exec",
+                        "-T",
+                        "-e",
+                        f"DEV_MODE={dev_mode}",
+                        "-e",
+                        "REDIS_USE_TLS=True",
+                        "dashboard",
+                        "python",
+                        "manage.py",
+                        "shell",
+                        "-c",
+                        "import ssl; from django.conf import settings; "
+                        "print(settings.CELERY_BROKER_USE_SSL['ssl_cert_reqs'] "
+                        "== ssl.CERT_REQUIRED)",
+                    ],
+                    use_text_mode=True,
+                )
+                self.assertEqual(
+                    output.strip().splitlines()[-1],
+                    expected_certificate_requirement,
+                )
+
     def test_custom_static_files_loaded(self):
         self.login()
         self.open("/admin/")
@@ -518,23 +550,32 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
     def test_dev_mode_configures_development_defaults(self):
-        result = subprocess.run(
-            [
-                "bash",
-                "-c",
-                "source images/common/utils.sh; "
-                "DEV_MODE=True; "
-                "configure_dev_mode; "
-                'printf "%s %s %s" "$DEBUG_MODE" "$METRIC_COLLECTION" '
-                '"$NGINX_HTTP_ALLOW"',
-            ],
-            cwd=self.root_location,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, "True False True")
+        for settings, expected in (
+            ("", "True False True"),
+            (
+                "DEBUG_MODE=False; METRIC_COLLECTION=True; NGINX_HTTP_ALLOW=False; ",
+                "False True False",
+            ),
+        ):
+            with self.subTest(settings=settings):
+                result = subprocess.run(
+                    [
+                        "bash",
+                        "-c",
+                        "source images/common/utils.sh; "
+                        "DEV_MODE=True; "
+                        f"{settings}"
+                        "configure_dev_mode; "
+                        'printf "%s %s %s" "$DEBUG_MODE" "$METRIC_COLLECTION" '
+                        '"$NGINX_HTTP_ALLOW"',
+                    ],
+                    cwd=self.root_location,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, expected)
 
     def test_curl_download_uses_the_profile_tls_policy(self):
         for dev_mode, expected_arguments in (
@@ -608,9 +649,13 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     env=environment,
                 )
 
-            development_start = run_make("start", "DEV_MODE=True")
-            self.assertNotEqual(development_start.returncode, 0)
-            self.assertIn("Set DEV_MODE=False", development_start.stdout)
+            docker_log.write_text("")
+            for dev_mode in ("True", "true"):
+                with self.subTest(dev_mode=dev_mode):
+                    development_start = run_make("start", f"DEV_MODE={dev_mode}")
+                    self.assertNotEqual(development_start.returncode, 0)
+                    self.assertIn("Set DEV_MODE=False", development_start.stdout)
+                    self.assertEqual(docker_log.read_text(), "")
 
             pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
             self.assertEqual(pull.returncode, 0, pull.stderr)

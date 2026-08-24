@@ -90,7 +90,8 @@ properly on your system.
 - **Explanation:** Enables the development profile, which makes local
   development easier by enabling debugging and HTTP access while disabling
   metrics collection and Nginx security headers. Production deployments
-  must set this option to ``False``.
+  must set this option to ``False``. Explicit feature settings override
+  their development-profile defaults.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``True`` in the repository ``.env`` and ``False`` for
   Docker images and auto-install deployments.

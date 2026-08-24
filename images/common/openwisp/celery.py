@@ -64,7 +64,12 @@ if env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
         },
     }
 
-if env_bool(os.environ.get("METRIC_COLLECTION", "True")):
+if env_bool(
+    os.environ.get(
+        "METRIC_COLLECTION",
+        "False" if env_bool(os.environ.get("DEV_MODE", "False")) else "True",
+    )
+):
     metric_collection_schedule = {
         "send_usage_metrics": {
             "task": "openwisp_utils.metric_collection.tasks.send_usage_metrics",

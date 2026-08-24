@@ -29,8 +29,8 @@ for config in os.environ:
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
-DEBUG = env_bool(os.environ["DEBUG_MODE"])
 DEV_MODE = env_bool(os.environ.get("DEV_MODE", "False"))
+DEBUG = env_bool(os.environ.get("DEBUG_MODE", "True" if DEV_MODE else "False"))
 MAX_REQUEST_SIZE = int(os.environ["NGINX_CLIENT_BODY_SIZE"]) * 1024 * 1024
 ROOT_DOMAIN = "." + tldextract.extract(os.environ["DASHBOARD_DOMAIN"]).registered_domain
 INSTALLED_APPS = []
@@ -73,7 +73,9 @@ CORS_ALLOWED_ORIGINS = [
 ] + os.environ["DJANGO_CORS_HOSTS"].split(",")
 CORS_ALLOW_CREDENTIALS = True
 
-if HTTP_SCHEME == "https" and not DEV_MODE:
+if DEV_MODE:
+    SECURE_REFERRER_POLICY = None
+elif HTTP_SCHEME == "https":
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
@@ -456,7 +458,7 @@ if not env_bool(os.environ["USE_OPENWISP_MONITORING"]):
         INSTALLED_APPS.remove("openwisp_monitoring.check")
 if EMAIL_BACKEND == "djcelery_email.backends.CeleryEmailBackend":
     INSTALLED_APPS.append("djcelery_email")
-if env_bool(os.environ.get("METRIC_COLLECTION", "True")):
+if env_bool(os.environ.get("METRIC_COLLECTION", "False" if DEV_MODE else "True")):
     INSTALLED_APPS.append("openwisp_utils.metric_collection")
 
 try:
