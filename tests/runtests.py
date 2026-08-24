@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from urllib import error as urlerror
 from urllib import request
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 from selenium.common.exceptions import TimeoutException
@@ -225,6 +226,26 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                 f"{self.config['username']} & Password: {self.config['password']}"
             )
             self.fail(message)
+
+    def test_dev_mode_admin_access(self):
+        """Ensure the development profile permits browser access to the admin."""
+        app_url = urlsplit(self.config["app_url"])
+        http_url = urlunsplit(("http", app_url.netloc, "/admin/login/", "", ""))
+        https_url = urlunsplit(("https", app_url.netloc, "/admin/login/", "", ""))
+        http_response = requests.get(http_url, allow_redirects=False, timeout=10)
+        https_response = request.urlopen(https_url, context=self.ctx, timeout=10)
+        self.assertEqual(
+            http_response.status_code,
+            200,
+            "DEV_MODE must serve the admin login page over HTTP without a redirect.",
+        )
+        self.assertEqual(
+            https_response.headers.get("Strict-Transport-Security"),
+            "max-age=0",
+            "DEV_MODE must clear previously cached HSTS policies.",
+        )
+        self.base_driver.get(https_url)
+        self.assertIn("OpenWISP", self.base_driver.title)
 
     def test_custom_static_files_loaded(self):
         self.login()
@@ -496,6 +517,48 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
+    def test_dev_mode_configures_development_defaults(self):
+        result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                "source images/common/utils.sh; "
+                "DEV_MODE=True; "
+                "configure_dev_mode; "
+                'printf "%s %s %s" "$DEBUG_MODE" "$METRIC_COLLECTION" '
+                '"$NGINX_HTTP_ALLOW"',
+            ],
+            cwd=self.root_location,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "True False True")
+
+    def test_curl_download_uses_the_profile_tls_policy(self):
+        for dev_mode, expected_arguments in (
+            ("False", "--silent https://example.com"),
+            ("True", "--insecure --silent https://example.com"),
+        ):
+            with self.subTest(dev_mode=dev_mode):
+                result = subprocess.run(
+                    [
+                        "bash",
+                        "-c",
+                        "source images/common/utils.sh; "
+                        'curl() { printf "%s" "$*"; }; '
+                        f"DEV_MODE={dev_mode}; "
+                        "curl_download --silent https://example.com",
+                    ],
+                    cwd=self.root_location,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, expected_arguments)
+
     def test_workflows_publish_to_gitlab_registry(self):
         repository_root = Path(__file__).resolve().parents[1]
         registry = "registry.gitlab.com/openwisp/docker-openwisp"
@@ -544,6 +607,10 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     text=True,
                     env=environment,
                 )
+
+            development_start = run_make("start", "DEV_MODE=True")
+            self.assertNotEqual(development_start.returncode, 0)
+            self.assertIn("Set DEV_MODE=False", development_start.stdout)
 
             pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
             self.assertEqual(pull.returncode, 0, pull.stderr)

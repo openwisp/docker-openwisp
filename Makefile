@@ -20,6 +20,7 @@ IMAGE_OWNER ?= openwisp
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
 SKIP_TESTS ?= false
+DEV_MODE ?= False
 
 # Pull
 pull:
@@ -91,6 +92,10 @@ clean:
 
 # Production
 start:
+	if [ "$(DEV_MODE)" = "True" ] || [ "$(DEV_MODE)" = "true" ]; then \
+		printf '\e[1;31m%s\e[m\n' "DEV_MODE=True is for local development. Set DEV_MODE=False before using make start."; \
+		exit 1; \
+	fi
 	if [ "$(SKIP_PULL)" == "false" ]; then \
 		make pull; \
 	fi

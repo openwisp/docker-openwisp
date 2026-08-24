@@ -71,6 +71,12 @@ jobs:
             GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
             || (cat /opt/openwisp/autoinstall.log && exit 1)
 
+      - name: Enable development profile for tests
+        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
+        run: |
+          sed -i 's/DEV_MODE=False/DEV_MODE=True/' /opt/openwisp/docker-openwisp/.env
+          docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml up --detach --force-recreate
+
       # The test suite needs to create files during execution. Because the deploy
       # script runs with `sudo`, the installation directory ends up owned by root,
       # making it inaccessible to the unprivileged CI user. This step fixes the
@@ -90,6 +96,8 @@ jobs:
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
           # execute the test from this directory.
+          # The containers are already running, so use the target that only
+          # executes Python tests without restarting or stopping the stack.
           command: cd /opt/openwisp/docker-openwisp && make develop-pythontests
         env:
           SELENIUM_HEADLESS: 1

@@ -1,7 +1,23 @@
 #!/bin/sh
 
 init_conf() {
+	configure_dev_mode
 	default_psql_vars
+}
+
+is_dev_mode() {
+	case "${DEV_MODE:-False}" in
+	True | true | Yes | yes) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
+configure_dev_mode() {
+	if is_dev_mode; then
+		export DEBUG_MODE=True
+		export METRIC_COLLECTION=False
+		export NGINX_HTTP_ALLOW=True
+	fi
 }
 
 default_psql_vars() {
@@ -104,6 +120,17 @@ ssl_http_behaviour() {
 	fi
 }
 
+configure_security_headers() {
+	if is_dev_mode; then
+		header_file=/etc/nginx/openwisp.security.dev.conf
+	elif [ "$1" = 'https' ]; then
+		header_file=/etc/nginx/openwisp.security.ssl.conf
+	else
+		header_file=/etc/nginx/openwisp.security.http.conf
+	fi
+	envsubst <"$header_file" >/etc/nginx/security-headers.conf
+}
+
 envsubst_create_config() {
 	# Creates nginx configurations files for dashboard
 	# and api instances.
@@ -113,6 +140,7 @@ envsubst_create_config() {
 		eval export DOMAIN=\$${application}_${3}
 		eval export ROOT_DOMAIN=$(python3 get_domain.py)
 		application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
+		configure_security_headers "$2"
 		envsubst <${1} >/etc/nginx/conf.d/${application}.${2}.conf
 	done
 }
@@ -230,7 +258,7 @@ openvpn_config() {
 }
 
 openvpn_config_checksum() {
-	OFILE=$(curl --silent --insecure \
+	OFILE=$(curl_download --silent \
 		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}")
 	export OFILE
 	NFILE=$(cat checksum)
@@ -238,17 +266,25 @@ openvpn_config_checksum() {
 }
 
 openvpn_config_download() {
-	curl --silent --retry 10 --retry-delay 5 --retry-max-time 300 --insecure --output vpn.tar.gz \
+	curl_download --silent --retry 10 --retry-delay 5 --retry-max-time 300 --output vpn.tar.gz \
 		"${API_INTERNAL}/controller/vpn/download-config/${UUID}/?key=${KEY}"
-	curl --silent --insecure --output checksum \
+	curl_download --silent --output checksum \
 		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}"
 	tar xzf vpn.tar.gz
 	chmod 600 ./*.pem
 }
 
 crl_download() {
-	curl --silent --insecure --output revoked.crl \
+	curl_download --silent --output revoked.crl \
 		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl"
+}
+
+curl_download() {
+	if is_dev_mode; then
+		curl --insecure "$@"
+	else
+		curl "$@"
+	fi
 }
 
 init_send_network_topology() {

@@ -203,6 +203,7 @@ setup_docker_openwisp() {
 		mv $ENV_USER $INSTALL_PATH/.env &>>$LOG_FILE
 		rm -rf $ENV_USER &>>$LOG_FILE
 	fi
+	set_env "DEV_MODE" "False"
 
 	start_step "Configuring docker-openwisp..."
 	report_ok
@@ -227,6 +228,7 @@ upgrade_docker_openwisp() {
 		value=$(get_env "$config" "$ENV_BACKUP")
 		set_env "$config" "$value"
 	done
+	set_env "DEV_MODE" "False"
 	report_ok
 
 	start_step "Starting images docker-openwisp (this will take a while)..."

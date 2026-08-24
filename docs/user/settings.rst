@@ -84,6 +84,17 @@ properly on your system.
   <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`__.
 - **Default:** ``UTC``.
 
+``DEV_MODE``
+~~~~~~~~~~~~
+
+- **Explanation:** Enables the development profile, which makes local
+  development easier by enabling debugging and HTTP access while disabling
+  metrics collection and Nginx security headers. Production deployments
+  must set this option to ``False``.
+- **Valid Values:** ``True``, ``False``.
+- **Default:** ``True`` in the repository ``.env`` and ``False`` for
+  Docker images and auto-install deployments.
+
 ``SSL_CERT_MODE``
 ~~~~~~~~~~~~~~~~~
 
@@ -433,7 +444,7 @@ framework.
 - **Explanation:** Whether :doc:`/utils/user/metric-collection` is enabled
   or not.
 - **Valid Values:** ``True``, ``False``.
-- **Default:** ``True``.
+- **Default:** ``True`` in production and ``False`` in development mode.
 
 ``CRON_DELETE_OLD_RADACCT``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -475,7 +486,7 @@ framework.
   <https://docs.djangoproject.com/en/4.2/ref/settings/#debug>`__ for
   details.
 - **Valid Values:** ``True``, ``False``.
-- **Default:** ``False``.
+- **Default:** ``True`` in development mode and ``False`` in production.
 
 ``REDIS_CACHE_URL``
 ~~~~~~~~~~~~~~~~~~~
@@ -966,7 +977,7 @@ Nginx
 - **Explanation:** Allow http access with https access. Valid only when
   ``SSL_CERT_MODE`` is set to ``Yes`` or ``SelfSigned``.
 - **Valid Values:** ``True``, ``False``.
-- **Default:** ``True``.
+- **Default:** ``True`` in development mode and ``False`` in production.
 
 ``NGINX_CUSTOM_FILE``
 ~~~~~~~~~~~~~~~~~~~~~
