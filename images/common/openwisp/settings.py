@@ -5,6 +5,7 @@ import sys
 from urllib.parse import quote
 
 import tldextract
+from django.core.exceptions import ImproperlyConfigured
 from openwisp.utils import (
     env_bool,
     is_string_env_bool,
@@ -209,14 +210,48 @@ DATABASES = {
     },
 }
 
-TIMESERIES_DATABASE = {
-    "BACKEND": "openwisp_monitoring.db.backends.influxdb",
-    "USER": os.environ["INFLUXDB_USER"],
-    "PASSWORD": os.environ["INFLUXDB_PASS"],
-    "NAME": os.environ["INFLUXDB_NAME"],
-    "HOST": os.environ["INFLUXDB_HOST"],
-    "PORT": os.environ["INFLUXDB_PORT"],
+TIMESERIES_BACKEND = os.environ.get("TIMESERIES_BACKEND", "influxdb")
+TIMESERIES_UDP_WRITES = env_bool(os.environ.get("TIMESERIES_UDP_WRITES", "False"))
+TIMESERIES_UDP_PORT = int(os.environ.get("TIMESERIES_UDP_PORT", 8089))
+TIMESERIES_DATABASE_OPTIONS = {
+    "udp_writes": TIMESERIES_UDP_WRITES,
+    "udp_port": TIMESERIES_UDP_PORT,
 }
+if TIMESERIES_BACKEND == "influxdb":
+    TIMESERIES_DATABASE = {
+        "BACKEND": "openwisp_monitoring.db.backends.influxdb",
+        "USER": os.environ["INFLUXDB_USER"],
+        "PASSWORD": os.environ["INFLUXDB_PASS"],
+        "NAME": os.environ["INFLUXDB_NAME"],
+        "HOST": os.environ["INFLUXDB_HOST"],
+        "PORT": os.environ["INFLUXDB_PORT"],
+        "OPTIONS": TIMESERIES_DATABASE_OPTIONS,
+    }
+elif TIMESERIES_BACKEND == "influxdb2":
+    TIMESERIES_DATABASE = {
+        "BACKEND": "openwisp_monitoring.db.backends.influxdb2",
+        "NAME": os.environ["INFLUXDB2_BUCKET"],
+        "USER": os.environ["INFLUXDB2_ORG"],
+        "PASSWORD": os.environ["INFLUXDB2_TOKEN"],
+        "URL": os.environ.get(
+            "INFLUXDB2_URL",
+            f'http://{os.environ["INFLUXDB2_HOST"]}:{os.environ["INFLUXDB2_PORT"]}',
+        ),
+        "OPTIONS": {
+            **TIMESERIES_DATABASE_OPTIONS,
+            "udp_host": os.environ["INFLUXDB2_UDP_HOST"],
+        },
+    }
+elif TIMESERIES_BACKEND == "elasticsearch":
+    TIMESERIES_DATABASE = {
+        "BACKEND": "openwisp_monitoring.db.backends.elasticsearch",
+        "NAME": os.environ["ELASTICSEARCH_NAME"],
+        "URL": os.environ["ELASTICSEARCH_URL"],
+    }
+else:
+    raise ImproperlyConfigured(
+        f'Unsupported TIMESERIES_BACKEND "{TIMESERIES_BACKEND}".'
+    )
 OPENWISP_MONITORING_DEFAULT_RETENTION_POLICY = os.environ[
     "INFLUXDB_DEFAULT_RETENTION_POLICY"
 ]

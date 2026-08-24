@@ -16,7 +16,10 @@ Additionally, you can search for the following prefixes:
 
 - ``OPENWISP_``: OpenWISP application settings.
 - ``DB_``: PostgreSQL Database settings.
+- ``TIMESERIES_``: Timeseries database backend settings.
 - ``INFLUXDB_``: InfluxDB settings.
+- ``INFLUXDB2_``: InfluxDB 2.x settings.
+- ``ELASTICSEARCH_``: Elasticsearch settings.
 - ``DJANGO_``: Django settings.
 - ``EMAIL_``: Email settings (see also ``POSTFIX_``).
 - ``POSTFIX_``: Postfix settings (see also ``EMAIL_``).
@@ -642,11 +645,69 @@ PostgreSQL Database
   <https://docs.djangoproject.com/en/4.2/ref/contrib/gis/db-api/#module-django.contrib.gis.db.backends>`__.
 - **Default:** ``django.contrib.gis.db.backends.postgis``
 
-InfluxDB
---------
+Timeseries Database
+-------------------
 
-InfluxDB is the default time series database used by the :doc:`Monitoring
-module </monitoring/index>`.
+InfluxDB 1.8 is the default timeseries database used by the
+:doc:`Monitoring module </monitoring/index>`. InfluxDB 2.x and
+Elasticsearch are available as opt-in backends.
+
+To use the default InfluxDB 1.8 backend:
+
+.. code-block:: bash
+
+    TIMESERIES_BACKEND=influxdb
+
+To use InfluxDB 2.x:
+
+.. code-block:: bash
+
+    TIMESERIES_BACKEND=influxdb2
+    COMPOSE_PROFILES=influxdb2
+
+To use Elasticsearch:
+
+.. code-block:: bash
+
+    TIMESERIES_BACKEND=elasticsearch
+    COMPOSE_PROFILES=elasticsearch
+
+When using an optional backend, both ``TIMESERIES_BACKEND`` and
+``COMPOSE_PROFILES`` must be set to the same backend name.
+
+``COMPOSE_PROFILES``
+~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Docker Compose profiles to enable. Set this to
+  ``influxdb2`` or ``elasticsearch`` when using one of the optional
+  timeseries backend services.
+- **Valid Values:** A comma-separated list of Docker Compose profile names.
+- **Default:** ``""`` (empty string).
+
+``TIMESERIES_BACKEND``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Timeseries database backend used by OpenWISP Monitoring.
+- **Valid Values:** ``influxdb``, ``influxdb2``, ``elasticsearch``.
+- **Default:** ``influxdb``.
+
+``TIMESERIES_UDP_WRITES``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Whether to write timeseries data over UDP. InfluxDB 2.x
+  UDP writes are handled by the ``telegraf`` container because InfluxDB 2.x
+  does not support UDP writes natively. Elasticsearch does not support UDP
+  writes.
+- **Valid Values:** ``True``, ``False``.
+- **Default:** ``False``.
+
+``TIMESERIES_UDP_PORT``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** UDP port used for timeseries writes. For InfluxDB 2.x,
+  this is the Telegraf listener port.
+- **Valid Values:** INTEGER.
+- **Default:** ``8089``.
 
 ``INFLUXDB_USER``
 ~~~~~~~~~~~~~~~~~
@@ -691,6 +752,87 @@ module </monitoring/index>`.
   series data.
 - **Valid Values:** STRING.
 - **Default:** ``26280h0m0s`` (3 years).
+
+``INFLUXDB2_USER``
+~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Username used to initialize the InfluxDB 2.x Docker
+  container.
+- **Valid Values:** STRING.
+- **Default:** ``admin``.
+
+``INFLUXDB2_PASS``
+~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Password used to initialize the InfluxDB 2.x Docker
+  container.
+- **Valid Values:** STRING.
+- **Default:** ``adminadmin``.
+
+``INFLUXDB2_BUCKET``
+~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Bucket used by the InfluxDB 2.x backend.
+- **Valid Values:** STRING.
+- **Default:** ``openwisp``.
+
+``INFLUXDB2_HOST``
+~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Host to be used when connecting to InfluxDB 2.x.
+- **Valid Values:** any valid hostname or IP address.
+- **Default:** ``influxdb2``.
+
+``INFLUXDB2_PORT``
+~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Port on which InfluxDB 2.x is listening.
+- **Valid Values:** INTEGER.
+- **Default:** ``8086``.
+
+``INFLUXDB2_ORG``
+~~~~~~~~~~~~~~~~~
+
+- **Explanation:** InfluxDB 2.x organization used by OpenWISP Monitoring.
+- **Valid Values:** STRING.
+- **Default:** ``openwisp``.
+
+``INFLUXDB2_TOKEN``
+~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** InfluxDB 2.x API token used by OpenWISP Monitoring.
+- **Valid Values:** STRING.
+- **Default:** ``openwisp-token``.
+
+``INFLUXDB2_UDP_HOST``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Hostname of the Telegraf UDP listener used for InfluxDB
+  2.x UDP writes.
+- **Valid Values:** any valid hostname or IP address.
+- **Default:** ``telegraf``.
+
+``ELASTICSEARCH_NAME``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Name used by OpenWISP Monitoring for Elasticsearch data
+  streams.
+- **Valid Values:** STRING.
+- **Default:** ``openwisp``.
+
+``ELASTICSEARCH_URL``
+~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** URL used to connect to Elasticsearch.
+- **Valid Values:** URL.
+- **Default:** ``http://elasticsearch:9200``.
+
+``ELASTICSEARCH_VERSION``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Elasticsearch Docker image version.
+- **Valid Values:** Any valid Elasticsearch Docker image tag.
+- **Default:** ``9.4.3``.
 
 Postfix
 -------

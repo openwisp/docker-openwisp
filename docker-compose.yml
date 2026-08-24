@@ -34,7 +34,7 @@ services:
       - postgres
       - redis
       - postfix
-      - influxdb
+      - ${TIMESERIES_BACKEND:-influxdb}
 
   api:
     image: openwisp/openwisp-api:${OPENWISP_VERSION:-edge}
@@ -214,6 +214,47 @@ services:
     volumes:
       - influxdb_data:/var/lib/influxdb
 
+  influxdb2:
+    image: influxdb:2.9.1-alpine
+    restart: always
+    profiles:
+      - influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=$INFLUXDB2_USER
+      - DOCKER_INFLUXDB_INIT_PASSWORD=$INFLUXDB2_PASS
+      - DOCKER_INFLUXDB_INIT_ORG=$INFLUXDB2_ORG
+      - DOCKER_INFLUXDB_INIT_BUCKET=$INFLUXDB2_BUCKET
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$INFLUXDB2_TOKEN
+    volumes:
+      - influxdb2_data:/var/lib/influxdb2
+
+  telegraf:
+    image: telegraf:1.31-alpine
+    restart: always
+    profiles:
+      - influxdb2
+    environment:
+      - TIMESERIES_DB=$INFLUXDB2_BUCKET
+      - INFLUXDB2_ORG=$INFLUXDB2_ORG
+      - INFLUXDB2_TOKEN=$INFLUXDB2_TOKEN
+    volumes:
+      - ./deploy/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    depends_on:
+      - influxdb2
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTICSEARCH_VERSION:-9.4.3}
+    restart: always
+    profiles:
+      - elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
   redis:
     image: redis:alpine
     restart: always
@@ -222,6 +263,8 @@ services:
 
 volumes:
   influxdb_data: {}
+  influxdb2_data: {}
+  elasticsearch_data: {}
   postgres_data: {}
   redis_data: {}
   openwisp_certs: {}

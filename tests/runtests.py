@@ -494,6 +494,42 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
+    def _docker_compose_services(self, **environment):
+        env = os.environ.copy()
+        env.update(environment)
+        result = subprocess.run(
+            ["docker", "compose", "config", "--services"],
+            cwd=self.root_location,
+            check=False,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return set(result.stdout.splitlines())
+
+    def test_default_compose_timeseries_backend(self):
+        services = self._docker_compose_services(
+            TIMESERIES_BACKEND="influxdb", COMPOSE_PROFILES=""
+        )
+        self.assertIn("influxdb", services)
+        self.assertNotIn("influxdb2", services)
+        self.assertNotIn("telegraf", services)
+        self.assertNotIn("elasticsearch", services)
+
+    def test_influxdb2_compose_profile(self):
+        services = self._docker_compose_services(
+            TIMESERIES_BACKEND="influxdb2", COMPOSE_PROFILES="influxdb2"
+        )
+        self.assertIn("influxdb2", services)
+        self.assertIn("telegraf", services)
+
+    def test_elasticsearch_compose_profile(self):
+        services = self._docker_compose_services(
+            TIMESERIES_BACKEND="elasticsearch", COMPOSE_PROFILES="elasticsearch"
+        )
+        self.assertIn("elasticsearch", services)
+
     def test_update_version_updates_only_version_file(self):
         repository_root = Path(__file__).resolve().parents[1]
         makefile_content = (
