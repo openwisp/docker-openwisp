@@ -14,6 +14,7 @@ Available Images
 The images are hosted on `Docker Hub
 <https://hub.docker.com/u/openwisp>`__ and `GitLab Container Registry
 <https://gitlab.com/openwisp/docker-openwisp/container_registry>`__.
+Docker Hub is the default image source used by the deployment.
 
 Image Tags
 ~~~~~~~~~~

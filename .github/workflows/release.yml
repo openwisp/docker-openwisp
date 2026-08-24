@@ -45,4 +45,4 @@ jobs:
 
       - name: Release to GitLab Container Registry
         run: |
-          make release SKIP_BUILD=true
+          make release USER=registry.gitlab.com/openwisp/docker-openwisp SKIP_BUILD=true
