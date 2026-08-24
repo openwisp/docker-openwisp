@@ -75,7 +75,7 @@ jobs:
         id: enable_development_profile
         if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
         run: |
-          sed -i 's/DEV_MODE=False/DEV_MODE=True/' /opt/openwisp/docker-openwisp/.env
+          sudo sed -i 's/DEV_MODE=False/DEV_MODE=True/' /opt/openwisp/docker-openwisp/.env
           docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml up --detach --force-recreate
 
       # The test suite needs to create files during execution. Because the deploy

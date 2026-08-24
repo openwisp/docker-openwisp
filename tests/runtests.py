@@ -600,6 +600,20 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected_arguments)
 
+    def test_nginx_security_headers_are_application_specific(self):
+        repository_root = Path(__file__).resolve().parents[1]
+        header_file = (repository_root / "images" / "common" / "utils.sh").read_text()
+        self.assertIn("security-headers-$1.$2.conf", header_file)
+        for template in (
+            "openwisp.ssl.template.conf",
+            "openwisp.template.conf",
+        ):
+            with self.subTest(template=template):
+                content = (
+                    repository_root / "images" / "openwisp_nginx" / template
+                ).read_text()
+                self.assertIn("include $NGINX_SECURITY_HEADERS_FILE;", content)
+
     def test_workflows_publish_to_gitlab_registry(self):
         repository_root = Path(__file__).resolve().parents[1]
         registry = "registry.gitlab.com/openwisp/docker-openwisp"

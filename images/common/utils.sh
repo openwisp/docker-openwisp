@@ -126,14 +126,16 @@ ssl_http_behaviour() {
 }
 
 configure_security_headers() {
+	if [ "$2" = 'internal' ]; then return; fi
 	if is_dev_mode; then
 		header_file=/etc/nginx/openwisp.security.dev.conf
-	elif [ "$1" = 'https' ]; then
+	elif [ "$2" = 'https' ]; then
 		header_file=/etc/nginx/openwisp.security.ssl.conf
 	else
 		header_file=/etc/nginx/openwisp.security.http.conf
 	fi
-	envsubst <"$header_file" >/etc/nginx/security-headers.conf
+	export NGINX_SECURITY_HEADERS_FILE="/etc/nginx/security-headers-$1.$2.conf"
+	envsubst <"$header_file" >"$NGINX_SECURITY_HEADERS_FILE"
 }
 
 envsubst_create_config() {
@@ -145,7 +147,7 @@ envsubst_create_config() {
 		eval export DOMAIN=\$${application}_${3}
 		eval export ROOT_DOMAIN=$(python3 get_domain.py)
 		application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
-		configure_security_headers "$2"
+		configure_security_headers "$application" "$2"
 		envsubst <${1} >/etc/nginx/conf.d/${application}.${2}.conf
 	done
 }
