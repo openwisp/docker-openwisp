@@ -549,22 +549,35 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
-    def test_dev_mode_configures_development_defaults(self):
-        for settings, expected in (
-            ("", "True False True"),
+    def test_profile_configures_defaults_and_preserves_overrides(self):
+        for dev_mode, settings, expected in (
+            ("True", {}, "True False True"),
             (
-                "DEBUG_MODE=False; METRIC_COLLECTION=True; NGINX_HTTP_ALLOW=False; ",
+                "True",
+                {
+                    "DEBUG_MODE": "False",
+                    "METRIC_COLLECTION": "True",
+                    "NGINX_HTTP_ALLOW": "False",
+                },
                 "False True False",
             ),
+            ("False", {}, "False True False"),
         ):
-            with self.subTest(settings=settings):
+            with self.subTest(dev_mode=dev_mode, settings=settings):
+                environment = os.environ.copy()
+                for variable in (
+                    "DEBUG_MODE",
+                    "METRIC_COLLECTION",
+                    "NGINX_HTTP_ALLOW",
+                ):
+                    environment.pop(variable, None)
+                environment["DEV_MODE"] = dev_mode
+                environment.update(settings)
                 result = subprocess.run(
                     [
                         "bash",
                         "-c",
                         "source images/common/utils.sh; "
-                        "DEV_MODE=True; "
-                        f"{settings}"
                         "configure_dev_mode; "
                         'printf "%s %s %s" "$DEBUG_MODE" "$METRIC_COLLECTION" '
                         '"$NGINX_HTTP_ALLOW"',
@@ -573,6 +586,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     check=False,
                     capture_output=True,
                     text=True,
+                    env=environment,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected)
@@ -583,19 +597,21 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             ("True", "--insecure --silent https://example.com"),
         ):
             with self.subTest(dev_mode=dev_mode):
+                environment = os.environ.copy()
+                environment["DEV_MODE"] = dev_mode
                 result = subprocess.run(
                     [
                         "bash",
                         "-c",
                         "source images/common/utils.sh; "
                         'curl() { printf "%s" "$*"; }; '
-                        f"DEV_MODE={dev_mode}; "
                         "curl_download --silent https://example.com",
                     ],
                     cwd=self.root_location,
                     check=False,
                     capture_output=True,
                     text=True,
+                    env=environment,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected_arguments)

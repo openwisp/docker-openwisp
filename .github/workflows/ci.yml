@@ -85,7 +85,7 @@ jobs:
       - name: Fix permissions for CI user
         if: ${{ !cancelled() && steps.enable_development_profile.conclusion == 'success' }}
         run: |
-          sudo chown -R $USER:$USER /opt/openwisp
+          sudo chown -R "$USER:$USER" /opt/openwisp
 
       - name: Test
         if: ${{ !cancelled() && steps.enable_development_profile.conclusion == 'success' }}
