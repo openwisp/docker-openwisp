@@ -12,5 +12,5 @@ crl_status=$?
 if [ "$crl_status" -eq 0 ]; then
 	supervisorctl restart openvpn
 elif [ "$crl_status" -eq 2 ]; then
-	echo "Failed to download CRL, keeping existing revoked.crl" >&2
+	echo "ERROR: Failed to download CRL, keeping existing revoked.crl" >&2
 fi

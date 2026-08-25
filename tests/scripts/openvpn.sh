@@ -41,10 +41,16 @@ curl() {
 	failed)
 		return 1
 		;;
+	malformed)
+		printf '%s\n' 'not a CRL' >"$output_path"
+		;;
 	esac
 }
 
 openssl() {
+	if [ "$CRL_TEST_MODE" = malformed ]; then
+		return 1
+	fi
 	while [ "$#" -gt 0 ]; do
 		case "$1" in
 		-in)
@@ -96,3 +102,4 @@ run_case timestamp_only 1 'Last Update: three' "$initial_crl"
 run_case changed 0 'Serial Number: 02' "$initial_crl"
 run_case failed 2 'Serial Number: 01' "$initial_crl"
 run_case empty 2 'Serial Number: 01' "$initial_crl"
+run_case malformed 2 'Serial Number: 01' "$initial_crl"

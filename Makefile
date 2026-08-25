@@ -70,7 +70,8 @@ develop-runtests:
 	make develop-pythontests
 
 develop-pythontests:
-	python3 tests/runtests.py
+	OPENWISP_TEST_OPENVPN_IMAGE=$(IMAGE_OWNER)/openwisp-openvpn:$(OPENWISP_VERSION) \
+		python3 tests/runtests.py
 
 # Development
 develop: compose-build

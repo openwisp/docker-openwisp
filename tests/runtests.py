@@ -592,6 +592,9 @@ class TestOpenVPN(unittest.TestCase):
         """Ensure CRL metadata updates do not trigger a revocation change."""
 
         script = Path(__file__).parent / "scripts" / "openvpn.sh"
+        image = os.environ.get("OPENWISP_TEST_OPENVPN_IMAGE")
+        if not image:
+            self.fail("OPENWISP_TEST_OPENVPN_IMAGE is required for OpenVPN tests.")
         result = subprocess.run(
             [
                 "docker",
@@ -601,9 +604,7 @@ class TestOpenVPN(unittest.TestCase):
                 f"{script}:/test_openvpn.sh:ro",
                 "--entrypoint",
                 "sh",
-                os.environ.get(
-                    "OPENWISP_TEST_OPENVPN_IMAGE", "openwisp/openwisp-openvpn:edge"
-                ),
+                image,
                 "/test_openvpn.sh",
             ],
             capture_output=True,
