@@ -23,10 +23,10 @@ elif [ "$MODULE_NAME" = 'postfix' ]; then
 	rsyslogd -n
 elif [ "$MODULE_NAME" = 'freeradius' ]; then
 	wait_nginx_services
-	if [ "$DEBUG_MODE" = 'False' ]; then
-		source docker-entrypoint.sh
-	else
+	if [ "$FREERADIUS_DEBUG_MODE" = 'True' ]; then
 		source docker-entrypoint.sh -X
+	else
+		source docker-entrypoint.sh
 	fi
 elif [ "$MODULE_NAME" = 'openvpn' ]; then
 	if [[ -z "$VPN_DOMAIN" ]]; then exit; fi

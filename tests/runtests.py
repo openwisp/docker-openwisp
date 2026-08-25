@@ -244,6 +244,27 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "max-age=0",
             "DEV_MODE must clear previously cached HSTS policies.",
         )
+        output, _ = self._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "exec",
+                "-T",
+                "dashboard",
+                "python",
+                "manage.py",
+                "shell",
+                "-c",
+                "from django.conf import settings; "
+                "print(*settings.CORS_ALLOWED_ORIGINS[:2])",
+            ],
+            use_text_mode=True,
+        )
+        self.assertEqual(
+            set(output.strip().splitlines()[-1].split()),
+            {self.config["app_url"], self.config["api_url"]},
+            "DEV_MODE must retain HTTPS canonical application URLs.",
+        )
         self.base_driver.get(https_url)
         self.assertIn("OpenWISP", self.base_driver.title)
 
@@ -399,7 +420,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
     def test_celery(self):
         """Ensure celery and celery-beat tasks are registered."""
         expected_output_list = [
-            "djcelery_email_send_multiple",
             "openwisp.tasks.radius_tasks",
             "openwisp.tasks.save_snapshot",
             "openwisp.tasks.update_topology",
@@ -453,6 +473,26 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "openwisp_users.tasks.expiration_reminder_email",
             "openwisp_users.tasks.password_expiration_email",
         ]
+        output, _ = self._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "exec",
+                "-T",
+                "dashboard",
+                "python",
+                "manage.py",
+                "shell",
+                "-c",
+                "from django.conf import settings; print(settings.EMAIL_BACKEND)",
+            ],
+            use_text_mode=True,
+        )
+        if (
+            output.strip().splitlines()[-1]
+            == "djcelery_email.backends.CeleryEmailBackend"
+        ):
+            expected_output_list.insert(0, "djcelery_email_send_multiple")
 
         def _test_celery_task_registered(container_name):
             container_id = self.docker_compose_get_container_id(container_name)
@@ -549,26 +589,34 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
-    def test_profile_configures_defaults_and_preserves_overrides(self):
+    def test_profile_configures_shell_defaults_and_preserves_overrides(self):
         for dev_mode, settings, expected in (
-            ("True", {}, "True False True"),
+            (
+                "True",
+                {},
+                "True False False",
+            ),
             (
                 "True",
                 {
-                    "DEBUG_MODE": "False",
-                    "METRIC_COLLECTION": "True",
                     "NGINX_HTTP_ALLOW": "False",
+                    "OPENWISP_GEOCODING_CHECK": "True",
+                    "FREERADIUS_DEBUG_MODE": "True",
                 },
+                "False True True",
+            ),
+            (
+                "False",
+                {},
                 "False True False",
             ),
-            ("False", {}, "False True False"),
         ):
             with self.subTest(dev_mode=dev_mode, settings=settings):
                 environment = os.environ.copy()
                 for variable in (
-                    "DEBUG_MODE",
-                    "METRIC_COLLECTION",
                     "NGINX_HTTP_ALLOW",
+                    "OPENWISP_GEOCODING_CHECK",
+                    "FREERADIUS_DEBUG_MODE",
                 ):
                     environment.pop(variable, None)
                 environment["DEV_MODE"] = dev_mode
@@ -579,8 +627,9 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                         "-c",
                         "source images/common/utils.sh; "
                         "configure_dev_mode; "
-                        'printf "%s %s %s" "$DEBUG_MODE" "$METRIC_COLLECTION" '
-                        '"$NGINX_HTTP_ALLOW"',
+                        'printf "%s %s %s" '
+                        '"$NGINX_HTTP_ALLOW" "$OPENWISP_GEOCODING_CHECK" '
+                        '"$FREERADIUS_DEBUG_MODE"',
                     ],
                     cwd=self.root_location,
                     check=False,
@@ -616,10 +665,51 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected_arguments)
 
-    def test_nginx_security_headers_are_application_specific(self):
+    def test_freeradius_debug_mode_is_independent(self):
         repository_root = Path(__file__).resolve().parents[1]
-        header_file = (repository_root / "images" / "common" / "utils.sh").read_text()
-        self.assertIn("security-headers-$1.$2.conf", header_file)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            (tmpdir / "init_command.sh").write_text(
+                (repository_root / "images" / "common" / "init_command.sh").read_text()
+            )
+            (tmpdir / "utils.sh").write_text(
+                "init_conf() { :; }\nwait_nginx_services() { :; }\n"
+            )
+            (tmpdir / "docker-entrypoint.sh").write_text('printf "%s" "$*"\n')
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "DEBUG_MODE": "True",
+                    "MODULE_NAME": "freeradius",
+                    "PATH": f"{tmpdir}:{environment['PATH']}",
+                }
+            )
+            for freeradius_debug_mode, expected in (("False", ""), ("True", "-X")):
+                with self.subTest(freeradius_debug_mode=freeradius_debug_mode):
+                    environment["FREERADIUS_DEBUG_MODE"] = freeradius_debug_mode
+                    result = subprocess.run(
+                        ["bash", "init_command.sh"],
+                        cwd=tmpdir,
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        env=environment,
+                    )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual(result.stdout, expected)
+
+    def test_nginx_development_headers_clear_hsts(self):
+        repository_root = Path(__file__).resolve().parents[1]
+        header_file = (
+            repository_root / "images" / "openwisp_nginx" / "openwisp.security.dev.conf"
+        )
+        self.assertEqual(
+            header_file.read_text().strip(),
+            'add_header Strict-Transport-Security "max-age=0" always;',
+        )
+        utils = (repository_root / "images" / "common" / "utils.sh").read_text()
+        self.assertIn("if is_dev_mode; then", utils)
+        self.assertIn("header_file=/etc/nginx/openwisp.security.dev.conf", utils)
         for template in (
             "openwisp.ssl.template.conf",
             "openwisp.template.conf",
@@ -680,7 +770,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 )
 
             docker_log.write_text("")
-            for dev_mode in ("True", "true"):
+            for dev_mode in ("True", "true", "TRUE", "Yes", "yes", "YES"):
                 with self.subTest(dev_mode=dev_mode):
                     development_start = run_make("start", f"DEV_MODE={dev_mode}")
                     self.assertNotEqual(development_start.returncode, 0)

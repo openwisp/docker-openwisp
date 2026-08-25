@@ -298,7 +298,14 @@ MEDIA_URL = "/media/"
 # Email Configurations
 
 DEFAULT_FROM_EMAIL = os.environ["EMAIL_DJANGO_DEFAULT"]
-EMAIL_BACKEND = os.environ["EMAIL_BACKEND"]
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    (
+        "django.core.mail.backends.console.EmailBackend"
+        if DEV_MODE
+        else "djcelery_email.backends.CeleryEmailBackend"
+    ),
+)
 EMAIL_HOST = os.environ["EMAIL_HOST"]
 EMAIL_PORT = os.environ["EMAIL_HOST_PORT"]
 EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]

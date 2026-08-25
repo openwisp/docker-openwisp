@@ -26,6 +26,7 @@ Additionally, you can search for the following prefixes:
 - ``API_``: Settings specific to the OpenWISP API.
 - ``X509_``: Configurations related to x509 CA and certificates.
 - ``VPN_``: Default VPN and VPN template configurations.
+- ``FREERADIUS_``: FreeRADIUS server settings.
 - ``CRON_``: Periodic task configurations.
 - ``EXPORT_``: NFS server configurations.
 
@@ -88,10 +89,11 @@ properly on your system.
 ~~~~~~~~~~~~
 
 - **Explanation:** Enables the development profile, which makes local
-  development easier by enabling debugging and HTTP access while disabling
-  metrics collection and Nginx security headers. Production deployments
-  must set this option to ``False``. Explicit feature settings override
-  their development-profile defaults.
+  development easier by enabling debugging and HTTP access, printing email
+  to the console, and disabling metrics collection, the geocoding startup
+  check, and Nginx security headers. Production deployments must set this
+  option to ``False``. Explicit feature settings override their
+  development-profile defaults.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``True`` in the repository ``.env`` and ``False`` for
   Docker images and auto-install deployments.
@@ -233,7 +235,9 @@ framework.
 - **Valid Values:** `Refer to the "Email backends" section on the Django
   documentation
   <https://docs.djangoproject.com/en/4.2/topics/email/#email-backends>`__.
-- **Default:** ``djcelery_email.backends.CeleryEmailBackend``.
+- **Default:** ``django.core.mail.backends.console.EmailBackend`` in
+  development mode and ``djcelery_email.backends.CeleryEmailBackend`` in
+  production.
 
 ``DJANGO_X509_DEFAULT_CERT_VALIDITY``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -318,7 +322,7 @@ framework.
 - **Explanation:** Used to check if geocoding is working as expected or
   not.
 - **Valid Values:** ``True``, ``False``.
-- **Default:** ``True``.
+- **Default:** ``False`` in development mode and ``True`` in production.
 
 ``USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -488,6 +492,14 @@ framework.
   details.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``True`` in development mode and ``False`` in production.
+
+``FREERADIUS_DEBUG_MODE``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Starts FreeRADIUS in verbose debugging mode. This is
+  independent from Django's ``DEBUG_MODE`` setting.
+- **Valid Values:** ``True``, ``False``.
+- **Default:** ``False``.
 
 ``REDIS_CACHE_URL``
 ~~~~~~~~~~~~~~~~~~~

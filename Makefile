@@ -92,10 +92,9 @@ clean:
 
 # Production
 start:
-	if [ "$(DEV_MODE)" = "True" ] || [ "$(DEV_MODE)" = "true" ]; then \
+	case "$(DEV_MODE)" in [Tt][Rr][Uu][Ee] | [Yy][Ee][Ss]) \
 		printf '\e[1;31m%s\e[m\n' "DEV_MODE=True is for local development. Set DEV_MODE=False before using make start."; \
-		exit 1; \
-	fi
+		exit 1;; esac
 	if [ "$(SKIP_PULL)" == "false" ]; then \
 		make pull; \
 	fi

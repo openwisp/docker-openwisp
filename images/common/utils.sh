@@ -7,22 +7,21 @@ init_conf() {
 
 is_dev_mode() {
 	case "${DEV_MODE:-False}" in
-	True | true | Yes | yes) return 0 ;;
+	[Tt][Rr][Uu][Ee] | [Yy][Ee][Ss]) return 0 ;;
 	*) return 1 ;;
 	esac
 }
 
 configure_dev_mode() {
 	if is_dev_mode; then
-		DEBUG_MODE=${DEBUG_MODE:-True}
-		METRIC_COLLECTION=${METRIC_COLLECTION:-False}
 		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-True}
+		OPENWISP_GEOCODING_CHECK=${OPENWISP_GEOCODING_CHECK:-False}
 	else
-		DEBUG_MODE=${DEBUG_MODE:-False}
-		METRIC_COLLECTION=${METRIC_COLLECTION:-True}
 		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-False}
+		OPENWISP_GEOCODING_CHECK=${OPENWISP_GEOCODING_CHECK:-True}
 	fi
-	export DEBUG_MODE METRIC_COLLECTION NGINX_HTTP_ALLOW
+	FREERADIUS_DEBUG_MODE=${FREERADIUS_DEBUG_MODE:-False}
+	export NGINX_HTTP_ALLOW OPENWISP_GEOCODING_CHECK FREERADIUS_DEBUG_MODE
 }
 
 default_psql_vars() {
