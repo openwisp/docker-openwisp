@@ -587,6 +587,31 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             )
 
 
+class TestOpenVPN(unittest.TestCase):
+    def test_crl_refresh_detects_revocation_changes(self):
+        """Ensure CRL metadata updates do not trigger a revocation change."""
+
+        script = Path(__file__).parent / "scripts" / "openvpn.sh"
+        result = subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--volume",
+                f"{script}:/test_openvpn.sh:ro",
+                "--entrypoint",
+                "sh",
+                os.environ.get(
+                    "OPENWISP_TEST_OPENVPN_IMAGE", "openwisp/openwisp-openvpn:edge"
+                ),
+                "/test_openvpn.sh",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
