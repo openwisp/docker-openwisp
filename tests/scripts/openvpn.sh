@@ -68,7 +68,7 @@ openssl() {
 run_case() {
 	local mode="$1"
 	local expected_status="$2"
-	local expected_content="$3"
+	local expected_crl="$3"
 	local initial_crl="${4:-}"
 	local status
 	rm -f revoked.crl
@@ -83,7 +83,7 @@ run_case() {
 		status=$?
 	fi
 	test "$status" -eq "$expected_status"
-	grep -F "$expected_content" revoked.crl >/dev/null
+	printf '%s\n' "$expected_crl" | cmp -s - revoked.crl
 }
 
 trap cleanup EXIT
@@ -96,10 +96,18 @@ initial_crl='Last Update: one
 Next Update: two
 Revoked Certificates:
     Serial Number: 01'
+timestamp_crl='Last Update: three
+Next Update: four
+Revoked Certificates:
+    Serial Number: 01'
+changed_crl='Last Update: five
+Next Update: six
+Revoked Certificates:
+    Serial Number: 02'
 
-run_case initial 0 'Last Update: one'
-run_case timestamp_only 1 'Last Update: three' "$initial_crl"
-run_case changed 0 'Serial Number: 02' "$initial_crl"
-run_case failed 2 'Serial Number: 01' "$initial_crl"
-run_case empty 2 'Serial Number: 01' "$initial_crl"
-run_case malformed 2 'Serial Number: 01' "$initial_crl"
+run_case initial 0 "$initial_crl"
+run_case timestamp_only 1 "$timestamp_crl" "$initial_crl"
+run_case changed 0 "$changed_crl" "$initial_crl"
+run_case failed 2 "$initial_crl" "$initial_crl"
+run_case empty 2 "$initial_crl" "$initial_crl"
+run_case malformed 2 "$initial_crl" "$initial_crl"
