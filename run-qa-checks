@@ -9,8 +9,7 @@ openwisp-qa-check --skip-checkmigrations --jslinter --csslinter
 echo ''
 echo 'Shell scripts QA checks ...'
 # check shell scripts formatting
-sh_files=$(shfmt -f .)
-shfmt -d .
+shfmt --apply-ignore -d .
 
 echo ''
 echo 'Dockerfile QA checks...'

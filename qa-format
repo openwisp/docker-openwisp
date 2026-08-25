@@ -2,7 +2,7 @@
 set -e
 
 # format shell scripts
-shfmt -w -l .
+shfmt --apply-ignore -w -l .
 
 # format python files
 openwisp-qa-format
