@@ -123,6 +123,16 @@ and requires less prior knowledge about OpenWISP & networking.
        git clone https://github.com/openwisp/docker-openwisp.git
        cd docker-openwisp
 
+   To use a release other than ``edge``, set ``OPENWISP_VERSION`` in
+   ``.env`` to ``latest`` or a specific release version, for example:
+
+   .. code-block:: bash
+
+       OPENWISP_VERSION=25.10.4
+
+   This configuration is used for image pulling and by Docker Compose, and
+   it persists across subsequent ``make start`` commands.
+
 3. Configure:
 
        Please refer to the :doc:`settings` and :doc:`customization` pages
