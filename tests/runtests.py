@@ -900,6 +900,7 @@ class TestOpenVPN(unittest.TestCase):
         """Ensure CRL metadata updates do not trigger a revocation change."""
         script = Path(__file__).parent / "scripts" / "openvpn.sh"
         image = os.environ.get("OPENWISP_TEST_OPENVPN_IMAGE")
+        name = f"openvpn-test-{os.getpid()}-{time.time_ns()}"
         if not image:
             self.fail("OPENWISP_TEST_OPENVPN_IMAGE is required for OpenVPN tests.")
         try:
@@ -908,6 +909,8 @@ class TestOpenVPN(unittest.TestCase):
                     "docker",
                     "run",
                     "--rm",
+                    "--name",
+                    name,
                     "--volume",
                     f"{script}:/test_openvpn.sh:ro",
                     "--entrypoint",
@@ -920,6 +923,13 @@ class TestOpenVPN(unittest.TestCase):
                 timeout=30,
             )
         except subprocess.TimeoutExpired as error:
+            # Remove the container if it is still running after the timeout.
+            subprocess.run(
+                ["docker", "rm", "--force", name],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
             self.fail(
                 f"OpenVPN test timed out:\n{error.stdout or ''}{error.stderr or ''}"
             )
