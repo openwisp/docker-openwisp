@@ -484,6 +484,20 @@ framework.
 - **Valid Values:** INTEGER.
 - **Default:** ``365``.
 
+User Expiration Tasks
+~~~~~~~~~~~~~~~~~~~~~
+
+Docker OpenWISP schedules user expiration tasks every day, independently
+of whether RADIUS is enabled.
+``openwisp_users.tasks.deactivate_expired_users`` runs at 00:01 and
+``openwisp_users.tasks.expiration_reminder_email`` runs at 00:03, using
+the timezone configured with ``TZ``.
+
+The reminder lead time is configured with
+``OPENWISP_USERS_EXPIRATION_WARNING_DAYS`` in the Django configuration.
+Its default is 7 days. Set it to ``0`` to disable expiration reminder
+emails.
+
 ``DEBUG_MODE``
 ~~~~~~~~~~~~~~
 

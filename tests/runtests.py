@@ -591,7 +591,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                 "-c",
                 (
                     "from django.conf import settings; "
-                    "print(settings.TIME_ZONE, settings.CELERY_TIMEZONE)"
+                    "from openwisp.celery import app; "
+                    "print(settings.TIME_ZONE, app.conf.timezone)"
                 ),
             ],
             use_text_mode=True,
