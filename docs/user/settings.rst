@@ -987,8 +987,13 @@ Nginx
 ``NGINX_HTTP_ALLOW``
 ~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Allow http access with https access. Valid only when
-  ``SSL_CERT_MODE`` is set to ``Yes`` or ``SelfSigned``.
+- **Explanation:** Controls whether Nginx serves the applications directly
+  over unencrypted HTTP in addition to HTTPS. When set to ``False``, HTTP
+  requests are redirected to HTTPS. When set to ``True``, Nginx serves the
+  applications over HTTP, subject to ``NGINX_HTTPS_ALLOWED_IPS``. This
+  setting applies only when ``SSL_CERT_MODE`` is ``Yes`` or
+  ``SelfSigned``. When ``SSL_CERT_MODE`` is ``No`` or ``External``, Nginx
+  serves the HTTP configuration regardless of this setting's value.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``True`` in development mode and ``False`` in production.
 
