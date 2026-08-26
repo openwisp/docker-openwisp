@@ -6,6 +6,7 @@ init_conf() {
 }
 
 is_dev_mode() {
+	# DEV_MODE treats case-insensitive "true" and "yes" values as enabled.
 	case "${DEV_MODE:-False}" in
 	[Tt][Rr][Uu][Ee] | [Yy][Ee][Ss]) return 0 ;;
 	*) return 1 ;;
@@ -134,6 +135,9 @@ configure_security_headers() {
 		header_file=/etc/nginx/openwisp.security.http.conf
 	fi
 	export NGINX_SECURITY_HEADERS_FILE="/etc/nginx/security-headers-$1.$2.conf"
+	# Substitute the application's domain in the selected header template and write
+	# it to an application and scheme-specific file. This prevents API headers from
+	# overwriting the dashboard headers when both Nginx configurations are rendered.
 	envsubst <"$header_file" >"$NGINX_SECURITY_HEADERS_FILE"
 }
 

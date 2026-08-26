@@ -132,9 +132,9 @@ and requires less prior knowledge about OpenWISP & networking.
        deployment, set ``DEV_MODE=False`` in ``.env``. The ``make start``
        command refuses to run while development mode is enabled.
 
-       Make sure to change the values for :ref:`essential
-       <docker_essential_env>` and :ref:`security <docker_security_env>`
-       variables.
+       For production deployments, make sure to change the values for
+       :ref:`essential <docker_essential_env>` and :ref:`security
+       <docker_security_env>` variables.
 
 4. Deploy:
 

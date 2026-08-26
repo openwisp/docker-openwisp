@@ -3,6 +3,7 @@ import subprocess
 import tempfile
 import time
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from urllib import error as urlerror
 from urllib import request
@@ -736,8 +737,14 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             release_workflow,
         )
 
-    def test_makefile_pulls_from_docker_hub_and_fails_on_image_command_error(self):
-        """Verify Docker Hub pulls and Makefile command failure propagation."""
+    @contextmanager
+    def _makefile_test_environment(self):
+        """Yield an isolated Makefile runner, Docker command log, and environment.
+
+        The temporary directory uses a copied Makefile and a mock Docker
+        command, allowing tests to assert Makefile behavior without
+        executing Docker. Its contents are removed when the context exits.
+        """
         repository_root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -769,6 +776,10 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     env=environment,
                 )
 
+            yield run_make, docker_log, environment
+
+    def test_make_start_rejects_development_mode(self):
+        with self._makefile_test_environment() as (run_make, docker_log, _):
             docker_log.write_text("")
             for dev_mode in ("True", "true", "TRUE", "Yes", "yes", "YES"):
                 with self.subTest(dev_mode=dev_mode):
@@ -777,6 +788,9 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     self.assertIn("Set DEV_MODE=False", development_start.stdout)
                     self.assertEqual(docker_log.read_text(), "")
 
+    def test_makefile_pulls_from_docker_hub_and_fails_on_image_command_error(self):
+        """Verify Docker Hub pulls and Makefile command failure propagation."""
+        with self._makefile_test_environment() as (run_make, docker_log, environment):
             pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
             self.assertEqual(pull.returncode, 0, pull.stderr)
             commands = docker_log.read_text().splitlines()
