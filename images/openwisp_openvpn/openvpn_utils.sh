@@ -1,15 +1,10 @@
 #!/bin/sh
 
+. /utils.sh
+
 get_redis_value() {
 	local key="$1"
 	printf 'GET %s\r\n' "$key" | nc redis 6379 | awk 'NR==2 {gsub(/\r/, ""); print}'
-}
-
-curl_download() {
-	case "${DEV_MODE:-False}" in
-	[Tt][Rr][Uu][Ee] | [Yy][Ee][Ss]) curl --insecure "$@" ;;
-	*) curl "$@" ;;
-	esac
 }
 
 openvpn_preconfig() {

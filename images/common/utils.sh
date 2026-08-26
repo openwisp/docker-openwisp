@@ -13,6 +13,14 @@ is_dev_mode() {
 	esac
 }
 
+curl_download() {
+	if is_dev_mode; then
+		curl --insecure "$@"
+	else
+		curl "$@"
+	fi
+}
+
 configure_dev_mode() {
 	if is_dev_mode; then
 		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-True}
