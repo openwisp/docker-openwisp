@@ -63,6 +63,52 @@ class Test0Preconditions(BaseTestUtils, unittest.TestCase):
             self.fail(f"All celery workers are not online: {online_workers}")
 
 
+class Test1Dashboard(BaseTestUtils, unittest.TestCase):
+    def test_dashboard_uses_same_origin_api_urls(self):
+        """Ensure dashboard browser requests use module default relative URLs."""
+        output, _ = self._execute_django_shell_command(
+            "from openwisp_controller.settings import OPENWISP_CONTROLLER_API_HOST; "
+            "from openwisp_firmware_upgrader.settings import FIRMWARE_API_BASEURL; "
+            "from openwisp_monitoring.settings import MONITORING_API_BASEURL; "
+            "from openwisp_network_topology.settings import TOPOLOGY_API_BASEURL; "
+            "from openwisp_notifications.settings import HOST; "
+            "from openwisp_radius.settings import RADIUS_API_BASEURL; "
+            "print(OPENWISP_CONTROLLER_API_HOST, FIRMWARE_API_BASEURL, "
+            "MONITORING_API_BASEURL, TOPOLOGY_API_BASEURL, HOST, "
+            "RADIUS_API_BASEURL)"
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1],
+            "None / None None None /",
+            "Dashboard API URLs must use same-origin module defaults.",
+        )
+
+    def test_dashboard_resolves_topology_api_urls(self):
+        output, _ = self._execute_django_shell_command(
+            "from django.urls import is_valid_path; "
+            "print(bool(is_valid_path("
+            "'/api/v1/network-topology/topology/' "
+            "'00000000-0000-0000-0000-000000000000/')))"
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1],
+            "True",
+            "Dashboard must serve topology API URLs.",
+        )
+
+    def test_dashboard_resolves_radius_api_urls(self):
+        output, _ = self._execute_django_shell_command(
+            "from django.urls import is_valid_path; "
+            "print(bool(is_valid_path("
+            "'/api/v1/radius/organization/default/account/')))"
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1],
+            "True",
+            "Dashboard must serve RADIUS API URLs.",
+        )
+
+
 class TestServices(FunctionalTestUtils, unittest.TestCase):
     custom_static_token = None
 
@@ -245,21 +291,9 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "max-age=0",
             "DEV_MODE must clear previously cached HSTS policies.",
         )
-        output, _ = self._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "python",
-                "manage.py",
-                "shell",
-                "-c",
-                "from django.conf import settings; "
-                "print(*settings.CORS_ALLOWED_ORIGINS[:2])",
-            ],
-            use_text_mode=True,
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; "
+            "print(*settings.CORS_ALLOWED_ORIGINS[:2])"
         )
         self.assertEqual(
             set(output.strip().splitlines()[-1].split()),
@@ -275,26 +309,14 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ("True", "False"),
         ):
             with self.subTest(dev_mode=dev_mode):
-                output, _ = self._execute_docker_compose_command(
-                    [
-                        "docker",
-                        "compose",
-                        "exec",
-                        "-T",
-                        "-e",
-                        f"DEV_MODE={dev_mode}",
-                        "-e",
-                        "REDIS_USE_TLS=True",
-                        "dashboard",
-                        "python",
-                        "manage.py",
-                        "shell",
-                        "-c",
-                        "import ssl; from django.conf import settings; "
-                        "print(settings.CELERY_BROKER_USE_SSL['ssl_cert_reqs'] "
-                        "== ssl.CERT_REQUIRED)",
-                    ],
-                    use_text_mode=True,
+                output, _ = self._execute_django_shell_command(
+                    "import ssl; from django.conf import settings; "
+                    "print(settings.CELERY_BROKER_USE_SSL['ssl_cert_reqs'] "
+                    "== ssl.CERT_REQUIRED)",
+                    environment={
+                        "DEV_MODE": dev_mode,
+                        "REDIS_USE_TLS": "True",
+                    },
                 )
                 self.assertEqual(
                     output.strip().splitlines()[-1],
@@ -474,20 +496,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "openwisp_users.tasks.expiration_reminder_email",
             "openwisp_users.tasks.password_expiration_email",
         ]
-        output, _ = self._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "python",
-                "manage.py",
-                "shell",
-                "-c",
-                "from django.conf import settings; print(settings.EMAIL_BACKEND)",
-            ],
-            use_text_mode=True,
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; print(settings.EMAIL_BACKEND)"
         )
         if (
             output.strip().splitlines()[-1]
