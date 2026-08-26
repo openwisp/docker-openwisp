@@ -359,10 +359,14 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0], "
             "settings.CELERY_BROKER_URL)"
         )
+        values = output.strip().splitlines()[-1].split()
         self.assertEqual(
-            output.strip().splitlines()[-1],
-            "sessions redis://redis:6379/0 redis://redis:6379/1 "
-            "redis://redis:6379/3 redis://redis:6379/2",
+            values[0],
+            "sessions",
+        )
+        self.assertEqual(
+            [urlsplit(value).path for value in values[1:]],
+            ["/0", "/1", "/3", "/2"],
             "Django cache, sessions, Channels and Celery must use distinct "
             "Redis buckets.",
         )
