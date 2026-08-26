@@ -135,16 +135,16 @@ and requires less prior knowledge about OpenWISP & networking.
 
 3. Configure:
 
-       Please refer to the :doc:`settings` and :doc:`customization` pages
-       to configure any aspect of your OpenWISP instance.
+   Please refer to the :doc:`settings` and :doc:`customization` pages to
+   configure any aspect of your OpenWISP instance.
 
-       This repository defaults to development mode. Before production
-       deployment, set ``DEV_MODE=False`` in ``.env``. The ``make start``
-       command refuses to run while development mode is enabled.
+   This repository defaults to development mode. Before production
+   deployment, set ``DEV_MODE=False`` in ``.env``. The ``make start``
+   command refuses to run while development mode is enabled.
 
-       For production deployments, make sure to change the values for
-       :ref:`essential <docker_essential_env>` and :ref:`security
-       <docker_security_env>` variables.
+   For production deployments, make sure to change the values for
+   :ref:`essential <docker_essential_env>` and :ref:`security
+   <docker_security_env>` variables.
 
 4. Deploy:
 
