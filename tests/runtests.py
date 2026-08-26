@@ -554,48 +554,21 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     def test_celery_beat_schedule_without_radius(self):
         """Ensure user expiration tasks are scheduled without RADIUS."""
-        output, _ = self._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "env",
-                "USE_OPENWISP_RADIUS=False",
-                "python",
-                "manage.py",
-                "shell",
-                "-c",
-                (
-                    "from openwisp.celery import app; "
-                    "print('\\n'.join(entry['task'] "
-                    "for entry in app.conf.beat_schedule.values() "
-                    "if entry['task'].startswith('openwisp_users.')))"
-                ),
-            ],
-            use_text_mode=True,
+        output, _ = self._execute_django_shell_command(
+            (
+                "from openwisp.celery import app; "
+                "print('\\n'.join(entry['task'] "
+                "for entry in app.conf.beat_schedule.values() "
+                "if entry['task'].startswith('openwisp_users.')))"
+            ),
+            environment={"USE_OPENWISP_RADIUS": "False"},
         )
         self.assertIn("openwisp_users.tasks.deactivate_expired_users", output)
         self.assertIn("openwisp_users.tasks.expiration_reminder_email", output)
-        output, _ = self._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "python",
-                "manage.py",
-                "shell",
-                "-c",
-                (
-                    "from django.conf import settings; "
-                    "from openwisp.celery import app; "
-                    "print(settings.TIME_ZONE, app.conf.timezone)"
-                ),
-            ],
-            use_text_mode=True,
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; "
+            "from openwisp.celery import app; "
+            "print(settings.TIME_ZONE, app.conf.timezone)"
         )
         self.assertEqual(*output.strip().splitlines()[-1].split())
 

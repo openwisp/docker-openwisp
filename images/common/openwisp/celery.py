@@ -57,6 +57,7 @@ if env_bool(os.environ.get("USE_OPENWISP_RADIUS")):
         },
     }
 
+# User expiration is owned by OpenWISP Users, so these tasks do not depend on RADIUS.
 users_schedule = {
     "deactivate-expired-users": {
         "task": "openwisp_users.tasks.deactivate_expired_users",
