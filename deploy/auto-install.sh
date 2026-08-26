@@ -17,14 +17,27 @@ export NON='\033[0m'
 start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>>$LOG_FILE; }
 report_ok() { echo -e ${GRN}" done"${NON}; }
 report_error() { echo -e ${RED}" error"${NON}; }
-get_env() { grep "^$1" "$2" | cut -d'=' -f 2-50; }
+# Match the variable name exactly to avoid reading similarly named settings.
+get_env() { grep "^$1=" "$2" | cut -d'=' -f 2-50; }
+# Update values without evaluating configuration or user input as shell code.
 set_env() {
-	line=$(grep -n "^$1=" $INSTALL_PATH/.env)
-	if [ -z "$line" ]; then
-		echo "$1=$2" >>$INSTALL_PATH/.env
+	local env_file=$INSTALL_PATH/.env
+	local temp_file
+	# Append only absent variables, preserving existing configuration entries.
+	if ! grep -q "^$1=" "$env_file"; then
+		printf '%s=%s\n' "$1" "$2" >>"$env_file"
 	else
-		line_number=$(echo $line | cut -f1 -d:)
-		eval $(echo "awk -i inplace 'NR=="${line_number}" {\$0=\"${1}=${2}\"}1' $INSTALL_PATH/.env")
+		# Rewrite the file to keep values literal and avoid evaluating user input.
+		temp_file=$(mktemp "$env_file.XXXXXX")
+		while IFS= read -r env_line || [ -n "$env_line" ]; do
+			if [[ "$env_line" == "$1="* ]]; then
+				printf '%s=%s\n' "$1" "$2"
+			else
+				printf '%s\n' "$env_line"
+			fi
+		done <"$env_file" >"$temp_file"
+		chmod --reference="$env_file" "$temp_file"
+		mv "$temp_file" "$env_file"
 	fi
 }
 
@@ -160,12 +173,12 @@ setup_docker_openwisp() {
 		else
 			set_env "API_DOMAIN" "$api_domain"
 		fi
-		# Use Radius
-		if [[ -z "$USE_OPENWISP_RADIUS" ]]; then
-			set_env "USE_OPENWISP_RADIUS" "Yes"
-		else
-			set_env "USE_OPENWISP_RADIUS" "No"
-		fi
+		# Respect an explicit Radius setting and enable it by default for new installs.
+		case "${USE_OPENWISP_RADIUS-True}" in
+		True) set_env "USE_OPENWISP_RADIUS" "True" ;;
+		False) set_env "USE_OPENWISP_RADIUS" "False" ;;
+		*) error_msg "USE_OPENWISP_RADIUS must be True or False." ;;
+		esac
 		# VPN domain
 		if [[ -z "$vpn_domain" ]]; then
 			set_env "VPN_DOMAIN" "openvpn.${domain}"
