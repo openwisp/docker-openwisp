@@ -26,6 +26,7 @@ Additionally, you can search for the following prefixes:
 - ``API_``: Settings specific to the OpenWISP API.
 - ``X509_``: Configurations related to x509 CA and certificates.
 - ``VPN_``: Default VPN and VPN template configurations.
+- ``FREERADIUS_``: FreeRADIUS server settings.
 - ``CRON_``: Periodic task configurations.
 - ``EXPORT_``: NFS server configurations.
 
@@ -83,6 +84,19 @@ properly on your system.
 - **Valid Values:** Find list of timezone database `here
   <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>`__.
 - **Default:** ``UTC``.
+
+``DEV_MODE``
+~~~~~~~~~~~~
+
+- **Explanation:** Enables the development profile, which makes local
+  development easier by enabling debugging and HTTP access, printing email
+  to the console, and disabling metrics collection, the geocoding startup
+  check, and Nginx security headers. Production deployments must set this
+  option to ``False``. Explicit feature settings override their
+  development-profile defaults.
+- **Valid Values:** ``True``, ``False``.
+- **Default:** ``True`` in the repository ``.env`` and ``False`` for
+  Docker images and auto-install deployments.
 
 ``SSL_CERT_MODE``
 ~~~~~~~~~~~~~~~~~
@@ -221,7 +235,9 @@ framework.
 - **Valid Values:** `Refer to the "Email backends" section on the Django
   documentation
   <https://docs.djangoproject.com/en/4.2/topics/email/#email-backends>`__.
-- **Default:** ``djcelery_email.backends.CeleryEmailBackend``.
+- **Default:** ``django.core.mail.backends.console.EmailBackend`` in
+  development mode and ``djcelery_email.backends.CeleryEmailBackend`` in
+  production.
 
 ``DJANGO_X509_DEFAULT_CERT_VALIDITY``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -306,7 +322,7 @@ framework.
 - **Explanation:** Used to check if geocoding is working as expected or
   not.
 - **Valid Values:** ``True``, ``False``.
-- **Default:** ``True``.
+- **Default:** ``False`` in development mode and ``True`` in production.
 
 ``USE_OPENWISP_CELERY_TASK_ROUTES_DEFAULTS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -433,7 +449,7 @@ framework.
 - **Explanation:** Whether :doc:`/utils/user/metric-collection` is enabled
   or not.
 - **Valid Values:** ``True``, ``False``.
-- **Default:** ``True``.
+- **Default:** ``True`` in production and ``False`` in development mode.
 
 ``CRON_DELETE_OLD_RADACCT``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -474,6 +490,14 @@ framework.
   documentation section
   <https://docs.djangoproject.com/en/4.2/ref/settings/#debug>`__ for
   details.
+- **Valid Values:** ``True``, ``False``.
+- **Default:** ``True`` in development mode and ``False`` in production.
+
+``FREERADIUS_DEBUG_MODE``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Starts FreeRADIUS in verbose debugging mode. This is
+  independent from Django's ``DEBUG_MODE`` setting.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
@@ -963,10 +987,15 @@ Nginx
 ``NGINX_HTTP_ALLOW``
 ~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Allow http access with https access. Valid only when
-  ``SSL_CERT_MODE`` is set to ``Yes`` or ``SelfSigned``.
+- **Explanation:** Controls whether Nginx serves the applications directly
+  over unencrypted HTTP in addition to HTTPS. When set to ``False``, HTTP
+  requests are redirected to HTTPS. When set to ``True``, Nginx serves the
+  applications over HTTP, subject to ``NGINX_HTTPS_ALLOWED_IPS``. This
+  setting applies only when ``SSL_CERT_MODE`` is ``Yes`` or
+  ``SelfSigned``. When ``SSL_CERT_MODE`` is ``No`` or ``External``, Nginx
+  serves the HTTP configuration regardless of this setting's value.
 - **Valid Values:** ``True``, ``False``.
-- **Default:** ``True``.
+- **Default:** ``True`` in development mode and ``False`` in production.
 
 ``NGINX_CUSTOM_FILE``
 ~~~~~~~~~~~~~~~~~~~~~

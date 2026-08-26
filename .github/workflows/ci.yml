@@ -27,8 +27,8 @@ jobs:
           sudo curl -sL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_amd64"
           sudo chmod +x /usr/local/bin/shfmt
           echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
-          # disable metric collection during builds
-          sed -i 's/METRIC_COLLECTION=True/METRIC_COLLECTION=False/' .env
+          # The auto-install script uses production mode, so disable metrics explicitly.
+          printf '\nMETRIC_COLLECTION=False\n' >> .env
           # ERROR: Cannot uninstall urllib3 2.0.7, RECORD file not found. Hint: The package was installed by debian.
           sudo apt remove python3-urllib3 python3-typing-extensions python3-packaging
           sudo pip3 install -r requirements-test.txt
@@ -71,17 +71,24 @@ jobs:
             GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
             || (cat /opt/openwisp/autoinstall.log && exit 1)
 
+      - name: Enable development profile for tests
+        id: enable_development_profile
+        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
+        run: |
+          sudo sed -i 's/DEV_MODE=False/DEV_MODE=True/' /opt/openwisp/docker-openwisp/.env
+          docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml up --detach --force-recreate
+
       # The test suite needs to create files during execution. Because the deploy
       # script runs with `sudo`, the installation directory ends up owned by root,
       # making it inaccessible to the unprivileged CI user. This step fixes the
       # ownership so the test suite can write the required files.
       - name: Fix permissions for CI user
-        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
+        if: ${{ !cancelled() && steps.enable_development_profile.conclusion == 'success' }}
         run: |
-          sudo chown -R $USER:$USER /opt/openwisp
+          sudo chown -R "$USER:$USER" /opt/openwisp
 
       - name: Test
-        if: ${{ !cancelled() && steps.auto_install_upgrade.conclusion == 'success' }}
+        if: ${{ !cancelled() && steps.enable_development_profile.conclusion == 'success' }}
         uses: openwisp/openwisp-utils/.github/actions/retry-command@master
         with:
           delay_seconds: 30
@@ -90,6 +97,8 @@ jobs:
           # /opt/openwisp/docker-openwisp. To ensure the test runs correctly
           # and environment variables remain intact, it is essential to
           # execute the test from this directory.
+          # The containers are already running, so use the target that only
+          # executes Python tests without restarting or stopping the stack.
           command: cd /opt/openwisp/docker-openwisp && make develop-pythontests
         env:
           SELENIUM_HEADLESS: 1

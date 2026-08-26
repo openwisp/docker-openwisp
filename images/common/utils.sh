@@ -1,7 +1,28 @@
 #!/bin/sh
 
 init_conf() {
+	configure_dev_mode
 	default_psql_vars
+}
+
+is_dev_mode() {
+	# DEV_MODE treats case-insensitive "true" and "yes" values as enabled.
+	case "${DEV_MODE:-False}" in
+	[Tt][Rr][Uu][Ee] | [Yy][Ee][Ss]) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
+configure_dev_mode() {
+	if is_dev_mode; then
+		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-True}
+		OPENWISP_GEOCODING_CHECK=${OPENWISP_GEOCODING_CHECK:-False}
+	else
+		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-False}
+		OPENWISP_GEOCODING_CHECK=${OPENWISP_GEOCODING_CHECK:-True}
+	fi
+	FREERADIUS_DEBUG_MODE=${FREERADIUS_DEBUG_MODE:-False}
+	export NGINX_HTTP_ALLOW OPENWISP_GEOCODING_CHECK FREERADIUS_DEBUG_MODE
 }
 
 default_psql_vars() {
@@ -104,6 +125,22 @@ ssl_http_behaviour() {
 	fi
 }
 
+configure_security_headers() {
+	if [ "$2" = 'internal' ]; then return; fi
+	if is_dev_mode; then
+		header_file=/etc/nginx/openwisp.security.dev.conf
+	elif [ "$2" = 'https' ]; then
+		header_file=/etc/nginx/openwisp.security.ssl.conf
+	else
+		header_file=/etc/nginx/openwisp.security.http.conf
+	fi
+	export NGINX_SECURITY_HEADERS_FILE="/etc/nginx/security-headers-$1.$2.conf"
+	# Substitute the application's domain in the selected header template and write
+	# it to an application and scheme-specific file. This prevents API headers from
+	# overwriting the dashboard headers when both Nginx configurations are rendered.
+	envsubst <"$header_file" >"$NGINX_SECURITY_HEADERS_FILE"
+}
+
 envsubst_create_config() {
 	# Creates nginx configurations files for dashboard
 	# and api instances.
@@ -113,6 +150,7 @@ envsubst_create_config() {
 		eval export DOMAIN=\$${application}_${3}
 		eval export ROOT_DOMAIN=$(python3 get_domain.py)
 		application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
+		configure_security_headers "$application" "$2"
 		envsubst <${1} >/etc/nginx/conf.d/${application}.${2}.conf
 	done
 }
@@ -230,7 +268,7 @@ openvpn_config() {
 }
 
 openvpn_config_checksum() {
-	OFILE=$(curl --silent --insecure \
+	OFILE=$(curl_download --silent \
 		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}")
 	export OFILE
 	NFILE=$(cat checksum)
@@ -238,17 +276,25 @@ openvpn_config_checksum() {
 }
 
 openvpn_config_download() {
-	curl --silent --retry 10 --retry-delay 5 --retry-max-time 300 --insecure --output vpn.tar.gz \
+	curl_download --silent --retry 10 --retry-delay 5 --retry-max-time 300 --output vpn.tar.gz \
 		"${API_INTERNAL}/controller/vpn/download-config/${UUID}/?key=${KEY}"
-	curl --silent --insecure --output checksum \
+	curl_download --silent --output checksum \
 		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}"
 	tar xzf vpn.tar.gz
 	chmod 600 ./*.pem
 }
 
 crl_download() {
-	curl --silent --insecure --output revoked.crl \
+	curl_download --silent --output revoked.crl \
 		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl"
+}
+
+curl_download() {
+	if is_dev_mode; then
+		curl --insecure "$@"
+	else
+		curl "$@"
+	fi
 }
 
 init_send_network_topology() {

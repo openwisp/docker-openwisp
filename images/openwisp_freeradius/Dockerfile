@@ -33,5 +33,4 @@ ENV TZ=UTC \
     DB_SSLROOTCERT=None \
     DB_OPTIONS={} \
     DASHBOARD_INTERNAL=dashboard.internal \
-    API_INTERNAL=api.internal \
-    DEBUG_MODE=False
+    API_INTERNAL=api.internal
