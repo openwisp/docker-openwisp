@@ -75,6 +75,16 @@ class BaseTestUtils:
             )
         return output, error
 
+    @classmethod
+    def _execute_django_shell_command(
+        cls, command, service="dashboard", environment=None
+    ):
+        cmd_args = ["docker", "compose", "exec", "-T"]
+        for name, value in (environment or {}).items():
+            cmd_args.extend(["-e", f"{name}={value}"])
+        cmd_args.extend([service, "python", "manage.py", "shell", "-c", command])
+        return cls._execute_docker_compose_command(cmd_args, use_text_mode=True)
+
     def docker_compose_get_container_id(self, container_name):
         """Get the Docker container ID for a specific container.
 
@@ -104,23 +114,9 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
         usernames = sorted(set(usernames))
         if not usernames:
             return
-        cls._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "python",
-                "manage.py",
-                "shell",
-                "-c",
-                (
-                    "from openwisp_users.models import User; "
-                    f"User.objects.filter(username__in={usernames!r}).delete()"
-                ),
-            ],
-            use_text_mode=True,
+        cls._execute_django_shell_command(
+            "from openwisp_users.models import User; "
+            f"User.objects.filter(username__in={usernames!r}).delete()"
         )
 
     def setUp(self):
