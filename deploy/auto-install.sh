@@ -364,6 +364,7 @@ while test $# != 0; do
 	shift
 done
 
+# Define dependent paths after the installation path is decided.
 export INSTALL_PATH="${USER_INSTALL_PATH}/docker-openwisp"
 export LOG_FILE="${USER_INSTALL_PATH}/autoinstall.log"
 export ENV_USER="${USER_INSTALL_PATH}/config.env"
