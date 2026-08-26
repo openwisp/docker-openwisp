@@ -510,6 +510,15 @@ framework.
 - **Default:**
   ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/0``.
 
+``REDIS_SESSIONS_URL``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Allows freely redefining the Redis database URL for
+  Django sessions.
+- **Valid Values:** STRING.
+- **Default:**
+  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/1``.
+
 ``CHANNEL_REDIS_URL``
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -517,7 +526,7 @@ framework.
   Django Channels' layer.
 - **Valid Values:** STRING.
 - **Default:**
-  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/1``.
+  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/3``.
 
 ``CELERY_BROKER_URL``
 ~~~~~~~~~~~~~~~~~~~~~

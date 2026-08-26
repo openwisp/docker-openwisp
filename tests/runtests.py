@@ -350,6 +350,23 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                     expected_certificate_requirement,
                 )
 
+    def test_redis_buckets_are_separated(self):
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; "
+            "print(settings.SESSION_CACHE_ALIAS, "
+            "settings.CACHES['default']['LOCATION'], "
+            "settings.CACHES['sessions']['LOCATION'], "
+            "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0], "
+            "settings.CELERY_BROKER_URL)"
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1],
+            "sessions redis://redis:6379/0 redis://redis:6379/1 "
+            "redis://redis:6379/3 redis://redis:6379/2",
+            "Django cache, sessions, Channels and Celery must use distinct "
+            "Redis buckets.",
+        )
+
     def test_custom_static_files_loaded(self):
         self.login()
         self.open("/admin/")
