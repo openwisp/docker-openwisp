@@ -123,15 +123,15 @@ and requires less prior knowledge about OpenWISP & networking.
        git clone https://github.com/openwisp/docker-openwisp.git
        cd docker-openwisp
 
-   If you want to use a ``release`` different than ``edge``, run
+   To use a release other than ``edge``, set ``OPENWISP_VERSION`` in
+   ``.env`` to ``latest`` or a specific release version, for example:
 
    .. code-block:: bash
 
-       git checkout <release>
+       OPENWISP_VERSION=25.10.4
 
-   and set ``TAG=<version>`` in the ``Makefile``. For ``git checkout``
-   you'll need to specify the exact release number (``latest`` won't
-   work).
+   This configuration is used for image pulling and by Docker Compose, and
+   it persists across subsequent ``make start`` commands.
 
 3. Configure:
 
@@ -154,9 +154,6 @@ and requires less prior knowledge about OpenWISP & networking.
 
        If you want to shutdown services for maintenance or any other
        purposes, please use ``make stop``.
-
-If you don't want to pull new images each time you run ``make start``, set
-``SKIP_PULL ?= true`` in the ``Makefile``.
 
 If you are facing errors during the installation process, :doc:`read the
 FAQ <faq>` for known issues.
