@@ -478,8 +478,9 @@ framework.
 ``CRON_DELETE_OLD_RADIUSBATCH_USERS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** (Value in days) Deactivates expired user accounts which
-  were created temporarily and have an expiration date set.
+- **Explanation:** (Value in days) Deletes users created by RADIUS batch
+  operations whose accounts have been expired for longer than the given
+  number of days.
 - **Valid Values:** INTEGER.
 - **Default:** ``365``.
 
