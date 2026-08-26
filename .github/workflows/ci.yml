@@ -1,5 +1,5 @@
 ---
-name: Merge Tests
+name: CI Build (Docker-OpenWISP)
 
 on:
   push:
