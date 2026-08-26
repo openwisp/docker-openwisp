@@ -38,6 +38,10 @@ If instructions conflict, repository config and CI workflows win first, docs nex
 - Follow the DRY principle: do not duplicate information or code across files.
 - Preserve Docker image contracts, compose service names, environment variables, volumes, ports, and upgrade paths unless explicitly required.
 - Be careful with shell scripts, Docker layers, permissions, entrypoints, health checks, and generated configuration.
+- Process inventories, API responses, generated work, and telemetry in bounded batches.
+- Do not accumulate all pages, task results, logs, or queued telemetry in memory without a known bound.
+- Keep buffers and retry queues bounded. Define what happens when the limit is reached, such as sending the current batch, dropping old data, or reporting an error.
+- When code consumes a paginated API, follow its continuation mechanism and process one page at a time.
 - Place Python imports at the top of the file. Defer imports only when necessary, such as when an import depends on runtime initialization.
 - Avoid unnecessary blank lines inside functions or shell blocks.
 - Prefer short, precise names that rely on their nearest meaningful scope. Do not repeat a feature, domain object, or namespace already named by the containing module, class, or function. For example, prefer `EstimatedLocation.refresh()` over `EstimatedLocation.refresh_estimated_location()`. Repeat that context only when the name is used outside that scope or is needed to distinguish genuinely different concepts. When a concise name cannot express a necessary distinction, use a concise docstring to describe it rather than encoding it in an excessively long name.
