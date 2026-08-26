@@ -84,7 +84,8 @@ crl_revocations() {
 	'
 }
 
-crl_download_if_changed() {
+crl_download_if_changed() (
+	flock -n 9 || return 1
 	local tmp_crl
 	local tmp_new_revocations
 	local tmp_old_revocations
@@ -125,7 +126,7 @@ crl_download_if_changed() {
 	trap - EXIT HUP INT TERM
 	rm -f "$tmp_new_revocations" "$tmp_old_revocations"
 	return 1
-}
+) 9>/revoked.crl.lock
 
 init_send_network_topology() {
 	if [ -z "$TOPOLOGY_UUID" ]; then

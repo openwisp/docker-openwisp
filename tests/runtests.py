@@ -594,21 +594,27 @@ class TestOpenVPN(unittest.TestCase):
         image = os.environ.get("OPENWISP_TEST_OPENVPN_IMAGE")
         if not image:
             self.fail("OPENWISP_TEST_OPENVPN_IMAGE is required for OpenVPN tests.")
-        result = subprocess.run(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--volume",
-                f"{script}:/test_openvpn.sh:ro",
-                "--entrypoint",
-                "sh",
-                image,
-                "/test_openvpn.sh",
-            ],
-            capture_output=True,
-            text=True,
-        )
+        try:
+            result = subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--volume",
+                    f"{script}:/test_openvpn.sh:ro",
+                    "--entrypoint",
+                    "sh",
+                    image,
+                    "/test_openvpn.sh",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+        except subprocess.TimeoutExpired as error:
+            self.fail(
+                f"OpenVPN test timed out:\n{error.stdout or ''}{error.stderr or ''}"
+            )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
