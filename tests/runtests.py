@@ -96,6 +96,20 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
             "Dashboard must serve topology API URLs.",
         )
 
+    def test_dashboard_excludes_disabled_topology_api_urls(self):
+        output, _ = self._execute_django_shell_command(
+            "from django.urls import is_valid_path; "
+            "print(bool(is_valid_path("
+            "'/api/v1/network-topology/topology/' "
+            "'00000000-0000-0000-0000-000000000000/')))",
+            environment={"USE_OPENWISP_TOPOLOGY": "False"},
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1],
+            "False",
+            "Dashboard must not serve disabled topology API URLs.",
+        )
+
     def test_dashboard_resolves_radius_api_urls(self):
         output, _ = self._execute_django_shell_command(
             "from django.urls import is_valid_path; "
@@ -106,6 +120,19 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
             output.strip().splitlines()[-1],
             "True",
             "Dashboard must serve RADIUS API URLs.",
+        )
+
+    def test_dashboard_excludes_disabled_radius_api_urls(self):
+        output, _ = self._execute_django_shell_command(
+            "from django.urls import is_valid_path; "
+            "print(bool(is_valid_path("
+            "'/api/v1/radius/organization/default/account/')))",
+            environment={"USE_OPENWISP_RADIUS": "False"},
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1],
+            "False",
+            "Dashboard must not serve disabled RADIUS API URLs.",
         )
 
 
