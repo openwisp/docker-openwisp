@@ -47,6 +47,9 @@ if env_bool(os.environ.get("USE_OPENWISP_FIRMWARE")) and env_bool(
     reminder_scan_days = int(
         os.environ.get("OPENWISP_FIRMWARE_REMINDER_SCAN_PERIOD_DAYS", "7")
     )
+    execute_scheduled_seconds = int(
+        os.environ.get("OPENWISP_FIRMWARE_EXECUTE_SCHEDULED_PERIOD_SECONDS", "60")
+    )
     firmware_schedule = {
         "check_pending_upgrades": {
             "task": "openwisp_firmware_upgrader.tasks.check_pending_upgrades",
@@ -55,6 +58,10 @@ if env_bool(os.environ.get("USE_OPENWISP_FIRMWARE")) and env_bool(
         "send_pending_upgrade_reminders": {
             "task": "openwisp_firmware_upgrader.tasks.send_pending_upgrade_reminders",
             "schedule": timedelta(days=reminder_scan_days),
+        },
+        "execute_scheduled_upgrades": {
+            "task": "openwisp_firmware_upgrader.tasks.execute_scheduled_upgrades",
+            "schedule": timedelta(seconds=execute_scheduled_seconds),
         },
     }
 

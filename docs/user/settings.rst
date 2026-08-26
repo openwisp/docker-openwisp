@@ -389,6 +389,14 @@ framework.
 - **Valid Values:** INTEGER.
 - **Default:** ``7``
 
+``OPENWISP_FIRMWARE_EXECUTE_SCHEDULED_PERIOD_SECONDS``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Period in seconds between scans that launch scheduled
+  mass upgrades whose ``scheduled_at`` time has arrived.
+- **Valid Values:** INTEGER.
+- **Default:** ``60``
+
 ``USE_OPENWISP_CELERY_MONITORING``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
