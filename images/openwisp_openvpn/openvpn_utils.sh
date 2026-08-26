@@ -84,6 +84,8 @@ crl_revocations() {
 	'
 }
 
+# The five-minute cron caller restarts only for changed revocations and
+# preserves the current CRL on errors.
 crl_download_if_changed() (
 	flock -n 9 || return 1
 	local tmp_crl

@@ -1,5 +1,5 @@
 #!/bin/sh
-# This fixture verifies that CRL refreshes only report changed revocations.
+# This shell script tests CRL refresh behavior.
 set -e
 
 test_dir=/tmp/openwisp-crl-refresh-test
@@ -92,6 +92,7 @@ run_case() {
 	printf '%s\n' "$expected_crl" | cmp -s - revoked.crl
 }
 
+# Use an isolated directory and remove it when the test completes.
 trap cleanup EXIT
 mkdir -p "$test_dir"
 cd "$test_dir"

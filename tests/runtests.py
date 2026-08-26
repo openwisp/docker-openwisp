@@ -587,37 +587,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             )
 
 
-class TestOpenVPN(unittest.TestCase):
-    def test_crl_refresh_detects_revocation_changes(self):
-        """Ensure CRL metadata updates do not trigger a revocation change."""
-        script = Path(__file__).parent / "scripts" / "openvpn.sh"
-        image = os.environ.get("OPENWISP_TEST_OPENVPN_IMAGE")
-        if not image:
-            self.fail("OPENWISP_TEST_OPENVPN_IMAGE is required for OpenVPN tests.")
-        try:
-            result = subprocess.run(
-                [
-                    "docker",
-                    "run",
-                    "--rm",
-                    "--volume",
-                    f"{script}:/test_openvpn.sh:ro",
-                    "--entrypoint",
-                    "sh",
-                    image,
-                    "/test_openvpn.sh",
-                ],
-                capture_output=True,
-                text=True,
-                timeout=30,
-            )
-        except subprocess.TimeoutExpired as error:
-            self.fail(
-                f"OpenVPN test timed out:\n{error.stdout or ''}{error.stderr or ''}"
-            )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
-
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
@@ -924,6 +893,37 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     text=True,
                 )
                 self.assertNotEqual(old_target.returncode, 0)
+
+
+class TestOpenVPN(unittest.TestCase):
+    def test_crl_refresh_detects_revocation_changes(self):
+        """Ensure CRL metadata updates do not trigger a revocation change."""
+        script = Path(__file__).parent / "scripts" / "openvpn.sh"
+        image = os.environ.get("OPENWISP_TEST_OPENVPN_IMAGE")
+        if not image:
+            self.fail("OPENWISP_TEST_OPENVPN_IMAGE is required for OpenVPN tests.")
+        try:
+            result = subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--volume",
+                    f"{script}:/test_openvpn.sh:ro",
+                    "--entrypoint",
+                    "sh",
+                    image,
+                    "/test_openvpn.sh",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+        except subprocess.TimeoutExpired as error:
+            self.fail(
+                f"OpenVPN test timed out:\n{error.stdout or ''}{error.stderr or ''}"
+            )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

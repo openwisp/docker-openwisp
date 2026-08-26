@@ -1037,14 +1037,6 @@ OpenVPN
 - **Valid Values:** STRING.
 - **Default:** ``default-management-vpn``.
 
-Revocation List Refresh
-~~~~~~~~~~~~~~~~~~~~~~~
-
-The OpenVPN container refreshes its certificate revocation list every five
-minutes. It restarts OpenVPN only when revoked certificate entries change.
-Failed, empty, or malformed downloads leave the current revocation list in
-place.
-
 Topology
 --------
 
