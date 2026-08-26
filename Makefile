@@ -70,6 +70,8 @@ develop-runtests:
 	make develop-pythontests
 
 develop-pythontests:
+	# OPENWISP_TEST_OPENVPN_IMAGE is used in tests to run OpenVPN tests with the
+	# latest locally built image rather than the image published in the registries.
 	OPENWISP_TEST_OPENVPN_IMAGE=$(IMAGE_OWNER)/openwisp-openvpn:$(OPENWISP_VERSION) \
 		python3 tests/runtests.py
 
