@@ -75,6 +75,13 @@ script and execute it:
     curl https://raw.githubusercontent.com/openwisp/docker-openwisp/master/deploy/auto-install.sh -o auto-install.sh
     sudo bash auto-install.sh
 
+The default installation path is ``/opt/openwisp``. To install to a
+different directory, pass it to the ``--install`` option:
+
+.. code-block:: bash
+
+    sudo bash auto-install.sh --install /srv/openwisp
+
 The auto-install script maintains a log, which is useful for debugging or
 checking the real-time output of the script. You can view the log by
 running the following command:
@@ -90,6 +97,13 @@ by using the following command
 .. code-block:: bash
 
     sudo bash auto-install.sh --upgrade
+
+To upgrade an installation in a custom directory, pass its path to the
+``--upgrade`` option:
+
+.. code-block:: bash
+
+    sudo bash auto-install.sh --upgrade /srv/openwisp
 
 .. note::
 

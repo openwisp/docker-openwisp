@@ -951,6 +951,37 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 )
                 self.assertNotEqual(old_target.returncode, 0)
 
+    def test_auto_install_argument_parsing(self):
+        script = Path(self.root_location) / "deploy" / "auto-install.sh"
+        command = (
+            "source <(sed '/^## Init script$/,$d' \"$AUTO_INSTALL_SCRIPT\"); "
+            'printf "%s|%s" "$action" "$USER_INSTALL_PATH"'
+        )
+        environment = os.environ.copy()
+        environment["AUTO_INSTALL_SCRIPT"] = str(script)
+        cases = (
+            (
+                ("--install", "/srv/openwisp installation"),
+                "install|/srv/openwisp installation",
+            ),
+            (
+                ("--upgrade", "/srv/openwisp installation"),
+                "upgrade|/srv/openwisp installation",
+            ),
+            (("--upgrade", "--help"), "help|/opt/openwisp"),
+        )
+        for arguments, expected in cases:
+            with self.subTest(arguments=arguments):
+                result = subprocess.run(
+                    ["bash", "-c", command, "auto-install.sh", *arguments],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, expected)
+
 
 class TestOpenVPN(unittest.TestCase):
     def test_crl_refresh_detects_revocation_changes(self):
