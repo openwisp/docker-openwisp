@@ -431,6 +431,50 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "test-device", "/admin/topology/topology/", select_field="field-label"
         )
 
+    def test_websocket_marker(self):
+        """Ensure location marker updates are sent to another browser session."""
+        location_name = "automated-websocket-selenium-loc01"
+        marker = (By.CLASS_NAME, "leaflet-marker-icon")
+        self._execute_django_shell_command(
+            "from openwisp_controller.geo.models import Location; "
+            "from openwisp_users.models import Organization; "
+            f"Location.objects.filter(name={location_name!r}).delete(); "
+            f"Location.objects.create(name={location_name!r}, type='outdoor', "
+            "is_mobile=True, organization=Organization.objects.get(slug='default'))"
+        )
+        try:
+            self.login()
+            self.login(driver=self.second_driver)
+            self.get_resource(location_name, "/admin/geo/location/")
+            self.get_resource(
+                location_name, "/admin/geo/location/", driver=self.second_driver
+            )
+            self.find_element(By.NAME, "is_mobile", driver=self.base_driver).click()
+            WebDriverWait(self.base_driver, 10).until(
+                EC.invisibility_of_element_located(marker)
+            )
+            self.find_element(By.NAME, "is_mobile", driver=self.second_driver).click()
+            self._ignore_location_alert(self.second_driver)
+            self.find_element(
+                By.CLASS_NAME,
+                "leaflet-draw-draw-marker",
+                driver=self.second_driver,
+            ).click()
+            self.find_element(
+                By.ID, "id_geometry-map", driver=self.second_driver
+            ).click()
+            self.find_element(By.NAME, "is_mobile", driver=self.second_driver).click()
+            self._ignore_location_alert(self.second_driver)
+            self._click_save_btn(self.second_driver)
+            WebDriverWait(self.base_driver, 10).until(
+                EC.presence_of_element_located(marker)
+            )
+        finally:
+            self._execute_django_shell_command(
+                "from openwisp_controller.geo.models import Location; "
+                f"Location.objects.filter(name={location_name!r}).delete()"
+            )
+
     def test_console_errors(self):
         """Ensure key account and admin pages have no browser console errors."""
         url_list = [
