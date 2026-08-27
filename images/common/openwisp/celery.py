@@ -7,7 +7,14 @@ from openwisp.utils import env_bool
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openwisp.settings")
 
-radius_schedule, topology_schedule, monitoring_schedule, metric_collection_schedule = (
+(
+    radius_schedule,
+    users_schedule,
+    topology_schedule,
+    monitoring_schedule,
+    metric_collection_schedule,
+) = (
+    {},
     {},
     {},
     {},
@@ -49,6 +56,18 @@ if env_bool(os.environ.get("USE_OPENWISP_RADIUS")):
             "args": (),
         },
     }
+
+# User expiration is owned by OpenWISP Users, so these tasks do not depend on RADIUS.
+users_schedule = {
+    "deactivate-expired-users": {
+        "task": "openwisp_users.tasks.deactivate_expired_users",
+        "schedule": crontab(minute=1, hour=0),
+    },
+    "expiration-reminder-email": {
+        "task": "openwisp_users.tasks.expiration_reminder_email",
+        "schedule": crontab(minute=3, hour=0),
+    },
+}
 
 if env_bool(os.environ.get("USE_OPENWISP_TOPOLOGY")):
     topology_schedule = {
@@ -94,6 +113,7 @@ app = Celery(
     task_routes=task_routes,
     beat_schedule={
         **radius_schedule,
+        **users_schedule,
         **topology_schedule,
         **notification_schedule,
         **monitoring_schedule,

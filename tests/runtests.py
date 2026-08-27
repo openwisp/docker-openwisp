@@ -552,6 +552,26 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         with self.subTest("Test celery_monitoring container"):
             _test_celery_task_registered("celery_monitoring")
 
+    def test_celery_beat_schedule_without_radius(self):
+        """Ensure user expiration tasks are scheduled without RADIUS."""
+        output, _ = self._execute_django_shell_command(
+            (
+                "from openwisp.celery import app; "
+                "print('\\n'.join(entry['task'] "
+                "for entry in app.conf.beat_schedule.values() "
+                "if entry['task'].startswith('openwisp_users.')))"
+            ),
+            environment={"USE_OPENWISP_RADIUS": "False"},
+        )
+        self.assertIn("openwisp_users.tasks.deactivate_expired_users", output)
+        self.assertIn("openwisp_users.tasks.expiration_reminder_email", output)
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; "
+            "from openwisp.celery import app; "
+            "print(settings.TIME_ZONE, app.conf.timezone)"
+        )
+        self.assertEqual(*output.strip().splitlines()[-1].split())
+
     def test_radius_user_registration(self):
         """Ensure users can register using the RADIUS API."""
         url = f"{self.config['api_url']}/api/v1/radius/organization/default/account/"
@@ -930,6 +950,37 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     text=True,
                 )
                 self.assertNotEqual(old_target.returncode, 0)
+
+    def test_auto_install_argument_parsing(self):
+        script = Path(self.root_location) / "deploy" / "auto-install.sh"
+        command = (
+            "source <(sed '/^## Init script$/,$d' \"$AUTO_INSTALL_SCRIPT\"); "
+            'printf "%s|%s" "$action" "$USER_INSTALL_PATH"'
+        )
+        environment = os.environ.copy()
+        environment["AUTO_INSTALL_SCRIPT"] = str(script)
+        cases = (
+            (
+                ("--install", "/srv/openwisp installation"),
+                "install|/srv/openwisp installation",
+            ),
+            (
+                ("--upgrade", "/srv/openwisp installation"),
+                "upgrade|/srv/openwisp installation",
+            ),
+            (("--upgrade", "--help"), "help|/opt/openwisp"),
+        )
+        for arguments, expected in cases:
+            with self.subTest(arguments=arguments):
+                result = subprocess.run(
+                    ["bash", "-c", command, "auto-install.sh", *arguments],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, expected)
 
 
 class TestOpenVPN(unittest.TestCase):
