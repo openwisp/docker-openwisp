@@ -1025,18 +1025,20 @@ OpenVPN
 ``VPN_NAME``
 ~~~~~~~~~~~~
 
-- **Explanation:** Name of the VPN Server that will be visible on the
-  OpenWISP dashboard.
-- **Valid Values:** STRING.
-- **Default:** ``default``.
+- **Status:** Deprecated. New installations create a VPN named
+  ``default``.
+- **Compatibility:** When set during initial setup, this variable names
+  the created VPN. Existing VPNs are identified by a persisted UUID, so
+  changing this variable later has no effect.
 
 ``VPN_CLIENT_NAME``
 ~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Name of the VPN client template that will be visible on
-  the OpenWISP dashboard.
-- **Valid Values:** STRING.
-- **Default:** ``default-management-vpn``.
+- **Status:** Deprecated. New installations create a VPN client template
+  named ``default-management-vpn``.
+- **Compatibility:** When set during initial setup, this variable names
+  the created template. Existing templates are identified by a persisted
+  UUID, so changing this variable later has no effect.
 
 Topology
 --------

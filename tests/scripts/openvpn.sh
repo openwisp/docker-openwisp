@@ -139,7 +139,8 @@ fi
 test "$crl_status" -eq 1
 wait "$slow_download_pid"
 
-test_config_download() (
+# Verify that VPN_NAME does not need to match the OpenVPN config filename.
+test_vpn_name_config_filename_decoupling() (
 	config_test_dir=$(mktemp -d) || exit 1
 	trap 'rm -rf -- "$config_test_dir"' EXIT HUP INT TERM
 	mkdir "$config_test_dir/archive" "$config_test_dir/work"
@@ -188,4 +189,4 @@ test_config_download() (
 	test ! -f openvpn.conf
 )
 
-test_config_download
+test_vpn_name_config_filename_decoupling
