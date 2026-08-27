@@ -231,7 +231,13 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [
-                {"address": CHANNEL_REDIS_HOST, "socket_timeout": None},
+                {
+                    "address": CHANNEL_REDIS_HOST,
+                    # Redis>=8 changed the default timeout of read
+                    # operations to 5 seconds, which breaks django-channels,
+                    # hence we need to explicitly remove the timeout.
+                    "socket_timeout": None,
+                },
             ],
         },
     },
