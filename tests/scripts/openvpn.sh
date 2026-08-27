@@ -176,6 +176,16 @@ test_config_download() (
 	test ! -f 'my vpn.conf'
 	test "$(cat checksum)" = checksum
 	test "$(stat -c '%a' client.pem)" = 600
+	mkdir "$config_test_dir/multiple"
+	printf '%s' 'first config' >"$config_test_dir/archive/first.conf"
+	printf '%s' 'second config' >"$config_test_dir/archive/second.conf"
+	tar -czf "$config_test_dir/vpn.tar.gz" -C "$config_test_dir/archive" \
+		first.conf second.conf
+	cd "$config_test_dir/multiple"
+	if openvpn_config_download >/dev/null 2>&1; then
+		return 1
+	fi
+	test ! -f openvpn.conf
 )
 
 test_config_download

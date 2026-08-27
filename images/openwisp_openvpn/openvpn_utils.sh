@@ -44,6 +44,7 @@ openvpn_config_checksum() {
 openvpn_config_download() {
 	local tmp_dir
 	local conf_file
+	local file
 	# Extract in isolation so stale files in / cannot be mistaken for
 	# files from the newly downloaded archive.
 	tmp_dir=$(mktemp -d) || return 1
@@ -64,10 +65,16 @@ openvpn_config_download() {
 	chmod 600 -- "$tmp_dir"/*.pem 2>/dev/null || true
 	# Supervisord always starts OpenVPN with openvpn.conf; normalize whatever
 	# config filename the archive contains, including names with whitespace.
-	conf_file="$tmp_dir/openvpn.conf"
-	if [ ! -f "$conf_file" ]; then
-		conf_file=$(find "$tmp_dir" -maxdepth 1 -type f -name '*.conf' -print -quit)
-	fi
+	conf_file=""
+	for file in "$tmp_dir"/*.conf; do
+		[ -f "$file" ] || continue
+		if [ -n "$conf_file" ]; then
+			echo "ERROR: more than one OpenVPN config file found after extraction" >&2
+			rm -rf -- "$tmp_dir"
+			return 1
+		fi
+		conf_file="$file"
+	done
 	if [ -z "$conf_file" ]; then
 		echo "ERROR: no OpenVPN config file found after extraction" >&2
 		rm -rf -- "$tmp_dir"
@@ -77,8 +84,7 @@ openvpn_config_download() {
 		rm -rf -- "$tmp_dir"
 		return 1
 	}
-	# Move the remaining extracted files, but leave any extra .conf files behind
-	# so only the normalized openvpn.conf is used at runtime.
+	# Move the remaining extracted files after moving the normalized config.
 	find "$tmp_dir" -mindepth 1 -maxdepth 1 ! -name '*.conf' -exec mv -f -- {} . \; || {
 		rm -rf -- "$tmp_dir"
 		return 1
