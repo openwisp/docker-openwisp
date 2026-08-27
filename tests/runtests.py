@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import tempfile
@@ -64,6 +65,19 @@ class Test0Preconditions(BaseTestUtils, unittest.TestCase):
 
 
 class Test1Dashboard(BaseTestUtils, unittest.TestCase):
+    def test_dashboard_channels_redis_socket_timeout(self):
+        channel_redis_url = "redis://redis:6379/1"
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; import json; print(json.dumps("
+            "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0]))",
+            environment={"CHANNEL_REDIS_URL": channel_redis_url},
+        )
+        self.assertEqual(
+            json.loads(output.strip().splitlines()[-1]),
+            {"address": channel_redis_url, "socket_timeout": None},
+            "Channels Redis host must have an unlimited socket timeout.",
+        )
+
     def test_dashboard_uses_same_origin_api_urls(self):
         """Ensure dashboard browser requests use module default relative URLs."""
         output, _ = self._execute_django_shell_command(

@@ -229,7 +229,11 @@ OPENWISP_MONITORING_DEFAULT_RETENTION_POLICY = os.environ[
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [CHANNEL_REDIS_HOST]},
+        "CONFIG": {
+            "hosts": [
+                {"address": CHANNEL_REDIS_HOST, "socket_timeout": None},
+            ],
+        },
     },
 }
 
