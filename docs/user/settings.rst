@@ -1022,11 +1022,15 @@ Nginx
 OpenVPN
 -------
 
+.. warning::
+
+    ``VPN_NAME`` and ``VPN_CLIENT_NAME`` are deprecated. New installations
+    create a VPN named ``default`` and a VPN client template named
+    ``default-management-vpn``.
+
 ``VPN_NAME``
 ~~~~~~~~~~~~
 
-- **Status:** Deprecated. New installations create a VPN named
-  ``default``.
 - **Compatibility:** When set during initial setup, this variable names
   the created VPN. Existing VPNs are identified by a persisted UUID, so
   changing this variable later has no effect.
@@ -1034,8 +1038,6 @@ OpenVPN
 ``VPN_CLIENT_NAME``
 ~~~~~~~~~~~~~~~~~~~
 
-- **Status:** Deprecated. New installations create a VPN client template
-  named ``default-management-vpn``.
 - **Compatibility:** When set during initial setup, this variable names
   the created template. Existing templates are identified by a persisted
   UUID, so changing this variable later has no effect.

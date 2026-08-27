@@ -59,6 +59,7 @@ If instructions conflict, repository config and CI workflows win first, docs nex
 - During development, run focused tests and test suites directly affected by the change instead of routinely running the full suite.
 - Before pushing a behavior-affecting change, verify that the full test suite has passed for the current branch after its latest code, test, dependency, or configuration change. If the full suite cannot run, report the blocker and wait for direction.
 - Keep helpers and classes used by only one test method inside that method. Promote them to class or module scope only when genuinely reused.
+- Keep multi-line test scripts in `tests/scripts/` instead of embedding them in test methods.
 - Keep tests quiet on success. When code under test writes to stdout or stderr, capture and assert that output rather than leaving it unasserted.
 
 ## Security Rules

@@ -25,10 +25,11 @@ from django.conf import settings  # noqa
 DEFAULT_VPN_NAME = "default"
 DEFAULT_VPN_CLIENT_NAME = "default-management-vpn"
 DEFAULT_SSH_TEMPLATE_NAME = "SSH Keys"
-DEFAULT_VPN_UUID_KEY = "openwisp_default_vpn_uuid"
-DEFAULT_VPN_TEMPLATE_UUID_KEY = "openwisp_default_vpn_template_uuid"
-DEFAULT_SSH_TEMPLATE_UUID_KEY = "openwisp_default_ssh_template_uuid"
-DEFAULT_TOPOLOGY_UUID_KEY = "default_openvpn_topology_uuid"
+# Redis selectors bind system-managed resources to immutable database IDs.
+DEFAULT_VPN_SELECTOR_KEY = "openwisp_default_vpn_uuid"
+DEFAULT_VPN_TEMPLATE_SELECTOR_KEY = "openwisp_default_vpn_template_uuid"
+DEFAULT_SSH_TEMPLATE_SELECTOR_KEY = "openwisp_default_ssh_template_uuid"
+DEFAULT_TOPOLOGY_SELECTOR_KEY = "default_openvpn_topology_uuid"
 logger = logging.getLogger(__name__)
 
 
@@ -66,7 +67,7 @@ def select_single(queryset, key, object_name):
 
 
 def set_default_vpn(vpn):
-    redis_client.set(DEFAULT_VPN_UUID_KEY, str(vpn.id), ex=None)
+    redis_client.set(DEFAULT_VPN_SELECTOR_KEY, str(vpn.id), ex=None)
     redis_client.set("openwisp_default_vpn_key", str(vpn.key), ex=None)
     redis_client.set("openwisp_default_vpn_ca_uuid", str(vpn.ca_id), ex=None)
 
@@ -131,13 +132,15 @@ def create_default_cert(ca):
 
 def create_default_vpn(ca=None, cert=None):
     """Creates default vpn."""
-    vpn = get_selected(Vpn, DEFAULT_VPN_UUID_KEY)
+    vpn = get_selected(Vpn, DEFAULT_VPN_SELECTOR_KEY)
     if vpn:
         return vpn
     vpn_name = get_initial_name("VPN_NAME", DEFAULT_VPN_NAME)
-    vpn = select_single(Vpn.objects.filter(name=vpn_name), DEFAULT_VPN_UUID_KEY, "VPN")
+    vpn = select_single(
+        Vpn.objects.filter(name=vpn_name), DEFAULT_VPN_SELECTOR_KEY, "VPN"
+    )
     if not vpn:
-        vpn = select_single(Vpn.objects.all(), DEFAULT_VPN_UUID_KEY, "VPN")
+        vpn = select_single(Vpn.objects.all(), DEFAULT_VPN_SELECTOR_KEY, "VPN")
     if vpn:
         set_default_vpn(vpn)
         return vpn
@@ -165,7 +168,7 @@ def create_default_vpn(ca=None, cert=None):
 
 def create_default_vpn_template(vpn):
     """Creates default vpn client template."""
-    template = get_selected(Template, DEFAULT_VPN_TEMPLATE_UUID_KEY)
+    template = get_selected(Template, DEFAULT_VPN_TEMPLATE_SELECTOR_KEY)
     if template:
         if template.vpn_id != vpn.id:
             raise RuntimeError(
@@ -174,7 +177,7 @@ def create_default_vpn_template(vpn):
         return template
     template = select_single(
         Template.objects.filter(vpn=vpn, type="vpn", default=True),
-        DEFAULT_VPN_TEMPLATE_UUID_KEY,
+        DEFAULT_VPN_TEMPLATE_SELECTOR_KEY,
         "VPN template",
     )
     if template:
@@ -196,7 +199,7 @@ def create_default_vpn_template(vpn):
     # Verify that the config is still valid.
     template.full_clean()
     template.save()
-    redis_client.set(DEFAULT_VPN_TEMPLATE_UUID_KEY, str(template.id), ex=None)
+    redis_client.set(DEFAULT_VPN_TEMPLATE_SELECTOR_KEY, str(template.id), ex=None)
     return template
 
 
@@ -224,12 +227,19 @@ def create_default_credentials():
 
 
 def create_ssh_key_template():
-    template = get_selected(Template, DEFAULT_SSH_TEMPLATE_UUID_KEY)
+    template = get_selected(Template, DEFAULT_SSH_TEMPLATE_SELECTOR_KEY)
     if template:
         return template
     template = select_single(
         Template.objects.filter(name=DEFAULT_SSH_TEMPLATE_NAME, default=True),
-        DEFAULT_SSH_TEMPLATE_UUID_KEY,
+        DEFAULT_SSH_TEMPLATE_SELECTOR_KEY,
+        "SSH key template",
+    )
+    if template:
+        return template
+    template = select_single(
+        Template.objects.filter(default=True, type="generic", vpn__isnull=True),
+        DEFAULT_SSH_TEMPLATE_SELECTOR_KEY,
         "SSH key template",
     )
     if template:
@@ -259,7 +269,7 @@ def create_ssh_key_template():
     )
     template.full_clean()
     template.save()
-    redis_client.set(DEFAULT_SSH_TEMPLATE_UUID_KEY, str(template.id), ex=None)
+    redis_client.set(DEFAULT_SSH_TEMPLATE_SELECTOR_KEY, str(template.id), ex=None)
     return template
 
 
@@ -285,7 +295,7 @@ def update_default_site():
 
 def create_default_topology(vpn):
     """Creates Topology object for the default VPN."""
-    topology = get_selected(Topology, DEFAULT_TOPOLOGY_UUID_KEY)
+    topology = get_selected(Topology, DEFAULT_TOPOLOGY_SELECTOR_KEY)
     if topology:
         return topology
     if vpn.backend == "openwisp_controller.vpn_backends.OpenVpn":
@@ -293,12 +303,12 @@ def create_default_topology(vpn):
     topology_label = f"{vpn.name} ({vpn.get_backend_display()})"
     topology = select_single(
         Topology.objects.filter(label=topology_label),
-        DEFAULT_TOPOLOGY_UUID_KEY,
+        DEFAULT_TOPOLOGY_SELECTOR_KEY,
         "topology",
     )
     if not topology:
         topology = select_single(
-            Topology.objects.all(), DEFAULT_TOPOLOGY_UUID_KEY, "topology"
+            Topology.objects.all(), DEFAULT_TOPOLOGY_SELECTOR_KEY, "topology"
         )
     if not topology:
         topology = Topology(
@@ -308,7 +318,7 @@ def create_default_topology(vpn):
         )
         topology.full_clean()
         topology.save()
-    redis_client.set(DEFAULT_TOPOLOGY_UUID_KEY, str(topology.id), ex=None)
+    redis_client.set(DEFAULT_TOPOLOGY_SELECTOR_KEY, str(topology.id), ex=None)
     redis_client.set("default_openvpn_topology_key", str(topology.key), ex=None)
     return topology
 
