@@ -547,8 +547,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             self.find_element(By.NAME, "index").click()
 
         self.login()
-        delete_fixture()
         self.addCleanup(delete_fixture)
+        delete_fixture()
         fixture_destination.write_bytes(fixture_path.read_bytes())
         self._execute_docker_compose_command(
             [
@@ -558,7 +558,9 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                 "-T",
                 "dashboard",
                 "python",
-                "collectstatic.py",
+                "manage.py",
+                "collectstatic",
+                "--noinput",
             ]
         )
         output, _ = self._execute_django_shell_command(
