@@ -87,12 +87,16 @@ try:
     Vpn.objects.filter(pk=default_vpn.pk).update(backend="test.NonOpenVpn")
     client.delete("openwisp_default_vpn_uuid")
     os.environ["VPN_NAME"] = marker
+    existing_vpn_pks = set(Vpn.objects.values_list("pk", flat=True))
     selected_vpn = load_init_data.create_default_vpn(None, None)
+    if selected_vpn.pk not in existing_vpn_pks:
+        created_vpn = selected_vpn
+    assert selected_vpn.pk not in existing_vpn_pks, "Existing VPN was selected"
+    assert selected_vpn.name == marker, "VPN was not created with the marker name"
     assert selected_vpn.pk != default_vpn.pk, "Non-OpenVPN VPN was selected"
     assert (
         selected_vpn.backend == "openwisp_controller.vpn_backends.OpenVpn"
     ), "Created VPN does not use the OpenVPN backend"
-    created_vpn = selected_vpn
     created_vpn.delete()
     created_vpn = None
     Vpn.objects.filter(pk=default_vpn.pk).update(backend=default_vpn_backend)
