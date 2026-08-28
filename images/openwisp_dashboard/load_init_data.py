@@ -136,16 +136,12 @@ def create_default_vpn(ca=None, cert=None):
     vpn = get_selected(Vpn, DEFAULT_VPN_SELECTOR_KEY)
     if vpn:
         return vpn
-    vpn_name = get_initial_name("VPN_NAME", DEFAULT_VPN_NAME)
     openvpn_vpns = Vpn.objects.filter(backend=OPENVPN_BACKEND)
-    vpn = select_single(
-        openvpn_vpns.filter(name=vpn_name), DEFAULT_VPN_SELECTOR_KEY, "VPN"
-    )
-    if not vpn:
-        vpn = select_single(openvpn_vpns, DEFAULT_VPN_SELECTOR_KEY, "VPN")
+    vpn = select_single(openvpn_vpns, DEFAULT_VPN_SELECTOR_KEY, "VPN")
     if vpn:
         set_default_vpn(vpn)
         return vpn
+    vpn_name = get_initial_name("VPN_NAME", DEFAULT_VPN_NAME)
     ca = ca or create_default_ca()
     cert = cert or create_default_cert(ca)
     vpn = Vpn(

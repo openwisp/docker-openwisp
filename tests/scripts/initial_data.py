@@ -32,7 +32,7 @@ default_template = Template.objects.get(vpn=default_vpn, default=True)
 default_topology = Topology.objects.get(
     pk=client.get("default_openvpn_topology_uuid").decode()
 )
-ssh_template = Template.objects.get(name="SSH Keys", default=True)
+ssh_template = Template.objects.get(default=True, type="generic", vpn__isnull=True)
 marker = "initial-data-selector-decoy"
 template_marker = "initial-data-selector-template"
 ssh_template_marker = "initial-data-selector-ssh-template"
@@ -109,9 +109,15 @@ try:
     )
     decoy_vpn.full_clean()
     decoy_vpn.save()
+    client.delete("openwisp_default_vpn_uuid")
     os.environ["VPN_NAME"] = marker
-    selected_vpn = load_init_data.create_default_vpn(None, None)
-    assert selected_vpn.pk == default_vpn.pk, "VPN name selected the wrong VPN"
+    try:
+        load_init_data.create_default_vpn(None, None)
+    except RuntimeError as error:
+        assert str(error) == "Multiple VPN objects exist without a saved selector."
+    else:
+        raise AssertionError("VPN name selected an existing VPN")
+    client.set("openwisp_default_vpn_uuid", str(default_vpn.pk))
     os.environ.pop("VPN_NAME")
     selected_vpn = load_init_data.create_default_vpn(None, None)
     assert selected_vpn.pk == default_vpn.pk, "Missing VPN name changed VPN selection"

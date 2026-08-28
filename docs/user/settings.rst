@@ -1032,10 +1032,7 @@ OpenVPN
 ~~~~~~~~~~~~
 
 - **Compatibility:** When set during initial setup, this variable names
-  the created VPN. Existing VPNs are identified by a persisted UUID, so
-  changing this variable later has no effect while the selector is
-  available. If the selector is missing, this variable is used as a
-  fallback to find and adopt an existing VPN.
+  the created VPN. It is ignored when an existing VPN is selected.
 
 ``VPN_CLIENT_NAME``
 ~~~~~~~~~~~~~~~~~~~
