@@ -44,7 +44,7 @@ class Test0Preconditions(BaseTestUtils, unittest.TestCase):
                 if request.urlopen(admin_login_page, context=self.ctx).getcode() == 200:
                     isServiceReachable = True
                     break
-            except (urlerror.HTTPError, OSError, ConnectionResetError):
+            except (RuntimeError, urlerror.HTTPError, OSError, ConnectionResetError):
                 # if error occurred, retry to reach the admin
                 # login page after delay_retries second(s)
                 time.sleep(delay_retries)
@@ -548,8 +548,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
         self.login()
         delete_fixture()
-        fixture_destination.write_bytes(fixture_path.read_bytes())
         self.addCleanup(delete_fixture)
+        fixture_destination.write_bytes(fixture_path.read_bytes())
         self._execute_docker_compose_command(
             [
                 "docker",
