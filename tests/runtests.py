@@ -34,9 +34,11 @@ class Test0Preconditions(BaseTestUtils, unittest.TestCase):
         isServiceReachable = False
         max_retries = self.config["services_max_retries"]
         delay_retries = self.config["services_delay_retries"]
-        admin_login_page = f"{self.config['app_url']}{self.reverse_url('admin:login')}"
         for _ in range(1, max_retries):
             try:
+                admin_login_page = (
+                    f"{self.config['app_url']}{self.reverse_url('admin:login')}"
+                )
                 # check if we can reach to admin login page
                 # and the page return 200 OK status code
                 if request.urlopen(admin_login_page, context=self.ctx).getcode() == 200:
@@ -492,6 +494,32 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
     def test_topology_graph(self):
         """Ensure topology graphs load and react to bulk node actions."""
         label = "automated-selenium-test-02"
+        fixture_path = Path(__file__).parent / "static" / "network-graph.json"
+        fixture_destination = (
+            Path(self.root_location) / "customization" / "theme" / fixture_path.name
+        )
+        fixture_url = "http://dashboard.internal/static/network-graph.json"
+
+        def delete_topology():
+            self._execute_django_shell_command(
+                "from openwisp_network_topology.models import Topology; "
+                f"Topology.objects.filter(label={label!r}).delete()"
+            )
+
+        def delete_fixture():
+            fixture_destination.unlink(missing_ok=True)
+            self._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "exec",
+                    "-T",
+                    "dashboard",
+                    "rm",
+                    "-f",
+                    "/opt/openwisp/static/network-graph.json",
+                ]
+            )
 
         def create_topology():
             self.open(self.reverse_url("admin:topology_topology_add"))
@@ -499,11 +527,9 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             self.find_element(By.NAME, "parser").find_element(
                 By.XPATH, '//option[text()="NetJSON NetworkGraph"]'
             ).click()
-            self.find_element(By.NAME, "url").send_keys(
-                "https://raw.githubusercontent.com/openwisp/"
-                "docker-openwisp/master/tests/static/network-graph.json"
-            )
+            self.find_element(By.NAME, "url").send_keys(fixture_url)
             self._click_save_btn()
+            self.addCleanup(delete_topology)
             self.get_resource(
                 label, "admin:topology_topology_changelist", select_field="field-label"
             )
@@ -521,6 +547,28 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             self.find_element(By.NAME, "index").click()
 
         self.login()
+        delete_fixture()
+        fixture_destination.write_bytes(fixture_path.read_bytes())
+        self.addCleanup(delete_fixture)
+        self._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "exec",
+                "-T",
+                "dashboard",
+                "python",
+                "collectstatic.py",
+            ]
+        )
+        output, _ = self._execute_django_shell_command(
+            "import requests; " f"print(requests.get({fixture_url!r}).status_code)"
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1],
+            "200",
+            "The local topology fixture must be reachable from the dashboard.",
+        )
         create_topology()
         self.get_resource(
             label, "admin:topology_topology_changelist", select_field="field-label"
@@ -561,8 +609,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         self.find_element(By.NAME, "prefix").send_keys("automated-prefix")
         self.find_element(By.NAME, "number_of_users").send_keys("1")
         self._click_save_btn()
-        self.get_resource(batch_name, "admin:openwisp_radius_radiusbatch_changelist")
         self.addCleanup(delete_batch)
+        self.get_resource(batch_name, "admin:openwisp_radius_radiusbatch_changelist")
         credentials_url = self.base_driver.find_element(
             By.XPATH, '//a[text()="Download User Credentials"]'
         ).get_property("href")

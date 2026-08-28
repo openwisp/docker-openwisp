@@ -114,7 +114,6 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
 
     test_usernames_to_delete = set()
     browser = "chrome"
-    location_alert_timeout = 5
 
     @classmethod
     def delete_test_users(cls, *usernames):
@@ -197,7 +196,7 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
         Parameters:
 
         - resource_name (str): The name of the resource to find.
-        - path (str): The path to the resource in the admin interface.
+        - view_name (str): The Django URL view name for the resource list.
         - select_field (str, optional): The field used to identify the
           resource. Defaults to 'field-name'.
         - driver (selenium.webdriver, optional): The Selenium WebDriver
