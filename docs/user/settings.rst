@@ -1025,15 +1025,17 @@ OpenVPN
 .. warning::
 
     ``VPN_NAME`` and ``VPN_CLIENT_NAME`` are deprecated. New installations
-    create a VPN named ``default`` and a VPN client template named
-    ``default-management-vpn``.
+    without these variables create a VPN named ``default`` and a VPN
+    client template named ``default-management-vpn``.
 
 ``VPN_NAME``
 ~~~~~~~~~~~~
 
 - **Compatibility:** When set during initial setup, this variable names
   the created VPN. Existing VPNs are identified by a persisted UUID, so
-  changing this variable later has no effect.
+  changing this variable later has no effect while the selector is
+  available. If the selector is missing, this variable is used as a
+  fallback to find and adopt an existing VPN.
 
 ``VPN_CLIENT_NAME``
 ~~~~~~~~~~~~~~~~~~~

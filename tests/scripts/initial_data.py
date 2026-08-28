@@ -41,8 +41,10 @@ previous_ssh_template_name = ssh_template.name
 decoy_vpn = None
 decoy_template = None
 decoy_topology = None
+created_vpn = None
 previous_vpn_name_setting = os.environ.get("VPN_NAME")
 previous_vpn_client_name_setting = os.environ.get("VPN_CLIENT_NAME")
+default_vpn_backend = default_vpn.backend
 try:
     Vpn.objects.filter(name=marker).delete()
     Template.objects.filter(name__in=(template_marker, ssh_template_marker)).delete()
@@ -81,6 +83,20 @@ try:
     assert client.get("openwisp_default_ssh_template_uuid").decode() == str(
         ssh_template.pk
     )
+
+    Vpn.objects.filter(pk=default_vpn.pk).update(backend="test.NonOpenVpn")
+    client.delete("openwisp_default_vpn_uuid")
+    os.environ["VPN_NAME"] = marker
+    selected_vpn = load_init_data.create_default_vpn(None, None)
+    assert selected_vpn.pk != default_vpn.pk, "Non-OpenVPN VPN was selected"
+    assert (
+        selected_vpn.backend == "openwisp_controller.vpn_backends.OpenVpn"
+    ), "Created VPN does not use the OpenVPN backend"
+    created_vpn = selected_vpn
+    created_vpn.delete()
+    created_vpn = None
+    Vpn.objects.filter(pk=default_vpn.pk).update(backend=default_vpn_backend)
+    client.set("openwisp_default_vpn_uuid", str(default_vpn.pk))
 
     decoy_vpn = Vpn(
         name=marker,
@@ -160,6 +176,9 @@ finally:
     ssh_template.save()
     if decoy_topology:
         decoy_topology.delete()
+    if created_vpn:
+        created_vpn.delete()
+    Vpn.objects.filter(pk=default_vpn.pk).update(backend=default_vpn_backend)
     if decoy_vpn:
         decoy_vpn.delete()
     default_vpn.name = previous_vpn_name

@@ -187,6 +187,15 @@ test_vpn_name_config_filename_decoupling() (
 		return 1
 	fi
 	test ! -f openvpn.conf
+	mkdir "$config_test_dir/empty"
+	printf '%s' 'empty archive' >"$config_test_dir/archive/empty.txt"
+	tar -czf "$config_test_dir/vpn.tar.gz" -C "$config_test_dir/archive" empty.txt
+	printf '%s' 'stale config' >"$config_test_dir/empty/openvpn.conf"
+	cd "$config_test_dir/empty"
+	if openvpn_config_download >/dev/null 2>&1; then
+		return 1
+	fi
+	test "$(cat openvpn.conf)" = 'stale config'
 )
 
 test_vpn_name_config_filename_decoupling

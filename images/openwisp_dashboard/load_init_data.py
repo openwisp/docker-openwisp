@@ -25,6 +25,7 @@ from django.conf import settings  # noqa
 DEFAULT_VPN_NAME = "default"
 DEFAULT_VPN_CLIENT_NAME = "default-management-vpn"
 DEFAULT_SSH_TEMPLATE_NAME = "SSH Keys"
+OPENVPN_BACKEND = "openwisp_controller.vpn_backends.OpenVpn"
 # Redis selectors bind system-managed resources to immutable database IDs.
 DEFAULT_VPN_SELECTOR_KEY = "openwisp_default_vpn_uuid"
 DEFAULT_VPN_TEMPLATE_SELECTOR_KEY = "openwisp_default_vpn_template_uuid"
@@ -136,11 +137,12 @@ def create_default_vpn(ca=None, cert=None):
     if vpn:
         return vpn
     vpn_name = get_initial_name("VPN_NAME", DEFAULT_VPN_NAME)
+    openvpn_vpns = Vpn.objects.filter(backend=OPENVPN_BACKEND)
     vpn = select_single(
-        Vpn.objects.filter(name=vpn_name), DEFAULT_VPN_SELECTOR_KEY, "VPN"
+        openvpn_vpns.filter(name=vpn_name), DEFAULT_VPN_SELECTOR_KEY, "VPN"
     )
     if not vpn:
-        vpn = select_single(Vpn.objects.all(), DEFAULT_VPN_SELECTOR_KEY, "VPN")
+        vpn = select_single(openvpn_vpns, DEFAULT_VPN_SELECTOR_KEY, "VPN")
     if vpn:
         set_default_vpn(vpn)
         return vpn
@@ -156,7 +158,7 @@ def create_default_vpn(ca=None, cert=None):
             "in your OpenVPN Server instance."
         ),
         host=os.environ["VPN_DOMAIN"],
-        backend="openwisp_controller.vpn_backends.OpenVpn",
+        backend=OPENVPN_BACKEND,
     )
     with open("openvpn.json", "r") as json_file:
         vpn.config = json.load(json_file)
@@ -298,7 +300,7 @@ def create_default_topology(vpn):
     topology = get_selected(Topology, DEFAULT_TOPOLOGY_SELECTOR_KEY)
     if topology:
         return topology
-    if vpn.backend == "openwisp_controller.vpn_backends.OpenVpn":
+    if vpn.backend == OPENVPN_BACKEND:
         parser = "netdiff.OpenvpnParser"
     topology_label = f"{vpn.name} ({vpn.get_backend_display()})"
     topology = select_single(
