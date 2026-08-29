@@ -230,7 +230,17 @@ OPENWISP_MONITORING_DEFAULT_RETENTION_POLICY = os.environ[
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [CHANNEL_REDIS_HOST]},
+        "CONFIG": {
+            "hosts": [
+                {
+                    "address": CHANNEL_REDIS_HOST,
+                    # redis-py 8.0.0 changed the default timeout of socket
+                    # operations to 5 seconds, which breaks django-channels,
+                    # hence we need to explicitly remove the timeout.
+                    "socket_timeout": None,
+                },
+            ],
+        },
     },
 }
 

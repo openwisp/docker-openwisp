@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import tempfile
@@ -133,6 +134,19 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
             output.strip().splitlines()[-1],
             "False",
             "Dashboard must not serve disabled RADIUS API URLs.",
+        )
+
+    def test_dashboard_channels_redis_socket_timeout(self):
+        channel_redis_url = "redis://redis:6379/1"
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; import json; print(json.dumps("
+            "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0]))",
+            environment={"CHANNEL_REDIS_URL": channel_redis_url},
+        )
+        self.assertEqual(
+            json.loads(output.strip().splitlines()[-1]),
+            {"address": channel_redis_url, "socket_timeout": None},
+            "Channels Redis host must have an unlimited socket timeout.",
         )
 
 
@@ -971,6 +985,37 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     text=True,
                 )
                 self.assertNotEqual(old_target.returncode, 0)
+
+    def test_auto_install_argument_parsing(self):
+        script = Path(self.root_location) / "deploy" / "auto-install.sh"
+        command = (
+            "source <(sed '/^## Init script$/,$d' \"$AUTO_INSTALL_SCRIPT\"); "
+            'printf "%s|%s" "$action" "$USER_INSTALL_PATH"'
+        )
+        environment = os.environ.copy()
+        environment["AUTO_INSTALL_SCRIPT"] = str(script)
+        cases = (
+            (
+                ("--install", "/srv/openwisp installation"),
+                "install|/srv/openwisp installation",
+            ),
+            (
+                ("--upgrade", "/srv/openwisp installation"),
+                "upgrade|/srv/openwisp installation",
+            ),
+            (("--upgrade", "--help"), "help|/opt/openwisp"),
+        )
+        for arguments, expected in cases:
+            with self.subTest(arguments=arguments):
+                result = subprocess.run(
+                    ["bash", "-c", command, "auto-install.sh", *arguments],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, expected)
 
 
 class TestOpenVPN(unittest.TestCase):
