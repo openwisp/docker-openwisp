@@ -22,6 +22,7 @@ class BaseTestUtils:
         "OPENWISP_TEST_CONFIG", os.path.join(os.path.dirname(__file__), "config.json")
     )
     root_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+    _url_cache = {}
     with open(config_file) as json_file:
         config = json.load(json_file)
 
@@ -87,11 +88,16 @@ class BaseTestUtils:
 
     @classmethod
     def reverse_url(cls, view_name, kwargs=None):
+        cache_key = (view_name, json.dumps(kwargs or {}, sort_keys=True))
+        if cache_key in cls._url_cache:
+            return cls._url_cache[cache_key]
         output, _ = cls._execute_django_shell_command(
             "from django.urls import reverse; "
             f"print(reverse({view_name!r}, kwargs={kwargs!r}))"
         )
-        return output.strip().splitlines()[-1]
+        url = output.strip().splitlines()[-1]
+        cls._url_cache[cache_key] = url
+        return url
 
     def docker_compose_get_container_id(self, container_name):
         """Get the Docker container ID for a specific container.

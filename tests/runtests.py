@@ -564,7 +564,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ]
         )
         output, _ = self._execute_django_shell_command(
-            "import requests; " f"print(requests.get({fixture_url!r}).status_code)"
+            "import requests; "
+            f"print(requests.get({fixture_url!r}, timeout=10).status_code)"
         )
         self.assertEqual(
             output.strip().splitlines()[-1],
@@ -632,6 +633,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         except (urlerror.HTTPError, OSError, ConnectionResetError) as error:
             self.fail(f"Cannot download PDF file: {error}")
         self.assertEqual(response.getcode(), 200)
+        self.assertEqual(response.headers.get_content_type(), "application/pdf")
+        self.assertEqual(response.read(4), b"%PDF")
 
     def test_console_errors(self):
         """Ensure key account and admin pages have no browser console errors."""
