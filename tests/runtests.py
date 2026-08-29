@@ -370,8 +370,11 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "print(settings.SESSION_CACHE_ALIAS, "
             "settings.CACHES['default']['LOCATION'], "
             "settings.CACHES['sessions']['LOCATION'], "
-            "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0], "
-            "settings.CELERY_BROKER_URL)"
+            "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0]['address'], "
+            "settings.CELERY_BROKER_URL, "
+            "settings.CACHES['default']['OPTIONS'].get('PASSWORD'), "
+            "settings.CACHES['sessions']['OPTIONS'].get('PASSWORD'))",
+            environment={"REDIS_PASS": "test-password"},
         )
         values = output.strip().splitlines()[-1].split()
         self.assertEqual(
@@ -379,10 +382,15 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "sessions",
         )
         self.assertEqual(
-            [urlsplit(value).path for value in values[1:]],
+            [urlsplit(value).path for value in values[1:5]],
             ["/0", "/1", "/3", "/2"],
             "Django cache, sessions, Channels and Celery must use distinct "
             "Redis buckets.",
+        )
+        self.assertEqual(
+            values[5:],
+            ["test-password", "test-password"],
+            "Django cache and sessions must use the configured Redis password.",
         )
 
     def test_custom_static_files_loaded(self):
