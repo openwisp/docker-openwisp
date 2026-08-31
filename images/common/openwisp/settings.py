@@ -146,7 +146,7 @@ if os.environ["MODULE_NAME"] == "dashboard":
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+SESSION_CACHE_ALIAS = "sessions"
 SESSION_COOKIE_DOMAIN = ROOT_DOMAIN
 
 # Required for API request from Django admin
@@ -176,7 +176,8 @@ else:
 REDIS_BASE_URL = f"{REDIS_SCHEME}://{credentials}{REDIS_HOST}:{REDIS_PORT}"
 
 REDIS_CACHE_URL = os.environ.get("REDIS_CACHE_URL", f"{REDIS_BASE_URL}/0")
-CHANNEL_REDIS_HOST = os.environ.get("CHANNEL_REDIS_URL", f"{REDIS_BASE_URL}/1")
+REDIS_SESSIONS_URL = os.environ.get("REDIS_SESSIONS_URL", f"{REDIS_BASE_URL}/1")
+CHANNEL_REDIS_HOST = os.environ.get("CHANNEL_REDIS_URL", f"{REDIS_BASE_URL}/3")
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", f"{REDIS_BASE_URL}/2")
 
 CELERY_TASK_ACKS_LATE = True
@@ -229,7 +230,17 @@ OPENWISP_MONITORING_DEFAULT_RETENTION_POLICY = os.environ[
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [CHANNEL_REDIS_HOST]},
+        "CONFIG": {
+            "hosts": [
+                {
+                    "address": CHANNEL_REDIS_HOST,
+                    # redis-py 8.0.0 changed the default timeout of socket
+                    # operations to 5 seconds, which breaks django-channels,
+                    # hence we need to explicitly remove the timeout.
+                    "socket_timeout": None,
+                },
+            ],
+        },
     },
 }
 
@@ -243,11 +254,19 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
-    }
+    },
+    "sessions": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_SESSIONS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    },
 }
 
 if REDIS_PASS:
     CACHES["default"]["OPTIONS"]["PASSWORD"] = os.environ["REDIS_PASS"]
+    CACHES["sessions"]["OPTIONS"]["PASSWORD"] = os.environ["REDIS_PASS"]
 
 # Leaflet Configurations
 # https://django-leaflet.readthedocs.io/en/latest/templates.html#configuration

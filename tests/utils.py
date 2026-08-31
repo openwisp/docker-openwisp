@@ -2,12 +2,10 @@ import json
 import os
 import ssl
 import subprocess
-import time
 from time import sleep
 
 import docker
 from openwisp_utils.tests import SeleniumTestMixin
-from selenium.common.exceptions import NoAlertPresentException
 from selenium.webdriver.common.by import By
 
 
@@ -20,8 +18,11 @@ class BaseTestUtils:
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
 
-    config_file = os.path.join(os.path.dirname(__file__), "config.json")
+    config_file = os.environ.get(
+        "OPENWISP_TEST_CONFIG", os.path.join(os.path.dirname(__file__), "config.json")
+    )
     root_location = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+    _url_cache = {}
     with open(config_file) as json_file:
         config = json.load(json_file)
 
@@ -85,6 +86,19 @@ class BaseTestUtils:
         cmd_args.extend([service, "python", "manage.py", "shell", "-c", command])
         return cls._execute_docker_compose_command(cmd_args, use_text_mode=True)
 
+    @classmethod
+    def reverse_url(cls, view_name, kwargs=None):
+        cache_key = (view_name, json.dumps(kwargs or {}, sort_keys=True))
+        if cache_key in cls._url_cache:
+            return cls._url_cache[cache_key]
+        output, _ = cls._execute_django_shell_command(
+            "from django.urls import reverse; "
+            f"print(reverse({view_name!r}, kwargs={kwargs!r}))"
+        )
+        url = output.strip().splitlines()[-1]
+        cls._url_cache[cache_key] = url
+        return url
+
     def docker_compose_get_container_id(self, container_name):
         """Get the Docker container ID for a specific container.
 
@@ -104,7 +118,6 @@ class BaseTestUtils:
 class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
     """Utilities for functional testing."""
 
-    objects_to_delete = []
     test_usernames_to_delete = set()
     browser = "chrome"
 
@@ -131,25 +144,6 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
         # during automated tests, it seems that the
         # lack of pause causes the request to fail randomly
         sleep(0.5)
-
-    def _ignore_location_alert(self, driver=None):
-        """Accept alerts related to location not found.
-
-        Parameters:
-
-        - driver (selenium.webdriver, optional): The Selenium WebDriver
-          instance. Defaults to `self.base_driver`.
-        """
-        expected_msg = "Could not find any address related to this location."
-        if not driver:
-            driver = self.base_driver
-        time.sleep(2)  # Wait for the alert to appear
-        try:
-            window_alert = driver.switch_to.alert
-            if expected_msg in window_alert.text:
-                window_alert.accept()
-        except NoAlertPresentException:
-            pass  # No alert is okay.
 
     def _click_save_btn(self, driver=None):
         """Click the save button in the admin interface.
@@ -188,7 +182,7 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
         """
         if not driver:
             driver = self.base_driver
-        self.open("/admin/openwisp_users/user/add/", driver=driver)
+        self.open(self.reverse_url("admin:openwisp_users_user_add"), driver=driver)
         self.find_element(By.NAME, "username", driver=driver).send_keys(username)
         self.find_element(By.NAME, "email", driver=driver).send_keys(email)
         self.find_element(By.NAME, "password1", driver=driver).send_keys(password)
@@ -200,13 +194,15 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
         self._wait_until_page_ready()
         self.wait_for_visibility(By.ID, "content", driver=driver, timeout=10)
 
-    def get_resource(self, resource_name, path, select_field="field-name", driver=None):
+    def get_resource(
+        self, resource_name, view_name, select_field="field-name", driver=None
+    ):
         """Navigate to a resource's change form page.
 
         Parameters:
 
         - resource_name (str): The name of the resource to find.
-        - path (str): The path to the resource in the admin interface.
+        - view_name (str): The Django URL view name for the resource list.
         - select_field (str, optional): The field used to identify the
           resource. Defaults to 'field-name'.
         - driver (selenium.webdriver, optional): The Selenium WebDriver
@@ -214,7 +210,7 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
         """
         if not driver:
             driver = self.base_driver
-        self.open(path, driver=driver)
+        self.open(self.reverse_url(view_name), driver=driver)
         resources = self.find_elements(
             By.CLASS_NAME, select_field, wait_for="presence", driver=driver
         )
@@ -223,41 +219,6 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
                 resource.find_element(By.LINK_TEXT, resource_name).click()
                 break
         self._wait_until_page_ready()
-
-    def select_resource(self, name, driver=None):
-        """Select a resource by name.
-
-        Parameters:
-
-        - name (str): The name of the resource to select.
-        - driver (selenium.webdriver, optional): The Selenium WebDriver
-          instance. Defaults to `self.base_driver`.
-        """
-        if not driver:
-            driver = self.base_driver
-        path = f'//a[contains(text(), "{name}")]/../..//input[@name="_selected_action"]'
-        self.find_element(By.XPATH, path, driver=driver).click()
-
-    def action_on_resource(self, name, path, option, driver=None):
-        """Perform an action on a resource.
-
-        Parameters:
-
-        - name (str): The name of the resource to select.
-        - path (str): The path to the resource list page.
-        - option (str): The value of the option to select.
-        - driver (selenium.webdriver, optional): The Selenium WebDriver
-          instance. Defaults to `self.base_driver`.
-        """
-        if not driver:
-            driver = self.base_driver
-        self.open(path, driver=driver)
-        self.select_resource(name)
-        self.find_element(By.NAME, "action", driver=driver).find_element(
-            By.XPATH,
-            f'//option[@value="{option}"]',
-        ).click()
-        self.find_element(By.NAME, "index", driver=driver).click()
 
     def console_error_check(self, driver=None):
         """Check for JavaScript errors in the console.
@@ -286,91 +247,3 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
                     continue
                 console_logs.append(logentry["message"])
         return console_logs
-
-    def create_mobile_location(self, location_name, driver=None):
-        """Create a new mobile location.
-
-        Parameters:
-
-        - location_name (str): The name of the new location.
-        - driver (selenium.webdriver, optional): The Selenium WebDriver
-          instance. Defaults to `self.base_driver`.
-        """
-        if not driver:
-            driver = self.base_driver
-        self.open("/admin/geo/location/add/", driver=driver)
-        self.find_element(By.NAME, "organization", driver=driver).find_element(
-            By.XPATH, '//option[text()="default"]'
-        ).click()
-        self.find_element(By.NAME, "name", driver=driver).send_keys(location_name)
-        self.find_element(By.NAME, "type", driver=driver).find_element(
-            By.XPATH, '//option[@value="outdoor"]'
-        ).click()
-        self.find_element(By.NAME, "is_mobile", driver=driver).click()
-        self._ignore_location_alert(driver)
-        self._click_save_btn(driver)
-        self.get_resource(location_name, "/admin/geo/location/", driver=driver)
-        self._wait_until_page_ready()
-        self.objects_to_delete.append(driver.current_url)
-        self.open("/admin/geo/location/", driver=driver)
-        self._wait_until_page_ready()
-
-    def add_mobile_location_point(self, location_name, driver=None):
-        """Add a point on the map for an existing mobile location.
-
-        Parameters:
-
-        - location_name (str): The name of the location.
-        - driver (selenium.webdriver, optional): The Selenium WebDriver
-          instance. Defaults to `self.base_driver`.
-        """
-        if not driver:
-            driver = self.base_driver
-        self.get_resource(location_name, "/admin/geo/location/", driver=driver)
-        self.find_element(By.NAME, "is_mobile", driver=driver).click()
-        self._ignore_location_alert(driver)
-        self.find_element(
-            By.CLASS_NAME, "leaflet-draw-draw-marker", driver=driver
-        ).click()
-        self.find_element(By.ID, "id_geometry-map", driver=driver).click()
-        self.find_element(By.NAME, "is_mobile", driver=driver).click()
-        self._ignore_location_alert(driver)
-        self._click_save_btn(driver)
-        self.get_resource(location_name, "/admin/geo/location/", driver=driver)
-
-    def create_network_topology(
-        self,
-        label="automated-selenium-test-01",
-        topology_url=(
-            "https://raw.githubusercontent.com/openwisp/"
-            "docker-openwisp/master/tests/static/network-graph.json"
-        ),
-        driver=None,
-    ):
-        """Create a new network topology resource.
-
-        Parameters:
-
-        - label (str, optional): The label for the new topology. Defaults
-          to 'automated-selenium-test-01'.
-        - topology_url (str, optional): The URL to fetch the topology data
-          from. Defaults to the provided URL.
-        - driver (selenium.webdriver, optional): The Selenium WebDriver
-          instance. Defaults to `self.base_driver`.
-        """
-        if not driver:
-            driver = self.base_driver
-        self.open("/admin/topology/topology/add/", driver=driver)
-        self.find_element(By.NAME, "label", driver=driver).send_keys(label)
-        # We can leave the organization empty for creating shared object
-        self.find_element(By.NAME, "parser", driver=driver).find_element(
-            By.XPATH, '//option[text()="NetJSON NetworkGraph"]'
-        ).click()
-        self.find_element(By.NAME, "url", driver=driver).send_keys(topology_url)
-        self._click_save_btn(driver)
-        self.get_resource(
-            label, "/admin/topology/topology/", "field-label", driver=driver
-        )
-        self._wait_until_page_ready()
-        self.objects_to_delete.append(driver.current_url)
-        self._wait_until_page_ready()

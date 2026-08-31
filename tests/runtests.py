@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import tempfile
@@ -16,6 +17,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from utils import BaseTestUtils, FunctionalTestUtils
 
+TEST_TOPOLOGY_ID = "00000000-0000-0000-0000-000000000000"
+
 
 # 0 in the name is on purpose for alphabetical discovery
 class Test0Preconditions(BaseTestUtils, unittest.TestCase):
@@ -31,15 +34,17 @@ class Test0Preconditions(BaseTestUtils, unittest.TestCase):
         isServiceReachable = False
         max_retries = self.config["services_max_retries"]
         delay_retries = self.config["services_delay_retries"]
-        admin_login_page = f"{self.config['app_url']}/admin/login/"
         for _ in range(1, max_retries):
             try:
+                admin_login_page = (
+                    f"{self.config['app_url']}{self.reverse_url('admin:login')}"
+                )
                 # check if we can reach to admin login page
                 # and the page return 200 OK status code
                 if request.urlopen(admin_login_page, context=self.ctx).getcode() == 200:
                     isServiceReachable = True
                     break
-            except (urlerror.HTTPError, OSError, ConnectionResetError):
+            except (RuntimeError, urlerror.HTTPError, OSError, ConnectionResetError):
                 # if error occurred, retry to reach the admin
                 # login page after delay_retries second(s)
                 time.sleep(delay_retries)
@@ -84,11 +89,12 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
         )
 
     def test_dashboard_resolves_topology_api_urls(self):
+        topology_url = self.reverse_url(
+            "network_graph", kwargs={"pk": TEST_TOPOLOGY_ID}
+        )
         output, _ = self._execute_django_shell_command(
             "from django.urls import is_valid_path; "
-            "print(bool(is_valid_path("
-            "'/api/v1/network-topology/topology/' "
-            "'00000000-0000-0000-0000-000000000000/')))"
+            f"print(bool(is_valid_path({topology_url!r})))"
         )
         self.assertEqual(
             output.strip().splitlines()[-1],
@@ -97,11 +103,12 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
         )
 
     def test_dashboard_excludes_disabled_topology_api_urls(self):
+        topology_url = self.reverse_url(
+            "network_graph", kwargs={"pk": TEST_TOPOLOGY_ID}
+        )
         output, _ = self._execute_django_shell_command(
             "from django.urls import is_valid_path; "
-            "print(bool(is_valid_path("
-            "'/api/v1/network-topology/topology/' "
-            "'00000000-0000-0000-0000-000000000000/')))",
+            f"print(bool(is_valid_path({topology_url!r})))",
             environment={"USE_OPENWISP_TOPOLOGY": "False"},
         )
         self.assertEqual(
@@ -111,10 +118,12 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
         )
 
     def test_dashboard_resolves_radius_api_urls(self):
+        radius_url = self.reverse_url(
+            "radius:rest_register", kwargs={"slug": "default"}
+        )
         output, _ = self._execute_django_shell_command(
             "from django.urls import is_valid_path; "
-            "print(bool(is_valid_path("
-            "'/api/v1/radius/organization/default/account/')))"
+            f"print(bool(is_valid_path({radius_url!r})))"
         )
         self.assertEqual(
             output.strip().splitlines()[-1],
@@ -123,16 +132,31 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
         )
 
     def test_dashboard_excludes_disabled_radius_api_urls(self):
+        radius_url = self.reverse_url(
+            "radius:rest_register", kwargs={"slug": "default"}
+        )
         output, _ = self._execute_django_shell_command(
             "from django.urls import is_valid_path; "
-            "print(bool(is_valid_path("
-            "'/api/v1/radius/organization/default/account/')))",
+            f"print(bool(is_valid_path({radius_url!r})))",
             environment={"USE_OPENWISP_RADIUS": "False"},
         )
         self.assertEqual(
             output.strip().splitlines()[-1],
             "False",
             "Dashboard must not serve disabled RADIUS API URLs.",
+        )
+
+    def test_dashboard_channels_redis_socket_timeout(self):
+        channel_redis_url = "redis://redis:6379/1"
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; import json; print(json.dumps("
+            "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0]))",
+            environment={"CHANNEL_REDIS_URL": channel_redis_url},
+        )
+        self.assertEqual(
+            json.loads(output.strip().splitlines()[-1]),
+            {"address": channel_redis_url, "socket_timeout": None},
+            "Channels Redis host must have an unlimited socket timeout.",
         )
 
 
@@ -167,6 +191,13 @@ class TestInitialData(BaseTestUtils, unittest.TestCase):
 
 class TestServices(FunctionalTestUtils, unittest.TestCase):
     custom_static_token = None
+    custom_settings_path = (
+        Path(BaseTestUtils.root_location)
+        / "customization"
+        / "configuration"
+        / "django"
+        / "custom_django_settings.py"
+    )
 
     @property
     def failureException(self):
@@ -175,43 +206,67 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     @classmethod
     def _setup_admin_theme_links(cls):
-        """Configure admin theme links during tests.
-
-        The default docker-compose setup does not allow injecting
-        OPENWISP_ADMIN_THEME_LINKS dynamically, so this method updates
-        Django settings inside the running container and reloads uWSGI.
-        This enables the Selenium tests to verify that a custom static CSS
-        file is served by the admin interface.
-        """
-        css_path = os.path.join(
-            cls.root_location,
-            "customization",
-            "theme",
-            cls.config["custom_css_filename"],
-        )
+        """Configure custom assets before creating Selenium sessions."""
+        cls.custom_settings_existed = cls.custom_settings_path.exists()
+        if cls.custom_settings_existed:
+            cls.custom_settings = cls.custom_settings_path.read_text()
+        cls.addClassCleanup(cls._cleanup_admin_theme_links)
         cls.custom_static_token = str(time.time_ns())
-        with open(css_path, "w") as custom_css_file:
-            custom_css_file.write(
-                f"body{{--openwisp-test: {cls.custom_static_token};}}"
-            )
-        script = rf"""
-            sed -i '/^OPENWISP_ADMIN_THEME_LINKS[[:space:]]*=/d' /opt/openwisp/openwisp/settings.py &&
-            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/svg+xml\",\"href\":\"/static/ui/openwisp/images/favicon.svg\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
-            python collectstatic.py &&
-            uwsgi --reload uwsgi.pid
-        """  # noqa: E501
+        cls.custom_css_path = (
+            Path(cls.root_location)
+            / "customization"
+            / "theme"
+            / cls.config["custom_css_filename"]
+        )
+        cls.custom_css_path.write_text(
+            f"body{{--openwisp-test: {cls.custom_static_token};}}"
+        )
+        theme_links = [
+            {
+                "type": "text/css",
+                "href": "/static/admin/css/openwisp.css",
+                "rel": "stylesheet",
+                "media": "all",
+            },
+            {
+                "type": "text/css",
+                "href": f"/static/{cls.config['custom_css_filename']}",
+                "rel": "stylesheet",
+                "media": "all",
+            },
+            {
+                "type": "image/svg+xml",
+                "href": "/static/ui/openwisp/images/favicon.svg",
+                "rel": "icon",
+            },
+        ]
+        with cls.custom_settings_path.open("a") as custom_settings:
+            custom_settings.write(f"\nOPENWISP_ADMIN_THEME_LINKS = {theme_links!r}\n")
         cls._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "bash",
-                "-c",
-                script,
-            ],
-            use_text_mode=True,
+            ["docker", "compose", "up", "--detach", "--force-recreate", "dashboard"]
+        )
+        for _ in range(cls.config["services_max_retries"]):
+            try:
+                admin_login_page = (
+                    f"{cls.config['app_url']}{cls.reverse_url('admin:login')}"
+                )
+                if request.urlopen(admin_login_page, context=cls.ctx, timeout=10):
+                    return
+            except (RuntimeError, urlerror.HTTPError, OSError, ConnectionResetError):
+                time.sleep(cls.config["services_delay_retries"])
+        raise RuntimeError(
+            "Dashboard did not start after applying test theme settings."
+        )
+
+    @classmethod
+    def _cleanup_admin_theme_links(cls):
+        if cls.custom_settings_existed:
+            cls.custom_settings_path.write_text(cls.custom_settings)
+        else:
+            cls.custom_settings_path.unlink(missing_ok=True)
+        cls.custom_css_path.unlink(missing_ok=True)
+        cls._execute_docker_compose_command(
+            ["docker", "compose", "up", "--detach", "--force-recreate", "dashboard"]
         )
 
     @classmethod
@@ -279,23 +334,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         except Exception as e:
             exc_type = type(e).__name__
             print(f"Unable to delete test users: {exc_type}: {e}")
-        for resource_link in cls.objects_to_delete:
-            try:
-                cls._delete_object(resource_link)
-            except Exception as e:
-                exc_type = type(e).__name__
-                print(f"Unable to delete resource at {resource_link}: {exc_type}: {e}")
         cls.second_driver.quit()
         cls.base_driver.quit()
-        # Remove the temporary custom CSS file created for testing
-        css_path = os.path.join(
-            cls.root_location,
-            "customization",
-            "theme",
-            cls.config["custom_css_filename"],
-        )
-        if os.path.exists(css_path):
-            os.remove(css_path)
         if cls.failed_test and cls.config["logs"]:
             cmd = subprocess.Popen(
                 ["docker", "compose", "logs"],
@@ -306,16 +346,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             )
             output, _ = map(str, cmd.communicate())
             print(f"One of the containers are down!\nOutput:\n{output}")
-
-    @classmethod
-    def _delete_object(cls, resource_link):
-        """Takes URL for location to delete."""
-        cls.base_driver.get(resource_link)
-        element = cls.base_driver.find_element(By.CLASS_NAME, "deletelink-box")
-        js = "arguments[0].setAttribute('style', 'display:block')"
-        cls.base_driver.execute_script(js, element)
-        element.find_element(By.CLASS_NAME, "deletelink").click()
-        cls.base_driver.find_element(By.XPATH, '//input[@type="submit"]').click()
 
     def test_admin_login(self):
         self.login()
@@ -333,8 +363,9 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
     def test_dev_mode_admin_access(self):
         """Ensure the development profile permits browser access to the admin."""
         app_url = urlsplit(self.config["app_url"])
-        http_url = urlunsplit(("http", app_url.netloc, "/admin/login/", "", ""))
-        https_url = urlunsplit(("https", app_url.netloc, "/admin/login/", "", ""))
+        login_url = self.reverse_url("admin:login")
+        http_url = urlunsplit(("http", app_url.netloc, login_url, "", ""))
+        https_url = urlunsplit(("https", app_url.netloc, login_url, "", ""))
         http_response = requests.get(http_url, allow_redirects=False, timeout=10)
         https_response = request.urlopen(https_url, context=self.ctx, timeout=10)
         self.assertEqual(
@@ -379,9 +410,38 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                     expected_certificate_requirement,
                 )
 
+    def test_redis_buckets_are_separated(self):
+        output, _ = self._execute_django_shell_command(
+            "from django.conf import settings; "
+            "print(settings.SESSION_CACHE_ALIAS, "
+            "settings.CACHES['default']['LOCATION'], "
+            "settings.CACHES['sessions']['LOCATION'], "
+            "settings.CHANNEL_LAYERS['default']['CONFIG']['hosts'][0]['address'], "
+            "settings.CELERY_BROKER_URL, "
+            "settings.CACHES['default']['OPTIONS'].get('PASSWORD'), "
+            "settings.CACHES['sessions']['OPTIONS'].get('PASSWORD'))",
+            environment={"REDIS_PASS": "test-password"},
+        )
+        values = output.strip().splitlines()[-1].split()
+        self.assertEqual(
+            values[0],
+            "sessions",
+        )
+        self.assertEqual(
+            [urlsplit(value).path for value in values[1:5]],
+            ["/0", "/1", "/3", "/2"],
+            "Django cache, sessions, Channels and Celery must use distinct "
+            "Redis buckets.",
+        )
+        self.assertEqual(
+            values[5:],
+            ["test-password", "test-password"],
+            "Django cache and sessions must use the configured Redis password.",
+        )
+
     def test_custom_static_files_loaded(self):
         self.login()
-        self.open("/admin/")
+        self.open(self.reverse_url("admin:index"))
         favicon_href = self.web_driver.find_element(
             By.CSS_SELECTOR, 'link[rel="icon"]'
         ).get_attribute("href")
@@ -389,7 +449,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             favicon_href,
             r"/static/ui/openwisp/images/favicon(\.[0-9a-f]+)?\.svg$",
         )
-        # Check if the custom CSS variable is applied
         value = self.web_driver.execute_script(
             "return getComputedStyle(document.body)"
             ".getPropertyValue('--openwisp-test');"
@@ -398,7 +457,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     def test_device_monitoring_charts(self):
         self.login()
-        self.get_resource("test-device", "/admin/config/device/")
+        self.get_resource("test-device", "admin:config_device_changelist")
         self.find_element(By.CSS_SELECTOR, "ul.tabs li.charts").click()
         try:
             WebDriverWait(self.base_driver, 3).until(EC.alert_is_present())
@@ -414,47 +473,244 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
     def test_default_topology(self):
         self.login()
         self.get_resource(
-            "test-device", "/admin/topology/topology/", select_field="field-label"
+            "test-device",
+            "admin:topology_topology_changelist",
+            select_field="field-label",
         )
+
+    def test_websocket_marker(self):
+        """Ensure location marker updates are sent to another browser session."""
+        cls = type(self)
+        for driver in (cls.base_driver, cls.second_driver):
+            try:
+                driver.quit()
+            except Exception:
+                pass
+        if self.config["driver"] == "firefox":
+            cls.base_driver = self.get_firefox_webdriver()
+            cls.second_driver = self.get_firefox_webdriver()
+        if self.config["driver"] == "chromium":
+            cls.base_driver = self.get_chrome_webdriver()
+            cls.second_driver = self.get_chrome_webdriver()
+        cls.web_driver = cls.base_driver
+        location_name = "automated-websocket-selenium-loc01"
+
+        def dismiss_location_alert():
+            try:
+                alert = WebDriverWait(self.second_driver, 5).until(
+                    EC.alert_is_present()
+                )
+            except TimeoutException:
+                return
+            if "Could not find any address related to this location." in alert.text:
+                alert.accept()
+
+        def add_location_point():
+            self.get_resource(
+                location_name,
+                "admin:geo_location_changelist",
+                driver=self.second_driver,
+            )
+            self.find_element(By.NAME, "is_mobile", driver=self.second_driver).click()
+            dismiss_location_alert()
+            self.find_element(
+                By.CLASS_NAME,
+                "leaflet-draw-draw-marker",
+                driver=self.second_driver,
+            ).click()
+            self.find_element(
+                By.ID, "id_geometry-map", driver=self.second_driver
+            ).click()
+            self.find_element(By.NAME, "is_mobile", driver=self.second_driver).click()
+            dismiss_location_alert()
+            geometry = json.loads(
+                self.find_element(
+                    By.ID,
+                    "id_geometry",
+                    driver=self.second_driver,
+                    wait_for="presence",
+                ).get_attribute("value")
+            )
+            self._click_save_btn(self.second_driver)
+            return geometry
+
+        self._execute_django_shell_command(
+            "from openwisp_controller.geo.models import Location; "
+            "from openwisp_users.models import Organization; "
+            f"Location.objects.filter(name={location_name!r}).delete(); "
+            f"Location.objects.create(name={location_name!r}, type='outdoor', "
+            "is_mobile=True, organization=Organization.objects.get(slug='default'))"
+        )
+        try:
+            self.login()
+            self.login(driver=self.second_driver)
+            self.get_resource(location_name, "admin:geo_location_changelist")
+            self.get_resource(
+                location_name,
+                "admin:geo_location_changelist",
+                driver=self.second_driver,
+            )
+            self.assertEqual(
+                self.find_element(
+                    By.ID,
+                    "id_geometry",
+                    driver=self.base_driver,
+                    wait_for="presence",
+                ).get_attribute("value"),
+                "",
+            )
+            geometry = add_location_point()
+
+            def geometry_updated(driver):
+                value = driver.find_element(By.ID, "id_geometry").get_attribute("value")
+                return bool(value) and json.loads(value) == geometry
+
+            try:
+                WebDriverWait(self.base_driver, 10).until(geometry_updated)
+            except TimeoutException:
+                self.fail(
+                    "Location geometry update was not received by the first browser."
+                )
+        finally:
+            self._execute_django_shell_command(
+                "from openwisp_controller.geo.models import Location; "
+                f"Location.objects.filter(name={location_name!r}).delete()"
+            )
+
+    def test_topology_graph(self):
+        """Ensure the admin graph visualizer renders database-backed topology data."""
+        cls = type(self)
+        cls.base_driver.quit()
+        if self.config["driver"] == "firefox":
+            cls.base_driver = self.get_firefox_webdriver()
+        if self.config["driver"] == "chromium":
+            cls.base_driver = self.get_chrome_webdriver()
+        cls.web_driver = cls.base_driver
+        label = "automated-selenium-test-02"
+
+        def delete_topology():
+            self._execute_django_shell_command(
+                "from openwisp_network_topology.models import Topology; "
+                f"Topology.objects.filter(label={label!r}).delete()"
+            )
+
+        fixture = (Path(__file__).parent / "static" / "network-graph.json").read_text()
+        self.addCleanup(delete_topology)
+        output, _ = self._execute_django_shell_command(
+            "from openwisp_network_topology.models import Topology; "
+            "from openwisp_users.models import Organization; "
+            f"Topology.objects.filter(label={label!r}).delete(); "
+            f"data = {fixture!r}; "
+            f"topology = Topology(label={label!r}, "
+            "parser='netdiff.NetJsonParser', strategy='receive', "
+            "organization=Organization.objects.get(slug='default')); "
+            "topology.full_clean(); topology.save(); "
+            "graph = topology.get_topology_data(data); "
+            "topology.update_topology(topology.diff(graph)); print(topology.pk)"
+        )
+        topology_url = self.reverse_url(
+            "admin:topology_topology_change",
+            {"object_id": output.strip().splitlines()[-1]},
+        )
+        self.login()
+        self.open(topology_url)
+        self.find_element(By.CSS_SELECTOR, "input.visualizelink").click()
+        self.find_element(By.CSS_SELECTOR, "button.sideBarHandle").click()
+        values = self.find_elements(By.CSS_SELECTOR, ".njg-valueLabel")
+        self.assertEqual(
+            [value.text.lower() for value in values],
+            [label, "olsrv2", "0.14.1-1", "ff_dat_metric", "23", "18"],
+        )
+        self.assertEqual([], self.console_error_check())
+
+    def test_create_prefix_users(self):
+        """Ensure RADIUS prefix batches generate downloadable credentials."""
+        batch_name = "automated-prefix-test-01"
+
+        def delete_batch():
+            self._execute_django_shell_command(
+                "from openwisp_radius.models import RadiusBatch; "
+                f"RadiusBatch.objects.filter(name={batch_name!r}).delete()"
+            )
+
+        self.login()
+        self.open(self.reverse_url("admin:openwisp_radius_radiusbatch_add"))
+        self.find_element(By.NAME, "strategy").find_element(
+            By.XPATH, '//option[@value="prefix"]'
+        ).click()
+        self.find_element(By.NAME, "organization").find_element(
+            By.XPATH, '//option[text()="default"]'
+        ).click()
+        self.find_element(By.NAME, "name").send_keys(batch_name)
+        self.find_element(By.NAME, "prefix").send_keys("automated-prefix")
+        self.find_element(By.NAME, "number_of_users").send_keys("1")
+        self._click_save_btn()
+        self.addCleanup(delete_batch)
+        self.get_resource(batch_name, "admin:openwisp_radius_radiusbatch_changelist")
+        credentials_url = self.base_driver.find_element(
+            By.XPATH, '//a[text()="Download User Credentials"]'
+        ).get_property("href")
+        cookies = {
+            cookie["name"]: cookie["value"] for cookie in self.base_driver.get_cookies()
+        }
+        request_info = request.Request(
+            credentials_url,
+            headers={
+                "Cookie": "; ".join(
+                    f"{name}={value}" for name, value in cookies.items()
+                )
+            },
+        )
+        try:
+            response = request.urlopen(request_info, context=self.ctx, timeout=10)
+        except (urlerror.HTTPError, OSError, ConnectionResetError) as error:
+            self.fail(f"Cannot download PDF file: {error}")
+        self.assertEqual(response.getcode(), 200)
+        self.assertEqual(response.headers.get_content_type(), "application/pdf")
+        self.assertEqual(response.read(4), b"%PDF")
 
     def test_console_errors(self):
         """Ensure key account and admin pages have no browser console errors."""
-        url_list = [
-            "/admin/",
-            "/accounts/password/reset/",
-            "/admin/config/device/add/",
-            "/admin/config/template/add/",
-            "/admin/openwisp_radius/radiuscheck/add/",
-            "/admin/openwisp_radius/radiusgroup/add/",
-            "/admin/openwisp_radius/radiusbatch/add/",
-            "/admin/openwisp_radius/nas/add/",
-            "/admin/openwisp_radius/radiusreply/",
-            "/admin/geo/floorplan/add/",
-            "/admin/topology/link/add/",
-            "/admin/topology/node/add/",
-            "/admin/topology/topology/add/",
-            "/admin/pki/ca/add/",
-            "/admin/pki/cert/add/",
-            "/admin/openwisp_users/user/add/",
-            "/admin/firmware_upgrader/build/",
-            "/admin/firmware_upgrader/build/add/",
-            "/admin/firmware_upgrader/category/",
-            "/admin/firmware_upgrader/category/add/",
+        view_names = [
+            "admin:index",
+            "account_reset_password",
+            "admin:config_device_add",
+            "admin:config_template_add",
+            "admin:openwisp_radius_radiuscheck_add",
+            "admin:openwisp_radius_radiusgroup_add",
+            "admin:openwisp_radius_radiusbatch_add",
+            "admin:openwisp_radius_nas_add",
+            "admin:openwisp_radius_radiusreply_changelist",
+            "admin:geo_floorplan_add",
+            "admin:topology_link_add",
+            "admin:topology_node_add",
+            "admin:topology_topology_add",
+            "admin:pki_ca_add",
+            "admin:pki_cert_add",
+            "admin:openwisp_users_user_add",
+            "admin:firmware_upgrader_build_changelist",
+            "admin:firmware_upgrader_build_add",
+            "admin:firmware_upgrader_category_changelist",
+            "admin:firmware_upgrader_category_add",
         ]
         change_form_list = [
-            ["users", "/admin/openwisp_radius/radiusgroup/"],
-            ["default-management-vpn", "/admin/config/template/"],
-            ["default", "/admin/config/vpn/"],
-            ["default", "/admin/pki/ca/"],
-            ["default", "/admin/pki/cert/"],
-            ["default", "/admin/openwisp_users/organization/"],
-            ["test_superuser2", "/admin/openwisp_users/user/", "field-username"],
+            ["users", "admin:openwisp_radius_radiusgroup_changelist"],
+            ["default-management-vpn", "admin:config_template_changelist"],
+            ["default", "admin:config_vpn_changelist"],
+            ["default", "admin:pki_ca_changelist"],
+            ["default", "admin:pki_cert_changelist"],
+            ["default", "admin:openwisp_users_organization_changelist"],
+            [
+                "test_superuser2",
+                "admin:openwisp_users_user_changelist",
+                "field-username",
+            ],
         ]
         self.login()
         self.create_superuser("sample@email.com", "test_superuser2")
-        for url in url_list:
-            with self.subTest(url=url):
-                self.open(url)
+        for view_name in view_names:
+            with self.subTest(view_name=view_name):
+                self.open(self.reverse_url(view_name))
                 self.assertEqual([], self.console_error_check())
                 self.assertIn("OpenWISP", self.base_driver.title)
         for change_form in change_form_list:
@@ -477,15 +733,11 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
         self.login()
         self.logout()
-        try:
-            WebDriverWait(self.base_driver, 3).until(
-                EC.text_to_be_present_in_element(
-                    (By.CSS_SELECTOR, ".title-wrapper h1"), "Logged out"
-                )
-            )
-        except TimeoutException:
-            self.fail("Logout failed.")
-        self.open("/accounts/password/reset/")
+        logout_title = self.find_element(
+            By.CSS_SELECTOR, ".title-wrapper h1", timeout=3, wait_for="presence"
+        )
+        self.assertEqual(logout_title.text, "Logged out", "Logout failed.")
+        self.open(self.reverse_url("account_reset_password"))
         self.find_element(By.NAME, "email").send_keys("admin@example.com")
         self.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
         self._wait_until_page_ready()
@@ -603,7 +855,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     def test_radius_user_registration(self):
         """Ensure users can register using the RADIUS API."""
-        url = f"{self.config['api_url']}/api/v1/radius/organization/default/account/"
+        registration_url = self.reverse_url("radius:rest_register", {"slug": "default"})
+        url = f"{self.config['api_url']}{registration_url}"
         username = "signup-user"
         try:
             response = requests.post(
@@ -623,10 +876,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     def test_freeradius(self):
         """Ensure freeradius service is working correctly."""
-        token_page = (
-            f"{self.config['api_url']}/api/v1/radius/"
-            "organization/default/account/token/"
-        )
+        token_url = self.reverse_url("radius:user_auth_token", {"slug": "default"})
+        token_page = f"{self.config['api_url']}{token_url}"
         request_body = "username=admin&password=admin".encode("utf-8")
         request_info = request.Request(token_page, data=request_body)
         try:
