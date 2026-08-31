@@ -33,7 +33,7 @@ RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
 ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/archive/584b29db6b8ee2657cdb14722c3b129afe9a417f.tar.gz"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/tarball/issues/417-persistence-schema-fields"
+ARG OPENWISP_FIRMWARE_SOURCE="https://github.com/openwisp/openwisp-firmware-upgrader/tarball/issues/380-scheduled-mass-upgrades"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
 ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/archive/2f23a6c8a16af19643f1abba67d436da349be3e6.tar.gz"
