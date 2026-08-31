@@ -465,7 +465,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             cls.second_driver = self.get_chrome_webdriver()
         cls.web_driver = cls.base_driver
         location_name = "automated-websocket-selenium-loc01"
-        marker = (By.CLASS_NAME, "leaflet-marker-icon")
 
         def dismiss_location_alert():
             try:
@@ -495,7 +494,16 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ).click()
             self.find_element(By.NAME, "is_mobile", driver=self.second_driver).click()
             dismiss_location_alert()
+            geometry = json.loads(
+                self.find_element(
+                    By.ID,
+                    "id_geometry",
+                    driver=self.second_driver,
+                    wait_for="presence",
+                ).get_attribute("value")
+            )
             self._click_save_btn(self.second_driver)
+            return geometry
 
         self._execute_django_shell_command(
             "from openwisp_controller.geo.models import Location; "
@@ -513,10 +521,27 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                 "admin:geo_location_changelist",
                 driver=self.second_driver,
             )
-            self.find_element(By.NAME, "is_mobile", driver=self.base_driver).click()
-            self.wait_for_invisibility(*marker, timeout=10, driver=self.base_driver)
-            add_location_point()
-            self.wait_for_presence(*marker, timeout=10, driver=self.base_driver)
+            self.assertEqual(
+                self.find_element(
+                    By.ID,
+                    "id_geometry",
+                    driver=self.base_driver,
+                    wait_for="presence",
+                ).get_attribute("value"),
+                "",
+            )
+            geometry = add_location_point()
+
+            def geometry_updated(driver):
+                value = driver.find_element(By.ID, "id_geometry").get_attribute("value")
+                return bool(value) and json.loads(value) == geometry
+
+            try:
+                WebDriverWait(self.base_driver, 10).until(geometry_updated)
+            except TimeoutException:
+                self.fail(
+                    "Location geometry update was not received by the first browser."
+                )
         finally:
             self._execute_django_shell_command(
                 "from openwisp_controller.geo.models import Location; "
