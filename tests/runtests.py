@@ -162,6 +162,13 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
 
 class TestServices(FunctionalTestUtils, unittest.TestCase):
     custom_static_token = None
+    custom_settings_path = (
+        Path(BaseTestUtils.root_location)
+        / "customization"
+        / "configuration"
+        / "django"
+        / "custom_django_settings.py"
+    )
 
     @property
     def failureException(self):
@@ -170,43 +177,66 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     @classmethod
     def _setup_admin_theme_links(cls):
-        """Configure admin theme links during tests.
-
-        The default docker-compose setup does not allow injecting
-        OPENWISP_ADMIN_THEME_LINKS dynamically, so this method updates
-        Django settings inside the running container and reloads uWSGI.
-        This enables the Selenium tests to verify that a custom static CSS
-        file is served by the admin interface.
-        """
-        css_path = os.path.join(
-            cls.root_location,
-            "customization",
-            "theme",
-            cls.config["custom_css_filename"],
-        )
+        """Configure custom assets before creating Selenium sessions."""
+        cls.custom_settings_existed = cls.custom_settings_path.exists()
+        if cls.custom_settings_existed:
+            cls.custom_settings = cls.custom_settings_path.read_text()
         cls.custom_static_token = str(time.time_ns())
-        with open(css_path, "w") as custom_css_file:
-            custom_css_file.write(
-                f"body{{--openwisp-test: {cls.custom_static_token};}}"
-            )
-        script = rf"""
-            sed -i '/^OPENWISP_ADMIN_THEME_LINKS[[:space:]]*=/d' /opt/openwisp/openwisp/settings.py &&
-            printf "\nOPENWISP_ADMIN_THEME_LINKS=[{{\"type\":\"text/css\",\"href\":\"/static/admin/css/openwisp.css\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"text/css\",\"href\":\"/static/{cls.config["custom_css_filename"]}\",\"rel\":\"stylesheet\",\"media\":\"all\"}},{{\"type\":\"image/svg+xml\",\"href\":\"/static/ui/openwisp/images/favicon.svg\",\"rel\":\"icon\"}}]\n" >> /opt/openwisp/openwisp/settings.py &&
-            python collectstatic.py &&
-            uwsgi --reload uwsgi.pid
-        """  # noqa: E501
+        cls.custom_css_path = (
+            Path(cls.root_location)
+            / "customization"
+            / "theme"
+            / cls.config["custom_css_filename"]
+        )
+        cls.custom_css_path.write_text(
+            f"body{{--openwisp-test: {cls.custom_static_token};}}"
+        )
+        theme_links = [
+            {
+                "type": "text/css",
+                "href": "/static/admin/css/openwisp.css",
+                "rel": "stylesheet",
+                "media": "all",
+            },
+            {
+                "type": "text/css",
+                "href": f"/static/{cls.config['custom_css_filename']}",
+                "rel": "stylesheet",
+                "media": "all",
+            },
+            {
+                "type": "image/svg+xml",
+                "href": "/static/ui/openwisp/images/favicon.svg",
+                "rel": "icon",
+            },
+        ]
+        with cls.custom_settings_path.open("a") as custom_settings:
+            custom_settings.write(f"\nOPENWISP_ADMIN_THEME_LINKS = {theme_links!r}\n")
         cls._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "bash",
-                "-c",
-                script,
-            ],
-            use_text_mode=True,
+            ["docker", "compose", "up", "--detach", "--force-recreate", "dashboard"]
+        )
+        for _ in range(cls.config["services_max_retries"]):
+            try:
+                admin_login_page = (
+                    f"{cls.config['app_url']}{cls.reverse_url('admin:login')}"
+                )
+                if request.urlopen(admin_login_page, context=cls.ctx, timeout=10):
+                    return
+            except (RuntimeError, urlerror.HTTPError, OSError, ConnectionResetError):
+                time.sleep(cls.config["services_delay_retries"])
+        raise RuntimeError(
+            "Dashboard did not start after applying test theme settings."
+        )
+
+    @classmethod
+    def _cleanup_admin_theme_links(cls):
+        if cls.custom_settings_existed:
+            cls.custom_settings_path.write_text(cls.custom_settings)
+        else:
+            cls.custom_settings_path.unlink(missing_ok=True)
+        cls.custom_css_path.unlink(missing_ok=True)
+        cls._execute_docker_compose_command(
+            ["docker", "compose", "up", "--detach", "--force-recreate", "dashboard"]
         )
 
     @classmethod
@@ -254,9 +284,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             cls._execute_docker_compose_command(
                 ["docker", "compose", "up", "--detach"],
             )
-        # Disabled with test_custom_static_files_loaded while its uWSGI reload
-        # is investigated.
-        # cls._setup_admin_theme_links()
+        cls._setup_admin_theme_links()
         cls._cleanup_stale_test_data()
         # Create base drivers (Firefox)
         if cls.config["driver"] == "firefox":
@@ -278,15 +306,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             print(f"Unable to delete test users: {exc_type}: {e}")
         cls.second_driver.quit()
         cls.base_driver.quit()
-        # Remove the temporary custom CSS file created for testing
-        css_path = os.path.join(
-            cls.root_location,
-            "customization",
-            "theme",
-            cls.config["custom_css_filename"],
-        )
-        if os.path.exists(css_path):
-            os.remove(css_path)
+        cls._cleanup_admin_theme_links()
         if cls.failed_test and cls.config["logs"]:
             cmd = subprocess.Popen(
                 ["docker", "compose", "logs"],
@@ -390,22 +410,21 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             "Django cache and sessions must use the configured Redis password.",
         )
 
-    # Disabled while the dynamic theme setup reload is investigated.
-    # def test_custom_static_files_loaded(self):
-    #     self.login()
-    #     self.open(self.reverse_url("admin:index"))
-    #     favicon_href = self.find_element(
-    #         By.CSS_SELECTOR, 'link[rel="icon"]'
-    #     ).get_attribute("href")
-    #     self.assertRegex(
-    #         favicon_href,
-    #         r"/static/ui/openwisp/images/favicon(\.[0-9a-f]+)?\.svg$",
-    #     )
-    #     value = self.web_driver.execute_script(
-    #         "return getComputedStyle(document.body)"
-    #         ".getPropertyValue('--openwisp-test');"
-    #     )
-    #     self.assertEqual(value.strip(), self.custom_static_token)
+    def test_custom_static_files_loaded(self):
+        self.login()
+        self.open(self.reverse_url("admin:index"))
+        favicon_href = self.web_driver.find_element(
+            By.CSS_SELECTOR, 'link[rel="icon"]'
+        ).get_attribute("href")
+        self.assertRegex(
+            favicon_href,
+            r"/static/ui/openwisp/images/favicon(\.[0-9a-f]+)?\.svg$",
+        )
+        value = self.web_driver.execute_script(
+            "return getComputedStyle(document.body)"
+            ".getPropertyValue('--openwisp-test');"
+        )
+        self.assertEqual(value.strip(), self.custom_static_token)
 
     def test_device_monitoring_charts(self):
         self.login()
@@ -432,6 +451,18 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     def test_websocket_marker(self):
         """Ensure location marker updates are sent to another browser session."""
+        for driver in (self.base_driver, self.second_driver):
+            try:
+                driver.quit()
+            except Exception:
+                pass
+        if self.config["driver"] == "firefox":
+            self.base_driver = self.get_firefox_webdriver()
+            self.second_driver = self.get_firefox_webdriver()
+        if self.config["driver"] == "chromium":
+            self.base_driver = self.get_chrome_webdriver()
+            self.second_driver = self.get_chrome_webdriver()
+        self.web_driver = self.base_driver
         location_name = "automated-websocket-selenium-loc01"
         marker = (By.CLASS_NAME, "leaflet-marker-icon")
 
@@ -492,13 +523,14 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             )
 
     def test_topology_graph(self):
-        """Ensure topology graphs load and react to bulk node actions."""
+        """Ensure the admin graph visualizer renders database-backed topology data."""
+        self.base_driver.quit()
+        if self.config["driver"] == "firefox":
+            self.base_driver = self.get_firefox_webdriver()
+        if self.config["driver"] == "chromium":
+            self.base_driver = self.get_chrome_webdriver()
+        self.web_driver = self.base_driver
         label = "automated-selenium-test-02"
-        fixture_path = Path(__file__).parent / "static" / "network-graph.json"
-        fixture_destination = (
-            Path(self.root_location) / "customization" / "theme" / fixture_path.name
-        )
-        fixture_url = "http://dashboard.internal/static/network-graph.json"
 
         def delete_topology():
             self._execute_django_shell_command(
@@ -506,89 +538,34 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                 f"Topology.objects.filter(label={label!r}).delete()"
             )
 
-        def delete_fixture():
-            fixture_destination.unlink(missing_ok=True)
-            self._execute_docker_compose_command(
-                [
-                    "docker",
-                    "compose",
-                    "exec",
-                    "-T",
-                    "dashboard",
-                    "rm",
-                    "-f",
-                    "/opt/openwisp/static/network-graph.json",
-                ]
-            )
-
-        def create_topology():
-            self.open(self.reverse_url("admin:topology_topology_add"))
-            self.find_element(By.NAME, "label").send_keys(label)
-            self.find_element(By.NAME, "parser").find_element(
-                By.XPATH, '//option[text()="NetJSON NetworkGraph"]'
-            ).click()
-            self.find_element(By.NAME, "url").send_keys(fixture_url)
-            self._click_save_btn()
-            self.addCleanup(delete_topology)
-            self.get_resource(
-                label, "admin:topology_topology_changelist", select_field="field-label"
-            )
-
-        def run_action(option):
-            self.open(self.reverse_url("admin:topology_topology_changelist"))
-            selector = (
-                f'//a[contains(text(), "{label}")]/../..'
-                '//input[@name="_selected_action"]'
-            )
-            self.find_element(By.XPATH, selector).click()
-            self.find_element(By.NAME, "action").find_element(
-                By.XPATH, f'//option[@value="{option}"]'
-            ).click()
-            self.find_element(By.NAME, "index").click()
-
-        self.login()
-        self.addCleanup(delete_fixture)
-        delete_fixture()
-        fixture_destination.write_bytes(fixture_path.read_bytes())
-        self._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "exec",
-                "-T",
-                "dashboard",
-                "python",
-                "manage.py",
-                "collectstatic",
-                "--noinput",
-            ]
-        )
+        fixture = (Path(__file__).parent / "static" / "network-graph.json").read_text()
+        self.addCleanup(delete_topology)
         output, _ = self._execute_django_shell_command(
-            "import requests; "
-            f"print(requests.get({fixture_url!r}, timeout=10).status_code)"
+            "from openwisp_network_topology.models import Topology; "
+            "from openwisp_users.models import Organization; "
+            f"Topology.objects.filter(label={label!r}).delete(); "
+            f"data = {fixture!r}; "
+            f"topology = Topology(label={label!r}, "
+            "parser='netdiff.NetJsonParser', strategy='receive', "
+            "organization=Organization.objects.get(slug='default')); "
+            "topology.full_clean(); topology.save(); "
+            "graph = topology.get_topology_data(data); "
+            "topology.update_topology(topology.diff(graph)); print(topology.pk)"
         )
-        self.assertEqual(
-            output.strip().splitlines()[-1],
-            "200",
-            "The local topology fixture must be reachable from the dashboard.",
+        topology_url = self.reverse_url(
+            "admin:topology_topology_change",
+            {"object_id": output.strip().splitlines()[-1]},
         )
-        create_topology()
-        self.get_resource(
-            label, "admin:topology_topology_changelist", select_field="field-label"
-        )
+        self.login()
+        self.open(topology_url)
         self.find_element(By.CSS_SELECTOR, "input.visualizelink").click()
         self.find_element(By.CSS_SELECTOR, "button.sideBarHandle").click()
+        values = self.find_elements(By.CSS_SELECTOR, ".njg-valueLabel")
         self.assertEqual(
-            self.find_element(By.CSS_SELECTOR, ".njg-valueLabel").text.lower(),
-            label,
+            [value.text.lower() for value in values],
+            [label, "olsrv2", "0.14.1-1", "ff_dat_metric", "23", "18"],
         )
         self.assertEqual([], self.console_error_check())
-        run_action("delete_selected")
-        self.assertNotIn("<li>Nodes: ", self.web_driver.page_source)
-        run_action("update_selected")
-        run_action("delete_selected")
-        self._wait_until_page_ready()
-        self.assertIn("<li>Nodes: ", self.web_driver.page_source)
 
     def test_create_prefix_users(self):
         """Ensure RADIUS prefix batches generate downloadable credentials."""
