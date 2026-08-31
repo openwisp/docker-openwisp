@@ -73,6 +73,11 @@ def set_default_vpn(vpn):
     redis_client.set("openwisp_default_vpn_ca_uuid", str(vpn.ca_id), ex=None)
 
 
+def set_default_topology(topology):
+    redis_client.set(DEFAULT_TOPOLOGY_SELECTOR_KEY, str(topology.id), ex=None)
+    redis_client.set("default_openvpn_topology_key", str(topology.key), ex=None)
+
+
 def create_admin():
     """Creates superuser `admin` if it does not exist."""
     User.objects.filter(is_superuser=True).exists() or User.objects.create_superuser(
@@ -135,6 +140,7 @@ def create_default_vpn(ca=None, cert=None):
     """Creates default vpn."""
     vpn = get_selected(Vpn, DEFAULT_VPN_SELECTOR_KEY)
     if vpn:
+        set_default_vpn(vpn)
         return vpn
     openvpn_vpns = Vpn.objects.filter(backend=OPENVPN_BACKEND)
     vpn = select_single(openvpn_vpns, DEFAULT_VPN_SELECTOR_KEY, "VPN")
@@ -175,6 +181,13 @@ def create_default_vpn_template(vpn):
         return template
     template = select_single(
         Template.objects.filter(vpn=vpn, type="vpn", default=True),
+        DEFAULT_VPN_TEMPLATE_SELECTOR_KEY,
+        "VPN template",
+    )
+    if template:
+        return template
+    template = select_single(
+        Template.objects.filter(vpn=vpn, type="vpn"),
         DEFAULT_VPN_TEMPLATE_SELECTOR_KEY,
         "VPN template",
     )
@@ -229,14 +242,11 @@ def create_ssh_key_template():
     if template:
         return template
     template = select_single(
-        Template.objects.filter(name=DEFAULT_SSH_TEMPLATE_NAME, default=True),
-        DEFAULT_SSH_TEMPLATE_SELECTOR_KEY,
-        "SSH key template",
-    )
-    if template:
-        return template
-    template = select_single(
-        Template.objects.filter(default=True, type="generic", vpn__isnull=True),
+        Template.objects.filter(
+            type="generic",
+            vpn__isnull=True,
+            config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
+        ),
         DEFAULT_SSH_TEMPLATE_SELECTOR_KEY,
         "SSH key template",
     )
@@ -295,6 +305,7 @@ def create_default_topology(vpn):
     """Creates Topology object for the default VPN."""
     topology = get_selected(Topology, DEFAULT_TOPOLOGY_SELECTOR_KEY)
     if topology:
+        set_default_topology(topology)
         return topology
     if vpn.backend == OPENVPN_BACKEND:
         parser = "netdiff.OpenvpnParser"
@@ -316,8 +327,7 @@ def create_default_topology(vpn):
         )
         topology.full_clean()
         topology.save()
-    redis_client.set(DEFAULT_TOPOLOGY_SELECTOR_KEY, str(topology.id), ex=None)
-    redis_client.set("default_openvpn_topology_key", str(topology.key), ex=None)
+    set_default_topology(topology)
     return topology
 
 

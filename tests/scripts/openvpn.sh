@@ -164,8 +164,8 @@ test_vpn_name_config_filename_decoupling() (
 			esac
 		done
 		case "$output_path" in
-		vpn.tar.gz) cp "$config_test_dir/vpn.tar.gz" "$output_path" ;;
-		checksum) printf '%s\n' checksum >"$output_path" ;;
+		*/vpn.tar.gz) cp "$config_test_dir/vpn.tar.gz" "$output_path" ;;
+		*/checksum) printf '%s\n' checksum >"$output_path" ;;
 		*) return 1 ;;
 		esac
 	}
@@ -182,11 +182,13 @@ test_vpn_name_config_filename_decoupling() (
 	printf '%s' 'second config' >"$config_test_dir/archive/second.conf"
 	tar -czf "$config_test_dir/vpn.tar.gz" -C "$config_test_dir/archive" \
 		first.conf second.conf
+	printf '%s\n' previous-checksum >"$config_test_dir/multiple/checksum"
 	cd "$config_test_dir/multiple"
 	if openvpn_config_download >/dev/null 2>&1; then
 		return 1
 	fi
 	test ! -f openvpn.conf
+	test "$(cat checksum)" = previous-checksum
 	mkdir "$config_test_dir/empty"
 	printf '%s' 'empty archive' >"$config_test_dir/archive/empty.txt"
 	tar -czf "$config_test_dir/vpn.tar.gz" -C "$config_test_dir/archive" empty.txt
@@ -196,6 +198,38 @@ test_vpn_name_config_filename_decoupling() (
 		return 1
 	fi
 	test "$(cat openvpn.conf)" = 'stale config'
+	test ! -f checksum
+	mkdir -p "$config_test_dir/archive/etc/openvpn" \
+		"$config_test_dir/nested/etc/ssl"
+	printf '%s' 'nested config' >"$config_test_dir/archive/server.conf"
+	printf '%s' 'nested pem' >"$config_test_dir/archive/etc/openvpn/ca.pem"
+	tar -czf "$config_test_dir/vpn.tar.gz" -C "$config_test_dir/archive" \
+		server.conf etc/openvpn/ca.pem
+	printf '%s' 'stale config' >"$config_test_dir/nested/openvpn.conf"
+	printf '%s' 'existing file' >"$config_test_dir/nested/etc/ssl/keep"
+	cd "$config_test_dir/nested"
+	openvpn_config_download
+	test "$(cat openvpn.conf)" = 'nested config'
+	test "$(cat etc/openvpn/ca.pem)" = 'nested pem'
+	test "$(cat etc/ssl/keep)" = 'existing file'
+)
+
+test_config_update_lock() (
+	lock_test_dir=$(mktemp -d) || exit 1
+	trap 'rm -rf -- "$lock_test_dir" /checksum' EXIT HUP INT TERM
+	mkdir "$lock_test_dir/bin"
+	printf '%s\n' '#!/bin/sh' 'exit 1' >"$lock_test_dir/bin/curl"
+	chmod 700 "$lock_test_dir/bin/curl"
+	printf '%s\n' local >/checksum
+	PATH="$lock_test_dir/bin:$PATH"
+	UUID=vpn-uuid
+	KEY=vpn-key
+	export PATH UUID KEY
+	(
+		flock -n 9 || exit 1
+		sh /openvpn.sh
+	) 9>/.openvpn-config.lock
 )
 
 test_vpn_name_config_filename_decoupling
+test_config_update_lock

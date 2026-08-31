@@ -21,6 +21,8 @@ load_init_data.redis_client = client
 
 keys = (
     "openwisp_default_vpn_uuid",
+    "openwisp_default_vpn_key",
+    "openwisp_default_vpn_ca_uuid",
     "openwisp_default_vpn_template_uuid",
     "openwisp_default_ssh_template_uuid",
     "default_openvpn_topology_uuid",
@@ -36,18 +38,27 @@ ssh_template = Template.objects.get(default=True, type="generic", vpn__isnull=Tr
 marker = "initial-data-selector-decoy"
 template_marker = "initial-data-selector-template"
 ssh_template_marker = "initial-data-selector-ssh-template"
+competing_ssh_template_marker = "initial-data-selector-generic-template"
 previous_vpn_name = default_vpn.name
 previous_ssh_template_name = ssh_template.name
+default_template_default = default_template.default
 decoy_vpn = None
 decoy_template = None
 decoy_topology = None
+competing_ssh_template = None
 created_vpn = None
 previous_vpn_name_setting = os.environ.get("VPN_NAME")
 previous_vpn_client_name_setting = os.environ.get("VPN_CLIENT_NAME")
 default_vpn_backend = default_vpn.backend
 try:
     Vpn.objects.filter(name=marker).delete()
-    Template.objects.filter(name__in=(template_marker, ssh_template_marker)).delete()
+    Template.objects.filter(
+        name__in=(
+            template_marker,
+            ssh_template_marker,
+            competing_ssh_template_marker,
+        )
+    ).delete()
     Topology.objects.filter(label=marker).delete()
     client.delete("openwisp_default_vpn_uuid")
     os.environ.pop("VPN_NAME", None)
@@ -56,6 +67,11 @@ try:
         selected_vpn.pk == default_vpn.pk
     ), "VPN selector migration chose the wrong VPN"
     assert client.get("openwisp_default_vpn_uuid").decode() == str(default_vpn.pk)
+    client.delete("openwisp_default_vpn_key")
+    client.delete("openwisp_default_vpn_ca_uuid")
+    selected_vpn = load_init_data.create_default_vpn(None, None)
+    assert client.get("openwisp_default_vpn_key").decode() == str(default_vpn.key)
+    assert client.get("openwisp_default_vpn_ca_uuid").decode() == str(default_vpn.ca_id)
 
     client.delete("default_openvpn_topology_uuid")
     selected_topology = load_init_data.create_default_topology(default_vpn)
@@ -65,6 +81,11 @@ try:
     assert client.get("default_openvpn_topology_uuid").decode() == str(
         default_topology.pk
     )
+    client.delete("default_openvpn_topology_key")
+    selected_topology = load_init_data.create_default_topology(default_vpn)
+    assert client.get("default_openvpn_topology_key").decode() == str(
+        default_topology.key
+    )
 
     client.delete("openwisp_default_vpn_template_uuid")
     selected_template = load_init_data.create_default_vpn_template(default_vpn)
@@ -73,6 +94,15 @@ try:
     ), "VPN template selector migration chose the wrong template"
     assert client.get("openwisp_default_vpn_template_uuid").decode() == str(
         default_template.pk
+    )
+    Template.objects.filter(pk=default_template.pk).update(default=False)
+    client.delete("openwisp_default_vpn_template_uuid")
+    selected_template = load_init_data.create_default_vpn_template(default_vpn)
+    assert (
+        selected_template.pk == default_template.pk
+    ), "Disabled VPN template selector migration chose the wrong template"
+    Template.objects.filter(pk=default_template.pk).update(
+        default=default_template_default
     )
 
     client.delete("openwisp_default_ssh_template_uuid")
@@ -158,6 +188,23 @@ try:
     ssh_template.name = ssh_template_marker
     ssh_template.full_clean()
     ssh_template.save()
+    competing_ssh_template = Template(
+        name=competing_ssh_template_marker,
+        default=True,
+        type="generic",
+        backend="netjsonconfig.OpenWrt",
+        config={
+            "files": [
+                {
+                    "path": "/etc/banner",
+                    "mode": "0644",
+                    "contents": "OpenWISP",
+                }
+            ]
+        },
+    )
+    competing_ssh_template.full_clean()
+    competing_ssh_template.save()
     client.delete("openwisp_default_ssh_template_uuid")
     selected_ssh_template = load_init_data.create_ssh_key_template()
     assert (
@@ -178,9 +225,14 @@ finally:
         os.environ["VPN_CLIENT_NAME"] = previous_vpn_client_name_setting
     if decoy_template:
         decoy_template.delete()
+    if competing_ssh_template:
+        competing_ssh_template.delete()
     Template.objects.exclude(pk=ssh_template.pk).filter(
         name="SSH Keys", default=True
     ).delete()
+    Template.objects.filter(pk=default_template.pk).update(
+        default=default_template_default
+    )
     ssh_template.name = previous_ssh_template_name
     ssh_template.full_clean()
     ssh_template.save()
@@ -199,3 +251,4 @@ finally:
             client.delete(key)
         else:
             client.set(key, value)
+        assert client.get(key) == value, f"Redis key {key} was not restored"
