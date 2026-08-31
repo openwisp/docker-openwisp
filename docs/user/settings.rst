@@ -505,11 +505,22 @@ framework.
 ``REDIS_CACHE_URL``
 ~~~~~~~~~~~~~~~~~~~
 
+- All default Redis URLs use ``rediss://`` when ``REDIS_USE_TLS`` is
+  ``True`` and ``redis://`` otherwise.
 - **Explanation:** Allows freely redefining the Redis database URL for the
   Django cache.
 - **Valid Values:** STRING.
 - **Default:**
-  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/0``.
+  ``<REDIS_SCHEME>://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/0``.
+
+``REDIS_SESSIONS_URL``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Allows freely redefining the Redis database URL for
+  Django sessions.
+- **Valid Values:** STRING.
+- **Default:**
+  ``<REDIS_SCHEME>://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/1``.
 
 ``CHANNEL_REDIS_URL``
 ~~~~~~~~~~~~~~~~~~~~~
@@ -518,7 +529,7 @@ framework.
   Django Channels' layer.
 - **Valid Values:** STRING.
 - **Default:**
-  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/1``.
+  ``<REDIS_SCHEME>://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/3``.
 
 ``CELERY_BROKER_URL``
 ~~~~~~~~~~~~~~~~~~~~~
@@ -527,7 +538,7 @@ framework.
   Celery broker.
 - **Valid Values:** STRING.
 - **Default:**
-  ``redis://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/2``.
+  ``<REDIS_SCHEME>://<REDIS_USER>:<REDIS_PASS>@<REDIS_HOST>:<REDIS_PORT>/2``.
 
 DJANGO_LOG_LEVEL
 ~~~~~~~~~~~~~~~~
