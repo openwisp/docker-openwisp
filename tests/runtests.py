@@ -181,6 +181,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         cls.custom_settings_existed = cls.custom_settings_path.exists()
         if cls.custom_settings_existed:
             cls.custom_settings = cls.custom_settings_path.read_text()
+        cls.addClassCleanup(cls._cleanup_admin_theme_links)
         cls.custom_static_token = str(time.time_ns())
         cls.custom_css_path = (
             Path(cls.root_location)
@@ -306,7 +307,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             print(f"Unable to delete test users: {exc_type}: {e}")
         cls.second_driver.quit()
         cls.base_driver.quit()
-        cls._cleanup_admin_theme_links()
         if cls.failed_test and cls.config["logs"]:
             cmd = subprocess.Popen(
                 ["docker", "compose", "logs"],
@@ -451,18 +451,19 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     def test_websocket_marker(self):
         """Ensure location marker updates are sent to another browser session."""
-        for driver in (self.base_driver, self.second_driver):
+        cls = type(self)
+        for driver in (cls.base_driver, cls.second_driver):
             try:
                 driver.quit()
             except Exception:
                 pass
         if self.config["driver"] == "firefox":
-            self.base_driver = self.get_firefox_webdriver()
-            self.second_driver = self.get_firefox_webdriver()
+            cls.base_driver = self.get_firefox_webdriver()
+            cls.second_driver = self.get_firefox_webdriver()
         if self.config["driver"] == "chromium":
-            self.base_driver = self.get_chrome_webdriver()
-            self.second_driver = self.get_chrome_webdriver()
-        self.web_driver = self.base_driver
+            cls.base_driver = self.get_chrome_webdriver()
+            cls.second_driver = self.get_chrome_webdriver()
+        cls.web_driver = cls.base_driver
         location_name = "automated-websocket-selenium-loc01"
         marker = (By.CLASS_NAME, "leaflet-marker-icon")
 
@@ -524,12 +525,13 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
     def test_topology_graph(self):
         """Ensure the admin graph visualizer renders database-backed topology data."""
-        self.base_driver.quit()
+        cls = type(self)
+        cls.base_driver.quit()
         if self.config["driver"] == "firefox":
-            self.base_driver = self.get_firefox_webdriver()
+            cls.base_driver = self.get_firefox_webdriver()
         if self.config["driver"] == "chromium":
-            self.base_driver = self.get_chrome_webdriver()
-        self.web_driver = self.base_driver
+            cls.base_driver = self.get_chrome_webdriver()
+        cls.web_driver = cls.base_driver
         label = "automated-selenium-test-02"
 
         def delete_topology():
