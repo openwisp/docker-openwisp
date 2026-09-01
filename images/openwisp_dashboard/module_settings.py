@@ -82,18 +82,6 @@ STORAGES = {
         "BACKEND": "openwisp_utils.storage.CompressStaticFilesStorage",
     },
 }
-HTTP_SCHEME = request_scheme()
-HTTP_PORT = (
-    os.getenv("NGINX_SSL_PORT", "443")
-    if HTTP_SCHEME == "https"
-    else os.getenv("NGINX_PORT", "80")
-)
-HTTP_PORT = (
-    ""
-    if HTTP_SCHEME == "https" and os.environ["SSL_CERT_MODE"].lower() == "external"
-    else f":{HTTP_PORT}"
-)
-API_BASEURL = f'{HTTP_SCHEME}://{os.environ["API_DOMAIN"]}{HTTP_PORT}'
 
 OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = "openwisp_network_topology.urls"
 OPENWISP_MONITORING_API_URLCONF = "openwisp_monitoring.urls"

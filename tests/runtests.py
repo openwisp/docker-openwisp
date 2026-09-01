@@ -11,6 +11,7 @@ from urllib import request
 from urllib.parse import urlsplit, urlunsplit
 
 import requests
+from scripts.precompress_static import ASSETS
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -454,6 +455,66 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ".getPropertyValue('--openwisp-test');"
         )
         self.assertEqual(value.strip(), self.custom_static_token)
+
+    def test_nginx_serves_precompressed_static_files(self):
+        script = Path(__file__).parent / "scripts" / "precompress_static.py"
+        path = "/opt/openwisp/static/precompressed-static.txt"
+        self._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "run",
+                "--rm",
+                "--no-deps",
+                "--volume",
+                f"{script}:/test_precompress_static.py:ro",
+                "--entrypoint",
+                "python",
+                "dashboard",
+                "/test_precompress_static.py",
+            ]
+        )
+        try:
+            for encoding, extension in (("br", "br"), ("gzip", "gz")):
+                with self.subTest(encoding=encoding):
+                    request_info = request.Request(
+                        f"{self.live_server_url}/static/precompressed-static.txt",
+                        headers={"Accept-Encoding": encoding},
+                    )
+                    with request.urlopen(
+                        request_info, context=self.ctx, timeout=10
+                    ) as response:
+                        self.assertEqual(
+                            response.getcode(),
+                            200,
+                            "Nginx must serve precompressed static files.",
+                        )
+                        self.assertEqual(
+                            response.headers.get("Content-Encoding"),
+                            encoding,
+                            "Nginx must honor the requested static file encoding.",
+                        )
+                        self.assertEqual(
+                            response.read(),
+                            ASSETS[f"precompressed-static.txt.{extension}"],
+                            "Nginx must serve the precompressed asset, "
+                            "not its fallback.",
+                        )
+        finally:
+            self._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "exec",
+                    "-T",
+                    "dashboard",
+                    "rm",
+                    "-f",
+                    path,
+                    f"{path}.br",
+                    f"{path}.gz",
+                ]
+            )
 
     def test_device_monitoring_charts(self):
         self.login()
