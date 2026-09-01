@@ -42,12 +42,83 @@ openvpn_config_checksum() {
 }
 
 openvpn_config_download() {
-	curl_download --silent --retry 10 --retry-delay 5 --retry-max-time 300 --output vpn.tar.gz \
-		"${API_INTERNAL}/controller/vpn/download-config/${UUID}/?key=${KEY}"
-	curl_download --silent --output checksum \
-		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}"
-	tar xzf vpn.tar.gz
-	chmod 600 ./*.pem
+	local tmp_dir
+	local extract_dir
+	local conf_file
+	local file
+	# Extract in isolation so stale files in / cannot be mistaken for
+	# files from the newly downloaded archive.
+	tmp_dir=$(mktemp -d) || return 1
+	extract_dir="$tmp_dir/extract"
+	mkdir "$extract_dir" || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	curl_download --silent --retry 10 --retry-delay 5 --retry-max-time 300 \
+		--output "$tmp_dir/vpn.tar.gz" \
+		"${API_INTERNAL}/controller/vpn/download-config/${UUID}/?key=${KEY}" || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	curl_download --silent --output "$tmp_dir/checksum" \
+		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}" || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	tar xzf "$tmp_dir/vpn.tar.gz" -C "$extract_dir" || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	find "$extract_dir" -type f -name '*.pem' -exec chmod 600 -- {} + || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	# Supervisord always starts OpenVPN with openvpn.conf; normalize whatever
+	# config filename the archive contains, including names with whitespace.
+	conf_file=""
+	for file in "$extract_dir"/*.conf; do
+		[ -f "$file" ] || continue
+		if [ -n "$conf_file" ]; then
+			echo "ERROR: more than one OpenVPN config file found after extraction" >&2
+			rm -rf -- "$tmp_dir"
+			return 1
+		fi
+		conf_file="$file"
+	done
+	if [ -z "$conf_file" ]; then
+		echo "ERROR: no OpenVPN config file found after extraction" >&2
+		rm -rf -- "$tmp_dir"
+		return 1
+	fi
+	if [ "$conf_file" != "$extract_dir/openvpn.conf" ]; then
+		mv -f -- "$conf_file" "$extract_dir/openvpn.conf" || {
+			rm -rf -- "$tmp_dir"
+			return 1
+		}
+	fi
+	# Install extra files before replacing the active configuration, preserving
+	# their archive-relative paths when the destination directory already exists.
+	find "$extract_dir" -type f ! -path "$extract_dir/openvpn.conf" -exec sh -c '
+		extract_dir="$1"
+		shift
+		for file; do
+			target=${file#"$extract_dir"/}
+			mkdir -p "$(dirname "$target")" || exit 1
+			mv -f -- "$file" "$target" || exit 1
+		done
+	' sh "$extract_dir" {} + || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	mv -f -- "$extract_dir/openvpn.conf" openvpn.conf || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	mv -f -- "$tmp_dir/checksum" checksum || {
+		rm -rf -- "$tmp_dir"
+		return 1
+	}
+	rm -rf -- "$tmp_dir"
 }
 
 crl_download_to() {

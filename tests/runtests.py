@@ -160,6 +160,35 @@ class Test1Dashboard(BaseTestUtils, unittest.TestCase):
         )
 
 
+class TestInitialData(BaseTestUtils, unittest.TestCase):
+    """Tests for default data created before the dashboard starts."""
+
+    def test_names_do_not_select_initial_data(self):
+        script = Path(__file__).parent / "scripts" / "initial_data.py"
+        output, _ = self._execute_docker_compose_command(
+            [
+                "docker",
+                "compose",
+                "run",
+                "--rm",
+                "--no-deps",
+                "--volume",
+                f"{script}:/test_initial_data.py:ro",
+                "--entrypoint",
+                "python",
+                "dashboard",
+                "manage.py",
+                "shell",
+                "-c",
+                "exec(open('/test_initial_data.py').read())",
+            ],
+            use_text_mode=True,
+        )
+        self.assertEqual(
+            output.strip().splitlines()[-1], "initial data selectors passed"
+        )
+
+
 class TestServices(FunctionalTestUtils, unittest.TestCase):
     custom_static_token = None
     custom_settings_path = (

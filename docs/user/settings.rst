@@ -1033,21 +1033,24 @@ Nginx
 OpenVPN
 -------
 
+.. warning::
+
+    ``VPN_NAME`` and ``VPN_CLIENT_NAME`` are deprecated. New installations
+    without these variables create a VPN named ``default`` and a VPN
+    client template named ``default-management-vpn``.
+
 ``VPN_NAME``
 ~~~~~~~~~~~~
 
-- **Explanation:** Name of the VPN Server that will be visible on the
-  OpenWISP dashboard.
-- **Valid Values:** STRING.
-- **Default:** ``default``.
+- **Compatibility:** When set during initial setup, this variable names
+  the created VPN. It is ignored when an existing VPN is selected.
 
 ``VPN_CLIENT_NAME``
 ~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Name of the VPN client template that will be visible on
-  the OpenWISP dashboard.
-- **Valid Values:** STRING.
-- **Default:** ``default-management-vpn``.
+- **Compatibility:** When set during initial setup, this variable names
+  the created template. Existing templates are identified by a persisted
+  UUID, so changing this variable later has no effect.
 
 Topology
 --------
