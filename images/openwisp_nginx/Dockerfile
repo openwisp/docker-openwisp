@@ -1,11 +1,13 @@
 ARG NGINX_VERSION=1.31.4
+ARG NGINX_TARBALL_SHA256=e6f20b644a17a643f059ae6467a1971fe2811587d025e071068753a1f1e3b3c3
 
 # Build the nginx brotli module against nginx.org's nginx package used by this image.
 # Alpine's nginx module packages target Alpine's own nginx build.
 FROM nginx:${NGINX_VERSION}-alpine AS brotli-builder
 
 ARG NGINX_VERSION
-ARG NGX_BROTLI_VERSION=v1.0.0rc
+ARG NGX_BROTLI_COMMIT=25f86f0bac1101b6512135eac5f93c49c63609e3
+ARG NGINX_TARBALL_SHA256
 
 # hadolint ignore=DL3003,DL3018
 RUN apk add --update --no-cache \
@@ -16,10 +18,17 @@ RUN apk add --update --no-cache \
             openssl-dev \
             pcre2-dev \
             zlib-dev && \
-    git clone --depth 1 --branch ${NGX_BROTLI_VERSION} --recurse-submodules \
-            https://github.com/google/ngx_brotli.git /tmp/ngx_brotli && \
+    git init /tmp/ngx_brotli && \
+    git -C /tmp/ngx_brotli remote add origin https://github.com/google/ngx_brotli.git && \
+    git -C /tmp/ngx_brotli fetch --depth 1 origin ${NGX_BROTLI_COMMIT} && \
+    git -C /tmp/ngx_brotli checkout --detach FETCH_HEAD && \
+    git -C /tmp/ngx_brotli submodule update --init --recursive --depth 1 && \
     wget -q https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
             -O /tmp/nginx-${NGINX_VERSION}.tar.gz && \
+    printf '%s  %s\n' "${NGINX_TARBALL_SHA256}" \
+            "/tmp/nginx-${NGINX_VERSION}.tar.gz" \
+            > /tmp/nginx-${NGINX_VERSION}.sha256 && \
+    sha256sum -c /tmp/nginx-${NGINX_VERSION}.sha256 && \
     tar xzf /tmp/nginx-${NGINX_VERSION}.tar.gz -C /tmp && \
     cd /tmp/nginx-${NGINX_VERSION} && \
     ./configure \

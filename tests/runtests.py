@@ -217,8 +217,11 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             Path(cls.root_location)
             / "customization"
             / "theme"
+            / "custom"
             / cls.config["custom_css_filename"]
         )
+        cls.custom_css_directory_existed = cls.custom_css_path.parent.exists()
+        cls.custom_css_path.parent.mkdir(parents=True, exist_ok=True)
         cls.custom_css_path.write_text(
             f"body{{--openwisp-test: {cls.custom_static_token};}}"
         )
@@ -231,7 +234,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             },
             {
                 "type": "text/css",
-                "href": f"/static/{cls.config['custom_css_filename']}",
+                "href": f"/static/custom/{cls.config['custom_css_filename']}",
                 "rel": "stylesheet",
                 "media": "all",
             },
@@ -266,6 +269,8 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         else:
             cls.custom_settings_path.unlink(missing_ok=True)
         cls.custom_css_path.unlink(missing_ok=True)
+        if not cls.custom_css_directory_existed:
+            cls.custom_css_path.parent.rmdir()
         cls._execute_docker_compose_command(
             ["docker", "compose", "up", "--detach", "--force-recreate", "dashboard"]
         )
