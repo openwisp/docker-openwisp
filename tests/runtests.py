@@ -480,31 +480,36 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ]
         )
         try:
-            for encoding, extension in (("br", "br"), ("gzip", "gz")):
-                with self.subTest(encoding=encoding):
-                    request_info = request.Request(
-                        f"{self.live_server_url}/static/precompressed-static.txt",
-                        headers={"Accept-Encoding": encoding},
-                    )
-                    with request.urlopen(
-                        request_info, context=self.ctx, timeout=10
-                    ) as response:
-                        self.assertEqual(
-                            response.getcode(),
-                            200,
-                            "Nginx must serve precompressed static files.",
+            app_url = urlsplit(self.live_server_url)
+            for scheme in ("http", "https"):
+                static_url = urlunsplit(
+                    (scheme, app_url.netloc, "/static/precompressed-static.txt", "", "")
+                )
+                for encoding, extension in (("br", "br"), ("gzip", "gz")):
+                    with self.subTest(scheme=scheme, encoding=encoding):
+                        request_info = request.Request(
+                            static_url,
+                            headers={"Accept-Encoding": encoding},
                         )
-                        self.assertEqual(
-                            response.headers.get("Content-Encoding"),
-                            encoding,
-                            "Nginx must honor the requested static file encoding.",
-                        )
-                        self.assertEqual(
-                            response.read(),
-                            ASSETS[f"precompressed-static.txt.{extension}"],
-                            "Nginx must serve the precompressed asset, "
-                            "not its fallback.",
-                        )
+                        with request.urlopen(
+                            request_info, context=self.ctx, timeout=10
+                        ) as response:
+                            self.assertEqual(
+                                response.getcode(),
+                                200,
+                                "Nginx must serve precompressed static files.",
+                            )
+                            self.assertEqual(
+                                response.headers.get("Content-Encoding"),
+                                encoding,
+                                "Nginx must honor the requested static file encoding.",
+                            )
+                            self.assertEqual(
+                                response.read(),
+                                ASSETS[f"precompressed-static.txt.{extension}"],
+                                "Nginx must serve the precompressed asset, "
+                                "not its fallback.",
+                            )
         finally:
             self._execute_docker_compose_command(
                 [
