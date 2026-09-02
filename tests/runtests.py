@@ -1404,6 +1404,11 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         self.assertNotIn("NGINX_TARBALL_SHA256", dockerfile)
         self.assertIn("nginx-${NGINX_VERSION}.tar.gz.asc", dockerfile)
         self.assertIn("gpg --batch --verify", dockerfile)
+        self.assertIn(
+            'grep -Fqx "fpr:::::::::${fingerprint}:" '
+            "/tmp/nginx_signing_key_details || exit 1;",
+            dockerfile,
+        )
         for key, fingerprint in (
             ("arut", "43387825DDB1BB97EC36BA5D007C8D7C15D87369"),
             ("pluknet", "D6786CE303D9A9022998DC6CC8464D549AF75C0A"),
