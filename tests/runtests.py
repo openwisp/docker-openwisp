@@ -1062,6 +1062,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
     def test_nginx_source_verification_tracks_version(self):
+        """Ensure Dependabot Nginx bumps retain source authentication."""
         dockerfile = (
             Path(self.root_location) / "images" / "openwisp_nginx" / "Dockerfile"
         ).read_text()
@@ -1070,6 +1071,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         self.assertIn("gpg --batch --verify", dockerfile)
 
     def test_admin_theme_cleanup_restores_existing_css(self):
+        """Ensure theme setup does not remove a pre-existing custom CSS file."""
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             css_path = (
