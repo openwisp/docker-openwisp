@@ -1,5 +1,4 @@
 ARG NGINX_VERSION=1.31.4
-ARG NGINX_TARBALL_SHA256=e6f20b644a17a643f059ae6467a1971fe2811587d025e071068753a1f1e3b3c3
 
 # Build the nginx brotli module against nginx.org's nginx package used by this image.
 # Alpine's nginx module packages target Alpine's own nginx build.
@@ -7,13 +6,14 @@ FROM nginx:${NGINX_VERSION}-alpine AS brotli-builder
 
 ARG NGINX_VERSION
 ARG NGX_BROTLI_COMMIT=25f86f0bac1101b6512135eac5f93c49c63609e3
-ARG NGINX_TARBALL_SHA256
+ARG NGINX_SIGNING_KEY_FINGERPRINT=D6786CE303D9A9022998DC6CC8464D549AF75C0A
 
 # hadolint ignore=DL3003,DL3018
 RUN apk add --update --no-cache \
             brotli-dev \
             build-base \
             git \
+            gnupg \
             linux-headers \
             openssl-dev \
             pcre2-dev \
@@ -23,12 +23,20 @@ RUN apk add --update --no-cache \
     git -C /tmp/ngx_brotli fetch --depth 1 origin ${NGX_BROTLI_COMMIT} && \
     git -C /tmp/ngx_brotli checkout --detach FETCH_HEAD && \
     git -C /tmp/ngx_brotli submodule update --init --recursive --depth 1 && \
+    wget -q https://nginx.org/keys/pluknet.key -O /tmp/nginx_signing.key && \
+    gpg --batch --show-keys --with-colons /tmp/nginx_signing.key \
+            > /tmp/nginx_signing_key_details && \
+    grep -Fqx "fpr:::::::::${NGINX_SIGNING_KEY_FINGERPRINT}:" \
+            /tmp/nginx_signing_key_details && \
+    mkdir -m 0700 /tmp/gnupg && \
+    GNUPGHOME=/tmp/gnupg gpg --batch --import /tmp/nginx_signing.key && \
     wget -q https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
             -O /tmp/nginx-${NGINX_VERSION}.tar.gz && \
-    printf '%s  %s\n' "${NGINX_TARBALL_SHA256}" \
-            "/tmp/nginx-${NGINX_VERSION}.tar.gz" \
-            > /tmp/nginx-${NGINX_VERSION}.sha256 && \
-    sha256sum -c /tmp/nginx-${NGINX_VERSION}.sha256 && \
+    wget -q https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz.asc \
+            -O /tmp/nginx-${NGINX_VERSION}.tar.gz.asc && \
+    GNUPGHOME=/tmp/gnupg gpg --batch --verify \
+            /tmp/nginx-${NGINX_VERSION}.tar.gz.asc \
+            /tmp/nginx-${NGINX_VERSION}.tar.gz && \
     tar xzf /tmp/nginx-${NGINX_VERSION}.tar.gz -C /tmp && \
     cd /tmp/nginx-${NGINX_VERSION} && \
     ./configure \

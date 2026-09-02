@@ -6,6 +6,7 @@ import time
 import unittest
 from contextlib import contextmanager
 from pathlib import Path
+from unittest import mock
 from urllib import error as urlerror
 from urllib import request
 from urllib.parse import urlsplit, urlunsplit
@@ -221,6 +222,9 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             / cls.config["custom_css_filename"]
         )
         cls.custom_css_directory_existed = cls.custom_css_path.parent.exists()
+        cls.custom_css_existed = cls.custom_css_path.exists()
+        if cls.custom_css_existed:
+            cls.custom_css = cls.custom_css_path.read_bytes()
         cls.custom_css_path.parent.mkdir(parents=True, exist_ok=True)
         cls.custom_css_path.write_text(
             f"body{{--openwisp-test: {cls.custom_static_token};}}"
@@ -268,7 +272,10 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             cls.custom_settings_path.write_text(cls.custom_settings)
         else:
             cls.custom_settings_path.unlink(missing_ok=True)
-        cls.custom_css_path.unlink(missing_ok=True)
+        if cls.custom_css_existed:
+            cls.custom_css_path.write_bytes(cls.custom_css)
+        else:
+            cls.custom_css_path.unlink(missing_ok=True)
         if not cls.custom_css_directory_existed:
             cls.custom_css_path.parent.rmdir()
         cls._execute_docker_compose_command(
@@ -491,22 +498,24 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         }
         custom_nginx_directory_existed = custom_nginx_directory.exists()
         custom_static_directory_existed = custom_static_directory.exists()
-        self._execute_docker_compose_command(
-            [
-                "docker",
-                "compose",
-                "run",
-                "--rm",
-                "--no-deps",
-                "--volume",
-                f"{script}:/test_precompress_static.py:ro",
-                "--entrypoint",
-                "python",
-                "dashboard",
-                "/test_precompress_static.py",
-            ]
-        )
         try:
+            for file_path in custom_files:
+                file_path.unlink(missing_ok=True)
+            self._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "run",
+                    "--rm",
+                    "--no-deps",
+                    "--volume",
+                    f"{script}:/test_precompress_static.py:ro",
+                    "--entrypoint",
+                    "python",
+                    "dashboard",
+                    "/test_precompress_static.py",
+                ]
+            )
             app_url = urlsplit(self.live_server_url)
             static_url = urlunsplit(
                 ("https", app_url.netloc, "/static/precompressed-static.txt", "", "")
@@ -1051,6 +1060,52 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
+
+    def test_nginx_source_verification_tracks_version(self):
+        dockerfile = (
+            Path(self.root_location) / "images" / "openwisp_nginx" / "Dockerfile"
+        ).read_text()
+        self.assertNotIn("NGINX_TARBALL_SHA256", dockerfile)
+        self.assertIn("nginx-${NGINX_VERSION}.tar.gz.asc", dockerfile)
+        self.assertIn("gpg --batch --verify", dockerfile)
+
+    def test_admin_theme_cleanup_restores_existing_css(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            css_path = (
+                root / "customization" / "theme" / "custom" / "custom-openwisp-test.css"
+            )
+            css_path.parent.mkdir(parents=True)
+            original_css = b"/* existing custom theme */\n"
+            css_path.write_bytes(original_css)
+
+            class CleanupTestServices(TestServices):
+                pass
+
+            CleanupTestServices.custom_settings_path = root / "settings.py"
+            CleanupTestServices.custom_settings_path.write_text("")
+            CleanupTestServices.root_location = root
+            CleanupTestServices.config = {
+                "app_url": "https://dashboard.openwisp.org",
+                "custom_css_filename": css_path.name,
+                "services_delay_retries": 0,
+                "services_max_retries": 1,
+            }
+            with mock.patch.object(
+                CleanupTestServices, "addClassCleanup"
+            ), mock.patch.object(
+                CleanupTestServices, "reverse_url", return_value="/admin/login/"
+            ), mock.patch.object(
+                CleanupTestServices,
+                "_execute_docker_compose_command",
+                return_value=("", ""),
+            ), mock.patch.object(
+                request, "urlopen", return_value=mock.Mock()
+            ):
+                CleanupTestServices._setup_admin_theme_links()
+                self.assertNotEqual(css_path.read_bytes(), original_css)
+                CleanupTestServices._cleanup_admin_theme_links()
+            self.assertEqual(css_path.read_bytes(), original_css)
 
     def test_profile_configures_shell_defaults_and_preserves_overrides(self):
         for dev_mode, settings, expected in (
