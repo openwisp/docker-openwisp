@@ -464,6 +464,33 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
     def test_nginx_serves_precompressed_static_files(self):
         script = Path(__file__).parent / "scripts" / "precompress_static.py"
         path = "/opt/openwisp/static/precompressed-static.txt"
+        custom_nginx_directory = Path(self.root_location) / "customization" / "nginx"
+        custom_static_directory = custom_nginx_directory / "static"
+        custom_path = custom_static_directory / "precompressed-static.txt"
+        custom_assets = {
+            "br": (
+                b"\x1b \x00\xf8\x8dT\xb5\xbf\x1ek\x83\x93\x93 eoI\x08#\xb5\xf4\x15\x94"
+                b"\xccc\x12\\"
+                b"\xc7\xe6\xa1\xec\x01"
+            ),
+            "gzip": (
+                b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xffK.-.\xc9\xcfU((JM"
+                b"\xce\xcf\x05\x92"
+                b"\xc5\xc5\xa9)\n\xc5%\x89%\x99\xc9\n\x89@N\t"
+                b"\x00i\xf5y\x8e!\x00\x00\x00"
+            ),
+        }
+        custom_files = {
+            custom_path: b"custom static asset",
+            Path(f"{custom_path}.br"): custom_assets["br"],
+            Path(f"{custom_path}.gz"): custom_assets["gzip"],
+        }
+        original_custom_files = {
+            file_path: file_path.read_bytes() if file_path.exists() else None
+            for file_path in custom_files
+        }
+        custom_nginx_directory_existed = custom_nginx_directory.exists()
+        custom_static_directory_existed = custom_static_directory.exists()
         self._execute_docker_compose_command(
             [
                 "docker",
@@ -481,36 +508,63 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         )
         try:
             app_url = urlsplit(self.live_server_url)
-            for scheme in ("http", "https"):
-                static_url = urlunsplit(
-                    (scheme, app_url.netloc, "/static/precompressed-static.txt", "", "")
-                )
-                for encoding, extension in (("br", "br"), ("gzip", "gz")):
-                    with self.subTest(scheme=scheme, encoding=encoding):
-                        request_info = request.Request(
-                            static_url,
-                            headers={"Accept-Encoding": encoding},
-                        )
-                        with request.urlopen(
-                            request_info, context=self.ctx, timeout=10
-                        ) as response:
-                            self.assertEqual(
-                                response.getcode(),
-                                200,
-                                "Nginx must serve precompressed static files.",
+            static_url = urlunsplit(
+                ("https", app_url.netloc, "/static/precompressed-static.txt", "", "")
+            )
+
+            def assert_precompressed_assets(expected_assets, location):
+                for scheme in ("http", "https"):
+                    url = static_url.replace("https", scheme, 1)
+                    for encoding in ("br", "gzip"):
+                        with self.subTest(
+                            location=location, scheme=scheme, encoding=encoding
+                        ):
+                            request_info = request.Request(
+                                url,
+                                headers={"Accept-Encoding": encoding},
                             )
-                            self.assertEqual(
-                                response.headers.get("Content-Encoding"),
-                                encoding,
-                                "Nginx must honor the requested static file encoding.",
-                            )
-                            self.assertEqual(
-                                response.read(),
-                                ASSETS[f"precompressed-static.txt.{extension}"],
-                                "Nginx must serve the precompressed asset, "
-                                "not its fallback.",
-                            )
+                            with request.urlopen(
+                                request_info, context=self.ctx, timeout=10
+                            ) as response:
+                                self.assertEqual(
+                                    response.getcode(),
+                                    200,
+                                    "Nginx must serve precompressed static files.",
+                                )
+                                self.assertEqual(
+                                    response.headers.get("Content-Encoding"),
+                                    encoding,
+                                    "Nginx must honor the requested static file "
+                                    "encoding.",
+                                )
+                                self.assertEqual(
+                                    response.read(),
+                                    expected_assets[encoding],
+                                    "Nginx must serve the precompressed asset, "
+                                    "not its fallback.",
+                                )
+
+            assert_precompressed_assets(
+                {
+                    "br": ASSETS[f"{custom_path.name}.br"],
+                    "gzip": ASSETS[f"{custom_path.name}.gz"],
+                },
+                "shared",
+            )
+            custom_static_directory.mkdir(parents=True, exist_ok=True)
+            for file_path, content in custom_files.items():
+                file_path.write_bytes(content)
+            assert_precompressed_assets(custom_assets, "custom")
         finally:
+            for file_path, content in original_custom_files.items():
+                if content is None:
+                    file_path.unlink(missing_ok=True)
+                else:
+                    file_path.write_bytes(content)
+            if not custom_static_directory_existed and custom_static_directory.exists():
+                custom_static_directory.rmdir()
+            if not custom_nginx_directory_existed and custom_nginx_directory.exists():
+                custom_nginx_directory.rmdir()
             self._execute_docker_compose_command(
                 [
                     "docker",
