@@ -1414,47 +1414,58 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 self.assertIn(f"nginx.org/keys/{key}.key", dockerfile)
                 self.assertIn(fingerprint, dockerfile)
 
-    def test_admin_theme_cleanup_restores_existing_css(self):
-        """Ensure test cleanup restores existing CSS.
+    def test_admin_theme_cleanup_handles_custom_css(self):
+        """Ensure test cleanup preserves user CSS and removes generated files.
 
-        This prevents test cleanup from deleting user customizations.
+        This prevents test cleanup from deleting user customizations or
+        leaving test files in the theme directory.
         """
-        with tempfile.TemporaryDirectory() as tmpdir:
-            root = Path(tmpdir)
-            css_path = (
-                root / "customization" / "theme" / "custom" / "custom-openwisp-test.css"
-            )
-            css_path.parent.mkdir(parents=True)
-            original_css = b"/* existing custom theme */\n"
-            css_path.write_bytes(original_css)
+        for custom_css_exists in (True, False):
+            with self.subTest(custom_css_exists=custom_css_exists):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    root = Path(tmpdir)
+                    css_path = (
+                        root
+                        / "customization"
+                        / "theme"
+                        / "custom"
+                        / "custom-openwisp-test.css"
+                    )
+                    original_css = b"/* existing custom theme */\n"
+                    if custom_css_exists:
+                        css_path.parent.mkdir(parents=True)
+                        css_path.write_bytes(original_css)
 
-            class CleanupTestServices(TestServices):
-                pass
+                    class CleanupTestServices(TestServices):
+                        pass
 
-            CleanupTestServices.custom_settings_path = root / "settings.py"
-            CleanupTestServices.custom_settings_path.write_text("")
-            CleanupTestServices.root_location = root
-            CleanupTestServices.config = {
-                "app_url": "https://dashboard.openwisp.org",
-                "custom_css_filename": css_path.name,
-                "services_delay_retries": 0,
-                "services_max_retries": 1,
-            }
-            with mock.patch.object(
-                CleanupTestServices, "addClassCleanup"
-            ), mock.patch.object(
-                CleanupTestServices, "reverse_url", return_value="/admin/login/"
-            ), mock.patch.object(
-                CleanupTestServices,
-                "_execute_docker_compose_command",
-                return_value=("", ""),
-            ), mock.patch.object(
-                request, "urlopen", return_value=mock.Mock()
-            ):
-                CleanupTestServices._setup_admin_theme_links()
-                self.assertNotEqual(css_path.read_bytes(), original_css)
-                CleanupTestServices._cleanup_admin_theme_links()
-            self.assertEqual(css_path.read_bytes(), original_css)
+                    CleanupTestServices.custom_settings_path = root / "settings.py"
+                    CleanupTestServices.custom_settings_path.write_text("")
+                    CleanupTestServices.root_location = root
+                    CleanupTestServices.config = {
+                        "app_url": "https://dashboard.openwisp.org",
+                        "custom_css_filename": css_path.name,
+                        "services_delay_retries": 0,
+                        "services_max_retries": 1,
+                    }
+                    with mock.patch.object(
+                        CleanupTestServices, "addClassCleanup"
+                    ), mock.patch.object(
+                        CleanupTestServices, "reverse_url", return_value="/admin/login/"
+                    ), mock.patch.object(
+                        CleanupTestServices,
+                        "_execute_docker_compose_command",
+                        return_value=("", ""),
+                    ), mock.patch.object(
+                        request, "urlopen", return_value=mock.Mock()
+                    ):
+                        CleanupTestServices._setup_admin_theme_links()
+                        CleanupTestServices._cleanup_admin_theme_links()
+                    if custom_css_exists:
+                        self.assertEqual(css_path.read_bytes(), original_css)
+                    else:
+                        self.assertFalse(css_path.exists())
+                        self.assertFalse(css_path.parent.exists())
 
 
 class TestOpenVPN(unittest.TestCase):
