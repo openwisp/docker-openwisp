@@ -6,7 +6,10 @@ FROM nginx:${NGINX_VERSION}-alpine AS brotli-builder
 
 ARG NGINX_VERSION
 ARG NGX_BROTLI_COMMIT=25f86f0bac1101b6512135eac5f93c49c63609e3
-ARG NGINX_SIGNING_KEY_FINGERPRINT=D6786CE303D9A9022998DC6CC8464D549AF75C0A
+ARG NGINX_ARUT_SIGNING_KEY_FINGERPRINT=43387825DDB1BB97EC36BA5D007C8D7C15D87369
+ARG NGINX_PLUKNET_SIGNING_KEY_FINGERPRINT=D6786CE303D9A9022998DC6CC8464D549AF75C0A
+ARG NGINX_SB_SIGNING_KEY_FINGERPRINT=7338973069ED3F443F4D37DFA64FD5B17ADB39A8
+ARG NGINX_THRESH_SIGNING_KEY_FINGERPRINT=13C82A63B603576156E30A4EA0EA981B66B0D967
 
 # hadolint ignore=DL3003,DL3018
 RUN apk add --update --no-cache \
@@ -23,13 +26,26 @@ RUN apk add --update --no-cache \
     git -C /tmp/ngx_brotli fetch --depth 1 origin ${NGX_BROTLI_COMMIT} && \
     git -C /tmp/ngx_brotli checkout --detach FETCH_HEAD && \
     git -C /tmp/ngx_brotli submodule update --init --recursive --depth 1 && \
-    wget -q https://nginx.org/keys/pluknet.key -O /tmp/nginx_signing.key && \
-    gpg --batch --show-keys --with-colons /tmp/nginx_signing.key \
+    mkdir -m 0700 /tmp/gnupg /tmp/nginx_signing_keys && \
+    wget -q https://nginx.org/keys/arut.key \
+            -O /tmp/nginx_signing_keys/arut.key && \
+    wget -q https://nginx.org/keys/pluknet.key \
+            -O /tmp/nginx_signing_keys/pluknet.key && \
+    wget -q https://nginx.org/keys/sb.key \
+            -O /tmp/nginx_signing_keys/sb.key && \
+    wget -q https://nginx.org/keys/thresh.key \
+            -O /tmp/nginx_signing_keys/thresh.key && \
+    GNUPGHOME=/tmp/gnupg gpg --batch --show-keys --with-colons \
+            /tmp/nginx_signing_keys/*.key \
             > /tmp/nginx_signing_key_details && \
-    grep -Fqx "fpr:::::::::${NGINX_SIGNING_KEY_FINGERPRINT}:" \
-            /tmp/nginx_signing_key_details && \
-    mkdir -m 0700 /tmp/gnupg && \
-    GNUPGHOME=/tmp/gnupg gpg --batch --import /tmp/nginx_signing.key && \
+    for fingerprint in \
+            ${NGINX_ARUT_SIGNING_KEY_FINGERPRINT} \
+            ${NGINX_PLUKNET_SIGNING_KEY_FINGERPRINT} \
+            ${NGINX_SB_SIGNING_KEY_FINGERPRINT} \
+            ${NGINX_THRESH_SIGNING_KEY_FINGERPRINT}; do \
+        grep -Fqx "fpr:::::::::${fingerprint}:" /tmp/nginx_signing_key_details; \
+    done && \
+    GNUPGHOME=/tmp/gnupg gpg --batch --import /tmp/nginx_signing_keys/*.key && \
     wget -q https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
             -O /tmp/nginx-${NGINX_VERSION}.tar.gz && \
     wget -q https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz.asc \

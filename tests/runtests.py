@@ -1061,54 +1061,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
-    def test_nginx_source_verification_tracks_version(self):
-        """Ensure Dependabot Nginx bumps retain source authentication."""
-        dockerfile = (
-            Path(self.root_location) / "images" / "openwisp_nginx" / "Dockerfile"
-        ).read_text()
-        self.assertNotIn("NGINX_TARBALL_SHA256", dockerfile)
-        self.assertIn("nginx-${NGINX_VERSION}.tar.gz.asc", dockerfile)
-        self.assertIn("gpg --batch --verify", dockerfile)
-
-    def test_admin_theme_cleanup_restores_existing_css(self):
-        """Ensure theme setup does not remove a pre-existing custom CSS file."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            root = Path(tmpdir)
-            css_path = (
-                root / "customization" / "theme" / "custom" / "custom-openwisp-test.css"
-            )
-            css_path.parent.mkdir(parents=True)
-            original_css = b"/* existing custom theme */\n"
-            css_path.write_bytes(original_css)
-
-            class CleanupTestServices(TestServices):
-                pass
-
-            CleanupTestServices.custom_settings_path = root / "settings.py"
-            CleanupTestServices.custom_settings_path.write_text("")
-            CleanupTestServices.root_location = root
-            CleanupTestServices.config = {
-                "app_url": "https://dashboard.openwisp.org",
-                "custom_css_filename": css_path.name,
-                "services_delay_retries": 0,
-                "services_max_retries": 1,
-            }
-            with mock.patch.object(
-                CleanupTestServices, "addClassCleanup"
-            ), mock.patch.object(
-                CleanupTestServices, "reverse_url", return_value="/admin/login/"
-            ), mock.patch.object(
-                CleanupTestServices,
-                "_execute_docker_compose_command",
-                return_value=("", ""),
-            ), mock.patch.object(
-                request, "urlopen", return_value=mock.Mock()
-            ):
-                CleanupTestServices._setup_admin_theme_links()
-                self.assertNotEqual(css_path.read_bytes(), original_css)
-                CleanupTestServices._cleanup_admin_theme_links()
-            self.assertEqual(css_path.read_bytes(), original_css)
-
     def test_profile_configures_shell_defaults_and_preserves_overrides(self):
         for dev_mode, settings, expected in (
             (
@@ -1443,6 +1395,66 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected)
+
+    def test_nginx_source_verification_tracks_version(self):
+        """Ensure Dependabot Nginx bumps retain source authentication."""
+        dockerfile = (
+            Path(self.root_location) / "images" / "openwisp_nginx" / "Dockerfile"
+        ).read_text()
+        self.assertNotIn("NGINX_TARBALL_SHA256", dockerfile)
+        self.assertIn("nginx-${NGINX_VERSION}.tar.gz.asc", dockerfile)
+        self.assertIn("gpg --batch --verify", dockerfile)
+        for key, fingerprint in (
+            ("arut", "43387825DDB1BB97EC36BA5D007C8D7C15D87369"),
+            ("pluknet", "D6786CE303D9A9022998DC6CC8464D549AF75C0A"),
+            ("sb", "7338973069ED3F443F4D37DFA64FD5B17ADB39A8"),
+            ("thresh", "13C82A63B603576156E30A4EA0EA981B66B0D967"),
+        ):
+            with self.subTest(key=key):
+                self.assertIn(f"nginx.org/keys/{key}.key", dockerfile)
+                self.assertIn(fingerprint, dockerfile)
+
+    def test_admin_theme_cleanup_restores_existing_css(self):
+        """Ensure test cleanup restores existing CSS.
+
+        This prevents test cleanup from deleting user customizations.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            css_path = (
+                root / "customization" / "theme" / "custom" / "custom-openwisp-test.css"
+            )
+            css_path.parent.mkdir(parents=True)
+            original_css = b"/* existing custom theme */\n"
+            css_path.write_bytes(original_css)
+
+            class CleanupTestServices(TestServices):
+                pass
+
+            CleanupTestServices.custom_settings_path = root / "settings.py"
+            CleanupTestServices.custom_settings_path.write_text("")
+            CleanupTestServices.root_location = root
+            CleanupTestServices.config = {
+                "app_url": "https://dashboard.openwisp.org",
+                "custom_css_filename": css_path.name,
+                "services_delay_retries": 0,
+                "services_max_retries": 1,
+            }
+            with mock.patch.object(
+                CleanupTestServices, "addClassCleanup"
+            ), mock.patch.object(
+                CleanupTestServices, "reverse_url", return_value="/admin/login/"
+            ), mock.patch.object(
+                CleanupTestServices,
+                "_execute_docker_compose_command",
+                return_value=("", ""),
+            ), mock.patch.object(
+                request, "urlopen", return_value=mock.Mock()
+            ):
+                CleanupTestServices._setup_admin_theme_links()
+                self.assertNotEqual(css_path.read_bytes(), original_css)
+                CleanupTestServices._cleanup_admin_theme_links()
+            self.assertEqual(css_path.read_bytes(), original_css)
 
 
 class TestOpenVPN(unittest.TestCase):
