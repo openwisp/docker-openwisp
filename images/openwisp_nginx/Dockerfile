@@ -45,6 +45,22 @@ RUN apk add --update --no-cache \
             ${NGINX_THRESH_SIGNING_KEY_FINGERPRINT}; do \
         grep -Fqx "fpr:::::::::${fingerprint}:" /tmp/nginx_signing_key_details || exit 1; \
     done && \
+    printf '%s\n' \
+            "${NGINX_ARUT_SIGNING_KEY_FINGERPRINT}" \
+            "${NGINX_PLUKNET_SIGNING_KEY_FINGERPRINT}" \
+            "${NGINX_SB_SIGNING_KEY_FINGERPRINT}" \
+            "${NGINX_THRESH_SIGNING_KEY_FINGERPRINT}" \
+            > /tmp/nginx_expected_fingerprints && \
+    sort -u /tmp/nginx_expected_fingerprints \
+            > /tmp/nginx_expected_primary_fingerprints && \
+    awk -F: '\
+        $1 == "pub" { primary = 1; next } \
+        primary && $1 == "fpr" { print $10; primary = 0 } \
+    ' /tmp/nginx_signing_key_details > /tmp/nginx_actual_fingerprints && \
+    sort -u /tmp/nginx_actual_fingerprints \
+            > /tmp/nginx_actual_primary_fingerprints && \
+    cmp -s /tmp/nginx_actual_primary_fingerprints \
+            /tmp/nginx_expected_primary_fingerprints && \
     GNUPGHOME=/tmp/gnupg gpg --batch --import /tmp/nginx_signing_keys/*.key && \
     wget -q https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
             -O /tmp/nginx-${NGINX_VERSION}.tar.gz && \

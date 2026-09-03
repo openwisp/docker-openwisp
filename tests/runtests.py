@@ -1409,6 +1409,11 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             "/tmp/nginx_signing_key_details || exit 1;",
             dockerfile,
         )
+        self.assertRegex(
+            dockerfile,
+            r"cmp -s /tmp/nginx_actual_primary_fingerprints \\\s+"
+            r"/tmp/nginx_expected_primary_fingerprints",
+        )
         for key, fingerprint in (
             ("arut", "43387825DDB1BB97EC36BA5D007C8D7C15D87369"),
             ("pluknet", "D6786CE303D9A9022998DC6CC8464D549AF75C0A"),
