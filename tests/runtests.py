@@ -6,11 +6,13 @@ import time
 import unittest
 from contextlib import contextmanager
 from pathlib import Path
+from unittest import mock
 from urllib import error as urlerror
 from urllib import request
 from urllib.parse import urlsplit, urlunsplit
 
 import requests
+from scripts.precompress_static import ASSETS
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -216,8 +218,14 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             Path(cls.root_location)
             / "customization"
             / "theme"
+            / "custom"
             / cls.config["custom_css_filename"]
         )
+        cls.custom_css_directory_existed = cls.custom_css_path.parent.exists()
+        cls.custom_css_existed = cls.custom_css_path.exists()
+        if cls.custom_css_existed:
+            cls.custom_css = cls.custom_css_path.read_bytes()
+        cls.custom_css_path.parent.mkdir(parents=True, exist_ok=True)
         cls.custom_css_path.write_text(
             f"body{{--openwisp-test: {cls.custom_static_token};}}"
         )
@@ -230,7 +238,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             },
             {
                 "type": "text/css",
-                "href": f"/static/{cls.config['custom_css_filename']}",
+                "href": f"/static/custom/{cls.config['custom_css_filename']}",
                 "rel": "stylesheet",
                 "media": "all",
             },
@@ -264,7 +272,12 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             cls.custom_settings_path.write_text(cls.custom_settings)
         else:
             cls.custom_settings_path.unlink(missing_ok=True)
-        cls.custom_css_path.unlink(missing_ok=True)
+        if cls.custom_css_existed:
+            cls.custom_css_path.write_bytes(cls.custom_css)
+        else:
+            cls.custom_css_path.unlink(missing_ok=True)
+        if not cls.custom_css_directory_existed:
+            cls.custom_css_path.parent.rmdir()
         cls._execute_docker_compose_command(
             ["docker", "compose", "up", "--detach", "--force-recreate", "dashboard"]
         )
@@ -454,6 +467,127 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ".getPropertyValue('--openwisp-test');"
         )
         self.assertEqual(value.strip(), self.custom_static_token)
+
+    def test_nginx_serves_precompressed_static_files(self):
+        script = Path(__file__).parent / "scripts" / "precompress_static.py"
+        path = "/opt/openwisp/static/precompressed-static.txt"
+        custom_nginx_directory = Path(self.root_location) / "customization" / "nginx"
+        custom_static_directory = custom_nginx_directory / "static"
+        custom_path = custom_static_directory / "precompressed-static.txt"
+        custom_assets = {
+            "br": (
+                b"\x1b \x00\xf8\x8dT\xb5\xbf\x1ek\x83\x93\x93 eoI\x08#\xb5\xf4\x15\x94"
+                b"\xccc\x12\\"
+                b"\xc7\xe6\xa1\xec\x01"
+            ),
+            "gzip": (
+                b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x02\xffK.-.\xc9\xcfU((JM"
+                b"\xce\xcf\x05\x92"
+                b"\xc5\xc5\xa9)\n\xc5%\x89%\x99\xc9\n\x89@N\t"
+                b"\x00i\xf5y\x8e!\x00\x00\x00"
+            ),
+        }
+        custom_files = {
+            custom_path: b"custom static asset",
+            Path(f"{custom_path}.br"): custom_assets["br"],
+            Path(f"{custom_path}.gz"): custom_assets["gzip"],
+        }
+        original_custom_files = {
+            file_path: file_path.read_bytes() if file_path.exists() else None
+            for file_path in custom_files
+        }
+        custom_nginx_directory_existed = custom_nginx_directory.exists()
+        custom_static_directory_existed = custom_static_directory.exists()
+        try:
+            for file_path in custom_files:
+                file_path.unlink(missing_ok=True)
+            self._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "run",
+                    "--rm",
+                    "--no-deps",
+                    "--volume",
+                    f"{script}:/test_precompress_static.py:ro",
+                    "--entrypoint",
+                    "python",
+                    "dashboard",
+                    "/test_precompress_static.py",
+                ]
+            )
+            app_url = urlsplit(self.live_server_url)
+            static_url = urlunsplit(
+                ("https", app_url.netloc, "/static/precompressed-static.txt", "", "")
+            )
+
+            def assert_precompressed_assets(expected_assets, location):
+                for scheme in ("http", "https"):
+                    url = static_url.replace("https", scheme, 1)
+                    for encoding in ("br", "gzip"):
+                        with self.subTest(
+                            location=location, scheme=scheme, encoding=encoding
+                        ):
+                            request_info = request.Request(
+                                url,
+                                headers={"Accept-Encoding": encoding},
+                            )
+                            with request.urlopen(
+                                request_info, context=self.ctx, timeout=10
+                            ) as response:
+                                self.assertEqual(
+                                    response.getcode(),
+                                    200,
+                                    "Nginx must serve precompressed static files.",
+                                )
+                                self.assertEqual(
+                                    response.headers.get("Content-Encoding"),
+                                    encoding,
+                                    "Nginx must honor the requested static file "
+                                    "encoding.",
+                                )
+                                self.assertEqual(
+                                    response.read(),
+                                    expected_assets[encoding],
+                                    "Nginx must serve the precompressed asset, "
+                                    "not its fallback.",
+                                )
+
+            assert_precompressed_assets(
+                {
+                    "br": ASSETS[f"{custom_path.name}.br"],
+                    "gzip": ASSETS[f"{custom_path.name}.gz"],
+                },
+                "shared",
+            )
+            custom_static_directory.mkdir(parents=True, exist_ok=True)
+            for file_path, content in custom_files.items():
+                file_path.write_bytes(content)
+            assert_precompressed_assets(custom_assets, "custom")
+        finally:
+            for file_path, content in original_custom_files.items():
+                if content is None:
+                    file_path.unlink(missing_ok=True)
+                else:
+                    file_path.write_bytes(content)
+            if not custom_static_directory_existed and custom_static_directory.exists():
+                custom_static_directory.rmdir()
+            if not custom_nginx_directory_existed and custom_nginx_directory.exists():
+                custom_nginx_directory.rmdir()
+            self._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "exec",
+                    "-T",
+                    "dashboard",
+                    "rm",
+                    "-f",
+                    path,
+                    f"{path}.br",
+                    f"{path}.gz",
+                ]
+            )
 
     def test_device_monitoring_charts(self):
         self.login()
@@ -1261,6 +1395,87 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected)
+
+    def test_nginx_source_verification_tracks_version(self):
+        """Ensure Dependabot Nginx bumps retain source authentication."""
+        dockerfile = (
+            Path(self.root_location) / "images" / "openwisp_nginx" / "Dockerfile"
+        ).read_text()
+        self.assertNotIn("NGINX_TARBALL_SHA256", dockerfile)
+        self.assertIn("nginx-${NGINX_VERSION}.tar.gz.asc", dockerfile)
+        self.assertIn("gpg --batch --verify", dockerfile)
+        self.assertIn(
+            'grep -Fqx "fpr:::::::::${fingerprint}:" '
+            "/tmp/nginx_signing_key_details || exit 1;",
+            dockerfile,
+        )
+        self.assertRegex(
+            dockerfile,
+            r"cmp -s /tmp/nginx_actual_primary_fingerprints \\\s+"
+            r"/tmp/nginx_expected_primary_fingerprints",
+        )
+        for key, fingerprint in (
+            ("arut", "43387825DDB1BB97EC36BA5D007C8D7C15D87369"),
+            ("pluknet", "D6786CE303D9A9022998DC6CC8464D549AF75C0A"),
+            ("sb", "7338973069ED3F443F4D37DFA64FD5B17ADB39A8"),
+            ("thresh", "13C82A63B603576156E30A4EA0EA981B66B0D967"),
+        ):
+            with self.subTest(key=key):
+                self.assertIn(f"nginx.org/keys/{key}.key", dockerfile)
+                self.assertIn(fingerprint, dockerfile)
+
+    def test_admin_theme_cleanup_handles_custom_css(self):
+        """Ensure test cleanup preserves user CSS and removes generated files.
+
+        This prevents test cleanup from deleting user customizations or
+        leaving test files in the theme directory.
+        """
+        for custom_css_exists in (True, False):
+            with self.subTest(custom_css_exists=custom_css_exists):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    root = Path(tmpdir)
+                    css_path = (
+                        root
+                        / "customization"
+                        / "theme"
+                        / "custom"
+                        / "custom-openwisp-test.css"
+                    )
+                    original_css = b"/* existing custom theme */\n"
+                    if custom_css_exists:
+                        css_path.parent.mkdir(parents=True)
+                        css_path.write_bytes(original_css)
+
+                    class CleanupTestServices(TestServices):
+                        pass
+
+                    CleanupTestServices.custom_settings_path = root / "settings.py"
+                    CleanupTestServices.custom_settings_path.write_text("")
+                    CleanupTestServices.root_location = root
+                    CleanupTestServices.config = {
+                        "app_url": "https://dashboard.openwisp.org",
+                        "custom_css_filename": css_path.name,
+                        "services_delay_retries": 0,
+                        "services_max_retries": 1,
+                    }
+                    with mock.patch.object(
+                        CleanupTestServices, "addClassCleanup"
+                    ), mock.patch.object(
+                        CleanupTestServices, "reverse_url", return_value="/admin/login/"
+                    ), mock.patch.object(
+                        CleanupTestServices,
+                        "_execute_docker_compose_command",
+                        return_value=("", ""),
+                    ), mock.patch.object(
+                        request, "urlopen", return_value=mock.Mock()
+                    ):
+                        CleanupTestServices._setup_admin_theme_links()
+                        CleanupTestServices._cleanup_admin_theme_links()
+                    if custom_css_exists:
+                        self.assertEqual(css_path.read_bytes(), original_css)
+                    else:
+                        self.assertFalse(css_path.exists())
+                        self.assertFalse(css_path.parent.exists())
 
 
 class TestOpenVPN(unittest.TestCase):

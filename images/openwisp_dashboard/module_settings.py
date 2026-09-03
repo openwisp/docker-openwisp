@@ -82,9 +82,6 @@ STORAGES = {
         "BACKEND": "openwisp_utils.storage.CompressStaticFilesStorage",
     },
 }
-BROTLI_STATIC_COMPRESSION = False
-# pregenerate static gzip files to save CPU
-GZIP_STATIC_COMPRESSION = True
 
 OPENWISP_NETWORK_TOPOLOGY_API_URLCONF = "openwisp_network_topology.urls"
 OPENWISP_MONITORING_API_URLCONF = "openwisp_monitoring.urls"
