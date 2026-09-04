@@ -99,13 +99,32 @@ jobs:
           # execute the test from this directory.
           # The containers are already running, so use the target that only
           # executes Python tests without restarting or stopping the stack.
-          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests
+          command: |
+            cd /opt/openwisp/docker-openwisp && make develop-pythontests || {
+              echo "Look at the \"Docker compose failure logs\" step for details."
+              false
+            }
         env:
           SELENIUM_HEADLESS: 1
 
-      - name: Print docker logs
-        if: ${{ failure() }}
-        run: docker compose logs
+      # Prints the relevant docker compose logs on failure
+      - name: Docker compose failure logs
+        if: ${{ failure() && steps.enable_development_profile.conclusion == 'success' }}
+        run: |
+          cd /opt/openwisp/docker-openwisp
+          found_non_running_service=false
+          while read -r service state; do
+            if [ "$state" = "running" ]; then
+              continue
+            fi
+            found_non_running_service=true
+            printf '\nLast 500 lines from %s (%s):\n' "$service" "$state"
+            docker compose logs --tail=500 --no-log-prefix "$service" || true
+          done < <(docker compose ps --all --format '{{.Service}} {{.State}}')
+          if [ "$found_non_running_service" = false ]; then
+            echo "No non-running containers found."
+          fi
+          exit 1
 
       - name: Stop containers
         # Run teardown exactly once after the retry loop, regardless of the
