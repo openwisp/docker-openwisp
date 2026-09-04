@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import subprocess
 import tempfile
 import time
@@ -1402,6 +1403,20 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             Path(self.root_location) / "images" / "openwisp_nginx" / "Dockerfile"
         ).read_text()
         self.assertNotIn("NGINX_TARBALL_SHA256", dockerfile)
+        self.assertNotIn("ARG NGINX_VERSION", dockerfile)
+        image_tags = re.findall(r"FROM nginx:(\d+\.\d+\.\d+-alpine)", dockerfile)
+        self.assertEqual(
+            len(image_tags),
+            2,
+            "Dependabot must be able to detect both Nginx image references.",
+        )
+        self.assertEqual(
+            image_tags[0],
+            image_tags[1],
+            "The builder and runtime images must use the same Nginx tag.",
+        )
+        self.assertIn('NGINX_VERSION="$(nginx -v 2>&1)"', dockerfile)
+        self.assertIn('NGINX_VERSION="${NGINX_VERSION##*/}"', dockerfile)
         self.assertIn("nginx-${NGINX_VERSION}.tar.gz.asc", dockerfile)
         self.assertIn("gpg --batch --verify", dockerfile)
         self.assertIn(
