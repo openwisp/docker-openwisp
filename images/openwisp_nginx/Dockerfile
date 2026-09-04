@@ -2,7 +2,7 @@
 # Build the module against nginx.org's nginx package used by this image.
 # Alpine's nginx module packages target Alpine's own nginx build.
 # PLEASE KEEP THIS LITERAL OR DEPENDABOT WILL NOT BE ABLE TO UPDATE IT.
-FROM nginx:1.31.4-alpine AS brotli-builder
+FROM nginx:1.31.5-alpine AS brotli-builder
 
 ARG NGX_BROTLI_COMMIT=25f86f0bac1101b6512135eac5f93c49c63609e3
 ARG NGINX_ARUT_SIGNING_KEY_FINGERPRINT=43387825DDB1BB97EC36BA5D007C8D7C15D87369
@@ -81,7 +81,7 @@ RUN NGINX_VERSION="$(nginx -v 2>&1)" && \
             /tmp/ngx_http_brotli_static_module.so
 
 # PLEASE KEEP THIS LITERAL OR DEPENDABOT WILL NOT BE ABLE TO UPDATE IT.
-FROM nginx:1.31.4-alpine
+FROM nginx:1.31.5-alpine
 
 RUN mkdir -p /etc/nginx/modules
 
