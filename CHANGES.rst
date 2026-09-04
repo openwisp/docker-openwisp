@@ -1,6 +1,87 @@
 Changelog
 =========
 
+Version 26.09.0 [2026-09-04]
+----------------------------
+
+Features
+~~~~~~~~
+
+- Added support for 1serving precompressed static files with Nginx
+  <https://github.com/openwisp/docker-openwisp/issues/560>`_.
+- Allowed customizing the `installation and upgrade path
+  <https://github.com/openwisp/docker-openwisp/issues/514>`_ used by
+  ``auto-install.sh``.
+- Added the `DEV_MODE setting
+  <https://github.com/openwisp/docker-openwisp/issues/635>`_ to simplify
+  development deployments by relaxing SSL, HSTS, and related security
+  settings.
+- Added support for `user expiration reminders
+  <https://github.com/openwisp/docker-openwisp/issues/587>`_.
+- Added `WebSocket routes for the firmware upgrader
+  <https://github.com/openwisp/docker-openwisp/issues/484>`_.
+
+Changes
+~~~~~~~
+
+Other changes
++++++++++++++
+
+- Separated Redis databases used for sessions and cache.
+- `Changed admin XHR requests to use same-origin URLs
+  <https://github.com/openwisp/docker-openwisp/issues/526>`_, removing the
+  need for dashboard API base URL overrides.
+- `Improved OpenVPN CRL reloading
+  <https://github.com/openwisp/docker-openwisp/issues/589>`_ to avoid
+  restarting OpenVPN every day when the CRL has not changed.
+- Changed the default locale, timezone, and related settings to neutral
+  values.
+
+Dependencies
+++++++++++++
+
+- Upgraded to OpenWISP Users 1.3.x (see `changelog
+  <https://github.com/openwisp/openwisp-users/releases/tag/1.3.0>`__). -
+  Upgraded to OpenWISP Controller 1.3.x (see `changelog
+  <https://github.com/openwisp/openwisp-controller/releases/tag/1.3.0>`__).
+  - Upgraded to OpenWISP Monitoring 1.3.x (see `changelog
+  <https://github.com/openwisp/openwisp-monitoring/releases/tag/1.3.0>`__).
+  - Upgraded to OpenWISP Network Topology 1.3.x (see `changelog
+  <https://github.com/openwisp/openwisp-network-topology/releases/tag/1.3.0>`__).
+  - Upgraded to OpenWISP Firmware Upgrader 1.3.x (see `changelog
+  <https://github.com/openwisp/openwisp-firmware-upgrader/releases/tag/1.3.0>`__).
+  - Upgraded to OpenWISP RADIUS 1.3.x (see `changelog
+  <https://github.com/openwisp/openwisp-radius/releases/tag/1.3.0>`__). -
+  Upgraded to OpenWISP Notifications 1.3.x (see `changelog
+  <https://github.com/openwisp/openwisp-notifications/releases/tag/1.3.0>`__).
+  - Upgraded to Netjsonconfig 1.3.x (see `changelog
+  <https://github.com/openwisp/netjsonconfig/releases/tag/1.3.0>`__).
+- Bumped ``docker`` from ``>=7.1.0,<7.2.0`` to `>=7.2.0,<7.3.0
+  <https://github.com/docker/docker-py/releases/tag/7.2.0>`_.
+- Bumped the Nginx image from ``1.31.1-alpine`` to ``1.31.5-alpine``.
+- Bumped the OpenVPN image from ``lisenet/openvpn:2.7.3`` to
+  ``lisenet/openvpn:2.7.5``.
+- Bumped the Postfix and NFS Alpine base images from ``3.23`` to ``3.24``.
+- Bumped the FreeRADIUS image from ``3.2.8-alpine`` to ``3.2.10-alpine``.
+- Bumped ``tldextract`` from ``>=5.3.1,<5.4.0`` to `>=5.3.2,<5.4.0
+  <https://github.com/john-kurkowski/tldextract/releases/tag/5.3.2>`_.
+- Bumped ``boto3`` to ``>=1.43.84,<1.44.0``.
+
+Bugfixes
+~~~~~~~~
+
+- `Fixed OpenVPN startup and default-object handling
+  <https://github.com/openwisp/docker-openwisp/issues/572>`_ when
+  ``VPN_NAME`` contains whitespace, configuration names differ, or
+  administrators rename system-managed default objects.
+- Fixed Django Channels Redis connections being configured with timeouts.
+- `Fixed edge cases in ``auto-install.sh``
+  <https://github.com/openwisp/docker-openwisp/issues/588>`_, including
+  environment variable lookup, configuration rewriting, and validation of
+  the OpenWISP RADIUS setting.
+- `Fixed Docker Hub image pulls
+  <https://github.com/openwisp/docker-openwisp/issues/669>`_.
+
 Version 25.10.4 [2026-06-04]
 ----------------------------
 
