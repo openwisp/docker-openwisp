@@ -9,6 +9,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: CI Build
@@ -103,9 +106,14 @@ jobs:
         env:
           SELENIUM_HEADLESS: 1
 
-      - name: Print docker logs
-        if: ${{ failure() }}
-        run: docker compose logs
+      - name: Docker compose failure diagnostics
+        if: ${{ failure() && steps.auto_install_upgrade.conclusion == 'success' }}
+        run: |
+          bash .github/scripts/docker-compose-failure-diagnostics.sh
+          # Intentionally fail so CI highlights this step and directs maintainers
+          # and developers to the logs needed for debugging.
+          exit 1
+        working-directory: /opt/openwisp/docker-openwisp
 
       - name: Stop containers
         # Run teardown exactly once after the retry loop, regardless of the

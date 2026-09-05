@@ -10,6 +10,7 @@ echo ''
 echo 'Shell scripts QA checks ...'
 # check shell scripts formatting
 shfmt --apply-ignore -d .
+shellcheck .github/scripts/*.sh
 
 echo ''
 echo 'Dockerfile QA checks...'
