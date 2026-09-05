@@ -9,6 +9,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: CI Build
@@ -104,7 +107,7 @@ jobs:
           SELENIUM_HEADLESS: 1
 
       - name: Docker compose failure diagnostics
-        if: ${{ failure() && steps.enable_development_profile.conclusion == 'success' }}
+        if: ${{ failure() && steps.auto_install_upgrade.conclusion == 'success' }}
         run: |
           bash .github/scripts/docker-compose-failure-diagnostics.sh
           # Intentionally fail so CI highlights this step and directs maintainers
