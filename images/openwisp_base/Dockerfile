@@ -30,8 +30,9 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
-# Temporarily install the OpenWISP modules from their 1.3 development
-# branch until the 1.3 line is released; switch back to ~=1.3.0 then.
+# Temporarily install the OpenWISP modules from their 1.3 development line
+# until the 1.3 line is released. Monitoring and Topology use pinned commits
+# to reproduce CI startup failures, while Firmware and Radius use 1.3 branches.
 ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/tarball/e97ee4a8ae39764ac0e3fc63644138f31d0489cd"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}

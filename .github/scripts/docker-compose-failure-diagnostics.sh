@@ -4,18 +4,36 @@ set -u
 
 readonly test_logs_file=/tmp/docker-openwisp-tests.log
 
+wait_for_dashboard_restart() {
+	local container_id current_restarts restarts
+
+	container_id=$(docker compose ps --quiet dashboard) || return
+	[ -n "$container_id" ] || return
+	restarts=$(docker inspect --format '{{.RestartCount}}' "$container_id") || return
+
+	for _ in {1..60}; do
+		sleep 1
+		current_restarts=$(docker inspect --format '{{.RestartCount}}' "$container_id") || return
+		if [ "$current_restarts" -gt "$restarts" ]; then
+			return
+		fi
+	done
+}
+
 echo "Docker compose service status:"
 docker compose ps --all || true
 
 mapfile -t container_ids < <(docker compose ps --all --quiet || true)
 if ((${#container_ids[@]})); then
-    echo "Docker container details:"
-    docker inspect \
-        --format '{{.Name}} state={{.State.Status}} exit={{.State.ExitCode}}'\
-        ' oom={{.State.OOMKilled}} error={{.State.Error}}'\
-        ' restarts={{.RestartCount}}' \
-        "${container_ids[@]}" || true
+	echo "Docker container details:"
+	docker inspect \
+		--format "{{.Name}} state={{.State.Status}} exit={{.State.ExitCode}} \
+oom={{.State.OOMKilled}} error={{.State.Error}} \
+restarts={{.RestartCount}}" \
+		"${container_ids[@]}" || true
 fi
+
+wait_for_dashboard_restart
 
 printf '\nLast 500 lines from dashboard:\n'
 docker compose logs --tail=500 --no-log-prefix dashboard || true
