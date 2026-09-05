@@ -30,16 +30,13 @@ ENV PATH="${PATH}:/home/openwisp/.local/bin"
 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
-# Temporarily install the OpenWISP modules from their 1.3 development line
-# until the 1.3 line is released. Monitoring and Topology use pinned commits
-# to reproduce CI startup failures, while Firmware and Radius use 1.3 packages.
-ARG OPENWISP_MONITORING_SOURCE="https://github.com/openwisp/openwisp-monitoring/tarball/e97ee4a8ae39764ac0e3fc63644138f31d0489cd"
+ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.3.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
 ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.3.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="https://github.com/openwisp/openwisp-network-topology/tarball/20697f45784bc548aadfc9500782c4940429e82b"
+ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.3.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
 ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.3.0"

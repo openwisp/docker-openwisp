@@ -105,7 +105,11 @@ jobs:
 
       - name: Docker compose failure diagnostics
         if: ${{ failure() && steps.enable_development_profile.conclusion == 'success' }}
-        run: bash .github/scripts/docker-compose-failure-diagnostics.sh
+        run: |
+          bash .github/scripts/docker-compose-failure-diagnostics.sh
+          # Intentionally fail so CI highlights this step and directs maintainers
+          # and developers to the logs needed for debugging.
+          exit 1
         working-directory: /opt/openwisp/docker-openwisp
 
       - name: Stop containers
