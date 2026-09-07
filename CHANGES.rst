@@ -7,7 +7,7 @@ Version 26.09.0 [2026-09-04]
 Features
 ~~~~~~~~
 
-- Added support for 1serving precompressed static files with Nginx
+- Added support for `serving precompressed static files with Nginx
   <https://github.com/openwisp/docker-openwisp/issues/560>`_.
 - Allowed customizing the `installation and upgrade path
   <https://github.com/openwisp/docker-openwisp/issues/514>`_ used by
@@ -75,7 +75,7 @@ Bugfixes
   ``VPN_NAME`` contains whitespace, configuration names differ, or
   administrators rename system-managed default objects.
 - Fixed Django Channels Redis connections being configured with timeouts.
-- `Fixed edge cases in ``auto-install.sh``
+- `Fixed edge cases in auto-install script
   <https://github.com/openwisp/docker-openwisp/issues/588>`_, including
   environment variable lookup, configuration rewriting, and validation of
   the OpenWISP RADIUS setting.
