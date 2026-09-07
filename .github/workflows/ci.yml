@@ -5,9 +5,11 @@ on:
   push:
     branches:
       - master
+      - "26.09"
   pull_request:
     branches:
       - master
+      - "26.09"
 
 permissions:
   contents: read
