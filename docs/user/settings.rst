@@ -990,8 +990,8 @@ Nginx
 ``NGINX_BROTLI_SWITCH``
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Enables or disables serving precompressed Brotli files
-  from the static files directory.
+- **Explanation:** Enables or disables serving pre-compressed django
+  static files using ``Brotli`` algorithm.
 - **Valid Values:** ``on``, ``off``.
 - **Default:** ``on``.
 
