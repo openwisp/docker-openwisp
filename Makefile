@@ -11,7 +11,7 @@ SHELL := /bin/bash
 
 default: compose-build
 
-USER = registry.gitlab.com/openwisp/docker-openwisp
+USER = docker.io/openwisp
 TAG = edge
 # OPENWISP_VERSION: image tag used for pulling/pushing images (e.g. "edge", "latest", "25.10.0")
 # Can be overridden via .env or command line. Not the same as RELEASE_VERSION
@@ -20,6 +20,7 @@ IMAGE_OWNER ?= openwisp
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
 SKIP_TESTS ?= false
+DEV_MODE ?= False
 
 # Pull
 pull:
@@ -27,8 +28,8 @@ pull:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		docker pull --quiet $(USER)/$${image}:$(OPENWISP_VERSION); \
-		docker tag  $(USER)/$${image}:$(OPENWISP_VERSION) $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION); \
+		docker pull --quiet $(USER)/$${image}:$(OPENWISP_VERSION) || exit 1; \
+		docker tag $(USER)/$${image}:$(OPENWISP_VERSION) $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION) || exit 1; \
 	done
 
 # Build
@@ -69,7 +70,10 @@ develop-runtests:
 	make develop-pythontests
 
 develop-pythontests:
-	python3 tests/runtests.py
+	# OPENWISP_TEST_OPENVPN_IMAGE is used in tests to run OpenVPN tests with the
+	# latest locally built image rather than the image published in the registries.
+	OPENWISP_TEST_OPENVPN_IMAGE=$(IMAGE_OWNER)/openwisp-openvpn:$(OPENWISP_VERSION) \
+		python3 tests/runtests.py
 
 # Development
 develop: compose-build
@@ -91,6 +95,9 @@ clean:
 
 # Production
 start:
+	case "$(DEV_MODE)" in [Tt][Rr][Uu][Ee] | [Yy][Ee][Ss]) \
+		printf '\e[1;31m%s\e[m\n' "DEV_MODE=True is for local development. Set DEV_MODE=False before using make start."; \
+		exit 1;; esac
 	if [ "$(SKIP_PULL)" == "false" ]; then \
 		make pull; \
 	fi
@@ -115,11 +122,8 @@ publish:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		docker tag $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION) $(USER)/$${image}:$(TAG); \
-		docker push $(USER)/$${image}:$(TAG); \
-		if [ "$(TAG)" != "latest" ]; then \
-			docker rmi $(USER)/$${image}:$(TAG); \
-		fi; \
+		docker tag $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION) $(USER)/$${image}:$(TAG) || exit 1; \
+		docker push $(USER)/$${image}:$(TAG) || exit 1; \
 	done
 
 release:

@@ -5,7 +5,7 @@
   "api_url": "https://api.openwisp.org",
   "load_init_data": true,
   "logs": false,
-  "logs_file": "/tmp/odocker.log",
+  "logs_file": "/tmp/docker-openwisp-tests.log",
   "username": "admin",
   "password": "admin",
   "services_max_retries": 25,

@@ -3,6 +3,23 @@ Developer Docs
 
 .. include:: ../partials/developer-docs.rst
 
+The following diagram illustrates the role of Docker OpenWISP within the
+OpenWISP architecture.
+
+.. figure:: ../images/architecture-v2-docker-openwisp.png
+    :target: ../../_images/architecture-v2-docker-openwisp.png
+    :align: center
+    :alt: OpenWISP Architecture: Docker OpenWISP
+
+    **OpenWISP Architecture: highlighted Docker OpenWISP**
+
+.. important::
+
+    For an enhanced viewing experience, open the image above in a new
+    browser tab.
+
+    Refer to :doc:`/general/architecture` for more information.
+
 .. contents:: **Table of Contents**:
     :depth: 2
     :local:

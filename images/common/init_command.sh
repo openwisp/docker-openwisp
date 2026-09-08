@@ -23,23 +23,20 @@ elif [ "$MODULE_NAME" = 'postfix' ]; then
 	rsyslogd -n
 elif [ "$MODULE_NAME" = 'freeradius' ]; then
 	wait_nginx_services
-	if [ "$DEBUG_MODE" = 'False' ]; then
-		source docker-entrypoint.sh
-	else
+	if [ "$FREERADIUS_DEBUG_MODE" = 'True' ]; then
 		source docker-entrypoint.sh -X
+	else
+		source docker-entrypoint.sh
 	fi
 elif [ "$MODULE_NAME" = 'openvpn' ]; then
-	if [[ -z "$VPN_DOMAIN" ]]; then exit; fi
+	if [ -z "$VPN_DOMAIN" ]; then exit; fi
+	. ./openvpn_utils.sh
 	wait_nginx_services
 	openvpn_preconfig
 	openvpn_config
 	openvpn_config_download
 	crl_download
-	echo "*/1 * * * * sh /openvpn.sh" | crontab -
-	(
-		crontab -l
-		echo "0 0 * * * sh /revokelist.sh"
-	) | crontab -
+	crontab /openvpn.crontab
 	crond
 	# Schedule send topology script only when
 	# network topology module is enabled.

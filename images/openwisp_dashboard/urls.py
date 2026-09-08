@@ -24,9 +24,14 @@ if env_bool(os.environ["USE_OPENWISP_MONITORING"]):
     ]
 
 if env_bool(os.environ["USE_OPENWISP_TOPOLOGY"]):
+    from openwisp_network_topology.api import views
+    from openwisp_network_topology.utils import get_api_urls as topology_api
     from openwisp_network_topology.visualizer import urls as visualizer_urls
 
-    urlpatterns += [path("topology/", include(visualizer_urls))]
+    urlpatterns += [
+        path("api/v1/", include(topology_api(views))),
+        path("topology/", include(visualizer_urls)),
+    ]
 
 if env_bool(os.environ["USE_OPENWISP_FIRMWARE"]):
     # When using S3_REVERSE_PROXY feature of django-private-storage,
@@ -43,6 +48,9 @@ if env_bool(os.environ["USE_OPENWISP_FIRMWARE"]):
             include((fw_private_storage_urls, "firmware"), namespace="firmware"),
         ),
     ]
+
+if env_bool(os.environ["USE_OPENWISP_RADIUS"]):
+    urlpatterns += [path("", include("openwisp_radius.urls"))]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += staticfiles_urlpatterns()

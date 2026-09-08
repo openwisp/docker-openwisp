@@ -1,7 +1,36 @@
 #!/bin/sh
 
 init_conf() {
+	configure_dev_mode
 	default_psql_vars
+}
+
+is_dev_mode() {
+	# DEV_MODE treats case-insensitive "true" and "yes" values as enabled.
+	case "${DEV_MODE:-False}" in
+	[Tt][Rr][Uu][Ee] | [Yy][Ee][Ss]) return 0 ;;
+	*) return 1 ;;
+	esac
+}
+
+curl_download() {
+	if is_dev_mode; then
+		curl --insecure "$@"
+	else
+		curl "$@"
+	fi
+}
+
+configure_dev_mode() {
+	if is_dev_mode; then
+		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-True}
+		OPENWISP_GEOCODING_CHECK=${OPENWISP_GEOCODING_CHECK:-False}
+	else
+		NGINX_HTTP_ALLOW=${NGINX_HTTP_ALLOW:-False}
+		OPENWISP_GEOCODING_CHECK=${OPENWISP_GEOCODING_CHECK:-True}
+	fi
+	FREERADIUS_DEBUG_MODE=${FREERADIUS_DEBUG_MODE:-False}
+	export NGINX_HTTP_ALLOW OPENWISP_GEOCODING_CHECK FREERADIUS_DEBUG_MODE
 }
 
 default_psql_vars() {
@@ -104,6 +133,22 @@ ssl_http_behaviour() {
 	fi
 }
 
+configure_security_headers() {
+	if [ "$2" = 'internal' ]; then return; fi
+	if is_dev_mode; then
+		header_file=/etc/nginx/openwisp.security.dev.conf
+	elif [ "$2" = 'https' ]; then
+		header_file=/etc/nginx/openwisp.security.ssl.conf
+	else
+		header_file=/etc/nginx/openwisp.security.http.conf
+	fi
+	export NGINX_SECURITY_HEADERS_FILE="/etc/nginx/security-headers-$1.$2.conf"
+	# Substitute the application's domain in the selected header template and write
+	# it to an application and scheme-specific file. This prevents API headers from
+	# overwriting the dashboard headers when both Nginx configurations are rendered.
+	envsubst <"$header_file" >"$NGINX_SECURITY_HEADERS_FILE"
+}
+
 envsubst_create_config() {
 	# Creates nginx configurations files for dashboard
 	# and api instances.
@@ -113,6 +158,7 @@ envsubst_create_config() {
 		eval export DOMAIN=\$${application}_${3}
 		eval export ROOT_DOMAIN=$(python3 get_domain.py)
 		application=$(echo "$application" | tr "[:upper:]" "[:lower:]")
+		configure_security_headers "$application" "$2"
 		envsubst <${1} >/etc/nginx/conf.d/${application}.${2}.conf
 	done
 }
@@ -196,68 +242,4 @@ postfix_config() {
 	postmap /etc/postfix/generic
 	postmap /etc/aliases
 	newaliases
-}
-
-get_redis_value() {
-	local key="$1"
-	echo -en "GET $key\r\n" | nc redis 6379 | awk 'NR==2 {gsub(/\r/, ""); print}'
-}
-
-openvpn_preconfig() {
-	mkdir -p /dev/net
-	if [ ! -c /dev/net/tun ]; then
-		mknod /dev/net/tun c 10 200
-	fi
-	ip -6 route show default 2>/dev/null
-	if [ $? = 0 ]; then
-		echo "Enabling IPv6 Forwarding"
-		sysctl -w net.ipv6.conf.all.disable_ipv6=0 || echo "Failed to enable IPv6 support"
-		sysctl -w net.ipv6.conf.default.forwarding=1 || echo "Failed to enable IPv6 Forwarding default"
-		sysctl -w net.ipv6.conf.all.forwarding=1 || echo "Failed to enable IPv6 Forwarding"
-	fi
-}
-
-openvpn_config() {
-	# Fectch UUID and Key of the default VPN only if they
-	# are not already set. The user may override the UUID and Key
-	# by setting them in the environment variables to use deploy
-	# a different VPN server.
-	if [ -z "$UUID" ]; then
-		export UUID=$(get_redis_value "openwisp_default_vpn_uuid")
-		export KEY=$(get_redis_value "openwisp_default_vpn_key")
-		export CA_UUID=$(get_redis_value "openwisp_default_vpn_ca_uuid")
-	fi
-}
-
-openvpn_config_checksum() {
-	OFILE=$(curl --silent --insecure \
-		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}")
-	export OFILE
-	NFILE=$(cat checksum)
-	export NFILE
-}
-
-openvpn_config_download() {
-	curl --silent --retry 10 --retry-delay 5 --retry-max-time 300 --insecure --output vpn.tar.gz \
-		"${API_INTERNAL}/controller/vpn/download-config/${UUID}/?key=${KEY}"
-	curl --silent --insecure --output checksum \
-		"${API_INTERNAL}/controller/vpn/checksum/${UUID}/?key=${KEY}"
-	tar xzf vpn.tar.gz
-	chmod 600 ./*.pem
-}
-
-crl_download() {
-	curl --silent --insecure --output revoked.crl \
-		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl"
-}
-
-init_send_network_topology() {
-	if [ -z "$TOPOLOGY_UUID" ]; then
-		export TOPOLOGY_UUID=$(get_redis_value "default_openvpn_topology_uuid")
-		export TOPOLOGY_KEY=$(get_redis_value "default_openvpn_topology_key")
-	fi
-	(
-		crontab -l
-		echo "*/$TOPOLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh"
-	) | crontab -
 }

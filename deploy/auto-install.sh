@@ -1,10 +1,7 @@
 #!/bin/bash
 
 export DEBIAN_FRONTEND=noninteractive
-export INSTALL_PATH=/opt/openwisp/docker-openwisp
-export LOG_FILE=/opt/openwisp/autoinstall.log
-export ENV_USER=/opt/openwisp/config.env
-export ENV_BACKUP=/opt/openwisp/backup.env
+export USER_INSTALL_PATH=/opt/openwisp
 export GIT_PATH=${GIT_PATH:-https://github.com/openwisp/docker-openwisp.git}
 
 # Terminal colors
@@ -14,17 +11,30 @@ export YLW='\033[1;33m'
 export BLU='\033[1;34m'
 export NON='\033[0m'
 
-start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>>$LOG_FILE; }
+start_step() { printf '\e[1;34m%-70s\e[m' "$1" && echo "$1" &>>"$LOG_FILE"; }
 report_ok() { echo -e ${GRN}" done"${NON}; }
 report_error() { echo -e ${RED}" error"${NON}; }
-get_env() { grep "^$1" "$2" | cut -d'=' -f 2-50; }
+# Match the variable name exactly to avoid reading similarly named settings.
+get_env() { grep "^$1=" "$2" | cut -d'=' -f 2-50; }
+# Update values without evaluating configuration or user input as shell code.
 set_env() {
-	line=$(grep -n "^$1=" $INSTALL_PATH/.env)
-	if [ -z "$line" ]; then
-		echo "$1=$2" >>$INSTALL_PATH/.env
+	local env_file=$INSTALL_PATH/.env
+	local temp_file
+	# Append only absent variables, preserving existing configuration entries.
+	if ! grep -q "^$1=" "$env_file"; then
+		printf '%s=%s\n' "$1" "$2" >>"$env_file"
 	else
-		line_number=$(echo $line | cut -f1 -d:)
-		eval $(echo "awk -i inplace 'NR=="${line_number}" {\$0=\"${1}=${2}\"}1' $INSTALL_PATH/.env")
+		# Rewrite the file to keep values literal and avoid evaluating user input.
+		temp_file=$(mktemp "$env_file.XXXXXX")
+		while IFS= read -r env_line || [ -n "$env_line" ]; do
+			if [[ "$env_line" == "$1="* ]]; then
+				printf '%s=%s\n' "$1" "$2"
+			else
+				printf '%s\n' "$env_line"
+			fi
+		done <"$env_file" >"$temp_file"
+		chmod --reference="$env_file" "$temp_file"
+		mv "$temp_file" "$env_file"
 	fi
 }
 
@@ -62,7 +72,7 @@ error_msg_with_continue() {
 
 apt_dependenices_setup() {
 	start_step "Setting up dependencies..."
-	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl jq &>>$LOG_FILE
+	apt --yes install python3 python3-pip git python3-dev gawk libffi-dev libssl-dev gcc make curl jq &>>"$LOG_FILE"
 	check_status $? "Python dependencies installation failed."
 }
 
@@ -80,8 +90,8 @@ setup_docker() {
 	if [ $? -eq 0 ]; then
 		report_ok
 	else
-		curl -fsSL 'https://get.docker.com' -o '/opt/openwisp/get-docker.sh' &>>$LOG_FILE
-		sh '/opt/openwisp/get-docker.sh' &>>$LOG_FILE
+		curl -fsSL 'https://get.docker.com' -o "${USER_INSTALL_PATH}/get-docker.sh" &>>"$LOG_FILE"
+		sh "${USER_INSTALL_PATH}/get-docker.sh" &>>"$LOG_FILE"
 		docker info &>/dev/null
 		check_status $? "Docker installation failed."
 	fi
@@ -90,9 +100,9 @@ setup_docker() {
 download_docker_openwisp() {
 	local openwisp_version="$1"
 	start_step "Downloading docker-openwisp..."
-	if [[ -f $INSTALL_PATH/.env ]]; then
-		mv $INSTALL_PATH/.env $ENV_BACKUP &>>$LOG_FILE
-		rm -rf $INSTALL_PATH &>>$LOG_FILE
+	if [[ -f "$INSTALL_PATH/.env" ]]; then
+		mv "$INSTALL_PATH/.env" "$ENV_BACKUP" &>>"$LOG_FILE"
+		rm -rf "$INSTALL_PATH" &>>"$LOG_FILE"
 	fi
 	if [ -z "$GIT_BRANCH" ]; then
 		if [[ "$openwisp_version" == "edge" ]]; then
@@ -102,7 +112,7 @@ download_docker_openwisp() {
 		fi
 	fi
 
-	git clone $GIT_PATH $INSTALL_PATH --depth 1 --branch $GIT_BRANCH &>>$LOG_FILE
+	git clone "$GIT_PATH" "$INSTALL_PATH" --depth 1 --branch "$GIT_BRANCH" &>>"$LOG_FILE"
 }
 
 setup_docker_openwisp() {
@@ -141,13 +151,13 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(5/5) Use Let's Encrypt SSL? (y/N, blank for no): "${NON}
 		read use_letsencrypt
 	else
-		cp $env_path $ENV_USER &>>$LOG_FILE
+		cp "$env_path" "$ENV_USER" &>>"$LOG_FILE"
 	fi
 	echo ""
 
 	download_docker_openwisp "$openwisp_version"
 
-	cd $INSTALL_PATH &>>$LOG_FILE
+	cd "$INSTALL_PATH" &>>"$LOG_FILE"
 	check_status $? "docker-openwisp download failed."
 	set_env "OPENWISP_VERSION" "$openwisp_version"
 
@@ -160,12 +170,12 @@ setup_docker_openwisp() {
 		else
 			set_env "API_DOMAIN" "$api_domain"
 		fi
-		# Use Radius
-		if [[ -z "$USE_OPENWISP_RADIUS" ]]; then
-			set_env "USE_OPENWISP_RADIUS" "Yes"
-		else
-			set_env "USE_OPENWISP_RADIUS" "No"
-		fi
+		# Respect an explicit Radius setting and enable it by default for new installs.
+		case "${USE_OPENWISP_RADIUS-True}" in
+		True) set_env "USE_OPENWISP_RADIUS" "True" ;;
+		False) set_env "USE_OPENWISP_RADIUS" "False" ;;
+		*) error_msg "USE_OPENWISP_RADIUS must be True or False." ;;
+		esac
 		# VPN domain
 		if [[ -z "$vpn_domain" ]]; then
 			set_env "VPN_DOMAIN" "openvpn.${domain}"
@@ -185,8 +195,8 @@ setup_docker_openwisp() {
 				set_env "$config" "$value"
 			done
 		else
-			python3 $INSTALL_PATH/build.py change-secret-key >/dev/null
-			python3 $INSTALL_PATH/build.py change-database-credentials >/dev/null
+			python3 "$INSTALL_PATH/build.py" change-secret-key >/dev/null
+			python3 "$INSTALL_PATH/build.py" change-database-credentials >/dev/null
 		fi
 		# SSL Configuration
 		use_letsencrypt_lower=$(echo "$use_letsencrypt" | tr '[:upper:]' '[:lower:]')
@@ -200,14 +210,15 @@ setup_docker_openwisp() {
 		set_env "POSTFIX_ALLOWED_SENDER_DOMAINS" "$hostname"
 		set_env "POSTFIX_MYHOSTNAME" "$hostname"
 	else
-		mv $ENV_USER $INSTALL_PATH/.env &>>$LOG_FILE
-		rm -rf $ENV_USER &>>$LOG_FILE
+		mv "$ENV_USER" "$INSTALL_PATH/.env" &>>"$LOG_FILE"
+		rm -rf "$ENV_USER" &>>"$LOG_FILE"
 	fi
+	set_env "DEV_MODE" "False"
 
 	start_step "Configuring docker-openwisp..."
 	report_ok
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start -C "$INSTALL_PATH/" &>>"$LOG_FILE"
 	check_status $? "Starting openwisp failed."
 }
 
@@ -218,19 +229,20 @@ upgrade_docker_openwisp() {
 
 	download_docker_openwisp "$openwisp_version"
 
-	cd $INSTALL_PATH &>>$LOG_FILE
+	cd "$INSTALL_PATH" &>>"$LOG_FILE"
 	check_status $? "docker-openwisp download failed."
 	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	start_step "Configuring docker-openwisp..."
-	for config in $(grep '=' $ENV_BACKUP | cut -f1 -d'='); do
+	for config in $(grep '=' "$ENV_BACKUP" | cut -f1 -d'='); do
 		value=$(get_env "$config" "$ENV_BACKUP")
 		set_env "$config" "$value"
 	done
+	set_env "DEV_MODE" "False"
 	report_ok
 
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start -C $INSTALL_PATH/ &>>$LOG_FILE
+	make start -C "$INSTALL_PATH/" &>>"$LOG_FILE"
 	check_status $? "Starting openwisp failed."
 }
 
@@ -279,7 +291,7 @@ init_setup() {
 		echo -e "  - Supported systems"
 		echo -e "    - Debian: 11, 12 & 13"
 		echo -e "    - Ubuntu 22.04 & 24.04"
-		echo -e ${YLW}"\nYou can use -u\--upgrade if you are upgrading from an older version.\n"${NON}
+		echo -e ${YLW}"\nUse -u, --upgrade [path] to upgrade an existing installation.\n"${NON}
 	fi
 
 	if [ "$EUID" -ne 0 ]; then
@@ -287,12 +299,12 @@ init_setup() {
 		exit 1
 	fi
 
-	mkdir -p /opt/openwisp
-	echo "" >$LOG_FILE
+	mkdir -p "$USER_INSTALL_PATH"
+	echo "" >"$LOG_FILE"
 
 	start_step "Checking your system capabilities..."
-	apt update &>>$LOG_FILE
-	apt -qq --yes install lsb-release &>>$LOG_FILE
+	apt update &>>"$LOG_FILE"
+	apt -qq --yes install lsb-release &>>"$LOG_FILE"
 	system_id=$(lsb_release --id --short)
 	system_release=$(lsb_release --release --short)
 	incompatible_message="$system_id $system_release is not supported. Installation might fail, continue anyway? (Y/n): "
@@ -327,9 +339,9 @@ init_help() {
 	echo -e "  - Supported systems"
 	echo -e "    - Debian: 11, 12 & 13"
 	echo -e "    - Ubuntu 22.04 & 24.04\n"
-	echo -e "  -i\--install : (default) Install OpenWISP"
-	echo -e "  -u\--upgrade : Change OpenWISP version already setup with this script"
-	echo -e "  -h\--help    : See this help message"
+	echo -e "  -i, --install [path]: (default) Install OpenWISP. Default path is /opt/openwisp"
+	echo -e "  -u, --upgrade [path]: Change an OpenWISP installation deployed with this script"
+	echo -e "  -h, --help: See this help message"
 	echo -e ${NON}
 }
 
@@ -341,8 +353,22 @@ while test $# != 0; do
 	-h | --help) action='help' ;;
 	*) action='help' ;;
 	esac
+	case "$1" in
+	-i | --install | -u | --upgrade)
+		if [[ -n "$2" && "$2" != -* ]]; then
+			USER_INSTALL_PATH=$(realpath -m "$2")
+			shift
+		fi
+		;;
+	esac
 	shift
 done
+
+# Define dependent paths after the installation path is decided.
+export INSTALL_PATH="${USER_INSTALL_PATH}/docker-openwisp"
+export LOG_FILE="${USER_INSTALL_PATH}/autoinstall.log"
+export ENV_USER="${USER_INSTALL_PATH}/config.env"
+export ENV_BACKUP="${USER_INSTALL_PATH}/backup.env"
 
 ## Init script
 if [[ "$action" == "help" ]]; then

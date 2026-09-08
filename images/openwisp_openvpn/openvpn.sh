@@ -3,12 +3,18 @@
 # This script will be called by cronjob to
 # update OpenVPN configurations periodically.
 cd /
-source /utils.sh
+. /openvpn_utils.sh
 
-openvpn_config
-openvpn_config_checksum
+(
+	flock -n 9 || exit 0
+	openvpn_config
+	openvpn_config_checksum
 
-if [ "${OFILE}" != "${NFILE}" ]; then
-	openvpn_config_download
-	supervisorctl restart openvpn
-fi
+	if [ "${OFILE}" != "${NFILE}" ]; then
+		if ! openvpn_config_download; then
+			echo "ERROR: failed to download OpenVPN configuration" >&2
+			exit 1
+		fi
+		supervisorctl restart openvpn
+	fi
+) 9>/.openvpn-config.lock

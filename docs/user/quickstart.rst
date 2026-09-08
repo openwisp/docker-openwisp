@@ -14,6 +14,7 @@ Available Images
 The images are hosted on `Docker Hub
 <https://hub.docker.com/u/openwisp>`__ and `GitLab Container Registry
 <https://gitlab.com/openwisp/docker-openwisp/container_registry>`__.
+Docker Hub is the default image source used by the deployment.
 
 Image Tags
 ~~~~~~~~~~
@@ -74,6 +75,13 @@ script and execute it:
     curl https://raw.githubusercontent.com/openwisp/docker-openwisp/master/deploy/auto-install.sh -o auto-install.sh
     sudo bash auto-install.sh
 
+The default installation path is ``/opt/openwisp``. To install to a
+different directory, pass it to the ``--install`` option:
+
+.. code-block:: bash
+
+    sudo bash auto-install.sh --install /srv/openwisp
+
 The auto-install script maintains a log, which is useful for debugging or
 checking the real-time output of the script. You can view the log by
 running the following command:
@@ -89,6 +97,13 @@ by using the following command
 .. code-block:: bash
 
     sudo bash auto-install.sh --upgrade
+
+To upgrade an installation in a custom directory, pass its path to the
+``--upgrade`` option:
+
+.. code-block:: bash
+
+    sudo bash auto-install.sh --upgrade /srv/openwisp
 
 .. note::
 
@@ -122,14 +137,28 @@ and requires less prior knowledge about OpenWISP & networking.
        git clone https://github.com/openwisp/docker-openwisp.git
        cd docker-openwisp
 
+   To use a release other than ``edge``, set ``OPENWISP_VERSION`` in
+   ``.env`` to ``latest`` or a specific release version, for example:
+
+   .. code-block:: bash
+
+       OPENWISP_VERSION=25.10.4
+
+   This configuration is used for image pulling and by Docker Compose, and
+   it persists across subsequent ``make start`` commands.
+
 3. Configure:
 
    Please refer to the :doc:`settings` and :doc:`customization` pages to
    configure any aspect of your OpenWISP instance.
 
-   Make sure to change the values for :ref:`essential
-   <docker_essential_env>` and :ref:`security <docker_security_env>`
-   variables.
+   This repository defaults to development mode. Before production
+   deployment, set ``DEV_MODE=False`` in ``.env``. The ``make start``
+   command refuses to run while development mode is enabled.
+
+   For production deployments, make sure to change the values for
+   :ref:`essential <docker_essential_env>` and :ref:`security
+   <docker_security_env>` variables.
 
 4. Deploy:
 
