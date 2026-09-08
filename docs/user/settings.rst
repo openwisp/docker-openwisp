@@ -783,6 +783,14 @@ When using an optional backend, both ``TIMESERIES_BACKEND`` and
 - **Valid Values:** any valid hostname or IP address.
 - **Default:** ``influxdb2``.
 
+``INFLUXDB2_URL``
+~~~~~~~~~~~~~~~~~
+
+- **Explanation:** URL used to connect to InfluxDB 2.x. When set, it takes
+  precedence over the URL built from ``INFLUXDB2_HOST`` and ``INFLUXDB2_PORT``.
+- **Valid Values:** URL.
+- **Default:** ``http://$INFLUXDB2_HOST:$INFLUXDB2_PORT``.
+
 ``INFLUXDB2_PORT``
 ~~~~~~~~~~~~~~~~~~
 
@@ -826,6 +834,22 @@ When using an optional backend, both ``TIMESERIES_BACKEND`` and
 - **Explanation:** URL used to connect to Elasticsearch.
 - **Valid Values:** URL.
 - **Default:** ``http://elasticsearch:9200``.
+
+``ELASTICSEARCH_USER``
+~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Username used by OpenWISP Monitoring to authenticate with
+  Elasticsearch.
+- **Valid Values:** STRING.
+- **Default:** ``elastic``.
+
+``ELASTICSEARCH_PASSWORD``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Password used to bootstrap the Elasticsearch ``elastic``
+  user and by OpenWISP Monitoring to authenticate with Elasticsearch.
+- **Valid Values:** STRING.
+- **Default:** ``openwisp``.
 
 ``ELASTICSEARCH_VERSION``
 ~~~~~~~~~~~~~~~~~~~~~~~~~

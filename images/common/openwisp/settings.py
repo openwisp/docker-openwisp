@@ -247,6 +247,8 @@ elif TIMESERIES_BACKEND == "elasticsearch":
         "BACKEND": "openwisp_monitoring.db.backends.elasticsearch",
         "NAME": os.environ["ELASTICSEARCH_NAME"],
         "URL": os.environ["ELASTICSEARCH_URL"],
+        "USER": os.environ["ELASTICSEARCH_USER"],
+        "PASSWORD": os.environ["ELASTICSEARCH_PASSWORD"],
     }
 else:
     raise ImproperlyConfigured(

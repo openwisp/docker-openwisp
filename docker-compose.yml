@@ -236,8 +236,17 @@ services:
       - influxdb2
     environment:
       - TIMESERIES_DB=$INFLUXDB2_BUCKET
+      - TIMESERIES_UDP_PORT=$TIMESERIES_UDP_PORT
+      - INFLUXDB2_HOST=$INFLUXDB2_HOST
+      - INFLUXDB2_PORT=$INFLUXDB2_PORT
       - INFLUXDB2_ORG=$INFLUXDB2_ORG
       - INFLUXDB2_TOKEN=$INFLUXDB2_TOKEN
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        export TIMESERIES_UDP_SHORT_PORT="$$(($${TIMESERIES_UDP_PORT:-8089} + 1))"
+        exec telegraf
     volumes:
       - ./deploy/telegraf.conf:/etc/telegraf/telegraf.conf:ro
     depends_on:
@@ -250,7 +259,9 @@ services:
       - elasticsearch
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=$ELASTICSEARCH_PASSWORD
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
