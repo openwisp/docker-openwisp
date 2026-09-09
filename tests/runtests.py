@@ -1155,6 +1155,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         ).read_text()
         self.assertIn('"USER": os.environ["ELASTICSEARCH_USER"]', settings)
         self.assertIn('"PASSWORD": os.environ["ELASTICSEARCH_PASSWORD"]', settings)
+
     def test_profile_configures_shell_defaults_and_preserves_overrides(self):
         for dev_mode, settings, expected in (
             (

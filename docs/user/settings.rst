@@ -717,13 +717,15 @@ When using an optional backend, both ``TIMESERIES_BACKEND`` and
 - **Explanation:** Docker Compose profiles to enable. Set this to
   ``influxdb2`` or ``elasticsearch`` when using one of the optional
   timeseries backend services.
-- **Valid Values:** A comma-separated list of Docker Compose profile names.
+- **Valid Values:** A comma-separated list of Docker Compose profile
+  names.
 - **Default:** ``""`` (empty string).
 
 ``TIMESERIES_BACKEND``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Timeseries database backend used by OpenWISP Monitoring.
+- **Explanation:** Timeseries database backend used by OpenWISP
+  Monitoring.
 - **Valid Values:** ``influxdb``, ``influxdb2``, ``elasticsearch``.
 - **Default:** ``influxdb``.
 
@@ -731,9 +733,9 @@ When using an optional backend, both ``TIMESERIES_BACKEND`` and
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **Explanation:** Whether to write timeseries data over UDP. InfluxDB 2.x
-  UDP writes are handled by the ``telegraf`` container because InfluxDB 2.x
-  does not support UDP writes natively. Elasticsearch does not support UDP
-  writes.
+  UDP writes are handled by the ``telegraf`` container because InfluxDB
+  2.x does not support UDP writes natively. Elasticsearch does not support
+  UDP writes.
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
@@ -823,7 +825,8 @@ When using an optional backend, both ``TIMESERIES_BACKEND`` and
 ~~~~~~~~~~~~~~~~~
 
 - **Explanation:** URL used to connect to InfluxDB 2.x. When set, it takes
-  precedence over the URL built from ``INFLUXDB2_HOST`` and ``INFLUXDB2_PORT``.
+  precedence over the URL built from ``INFLUXDB2_HOST`` and
+  ``INFLUXDB2_PORT``.
 - **Valid Values:** URL.
 - **Default:** ``http://$INFLUXDB2_HOST:$INFLUXDB2_PORT``.
 
@@ -874,16 +877,17 @@ When using an optional backend, both ``TIMESERIES_BACKEND`` and
 ``ELASTICSEARCH_USER``
 ~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Username used by OpenWISP Monitoring to authenticate with
-  Elasticsearch.
+- **Explanation:** Username used by OpenWISP Monitoring to authenticate
+  with Elasticsearch.
 - **Valid Values:** STRING.
 - **Default:** ``elastic``.
 
 ``ELASTICSEARCH_PASSWORD``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Password used to bootstrap the Elasticsearch ``elastic``
-  user and by OpenWISP Monitoring to authenticate with Elasticsearch.
+- **Explanation:** Password used to bootstrap the Elasticsearch
+  ``elastic`` user and by OpenWISP Monitoring to authenticate with
+  Elasticsearch.
 - **Valid Values:** STRING.
 - **Default:** ``openwisp``.
 
