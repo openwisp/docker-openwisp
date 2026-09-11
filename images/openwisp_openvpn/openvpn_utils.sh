@@ -214,6 +214,7 @@ init_send_network_topology() {
 	fi
 	(
 		crontab -l
+		# Forward the generated job's output to PID 1 so Docker can collect it.
 		echo "*/$TOPOLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh >>/proc/1/fd/1 2>>/proc/1/fd/2"
 	) | crontab -
 }
