@@ -1,2 +1,2 @@
-*/1 * * * * sh /openvpn.sh
-*/5 * * * * sh /revokelist.sh
+*/1 * * * * sh /openvpn.sh >>/proc/1/fd/1 2>>/proc/1/fd/2
+*/5 * * * * sh /revokelist.sh >>/proc/1/fd/1 2>>/proc/1/fd/2
