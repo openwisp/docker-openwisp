@@ -25,7 +25,8 @@ repository.
   updating configurations of your device.
 - **openwisp-celery-monitoring**: Runs background tasks that perform
   active monitoring checks, e.g. ping checks and configuration checks. It
-  also executes task for writing monitoring data to the timeseries DB.
+  also executes tasks for writing monitoring data to the configurable
+  timeseries DB, which defaults to InfluxDB 1.8.
 - **openwisp-celerybeat**: Runs periodic background tasks. e.g. revoking
   all the expired certificates.
 - **openwisp-nginx**: Internet facing container that facilitates all the
