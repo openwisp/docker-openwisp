@@ -126,7 +126,12 @@ crl_download_to() {
 	curl_download --silent --fail --retry 10 --retry-delay 5 --retry-max-time 300 \
 		--output "$output_path" \
 		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl"
-	test -s "$output_path"
+	test -s "$output_path" || return 1
+	# The CRL is public data (revoked certificate serial numbers), and OpenVPN
+	# re-reads it from disk on every TLS session after dropping privileges to
+	# the unprivileged "user"/"group" from openvpn.conf, so it must stay
+	# world-readable regardless of mktemp's default 0600 mode.
+	chmod 644 -- "$output_path"
 }
 
 crl_download() {
@@ -209,6 +214,6 @@ init_send_network_topology() {
 	fi
 	(
 		crontab -l
-		echo "*/$TOPOLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh"
+		echo "*/$TOPOLOGY_UPDATE_INTERVAL * * * * TOPOLOGY_UUID=$TOPOLOGY_UUID TOPOLOGY_KEY=$TOPOLOGY_KEY sh /send-topology.sh >>/proc/1/fd/1 2>>/proc/1/fd/2"
 	) | crontab -
 }
