@@ -998,10 +998,24 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             self.assertEqual(result.exit_code, 0, result.output.decode())
             return result.output.decode().strip()
 
+        def wait_for_new_worker_pid(previous_pid):
+            for _ in range(self.config["services_max_retries"]):
+                status = container.exec_run(
+                    ["supervisorctl", "status", "workers:network"]
+                )
+                if status.exit_code == 0 and re.search(
+                    r"network\s+RUNNING", status.output.decode()
+                ):
+                    new_pid = worker_pid("network")
+                    if new_pid != previous_pid:
+                        return new_pid
+                time.sleep(self.config["services_delay_retries"])
+            self.fail(status.output.decode())
+
         default_pid = worker_pid("celery")
         network_pid = worker_pid("network")
         since = str(int(time.time()) - 1)
-        # Restart one worker and verify that the other worker was left running.
+        # Restart one worker and verify that the other worker remains running.
         restart = container.exec_run(
             [
                 "supervisorctl",
@@ -1010,8 +1024,23 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ]
         )
         self.assertEqual(restart.exit_code, 0, restart.output.decode())
+        restarted_network_pid = wait_for_new_worker_pid(network_pid)
         self.assertEqual(worker_pid("celery"), default_pid)
-        self.assertNotEqual(worker_pid("network"), network_pid)
+        self.assertNotEqual(restarted_network_pid, network_pid)
+
+        # Terminate one worker and verify that Supervisor restarts it.
+        terminate = container.exec_run(
+            [
+                "supervisorctl",
+                "signal",
+                "TERM",
+                "workers:network",
+            ]
+        )
+        self.assertEqual(terminate.exit_code, 0, terminate.output.decode())
+        self.assertEqual(worker_pid("celery"), default_pid)
+        new_network_pid = wait_for_new_worker_pid(restarted_network_pid)
+        self.assertNotEqual(new_network_pid, restarted_network_pid)
 
         self._assert_celery_warm_shutdown("celery", since)
 
@@ -1023,13 +1052,17 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         container = self.docker_client.containers.get(container_id)
         for _ in range(self.config["services_max_retries"]):
             status = container.exec_run(["supervisorctl", "status"])
-            if status.exit_code == 0:
+            output = status.output.decode()
+            if status.exit_code == 0 and all(
+                re.search(rf"{name}\s+RUNNING", output)
+                for name in ("celery", "network", "firmware_upgrader")
+            ):
                 break
             time.sleep(self.config["services_delay_retries"])
         else:
-            self.fail(status.output.decode())
+            self.fail(output)
         for name in ("celery", "network", "firmware_upgrader"):
-            self.assertRegex(status.output.decode(), rf"{name}\s+RUNNING")
+            self.assertRegex(output, rf"{name}\s+RUNNING")
 
     def test_celery_beat_shutdown_gracefully_on_docker_restart(self):
         container_id = self.docker_compose_get_container_id("celerybeat")
