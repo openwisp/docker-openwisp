@@ -89,6 +89,7 @@ FROM system
 
 COPY --from=openwisp_python --chown=openwisp:root /home/openwisp/.local/ /usr/local
 COPY --chown=openwisp:root ./common/ /opt/openwisp/
+COPY ./common/celery_supervisord.conf /etc/supervisor/supervisord.conf
 RUN mkdir /opt/openwisp/static && \
     mkdir /opt/openwisp/media && \
     mkdir /opt/openwisp/private && \
