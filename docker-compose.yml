@@ -75,6 +75,8 @@ services:
 
   celery:
     image: openwisp/openwisp-dashboard:${OPENWISP_VERSION:-edge}
+    # Keep this longer than Supervisor's stopwaitsecs to let it reap workers and exit.
+    stop_grace_period: 120s
     restart: always
     environment:
       - MODULE_NAME=celery
@@ -90,6 +92,8 @@ services:
 
   celery_monitoring:
     image: openwisp/openwisp-dashboard:${OPENWISP_VERSION:-edge}
+    # Keep this longer than Supervisor's stopwaitsecs to let it reap workers and exit.
+    stop_grace_period: 120s
     restart: always
     environment:
       - MODULE_NAME=celery_monitoring
