@@ -968,6 +968,140 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         with self.subTest("Test celery_monitoring container"):
             _test_celery_task_registered("celery_monitoring")
 
+    def _assert_celery_warm_shutdown(self, service, since):
+        self._assert_celery_log_message(service, since, "Warm shutdown")
+
+    def _assert_celery_log_message(self, service, since, message):
+        for _ in range(10):
+            compose_output, _ = self._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "logs",
+                    "--no-color",
+                    "--since",
+                    since,
+                    "--tail",
+                    "200",
+                    service,
+                ]
+            )
+            if message in compose_output:
+                break
+            time.sleep(1)
+        else:
+            self.fail(f"Celery restart must show {message!r} in Compose logs.")
+
+    def test_celery_workers_can_restart_individually(self):
+        expected = {
+            "celery": ("celery", "network", "firmware_upgrader"),
+            "celery_monitoring": ("monitoring", "monitoring_checks"),
+        }
+        # Check that every expected worker is running under Supervisor.
+        for service, names in expected.items():
+            with self.subTest(service=service):
+                container_id = self.docker_compose_get_container_id(service)
+                container = self.docker_client.containers.get(container_id)
+                status = container.exec_run(["supervisorctl", "status"])
+                self.assertEqual(status.exit_code, 0, status.output.decode())
+                output = status.output.decode()
+                for name in names:
+                    self.assertRegex(output, rf"{name}\s+RUNNING")
+
+        container_id = self.docker_compose_get_container_id("celery")
+        container = self.docker_client.containers.get(container_id)
+
+        def worker_pid(name):
+            result = container.exec_run(
+                [
+                    "supervisorctl",
+                    "pid",
+                    f"workers:{name}",
+                ]
+            )
+            self.assertEqual(result.exit_code, 0, result.output.decode())
+            return result.output.decode().strip()
+
+        def wait_for_new_worker_pid(previous_pid):
+            for _ in range(self.config["services_max_retries"]):
+                status = container.exec_run(
+                    ["supervisorctl", "status", "workers:network"]
+                )
+                if status.exit_code == 0 and re.search(
+                    r"network\s+RUNNING", status.output.decode()
+                ):
+                    new_pid = worker_pid("network")
+                    if new_pid != previous_pid:
+                        return new_pid
+                time.sleep(self.config["services_delay_retries"])
+            self.fail(status.output.decode())
+
+        default_pid = worker_pid("celery")
+        network_pid = worker_pid("network")
+        since = str(int(time.time()) - 1)
+        # Restart one worker and verify that the other worker remains running.
+        restart = container.exec_run(
+            [
+                "supervisorctl",
+                "restart",
+                "workers:network",
+            ]
+        )
+        self.assertEqual(restart.exit_code, 0, restart.output.decode())
+        restarted_network_pid = wait_for_new_worker_pid(network_pid)
+        self.assertEqual(worker_pid("celery"), default_pid)
+        self.assertNotEqual(restarted_network_pid, network_pid)
+
+        # Terminate one worker and verify that Supervisor restarts it.
+        terminate = container.exec_run(
+            [
+                "supervisorctl",
+                "signal",
+                "TERM",
+                "workers:network",
+            ]
+        )
+        self.assertEqual(terminate.exit_code, 0, terminate.output.decode())
+        self.assertEqual(worker_pid("celery"), default_pid)
+        new_network_pid = wait_for_new_worker_pid(restarted_network_pid)
+        self.assertNotEqual(new_network_pid, restarted_network_pid)
+
+        self._assert_celery_warm_shutdown("celery", since)
+
+    def test_celery_workers_shutdown_gracefully_on_docker_restart(self):
+        since = str(int(time.time()) - 1)
+        self._execute_docker_compose_command(["docker", "compose", "restart", "celery"])
+        self._assert_celery_warm_shutdown("celery", since)
+        container_id = self.docker_compose_get_container_id("celery")
+        container = self.docker_client.containers.get(container_id)
+        for _ in range(self.config["services_max_retries"]):
+            status = container.exec_run(["supervisorctl", "status"])
+            output = status.output.decode()
+            if status.exit_code == 0 and all(
+                re.search(rf"{name}\s+RUNNING", output)
+                for name in ("celery", "network", "firmware_upgrader")
+            ):
+                break
+            time.sleep(self.config["services_delay_retries"])
+        else:
+            self.fail(output)
+        for name in ("celery", "network", "firmware_upgrader"):
+            self.assertRegex(output, rf"{name}\s+RUNNING")
+
+    def test_celery_beat_shutdown_gracefully_on_docker_restart(self):
+        container_id = self.docker_compose_get_container_id("celerybeat")
+        container = self.docker_client.containers.get(container_id)
+        command = container.exec_run(["cat", "/proc/1/cmdline"])
+        self.assertEqual(command.exit_code, 0, command.output.decode())
+        self.assertIn(
+            "celery -A openwisp beat", command.output.decode().replace("\0", " ")
+        )
+        since = str(int(time.time()) - 1)
+        self._execute_docker_compose_command(
+            ["docker", "compose", "restart", "celerybeat"]
+        )
+        self._assert_celery_log_message("celerybeat", since, "beat: Starting...")
+
     def test_celery_beat_schedule_without_radius(self):
         """Ensure user expiration tasks are scheduled without RADIUS."""
         output, _ = self._execute_django_shell_command(
@@ -1061,6 +1195,104 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
+
+    def test_celery_supervisor_config_preserves_enabled_workers(self):
+        supervisor_config = (
+            Path(self.root_location) / "images" / "common" / "celery_supervisord.conf"
+        ).read_text()
+        self.assertIn(
+            "file=/opt/openwisp/supervisor/supervisor.sock", supervisor_config
+        )
+        self.assertIn(
+            "serverurl=unix:///opt/openwisp/supervisor/supervisor.sock",
+            supervisor_config,
+        )
+        self.assertIn(
+            "pidfile=/opt/openwisp/supervisor/supervisord.pid", supervisor_config
+        )
+        self.assertIn("logfile=/dev/stdout", supervisor_config)
+        self.assertIn("files=/opt/openwisp/supervisor/conf.d/*.conf", supervisor_config)
+        init_command = (
+            Path(self.root_location) / "images" / "common" / "init_command.sh"
+        ).read_text()
+        self.assertIn("exec celery -A openwisp beat", init_command)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config = Path(tmpdir) / "workers.conf"
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "DJANGO_LOG_LEVEL": "INFO",
+                    "USE_OPENWISP_CELERY_NETWORK": "True",
+                    "USE_OPENWISP_FIRMWARE": "True",
+                    "USE_OPENWISP_CELERY_FIRMWARE": "True",
+                    "USE_OPENWISP_MONITORING": "True",
+                    "USE_OPENWISP_CELERY_MONITORING": "True",
+                    "OPENWISP_CELERY_COMMAND_FLAGS": "--concurrency=2",
+                    "OPENWISP_CELERY_NETWORK_COMMAND_FLAGS": "--concurrency=3",
+                    "OPENWISP_CELERY_FIRMWARE_COMMAND_FLAGS": "--concurrency=4",
+                    "OPENWISP_CELERY_MONITORING_COMMAND_FLAGS": "--concurrency=5",
+                    "OPENWISP_CELERY_MONITORING_CHECKS_COMMAND_FLAGS": (
+                        "--concurrency=6 --hostname=checks%h"
+                    ),
+                }
+            )
+
+            def generate():
+                result = subprocess.run(
+                    [
+                        "bash",
+                        "-c",
+                        "source images/common/celery_supervisor.sh; "
+                        'generate_celery_supervisor_config "$1"',
+                        "bash",
+                        str(config),
+                    ],
+                    cwd=self.root_location,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                return config.read_text()
+
+            for module, expected in (
+                ("celery", {"celery": "2", "network": "3", "firmware_upgrader": "4"}),
+                ("celery_monitoring", {"monitoring": "5", "monitoring_checks": "6"}),
+            ):
+                with self.subTest(module=module):
+                    environment["MODULE_NAME"] = module
+                    content = generate()
+                    self.assertIn("stopsignal=TERM", content)
+                    self.assertIn("stopwaitsecs=90", content)
+                    self.assertIn("stopasgroup=false", content)
+                    self.assertIn("killasgroup=true", content)
+                    self.assertIn("stdout_logfile=/dev/stdout", content)
+                    self.assertNotIn("--detach", content)
+                    self.assertIn("[group:workers]", content)
+                    self.assertIn("priority=100", content)
+                    self.assertIn(
+                        f"programs={','.join(expected)}",
+                        content,
+                    )
+                    for name, concurrency in expected.items():
+                        self.assertIn(f"[program:{name}]", content)
+                        self.assertIn(f"--queues {name}", content)
+                        self.assertIn(f"-n {name}@%%h", content)
+                        self.assertIn(f"--concurrency={concurrency}", content)
+                    if module == "celery_monitoring":
+                        self.assertIn("--hostname=checks%%h", content)
+
+            environment.update(
+                {
+                    "MODULE_NAME": "celery",
+                    "USE_OPENWISP_CELERY_NETWORK": "False",
+                    "USE_OPENWISP_CELERY_FIRMWARE": "False",
+                }
+            )
+            content = generate()
+            self.assertNotIn("[program:network]", content)
+            self.assertNotIn("[program:firmware_upgrader]", content)
 
     def test_profile_configures_shell_defaults_and_preserves_overrides(self):
         for dev_mode, settings, expected in (
