@@ -968,6 +968,30 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         with self.subTest("Test celery_monitoring container"):
             _test_celery_task_registered("celery_monitoring")
 
+    def _assert_celery_warm_shutdown(self, service, since):
+        self._assert_celery_log_message(service, since, "Warm shutdown")
+
+    def _assert_celery_log_message(self, service, since, message):
+        for _ in range(10):
+            compose_output, _ = self._execute_docker_compose_command(
+                [
+                    "docker",
+                    "compose",
+                    "logs",
+                    "--no-color",
+                    "--since",
+                    since,
+                    "--tail",
+                    "200",
+                    service,
+                ]
+            )
+            if message in compose_output:
+                break
+            time.sleep(1)
+        else:
+            self.fail(f"Celery restart must show {message!r} in Compose logs.")
+
     def test_celery_workers_can_restart_individually(self):
         expected = {
             "celery": ("celery", "network", "firmware_upgrader"),
@@ -1077,30 +1101,6 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             ["docker", "compose", "restart", "celerybeat"]
         )
         self._assert_celery_log_message("celerybeat", since, "beat: Starting...")
-
-    def _assert_celery_warm_shutdown(self, service, since):
-        self._assert_celery_log_message(service, since, "Warm shutdown")
-
-    def _assert_celery_log_message(self, service, since, message):
-        for _ in range(10):
-            compose_output, _ = self._execute_docker_compose_command(
-                [
-                    "docker",
-                    "compose",
-                    "logs",
-                    "--no-color",
-                    "--since",
-                    since,
-                    "--tail",
-                    "200",
-                    service,
-                ]
-            )
-            if message in compose_output:
-                break
-            time.sleep(1)
-        else:
-            self.fail(f"Celery restart must show {message!r} in Compose logs.")
 
     def test_celery_beat_schedule_without_radius(self):
         """Ensure user expiration tasks are scheduled without RADIUS."""
