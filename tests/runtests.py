@@ -1007,6 +1007,25 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         self.assertEqual(worker_pid("celery"), default_pid)
         self.assertNotEqual(worker_pid("network"), network_pid)
 
+        self._assert_celery_warm_shutdown("celery", since)
+
+    def test_celery_workers_shutdown_gracefully_on_docker_restart(self):
+        since = str(int(time.time()) - 1)
+        self._execute_docker_compose_command(["docker", "compose", "restart", "celery"])
+        self._assert_celery_warm_shutdown("celery", since)
+        container_id = self.docker_compose_get_container_id("celery")
+        container = self.docker_client.containers.get(container_id)
+        for _ in range(self.config["services_max_retries"]):
+            status = container.exec_run(["supervisorctl", "status"])
+            if status.exit_code == 0:
+                break
+            time.sleep(self.config["services_delay_retries"])
+        else:
+            self.fail(status.output.decode())
+        for name in ("celery", "network", "firmware_upgrader"):
+            self.assertRegex(status.output.decode(), rf"{name}\s+RUNNING")
+
+    def _assert_celery_warm_shutdown(self, service, since):
         for _ in range(10):
             compose_output, _ = self._execute_docker_compose_command(
                 [
@@ -1018,14 +1037,14 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                     since,
                     "--tail",
                     "200",
-                    "celery",
+                    service,
                 ]
             )
             if "Warm shutdown" in compose_output:
                 break
             time.sleep(1)
         else:
-            self.fail("Restart must show Celery warm shutdown in Compose logs.")
+            self.fail("Celery restart must show warm shutdown in Compose logs.")
 
     def test_celery_beat_schedule_without_radius(self):
         """Ensure user expiration tasks are scheduled without RADIUS."""
@@ -1123,11 +1142,19 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
 
     def test_celery_supervisor_config_preserves_enabled_workers(self):
         supervisor_config = (
-            self.root_location / "images" / "common" / "celery_supervisord.conf"
+            Path(self.root_location) / "images" / "common" / "celery_supervisord.conf"
         ).read_text()
-        self.assertIn("file=%(here)s/supervisord.sock", supervisor_config)
-        self.assertIn("files=%(here)s/celery_supervisord.d/*.conf", supervisor_config)
-        self.assertNotIn("pidfile=", supervisor_config)
+        self.assertIn(
+            "file=/opt/openwisp/supervisor/supervisor.sock", supervisor_config
+        )
+        self.assertIn(
+            "serverurl=unix:///opt/openwisp/supervisor/supervisor.sock",
+            supervisor_config,
+        )
+        self.assertIn(
+            "pidfile=/opt/openwisp/supervisor/supervisord.pid", supervisor_config
+        )
+        self.assertIn("files=/opt/openwisp/supervisor/conf.d/*.conf", supervisor_config)
         with tempfile.TemporaryDirectory() as tmpdir:
             config = Path(tmpdir) / "workers.conf"
             environment = os.environ.copy()

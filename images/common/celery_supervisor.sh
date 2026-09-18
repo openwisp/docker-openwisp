@@ -11,6 +11,7 @@ directory=/opt/openwisp
 autostart=true
 autorestart=true
 stopsignal=TERM
+; Leave time for Supervisor to exit before Docker's 120-second grace period ends.
 stopwaitsecs=90
 killasgroup=true
 redirect_stderr=true
