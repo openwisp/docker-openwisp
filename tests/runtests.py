@@ -978,9 +978,7 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
             with self.subTest(service=service):
                 container_id = self.docker_compose_get_container_id(service)
                 container = self.docker_client.containers.get(container_id)
-                status = container.exec_run(
-                    ["supervisorctl", "-c", "celery_supervisord.conf", "status"]
-                )
+                status = container.exec_run(["supervisorctl", "status"])
                 self.assertEqual(status.exit_code, 0, status.output.decode())
                 output = status.output.decode()
                 for name in names:
@@ -991,7 +989,11 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 
         def worker_pid(name):
             result = container.exec_run(
-                ["supervisorctl", "-c", "celery_supervisord.conf", "pid", name]
+                [
+                    "supervisorctl",
+                    "pid",
+                    f"workers:{name}",
+                ]
             )
             self.assertEqual(result.exit_code, 0, result.output.decode())
             return result.output.decode().strip()
@@ -1001,7 +1003,11 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         since = str(int(time.time()) - 1)
         # Restart one worker and verify that the other worker was left running.
         restart = container.exec_run(
-            ["supervisorctl", "-c", "celery_supervisord.conf", "restart", "network"]
+            [
+                "supervisorctl",
+                "restart",
+                "workers:network",
+            ]
         )
         self.assertEqual(restart.exit_code, 0, restart.output.decode())
         self.assertEqual(worker_pid("celery"), default_pid)
@@ -1025,7 +1031,24 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         for name in ("celery", "network", "firmware_upgrader"):
             self.assertRegex(status.output.decode(), rf"{name}\s+RUNNING")
 
+    def test_celery_beat_shutdown_gracefully_on_docker_restart(self):
+        container_id = self.docker_compose_get_container_id("celerybeat")
+        container = self.docker_client.containers.get(container_id)
+        command = container.exec_run(["cat", "/proc/1/cmdline"])
+        self.assertEqual(command.exit_code, 0, command.output.decode())
+        self.assertIn(
+            "celery -A openwisp beat", command.output.decode().replace("\0", " ")
+        )
+        since = str(int(time.time()) - 1)
+        self._execute_docker_compose_command(
+            ["docker", "compose", "restart", "celerybeat"]
+        )
+        self._assert_celery_log_message("celerybeat", since, "beat: Starting...")
+
     def _assert_celery_warm_shutdown(self, service, since):
+        self._assert_celery_log_message(service, since, "Warm shutdown")
+
+    def _assert_celery_log_message(self, service, since, message):
         for _ in range(10):
             compose_output, _ = self._execute_docker_compose_command(
                 [
@@ -1040,11 +1063,11 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
                     service,
                 ]
             )
-            if "Warm shutdown" in compose_output:
+            if message in compose_output:
                 break
             time.sleep(1)
         else:
-            self.fail("Celery restart must show warm shutdown in Compose logs.")
+            self.fail(f"Celery restart must show {message!r} in Compose logs.")
 
     def test_celery_beat_schedule_without_radius(self):
         """Ensure user expiration tasks are scheduled without RADIUS."""
@@ -1154,7 +1177,12 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         self.assertIn(
             "pidfile=/opt/openwisp/supervisor/supervisord.pid", supervisor_config
         )
+        self.assertIn("logfile=/dev/stdout", supervisor_config)
         self.assertIn("files=/opt/openwisp/supervisor/conf.d/*.conf", supervisor_config)
+        init_command = (
+            Path(self.root_location) / "images" / "common" / "init_command.sh"
+        ).read_text()
+        self.assertIn("exec celery -A openwisp beat", init_command)
         with tempfile.TemporaryDirectory() as tmpdir:
             config = Path(tmpdir) / "workers.conf"
             environment = os.environ.copy()
@@ -1204,9 +1232,16 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     content = generate()
                     self.assertIn("stopsignal=TERM", content)
                     self.assertIn("stopwaitsecs=90", content)
+                    self.assertIn("stopasgroup=false", content)
                     self.assertIn("killasgroup=true", content)
                     self.assertIn("stdout_logfile=/dev/stdout", content)
                     self.assertNotIn("--detach", content)
+                    self.assertIn("[group:workers]", content)
+                    self.assertIn("priority=100", content)
+                    self.assertIn(
+                        f"programs={','.join(expected)}",
+                        content,
+                    )
                     for name, concurrency in expected.items():
                         self.assertIn(f"[program:{name}]", content)
                         self.assertIn(f"--queues {name}", content)

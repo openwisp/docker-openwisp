@@ -93,7 +93,7 @@ elif [ "$MODULE_NAME" = 'celery_monitoring' ]; then
 elif [ "$MODULE_NAME" = 'celerybeat' ]; then
 	rm -rf celerybeat.pid
 	python services.py database redis dashboard
-	celery -A openwisp beat -l ${DJANGO_LOG_LEVEL}
+	exec celery -A openwisp beat -l ${DJANGO_LOG_LEVEL}
 else
 	python services.py database redis dashboard
 	start_uwsgi
