@@ -1062,6 +1062,100 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
+    def _docker_compose_services(self, **environment):
+        config = self._docker_compose_config(**environment)
+        return set(config["services"])
+
+    def _docker_compose_config(self, **environment):
+        env = os.environ.copy()
+        env.update(environment)
+        result = subprocess.run(
+            ["docker", "compose", "config", "--format", "json"],
+            cwd=self.root_location,
+            check=False,
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return json.loads(result.stdout)
+
+    def test_default_compose_timeseries_backend(self):
+        services = self._docker_compose_services(
+            TIMESERIES_BACKEND="influxdb", COMPOSE_PROFILES=""
+        )
+        self.assertIn("influxdb", services)
+        self.assertNotIn("influxdb2", services)
+        self.assertNotIn("telegraf", services)
+        self.assertNotIn("elasticsearch", services)
+
+    def test_influxdb2_compose_profile(self):
+        services = self._docker_compose_services(
+            TIMESERIES_BACKEND="influxdb2", COMPOSE_PROFILES="influxdb2"
+        )
+        self.assertIn("influxdb2", services)
+        self.assertIn("telegraf", services)
+
+    def test_telegraf_uses_configurable_influxdb2_endpoint_and_udp_port(self):
+        config = self._docker_compose_config(
+            TIMESERIES_BACKEND="influxdb2",
+            COMPOSE_PROFILES="influxdb2",
+            TIMESERIES_UDP_PORT="9000",
+            INFLUXDB2_HOST="influxdb2-custom",
+            INFLUXDB2_PORT="9999",
+        )
+        telegraf = config["services"]["telegraf"]
+        self.assertEqual(telegraf["environment"]["TIMESERIES_UDP_PORT"], "9000")
+        self.assertEqual(telegraf["environment"]["INFLUXDB2_HOST"], "influxdb2-custom")
+        self.assertEqual(telegraf["environment"]["INFLUXDB2_PORT"], "9999")
+        entrypoint = "\n".join(telegraf["entrypoint"])
+        self.assertIn(
+            'TIMESERIES_UDP_SHORT_PORT="$$(($${TIMESERIES_UDP_PORT:-8089} + 1))"',
+            entrypoint,
+        )
+        telegraf_config = Path(
+            self.root_location, "deploy", "telegraf.conf"
+        ).read_text()
+        self.assertIn(
+            'service_address = "udp://:${TIMESERIES_UDP_PORT}"', telegraf_config
+        )
+        self.assertIn(
+            'service_address = "udp://:${TIMESERIES_UDP_SHORT_PORT}"',
+            telegraf_config,
+        )
+        self.assertIn(
+            'urls = ["http://${INFLUXDB2_HOST}:${INFLUXDB2_PORT}"]',
+            telegraf_config,
+        )
+
+    def test_elasticsearch_compose_profile(self):
+        services = self._docker_compose_services(
+            TIMESERIES_BACKEND="elasticsearch", COMPOSE_PROFILES="elasticsearch"
+        )
+        self.assertIn("elasticsearch", services)
+
+    def test_elasticsearch_compose_profile_uses_security_by_default(self):
+        config = self._docker_compose_config(
+            TIMESERIES_BACKEND="elasticsearch",
+            COMPOSE_PROFILES="elasticsearch",
+            ELASTICSEARCH_PASSWORD="secret",
+        )
+        elasticsearch = config["services"]["elasticsearch"]
+        self.assertEqual(elasticsearch["environment"]["xpack.security.enabled"], "true")
+        self.assertNotEqual(
+            elasticsearch["environment"].get("xpack.security.enabled"), "false"
+        )
+        self.assertEqual(
+            elasticsearch["environment"]["xpack.security.http.ssl.enabled"],
+            "false",
+        )
+        self.assertEqual(elasticsearch["environment"]["ELASTIC_PASSWORD"], "secret")
+        settings = Path(
+            self.root_location, "images", "common", "openwisp", "settings.py"
+        ).read_text()
+        self.assertIn('"USER": os.environ["ELASTICSEARCH_USER"]', settings)
+        self.assertIn('"PASSWORD": os.environ["ELASTICSEARCH_PASSWORD"]', settings)
+
     def test_profile_configures_shell_defaults_and_preserves_overrides(self):
         for dev_mode, settings, expected in (
             (
