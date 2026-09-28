@@ -285,6 +285,8 @@ def create_default_topology(vpn):
     if topology:
         set_default_topology(topology)
         return topology
+    if vpn.backend != OPENVPN_BACKEND:
+        return
     topology_label = f"{vpn.name} ({vpn.get_backend_display()})"
     topologies = Topology.objects.filter(label=topology_label)
     count = topologies.count()

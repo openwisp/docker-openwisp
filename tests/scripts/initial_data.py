@@ -222,6 +222,12 @@ try:
 
     client.delete("default_openvpn_topology_uuid")
     topology_count = Topology.objects.count()
+    non_openvpn_vpn = Vpn(backend="test.NonOpenVpn")
+    assert load_init_data.create_default_topology(non_openvpn_vpn) is None
+    assert (
+        Topology.objects.count() == topology_count
+    ), "Non-OpenVPN VPN created a topology"
+
     topology_vpn = Vpn(name=topology_marker, backend=default_vpn.backend)
     created_topology = load_init_data.create_default_topology(topology_vpn)
     assert (
