@@ -55,18 +55,6 @@ def get_selected(model, key):
             redis_client.delete(key)
 
 
-def select_single(queryset, key, object_name):
-    count = queryset.count()
-    if count > 1:
-        raise RuntimeError(
-            f"Multiple {object_name} objects exist without a saved selector."
-        )
-    if count:
-        instance = queryset.get()
-        redis_client.set(key, str(instance.pk), ex=None)
-        return instance
-
-
 def set_default_vpn(vpn):
     redis_client.set(DEFAULT_VPN_SELECTOR_KEY, str(vpn.id), ex=None)
     redis_client.set("openwisp_default_vpn_key", str(vpn.key), ex=None)
@@ -137,81 +125,69 @@ def create_default_cert(ca):
 
 
 def create_default_vpn(ca=None, cert=None):
-    """Creates default vpn."""
+    """Creates the default VPN and its client template if needed."""
     vpn = get_selected(Vpn, DEFAULT_VPN_SELECTOR_KEY)
+    if not vpn:
+        vpn = Vpn.objects.filter(backend=OPENVPN_BACKEND).first()
     if vpn:
         set_default_vpn(vpn)
-        return vpn
-    openvpn_vpns = Vpn.objects.filter(backend=OPENVPN_BACKEND)
-    vpn = select_single(openvpn_vpns, DEFAULT_VPN_SELECTOR_KEY, "VPN")
-    if vpn:
+    else:
+        vpn_name = get_initial_name("VPN_NAME", DEFAULT_VPN_NAME)
+        ca = ca or create_default_ca()
+        cert = cert or create_default_cert(ca)
+        vpn = Vpn(
+            ca=ca,
+            cert=cert,
+            name=vpn_name,
+            notes=(
+                "This is the default management VPN created during setup, "
+                "you may modify these settings and they will soon reflect "
+                "in your OpenVPN Server instance."
+            ),
+            host=os.environ["VPN_DOMAIN"],
+            backend=OPENVPN_BACKEND,
+        )
+        with open("openvpn.json", "r") as json_file:
+            vpn.config = json.load(json_file)
+        vpn.full_clean()
+        vpn.save()
         set_default_vpn(vpn)
-        return vpn
-    vpn_name = get_initial_name("VPN_NAME", DEFAULT_VPN_NAME)
-    ca = ca or create_default_ca()
-    cert = cert or create_default_cert(ca)
-    vpn = Vpn(
-        ca=ca,
-        cert=cert,
-        name=vpn_name,
-        notes=(
-            "This is the default management VPN created during setup, "
-            "you may modify these settings and they will soon reflect "
-            "in your OpenVPN Server instance."
-        ),
-        host=os.environ["VPN_DOMAIN"],
-        backend=OPENVPN_BACKEND,
-    )
-    with open("openvpn.json", "r") as json_file:
-        vpn.config = json.load(json_file)
-    vpn.full_clean()
-    vpn.save()
-    set_default_vpn(vpn)
-    return vpn
 
-
-def create_default_vpn_template(vpn):
-    """Creates default vpn client template."""
     template = get_selected(Template, DEFAULT_VPN_TEMPLATE_SELECTOR_KEY)
-    if template:
-        if template.vpn_id != vpn.id:
-            raise RuntimeError(
-                "The saved VPN template does not belong to the default VPN."
+    if template and template.vpn_id != vpn.id:
+        redis_client.delete(DEFAULT_VPN_TEMPLATE_SELECTOR_KEY)
+        template = None
+    if not template:
+        templates = Template.objects.filter(vpn=vpn, type="vpn", default=True)
+        if not templates.exists():
+            templates = Template.objects.filter(vpn=vpn, type="vpn")
+        count = templates.count()
+        if count == 1:
+            template = templates.get()
+            redis_client.set(
+                DEFAULT_VPN_TEMPLATE_SELECTOR_KEY, str(template.id), ex=None
             )
-        return template
-    template = select_single(
-        Template.objects.filter(vpn=vpn, type="vpn", default=True),
-        DEFAULT_VPN_TEMPLATE_SELECTOR_KEY,
-        "VPN template",
-    )
-    if template:
-        return template
-    template = select_single(
-        Template.objects.filter(vpn=vpn, type="vpn"),
-        DEFAULT_VPN_TEMPLATE_SELECTOR_KEY,
-        "VPN template",
-    )
-    if template:
-        return template
-
-    template = Template(
-        auto_cert=True,
-        name=get_initial_name("VPN_CLIENT_NAME", DEFAULT_VPN_CLIENT_NAME),
-        type="vpn",
-        tags="Management, VPN",
-        backend="netjsonconfig.OpenWrt",
-        vpn=vpn,
-        default=True,
-    )
-    # The config field is auto-generated on full_clean()
-    template.full_clean()
-    if template.config.get("openvpn"):
-        template.config["openvpn"][0]["log"] = "/var/log/tun0.log"
-    # Verify that the config is still valid.
-    template.full_clean()
-    template.save()
-    redis_client.set(DEFAULT_VPN_TEMPLATE_SELECTOR_KEY, str(template.id), ex=None)
-    return template
+        elif not count:
+            template = Template(
+                auto_cert=True,
+                name=get_initial_name("VPN_CLIENT_NAME", DEFAULT_VPN_CLIENT_NAME),
+                type="vpn",
+                tags="Management, VPN",
+                backend="netjsonconfig.OpenWrt",
+                vpn=vpn,
+                default=True,
+            )
+            # The config field is auto-generated on full_clean().
+            template.full_clean()
+            if template.config.get("openvpn"):
+                template.config["openvpn"][0]["log"] = "/var/log/tun0.log"
+            # Verify that the config is still valid.
+            template.full_clean()
+            template.save()
+            redis_client.set(
+                DEFAULT_VPN_TEMPLATE_SELECTOR_KEY, str(template.id), ex=None
+            )
+    return vpn
 
 
 def create_default_credentials():
@@ -241,16 +217,18 @@ def create_ssh_key_template():
     template = get_selected(Template, DEFAULT_SSH_TEMPLATE_SELECTOR_KEY)
     if template:
         return template
-    template = select_single(
-        Template.objects.filter(
-            type="generic",
-            vpn__isnull=True,
-            config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
-        ),
-        DEFAULT_SSH_TEMPLATE_SELECTOR_KEY,
-        "SSH key template",
+    templates = Template.objects.filter(
+        type="generic",
+        vpn__isnull=True,
+        config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
     )
-    if template:
+    count = templates.count()
+    if count:
+        if count == 1:
+            template = templates.get()
+            redis_client.set(
+                DEFAULT_SSH_TEMPLATE_SELECTOR_KEY, str(template.id), ex=None
+            )
         return template
     public_key_filepath = os.environ["SSH_PUBLIC_KEY_PATH"]
     try:
@@ -307,26 +285,23 @@ def create_default_topology(vpn):
     if topology:
         set_default_topology(topology)
         return topology
-    if vpn.backend == OPENVPN_BACKEND:
-        parser = "netdiff.OpenvpnParser"
+    if vpn.backend != OPENVPN_BACKEND:
+        return
     topology_label = f"{vpn.name} ({vpn.get_backend_display()})"
-    topology = select_single(
-        Topology.objects.filter(label=topology_label),
-        DEFAULT_TOPOLOGY_SELECTOR_KEY,
-        "topology",
+    topologies = Topology.objects.filter(label=topology_label)
+    count = topologies.count()
+    if count:
+        if count == 1:
+            topology = topologies.get()
+            set_default_topology(topology)
+        return topology
+    topology = Topology(
+        label=topology_label,
+        parser="netdiff.OpenvpnParser",
+        strategy="receive",
     )
-    if not topology:
-        topology = select_single(
-            Topology.objects.all(), DEFAULT_TOPOLOGY_SELECTOR_KEY, "topology"
-        )
-    if not topology:
-        topology = Topology(
-            label=topology_label,
-            parser=parser,
-            strategy="receive",
-        )
-        topology.full_clean()
-        topology.save()
+    topology.full_clean()
+    topology.save()
     set_default_topology(topology)
     return topology
 
@@ -354,7 +329,6 @@ if __name__ == "__main__":
     is_vpn_enabled = os.environ.get("VPN_DOMAIN", "") != ""
     if is_vpn_enabled:
         default_vpn = create_default_vpn()
-        create_default_vpn_template(default_vpn)
 
     create_default_credentials()
     create_ssh_key_template()
