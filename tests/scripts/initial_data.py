@@ -39,6 +39,7 @@ marker = "initial-data-selector-decoy"
 template_marker = "initial-data-selector-template"
 ssh_template_marker = "initial-data-selector-ssh-template"
 competing_ssh_template_marker = "initial-data-selector-generic-template"
+topology_marker = "initial-data-selector-topology"
 previous_vpn_name = default_vpn.name
 previous_ssh_template_name = ssh_template.name
 default_template_default = default_template.default
@@ -47,6 +48,7 @@ decoy_template = None
 decoy_topology = None
 competing_ssh_template = None
 created_vpn = None
+created_topology = None
 previous_vpn_name_setting = os.environ.get("VPN_NAME")
 previous_vpn_client_name_setting = os.environ.get("VPN_CLIENT_NAME")
 default_vpn_backend = default_vpn.backend
@@ -59,7 +61,7 @@ try:
             competing_ssh_template_marker,
         )
     ).delete()
-    Topology.objects.filter(label=marker).delete()
+    Topology.objects.filter(label__in=(marker, topology_marker)).delete()
     client.delete("openwisp_default_vpn_uuid")
     os.environ.pop("VPN_NAME", None)
     selected_vpn = load_init_data.create_default_vpn(None, None)
@@ -88,18 +90,18 @@ try:
     )
 
     client.delete("openwisp_default_vpn_template_uuid")
-    selected_template = load_init_data.create_default_vpn_template(default_vpn)
+    selected_vpn = load_init_data.create_default_vpn(None, None)
     assert (
-        selected_template.pk == default_template.pk
+        selected_vpn.pk == default_vpn.pk
     ), "VPN template selector migration chose the wrong template"
     assert client.get("openwisp_default_vpn_template_uuid").decode() == str(
         default_template.pk
     )
     Template.objects.filter(pk=default_template.pk).update(default=False)
     client.delete("openwisp_default_vpn_template_uuid")
-    selected_template = load_init_data.create_default_vpn_template(default_vpn)
+    selected_vpn = load_init_data.create_default_vpn(None, None)
     assert (
-        selected_template.pk == default_template.pk
+        selected_vpn.pk == default_vpn.pk
     ), "Disabled VPN template selector migration chose the wrong template"
     Template.objects.filter(pk=default_template.pk).update(
         default=default_template_default
@@ -117,6 +119,7 @@ try:
     Vpn.objects.filter(pk=default_vpn.pk).update(backend="test.NonOpenVpn")
     client.delete("openwisp_default_vpn_uuid")
     os.environ["VPN_NAME"] = marker
+    os.environ["VPN_CLIENT_NAME"] = template_marker
     existing_vpn_pks = set(Vpn.objects.values_list("pk", flat=True))
     selected_vpn = load_init_data.create_default_vpn(None, None)
     if selected_vpn.pk not in existing_vpn_pks:
@@ -144,17 +147,10 @@ try:
     decoy_vpn.full_clean()
     decoy_vpn.save()
     client.delete("openwisp_default_vpn_uuid")
-    os.environ["VPN_NAME"] = marker
-    try:
-        load_init_data.create_default_vpn(None, None)
-    except RuntimeError as error:
-        assert str(error) == "Multiple VPN objects exist without a saved selector."
-    else:
-        raise AssertionError("VPN name selected an existing VPN")
-    client.set("openwisp_default_vpn_uuid", str(default_vpn.pk))
     os.environ.pop("VPN_NAME")
+    os.environ.pop("VPN_CLIENT_NAME")
     selected_vpn = load_init_data.create_default_vpn(None, None)
-    assert selected_vpn.pk == default_vpn.pk, "Missing VPN name changed VPN selection"
+    assert selected_vpn.pk == default_vpn.pk, "Unrelated VPN changed VPN selection"
 
     decoy_topology = Topology(
         label=f"{marker} ({decoy_vpn.get_backend_display()})",
@@ -175,15 +171,25 @@ try:
         vpn=default_vpn,
         auto_cert=default_template.auto_cert,
         config=deepcopy(default_template.config),
+        default=True,
     )
     decoy_template.full_clean()
     decoy_template.save()
     client.set("openwisp_default_vpn_template_uuid", str(default_template.pk))
     os.environ.pop("VPN_CLIENT_NAME", None)
-    selected_template = load_init_data.create_default_vpn_template(default_vpn)
+    client.delete("openwisp_default_vpn_template_uuid")
+    template_count = Template.objects.filter(
+        vpn=default_vpn, type="vpn", default=True
+    ).count()
+    selected_vpn = load_init_data.create_default_vpn(None, None)
     assert (
-        selected_template.pk == default_template.pk
-    ), "VPN template selected the wrong template"
+        selected_vpn.pk == default_vpn.pk
+    ), "Existing default template changed VPN selection"
+    assert (
+        Template.objects.filter(vpn=default_vpn, type="vpn", default=True).count()
+        == template_count
+    ), "Multiple default templates caused a new template to be created"
+    assert client.get("openwisp_default_vpn_template_uuid") is None
 
     ssh_template.name = ssh_template_marker
     ssh_template.full_clean()
@@ -192,27 +198,41 @@ try:
         name=competing_ssh_template_marker,
         default=True,
         type="generic",
-        backend="netjsonconfig.OpenWrt",
-        config={
-            "files": [
-                {
-                    "path": "/etc/banner",
-                    "mode": "0644",
-                    "contents": "OpenWISP",
-                }
-            ]
-        },
+        backend=ssh_template.backend,
+        config=deepcopy(ssh_template.config),
     )
     competing_ssh_template.full_clean()
     competing_ssh_template.save()
     client.delete("openwisp_default_ssh_template_uuid")
-    selected_ssh_template = load_init_data.create_ssh_key_template()
+    ssh_template_count = Template.objects.filter(
+        type="generic",
+        vpn__isnull=True,
+        config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
+    ).count()
+    load_init_data.create_ssh_key_template()
     assert (
-        selected_ssh_template.pk == ssh_template.pk
-    ), "SSH template selector migration created a duplicate"
-    assert client.get("openwisp_default_ssh_template_uuid").decode() == str(
-        ssh_template.pk
-    )
+        Template.objects.filter(
+            type="generic",
+            vpn__isnull=True,
+            config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
+        ).count()
+        == ssh_template_count
+    ), "Multiple SSH templates caused a new template to be created"
+    assert client.get("openwisp_default_ssh_template_uuid") is None
+
+    client.delete("default_openvpn_topology_uuid")
+    topology_count = Topology.objects.count()
+    non_openvpn_vpn = Vpn(backend="test.NonOpenVpn")
+    assert load_init_data.create_default_topology(non_openvpn_vpn) is None
+    assert (
+        Topology.objects.count() == topology_count
+    ), "Non-OpenVPN VPN created a topology"
+
+    topology_vpn = Vpn(name=topology_marker, backend=default_vpn.backend)
+    created_topology = load_init_data.create_default_topology(topology_vpn)
+    assert (
+        Topology.objects.count() == topology_count + 1
+    ), "Unrelated topologies prevented default topology creation"
     print("initial data selectors passed")
 finally:
     if previous_vpn_name_setting is None:
@@ -240,6 +260,8 @@ finally:
         decoy_topology.delete()
     if created_vpn:
         created_vpn.delete()
+    if created_topology:
+        created_topology.delete()
     Vpn.objects.filter(pk=default_vpn.pk).update(backend=default_vpn_backend)
     if decoy_vpn:
         decoy_vpn.delete()
