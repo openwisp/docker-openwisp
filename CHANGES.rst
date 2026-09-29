@@ -1,6 +1,29 @@
 Changelog
 =========
 
+Version 26.09.1 [2026-09-29]
+----------------------------
+
+Changes
+~~~~~~~
+
+Dependencies
+++++++++++++
+
+- Bumped the OpenVPN image from ``lisenet/openvpn:2.7.5`` to
+  ``lisenet/openvpn:2.7.7``.
+
+Bugfixes
+~~~~~~~~
+
+- Fixed OpenVPN CRL permissions so the unprivileged OpenVPN user can read
+  the refreshed CRL, and forwarded cron output to the container logs.
+- Improved Celery worker shutdown handling with Supervisor so Docker stop
+  signals trigger a graceful shutdown with sufficient time for in-progress
+  tasks `#694 <https://github.com/openwisp/docker-openwisp/issues/694>`_.
+- Fixed ``load_init_data.py`` failures blocking startup `#701
+  <https://github.com/openwisp/docker-openwisp/issues/701>`_.
+
 Version 26.09.0 [2026-09-04]
 ----------------------------
 
