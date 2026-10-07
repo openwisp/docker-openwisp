@@ -1,6 +1,7 @@
 # hadolint ignore=DL3007
+ARG IMAGE_OWNER=openwisp
 ARG OPENWISP_VERSION=edge
-FROM openwisp/openwisp-base:${OPENWISP_VERSION}
+FROM ${IMAGE_OWNER}/openwisp-base:${OPENWISP_VERSION}
 
 WORKDIR /opt/openwisp/
 

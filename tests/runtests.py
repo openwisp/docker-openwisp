@@ -1441,6 +1441,29 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             release_workflow,
         )
 
+    def test_docker_compose_images_use_image_owner(self):
+        """Verify OpenWISP services in docker-compose.yml use IMAGE_OWNER."""
+        repository_root = Path(__file__).resolve().parents[1]
+        compose_content = (repository_root / "docker-compose.yml").read_text()
+        openwisp_services = [
+            "dashboard",
+            "api",
+            "websocket",
+            "celery",
+            "celery_monitoring",
+            "celerybeat",
+            "nginx",
+            "freeradius",
+            "postfix",
+            "openvpn",
+        ]
+        for service in openwisp_services:
+            with self.subTest(service=service):
+                self.assertRegex(
+                    compose_content,
+                    rf"{service}:\s+image:\s+\${{IMAGE_OWNER:-openwisp}}/openwisp-",
+                )
+
     @contextmanager
     def _makefile_test_environment(self):
         """Yield an isolated Makefile runner, Docker command log, and environment.
