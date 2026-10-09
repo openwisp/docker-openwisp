@@ -143,6 +143,7 @@ publish:
 
 release:
 	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
+	# Custom registries rebuild before the versioned publish uses IMAGE_PREFIX.
 	if [[ "$(SKIP_BUILD)" == "true" || "$(IMAGE_REGISTRY)" == "docker.io" ]]; then \
 		skip_build=true; \
 	else \
