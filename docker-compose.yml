@@ -12,12 +12,13 @@ x-celery-depends-on: &celery-depends-on
 
 services:
   dashboard:
-    image: openwisp/openwisp-dashboard:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-dashboard:${OPENWISP_VERSION:-edge}
     restart: always
     build:
       context: images
       dockerfile: openwisp_dashboard/Dockerfile
       args:
+        IMAGE_OWNER: ${IMAGE_OWNER:-openwisp}
         DASHBOARD_APP_PORT: 8000
         OPENWISP_VERSION: ${OPENWISP_VERSION:-edge}
     env_file:
@@ -37,12 +38,13 @@ services:
       - influxdb
 
   api:
-    image: openwisp/openwisp-api:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-api:${OPENWISP_VERSION:-edge}
     restart: always
     build:
       context: images
       dockerfile: openwisp_api/Dockerfile
       args:
+        IMAGE_OWNER: ${IMAGE_OWNER:-openwisp}
         API_APP_PORT: 8001
         OPENWISP_VERSION: ${OPENWISP_VERSION:-edge}
     env_file:
@@ -58,12 +60,13 @@ services:
       - dashboard
 
   websocket:
-    image: openwisp/openwisp-websocket:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-websocket:${OPENWISP_VERSION:-edge}
     restart: always
     build:
       context: images
       dockerfile: openwisp_websocket/Dockerfile
       args:
+        IMAGE_OWNER: ${IMAGE_OWNER:-openwisp}
         WEBSOCKET_APP_PORT: 8002
         OPENWISP_VERSION: ${OPENWISP_VERSION:-edge}
     env_file:
@@ -74,7 +77,7 @@ services:
       - dashboard
 
   celery:
-    image: openwisp/openwisp-dashboard:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-dashboard:${OPENWISP_VERSION:-edge}
     # Keep this longer than Supervisor's stopwaitsecs to let it reap workers and exit.
     stop_grace_period: 120s
     restart: always
@@ -91,7 +94,7 @@ services:
     network_mode: "${CELERY_SERVICE_NETWORK_MODE-service:openvpn}"
 
   celery_monitoring:
-    image: openwisp/openwisp-dashboard:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-dashboard:${OPENWISP_VERSION:-edge}
     # Keep this longer than Supervisor's stopwaitsecs to let it reap workers and exit.
     stop_grace_period: 120s
     restart: always
@@ -107,7 +110,7 @@ services:
     network_mode: "${CELERY_SERVICE_NETWORK_MODE-service:openvpn}"
 
   celerybeat:
-    image: openwisp/openwisp-dashboard:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-dashboard:${OPENWISP_VERSION:-edge}
     restart: always
     environment:
       - MODULE_NAME=celerybeat
@@ -121,7 +124,7 @@ services:
       - dashboard
 
   nginx:
-    image: openwisp/openwisp-nginx:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-nginx:${OPENWISP_VERSION:-edge}
     restart: always
     build:
       context: images
@@ -148,7 +151,7 @@ services:
       - websocket
 
   freeradius:
-    image: openwisp/openwisp-freeradius:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-freeradius:${OPENWISP_VERSION:-edge}
     restart: always
     build:
       context: images
@@ -164,7 +167,7 @@ services:
       - dashboard
 
   postfix:
-    image: openwisp/openwisp-postfix:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-postfix:${OPENWISP_VERSION:-edge}
     restart: always
     build:
       context: images
@@ -175,7 +178,7 @@ services:
       - openwisp_certs:/etc/ssl/mail
 
   openvpn:
-    image: openwisp/openwisp-openvpn:${OPENWISP_VERSION:-edge}
+    image: ${IMAGE_OWNER:-openwisp}/openwisp-openvpn:${OPENWISP_VERSION:-edge}
     restart: on-failure
     build:
       context: images
