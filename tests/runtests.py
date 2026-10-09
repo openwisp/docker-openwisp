@@ -1433,7 +1433,8 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             repository_root / ".github" / "workflows" / "release.yml"
         ).read_text()
         self.assertIn(
-            f"make publish IMAGE_REGISTRY={registry} TAG=edge SKIP_BUILD=true SKIP_TESTS=true",
+            f"make publish IMAGE_REGISTRY={registry} TAG=edge "
+            "SKIP_BUILD=true SKIP_TESTS=true",
             ci_workflow,
         )
         self.assertIn(
@@ -1572,6 +1573,11 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
 
     def test_makefile_uses_configured_image_prefixes(self):
         """Verify image commands use configured prefixes and propagate failures."""
+        environment_file = Path(__file__).resolve().parents[1] / ".env"
+        environment = environment_file.read_text()
+        for setting in ("IMAGE_REGISTRY", "IMAGE_NAMESPACE"):
+            with self.subTest(setting=setting):
+                self.assertNotIn(f"\n{setting}=", environment)
         with self._makefile_test_environment() as (run_make, docker_log, environment):
             registry = "registry.example.com"
             namespace = "openwisp-images"
@@ -1651,6 +1657,30 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     for command in commands[1::2]
                 ),
                 "Publishing must push the configured destination prefix.",
+            )
+
+            docker_log.write_text("")
+            publish = run_make(
+                "publish",
+                f"IMAGE_REGISTRY={registry}",
+                f"IMAGE_NAMESPACE={namespace}",
+                "TAG=latest",
+                "OPENWISP_VERSION=25.10.4",
+                "SKIP_TESTS=true",
+            )
+            self.assertEqual(publish.returncode, 0, publish.stderr)
+            tag_commands = [
+                command
+                for command in docker_log.read_text().splitlines()
+                if command.startswith("tag ")
+            ]
+            self.assertEqual(len(tag_commands), 9)
+            self.assertTrue(
+                all(
+                    command.startswith(f"tag {image_prefix}/")
+                    for command in tag_commands
+                ),
+                "Publishing after a build must use the configured source prefix.",
             )
 
             for command in ("tag", "push"):

@@ -1157,8 +1157,8 @@ Misc Services
 ``IMAGE_NAMESPACE``
 ~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Docker repository namespace for OpenWISP images.
-  Change this if you're using a custom registry.
+- **Explanation:** Docker repository namespace for OpenWISP images. Change
+  this if you're using a custom registry.
 - **Valid Values:** A valid Docker repository namespace or path.
 - **Default:** ``openwisp``.
 

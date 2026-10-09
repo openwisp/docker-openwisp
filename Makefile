@@ -124,10 +124,16 @@ publish:
 	if [[ "$(SKIP_TESTS)" == "false" ]]; then \
 		make runtests; \
 	fi
+	# Skipped builds retag images created by the preceding default-registry build.
+	if [[ "$(SKIP_BUILD)" == "true" ]]; then \
+		source_prefix=$(IMAGE_NAMESPACE); \
+	else \
+		source_prefix=$(IMAGE_PREFIX); \
+	fi; \
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		source=$(IMAGE_NAMESPACE)/$${image}:$(OPENWISP_VERSION); \
+		source=$$source_prefix/$${image}:$(OPENWISP_VERSION); \
 		destination=$(IMAGE_PREFIX)/$${image}:$(TAG); \
 		if [ "$$source" != "$$destination" ]; then \
 			docker tag "$$source" "$$destination" || exit 1; \
