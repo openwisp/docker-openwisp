@@ -1621,6 +1621,30 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "The legacy image prefix must be used during the deprecation period.",
             )
 
+            for image_owner, expected_namespace in (
+                (legacy_namespace, legacy_namespace),
+                ("", "openwisp"),
+            ):
+                with self.subTest(image_owner=image_owner):
+                    docker_log.write_text("")
+                    pull = run_make(
+                        "pull",
+                        f"IMAGE_REGISTRY={registry}",
+                        "IMAGE_NAMESPACE=",
+                        f"IMAGE_OWNER={image_owner}",
+                        "OPENWISP_VERSION=25.10.4",
+                    )
+                    self.assertEqual(pull.returncode, 0, pull.stderr)
+                    self.assertTrue(
+                        all(
+                            command.startswith(
+                                f"pull --quiet {registry}/{expected_namespace}/"
+                            )
+                            for command in docker_log.read_text().splitlines()
+                        ),
+                        "An empty namespace must use the configured fallback.",
+                    )
+
             environment["FAIL_COMMAND"] = "pull"
             failed_pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
             self.assertNotEqual(

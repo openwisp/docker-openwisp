@@ -19,9 +19,12 @@ IMAGE_REGISTRY ?= docker.io
 # TODO: Remove IMAGE_OWNER compatibility in the next major release.
 ifneq ($(strip $(IMAGE_OWNER)),)
 $(warning IMAGE_OWNER is deprecated. Use IMAGE_REGISTRY and IMAGE_NAMESPACE instead.)
-IMAGE_NAMESPACE ?= $(IMAGE_OWNER)
 endif
-IMAGE_NAMESPACE ?= openwisp
+# Fall back to either the old IMAGE_OWNER (if set) or "openwisp" when IMAGE_NAMESPACE is unset or empty.
+# TODO: Remove IMAGE_OWNER compatibility in the next major release.
+ifeq ($(strip $(IMAGE_NAMESPACE)),)
+override IMAGE_NAMESPACE := $(if $(strip $(IMAGE_OWNER)),$(IMAGE_OWNER),openwisp)
+endif
 IMAGE_PREFIX = $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
