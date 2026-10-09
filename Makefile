@@ -143,7 +143,12 @@ publish:
 
 release:
 	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
-	make publish TAG=$(RELEASE_VERSION) OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true
+	if [[ "$(SKIP_BUILD)" == "true" || "$(IMAGE_REGISTRY)" == "docker.io" ]]; then \
+		skip_build=true; \
+	else \
+		skip_build=false; \
+	fi; \
+	make publish TAG=$(RELEASE_VERSION) OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_BUILD=$$skip_build SKIP_TESTS=true
 
 bump:
 	@if [ -z "$(VERSION)" ]; then \

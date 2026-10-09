@@ -1545,6 +1545,9 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             docker_command.chmod(0o755)
             (tmpdir / "Makefile").write_text((repository_root / "Makefile").read_text())
             (tmpdir / ".env").write_text("")
+            version_file = tmpdir / "images" / "common" / "openwisp" / "VERSION"
+            version_file.parent.mkdir(parents=True)
+            version_file.write_text("25.10.4")
             environment = os.environ.copy()
             environment["DOCKER_LOG"] = str(docker_log)
             environment["PATH"] = f"{bin_directory}:{environment['PATH']}"
@@ -1681,6 +1684,20 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     for command in tag_commands
                 ),
                 "Publishing after a build must use the configured source prefix.",
+            )
+
+            docker_log.write_text("")
+            release = run_make(
+                "release",
+                f"IMAGE_REGISTRY={registry}",
+                f"IMAGE_NAMESPACE={namespace}",
+            )
+            self.assertEqual(release.returncode, 0, release.stderr)
+            commands = docker_log.read_text().splitlines()
+            self.assertEqual(
+                commands.count("compose build --parallel"),
+                2,
+                "Custom-registry releases must rebuild before the versioned publish.",
             )
 
             for command in ("tag", "push"):
