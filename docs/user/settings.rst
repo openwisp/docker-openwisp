@@ -1146,13 +1146,34 @@ X509 Certificates
 Misc Services
 -------------
 
+``IMAGE_REGISTRY``
+~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Docker registry host for OpenWISP images. Change this
+  together with ``IMAGE_NAMESPACE`` when using a custom registry.
+- **Valid Values:** A valid Docker registry host.
+- **Default:** ``docker.io``.
+
+``IMAGE_NAMESPACE``
+~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Docker repository namespace for OpenWISP images.
+  Change this if you're using a custom registry.
+- **Valid Values:** A valid Docker repository namespace or path.
+- **Default:** ``openwisp``.
+
 ``IMAGE_OWNER``
 ~~~~~~~~~~~~~~~
 
-- **Explanation:** Docker registry namespace for OpenWISP images. Change
-  this only if you are using custom-built images or a private registry.
-- **Valid Values:** A valid Docker registry namespace.
-- **Default:** ``openwisp``
+.. warning::
+
+    ``IMAGE_OWNER`` is deprecated and will be removed in the next major
+    release. Use ``IMAGE_NAMESPACE`` instead. Make commands emit a
+    deprecation warning when ``IMAGE_OWNER`` is set.
+
+- **Explanation:** Legacy Docker repository namespace. It is used only
+  when ``IMAGE_NAMESPACE`` is unset during the deprecation period.
+- **Valid Values:** A valid Docker repository namespace or path.
 
 ``REDIS_HOST``
 ~~~~~~~~~~~~~~

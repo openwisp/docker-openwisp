@@ -1,7 +1,7 @@
 # Find documentation in README.md under
 # the heading "Makefile Options".
 
-# The .env file can override ?= variables in the Makefile (e.g. OPENWISP_VERSION, IMAGE_OWNER)
+# The .env file can override ?= variables in the Makefile (e.g. OPENWISP_VERSION, IMAGE_REGISTRY)
 include .env
 
 # RELEASE_VERSION: version string used when tagging a new release.
@@ -11,12 +11,18 @@ SHELL := /bin/bash
 
 default: compose-build
 
-USER = docker.io/openwisp
 TAG = edge
 # OPENWISP_VERSION: image tag used for pulling/pushing images (e.g. "edge", "latest", "25.10.0")
 # Can be overridden via .env or command line. Not the same as RELEASE_VERSION
 OPENWISP_VERSION ?= edge
-IMAGE_OWNER ?= openwisp
+IMAGE_REGISTRY ?= docker.io
+# TODO: Remove IMAGE_OWNER compatibility in the next major release.
+ifneq ($(strip $(IMAGE_OWNER)),)
+$(warning IMAGE_OWNER is deprecated. Use IMAGE_REGISTRY and IMAGE_NAMESPACE instead.)
+IMAGE_NAMESPACE ?= $(IMAGE_OWNER)
+endif
+IMAGE_NAMESPACE ?= openwisp
+IMAGE_PREFIX = $(IMAGE_REGISTRY)/$(IMAGE_NAMESPACE)
 SKIP_PULL ?= false
 SKIP_BUILD ?= false
 SKIP_TESTS ?= false
@@ -28,8 +34,7 @@ pull:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		docker pull --quiet $(USER)/$${image}:$(OPENWISP_VERSION) || exit 1; \
-		docker tag $(USER)/$${image}:$(OPENWISP_VERSION) $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION) || exit 1; \
+		docker pull --quiet $(IMAGE_PREFIX)/$${image}:$(OPENWISP_VERSION) || exit 1; \
 	done
 
 # Build
@@ -41,20 +46,20 @@ base-build:
 	for build_arg in $$BUILD_ARGS_FILE; do \
 	    BUILD_ARGS+=" --build-arg $$build_arg"; \
 	done; \
-	docker build --tag openwisp/openwisp-base:intermedia-system \
+	docker build --tag $(IMAGE_PREFIX)/openwisp-base:intermedia-system \
 	             --file ./images/openwisp_base/Dockerfile \
 	             --target system ./images/; \
-	docker build --tag openwisp/openwisp-base:intermedia-python \
+	docker build --tag $(IMAGE_PREFIX)/openwisp-base:intermedia-python \
 	             --file ./images/openwisp_base/Dockerfile \
 	             --target openwisp_python ./images/ \
 	             $$BUILD_ARGS; \
-	docker build --tag $(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
+	docker build --tag $(IMAGE_PREFIX)/openwisp-base:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_base/Dockerfile \
 	             $$BUILD_ARGS \
 	             ./images/
 
 nfs-build:
-	docker build --tag $(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
+	docker build --tag $(IMAGE_PREFIX)/openwisp-nfs:$(OPENWISP_VERSION) \
 	             --file ./images/openwisp_nfs/Dockerfile ./images/
 
 compose-build: base-build
@@ -72,7 +77,7 @@ develop-runtests:
 develop-pythontests:
 	# OPENWISP_TEST_OPENVPN_IMAGE is used in tests to run OpenVPN tests with the
 	# latest locally built image rather than the image published in the registries.
-	OPENWISP_TEST_OPENVPN_IMAGE=$(IMAGE_OWNER)/openwisp-openvpn:$(OPENWISP_VERSION) \
+	OPENWISP_TEST_OPENVPN_IMAGE=$(IMAGE_PREFIX)/openwisp-openvpn:$(OPENWISP_VERSION) \
 		python3 tests/runtests.py
 
 # Development
@@ -86,10 +91,10 @@ clean:
 	docker compose stop &> /dev/null
 	docker compose down --remove-orphans --volumes --rmi all &> /dev/null
 	docker compose rm -svf &> /dev/null
-	docker rmi --force openwisp/openwisp-base:intermedia-system \
-				openwisp/openwisp-base:intermedia-python \
-				$(IMAGE_OWNER)/openwisp-base:$(OPENWISP_VERSION) \
-				$(IMAGE_OWNER)/openwisp-nfs:$(OPENWISP_VERSION) \
+	docker rmi --force $(IMAGE_PREFIX)/openwisp-base:intermedia-system \
+				$(IMAGE_PREFIX)/openwisp-base:intermedia-python \
+				$(IMAGE_PREFIX)/openwisp-base:$(OPENWISP_VERSION) \
+				$(IMAGE_PREFIX)/openwisp-nfs:$(OPENWISP_VERSION) \
 				`docker images -f "dangling=true" -q` \
 				`docker images | grep openwisp/docker-openwisp | tr -s ' ' | cut -d ' ' -f 3` &> /dev/null
 
@@ -122,8 +127,12 @@ publish:
 	for image in 'openwisp-base' 'openwisp-nfs' 'openwisp-api' 'openwisp-dashboard' \
 				 'openwisp-freeradius' 'openwisp-nginx' 'openwisp-openvpn' 'openwisp-postfix' \
 				 'openwisp-websocket' ; do \
-		docker tag $(IMAGE_OWNER)/$${image}:$(OPENWISP_VERSION) $(USER)/$${image}:$(TAG) || exit 1; \
-		docker push $(USER)/$${image}:$(TAG) || exit 1; \
+		source=$(IMAGE_NAMESPACE)/$${image}:$(OPENWISP_VERSION); \
+		destination=$(IMAGE_PREFIX)/$${image}:$(TAG); \
+		if [ "$$source" != "$$destination" ]; then \
+			docker tag "$$source" "$$destination" || exit 1; \
+		fi; \
+		docker push "$$destination" || exit 1; \
 	done
 
 release:
