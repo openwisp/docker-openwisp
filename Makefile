@@ -124,7 +124,8 @@ publish:
 	if [[ "$(SKIP_TESTS)" == "false" ]]; then \
 		make runtests; \
 	fi
-	# Skipped builds retag images created by the preceding default-registry build.
+	# CI builds Docker Hub images before overriding IMAGE_REGISTRY for publishing.
+	# With SKIP_BUILD=true, use those existing namespace-only source tags.
 	if [[ "$(SKIP_BUILD)" == "true" ]]; then \
 		source_prefix=$(IMAGE_NAMESPACE); \
 	else \
@@ -143,7 +144,8 @@ publish:
 
 release:
 	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
-	# Custom registries rebuild before the versioned publish uses IMAGE_PREFIX.
+	# A custom-registry release rebuilds before publishing the versioned tag.
+	# SKIP_BUILD=true would otherwise use the Docker Hub source tags reserved for CI.
 	if [[ "$(SKIP_BUILD)" == "true" || "$(IMAGE_REGISTRY)" == "docker.io" ]]; then \
 		skip_build=true; \
 	else \
