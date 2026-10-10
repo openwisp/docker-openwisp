@@ -16,6 +16,10 @@ TAG = edge
 # Can be overridden via .env or command line. Not the same as RELEASE_VERSION
 OPENWISP_VERSION ?= edge
 IMAGE_REGISTRY ?= docker.io
+# Use Docker Hub when IMAGE_REGISTRY is unset or empty.
+ifeq ($(strip $(IMAGE_REGISTRY)),)
+override IMAGE_REGISTRY := docker.io
+endif
 # TODO: Remove IMAGE_OWNER compatibility in the next major release.
 ifneq ($(strip $(IMAGE_OWNER)),)
 $(warning IMAGE_OWNER is deprecated. Use IMAGE_REGISTRY and IMAGE_NAMESPACE instead.)

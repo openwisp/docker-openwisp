@@ -1576,11 +1576,6 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
 
     def test_makefile_uses_configured_image_prefixes(self):
         """Verify image commands use configured prefixes and propagate failures."""
-        environment_file = Path(__file__).resolve().parents[1] / ".env"
-        environment = environment_file.read_text()
-        for setting in ("IMAGE_REGISTRY", "IMAGE_NAMESPACE"):
-            with self.subTest(setting=setting):
-                self.assertNotIn(f"\n{setting}=", environment)
         with self._makefile_test_environment() as (run_make, docker_log, environment):
             registry = "registry.example.com"
             namespace = "openwisp-images"
@@ -1600,6 +1595,24 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     for command in commands
                 ),
                 "The configured registry and namespace must be used for pulls.",
+            )
+
+            docker_log.write_text("")
+            empty_registry_pull = run_make(
+                "pull",
+                "IMAGE_REGISTRY=",
+                f"IMAGE_NAMESPACE={namespace}",
+                "OPENWISP_VERSION=25.10.4",
+            )
+            self.assertEqual(
+                empty_registry_pull.returncode, 0, empty_registry_pull.stderr
+            )
+            self.assertTrue(
+                all(
+                    command.startswith(f"pull --quiet docker.io/{namespace}/")
+                    for command in docker_log.read_text().splitlines()
+                ),
+                "An empty registry must use docker.io.",
             )
 
             docker_log.write_text("")
