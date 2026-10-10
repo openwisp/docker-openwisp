@@ -1652,6 +1652,49 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected)
 
+    def test_auto_install_upgrade_ignores_commented_settings(self):
+        script = (
+            Path(self.root_location) / "tests" / "scripts" / "auto_install_upgrade.sh"
+        )
+        auto_install_script = Path(self.root_location) / "deploy" / "auto-install.sh"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            install_path = tmpdir / "install"
+            install_path.mkdir()
+            environment_file = install_path / ".env"
+            environment_file.write_text(
+                "# IMAGE_REGISTRY=docker.io\n# IMAGE_NAMESPACE=openwisp\n"
+            )
+            backup_file = tmpdir / "backup.env"
+            backup_file.write_text(
+                "DASHBOARD_DOMAIN=dashboard.example.com\n"
+                "# IMAGE_REGISTRY=docker.io\n"
+                "# IMAGE_NAMESPACE=openwisp\n"
+            )
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "AUTO_INSTALL_SCRIPT": str(auto_install_script),
+                    "TEST_ENV_BACKUP": str(backup_file),
+                    "TEST_INSTALL_PATH": str(install_path),
+                    "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
+                }
+            )
+            result = subprocess.run(
+                ["bash", str(script)],
+                cwd=self.root_location,
+                check=False,
+                capture_output=True,
+                text=True,
+                env=environment,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            environment = environment_file.read_text()
+            self.assertIn("DASHBOARD_DOMAIN=dashboard.example.com", environment)
+            self.assertNotIn("\nIMAGE_REGISTRY=", environment)
+            self.assertNotIn("\nIMAGE_NAMESPACE=", environment)
+            self.assertNotIn("\n#=", environment)
+
     def test_nginx_source_verification_tracks_version(self):
         """Ensure Dependabot Nginx bumps retain source authentication."""
         dockerfile = (
