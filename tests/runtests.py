@@ -1427,41 +1427,97 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
 
     def test_workflows_publish_to_gitlab_registry(self):
         repository_root = Path(__file__).resolve().parents[1]
-        registry = "registry.gitlab.com/openwisp/docker-openwisp"
+        registry = "registry.gitlab.com"
         ci_workflow = (repository_root / ".github" / "workflows" / "ci.yml").read_text()
         release_workflow = (
             repository_root / ".github" / "workflows" / "release.yml"
         ).read_text()
         self.assertIn(
-            f"make publish USER={registry} TAG=edge SKIP_BUILD=true SKIP_TESTS=true",
+            f"make publish IMAGE_REGISTRY={registry} TAG=edge "
+            "SKIP_BUILD=true SKIP_TESTS=true",
             ci_workflow,
         )
         self.assertIn(
-            f"make release USER={registry} SKIP_BUILD=true",
+            f"make release IMAGE_REGISTRY={registry} SKIP_BUILD=true",
             release_workflow,
         )
 
-    def test_docker_compose_images_use_image_owner(self):
-        """Verify OpenWISP services in docker-compose.yml use IMAGE_OWNER."""
+    def test_docker_compose_config_uses_image_registry_and_namespace(self):
+        """Verify Compose resolves configured registry and namespace settings."""
         repository_root = Path(__file__).resolve().parents[1]
-        compose_content = (repository_root / "docker-compose.yml").read_text()
-        openwisp_services = [
-            "dashboard",
-            "api",
-            "websocket",
-            "celery",
-            "celery_monitoring",
-            "celerybeat",
-            "nginx",
-            "freeradius",
-            "postfix",
-            "openvpn",
-        ]
-        for service in openwisp_services:
+        registry = "registry.example.com"
+        namespace = "openwisp-images"
+        version = "25.10.4"
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "IMAGE_OWNER": "",
+                "IMAGE_REGISTRY": registry,
+                "IMAGE_NAMESPACE": namespace,
+                "OPENWISP_VERSION": version,
+            }
+        )
+        result = subprocess.run(
+            ["docker", "compose", "config", "--format", "json"],
+            cwd=repository_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        services = json.loads(result.stdout)["services"]
+        expected_images = {
+            "dashboard": "openwisp-dashboard",
+            "api": "openwisp-api",
+            "websocket": "openwisp-websocket",
+            "celery": "openwisp-dashboard",
+            "celery_monitoring": "openwisp-dashboard",
+            "celerybeat": "openwisp-dashboard",
+            "nginx": "openwisp-nginx",
+            "freeradius": "openwisp-freeradius",
+            "postfix": "openwisp-postfix",
+            "openvpn": "openwisp-openvpn",
+        }
+        for service, image in expected_images.items():
             with self.subTest(service=service):
-                self.assertRegex(
-                    compose_content,
-                    rf"{service}:\s+image:\s+\${{IMAGE_OWNER:-openwisp}}/openwisp-",
+                self.assertEqual(
+                    services[service]["image"],
+                    f"{registry}/{namespace}/{image}:{version}",
+                )
+        for service in ("dashboard", "api", "websocket"):
+            with self.subTest(service=service):
+                arguments = services[service]["build"]["args"]
+                self.assertEqual(arguments["IMAGE_REGISTRY"], registry)
+                self.assertEqual(arguments["IMAGE_NAMESPACE"], namespace)
+
+        legacy_namespace = "legacy-images"
+        environment["IMAGE_NAMESPACE"] = ""
+        environment["IMAGE_OWNER"] = legacy_namespace
+        result = subprocess.run(
+            ["docker", "compose", "config", "--format", "json"],
+            cwd=repository_root,
+            check=False,
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        services = json.loads(result.stdout)["services"]
+        for service, image in expected_images.items():
+            with self.subTest(service=service, image_namespace=legacy_namespace):
+                self.assertEqual(
+                    services[service]["image"],
+                    f"{registry}/{legacy_namespace}/{image}:{version}",
+                )
+        for service in ("dashboard", "api", "websocket"):
+            with self.subTest(service=service, image_namespace=legacy_namespace):
+                self.assertEqual(
+                    services[service]["build"]["args"]["IMAGE_REGISTRY"], registry
+                )
+                self.assertEqual(
+                    services[service]["build"]["args"]["IMAGE_NAMESPACE"],
+                    legacy_namespace,
                 )
 
     @contextmanager
@@ -1489,6 +1545,9 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             docker_command.chmod(0o755)
             (tmpdir / "Makefile").write_text((repository_root / "Makefile").read_text())
             (tmpdir / ".env").write_text("")
+            version_file = tmpdir / "images" / "common" / "openwisp" / "VERSION"
+            version_file.parent.mkdir(parents=True)
+            version_file.write_text("25.10.4")
             environment = os.environ.copy()
             environment["DOCKER_LOG"] = str(docker_log)
             environment["PATH"] = f"{bin_directory}:{environment['PATH']}"
@@ -1515,51 +1574,167 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     self.assertIn("Set DEV_MODE=False", development_start.stdout)
                     self.assertEqual(docker_log.read_text(), "")
 
-    def test_makefile_pulls_from_docker_hub_and_fails_on_image_command_error(self):
-        """Verify Docker Hub pulls and Makefile command failure propagation."""
+    def test_makefile_uses_configured_image_prefixes(self):
+        """Verify image commands use configured prefixes and propagate failures."""
         with self._makefile_test_environment() as (run_make, docker_log, environment):
-            pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
+            registry = "registry.example.com"
+            namespace = "openwisp-images"
+            image_prefix = f"{registry}/{namespace}"
+            pull = run_make(
+                "pull",
+                f"IMAGE_REGISTRY={registry}",
+                f"IMAGE_NAMESPACE={namespace}",
+                "OPENWISP_VERSION=25.10.4",
+            )
             self.assertEqual(pull.returncode, 0, pull.stderr)
             commands = docker_log.read_text().splitlines()
+            self.assertEqual(len(commands), 9, "The Makefile must pull all images.")
+            self.assertTrue(
+                all(
+                    command.startswith(f"pull --quiet {image_prefix}/")
+                    for command in commands
+                ),
+                "The configured registry and namespace must be used for pulls.",
+            )
+
+            docker_log.write_text("")
+            empty_registry_pull = run_make(
+                "pull",
+                "IMAGE_REGISTRY=",
+                f"IMAGE_NAMESPACE={namespace}",
+                "OPENWISP_VERSION=25.10.4",
+            )
             self.assertEqual(
-                len(commands), 18, "The Makefile must pull and tag all images."
+                empty_registry_pull.returncode, 0, empty_registry_pull.stderr
             )
             self.assertTrue(
                 all(
-                    command.startswith("pull --quiet docker.io/openwisp/")
-                    for command in commands[::2]
+                    command.startswith(f"pull --quiet docker.io/{namespace}/")
+                    for command in docker_log.read_text().splitlines()
                 ),
-                "The default pull registry must be Docker Hub.",
+                "An empty registry must use docker.io.",
             )
 
-            for command in ("pull", "tag"):
-                with self.subTest(target="pull", command=command):
-                    environment["FAIL_COMMAND"] = command
-                    failed_pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
-                    self.assertNotEqual(
-                        failed_pull.returncode,
-                        0,
-                        f"A failed image {command} must fail make pull.",
+            docker_log.write_text("")
+            legacy_namespace = "legacy-images"
+            legacy_prefix = f"{registry}/{legacy_namespace}"
+            legacy_pull = run_make(
+                "pull",
+                f"IMAGE_REGISTRY={registry}",
+                f"IMAGE_OWNER={legacy_namespace}",
+                "OPENWISP_VERSION=25.10.4",
+            )
+            self.assertEqual(legacy_pull.returncode, 0, legacy_pull.stderr)
+            self.assertIn("IMAGE_OWNER is deprecated", legacy_pull.stderr)
+            self.assertTrue(
+                all(
+                    command.startswith(f"pull --quiet {legacy_prefix}/")
+                    for command in docker_log.read_text().splitlines()
+                ),
+                "The legacy image prefix must be used during the deprecation period.",
+            )
+
+            for image_owner, expected_namespace in (
+                (legacy_namespace, legacy_namespace),
+                ("", "openwisp"),
+            ):
+                with self.subTest(image_owner=image_owner):
+                    docker_log.write_text("")
+                    pull = run_make(
+                        "pull",
+                        f"IMAGE_REGISTRY={registry}",
+                        "IMAGE_NAMESPACE=",
+                        f"IMAGE_OWNER={image_owner}",
+                        "OPENWISP_VERSION=25.10.4",
                     )
+                    self.assertEqual(pull.returncode, 0, pull.stderr)
+                    self.assertTrue(
+                        all(
+                            command.startswith(
+                                f"pull --quiet {registry}/{expected_namespace}/"
+                            )
+                            for command in docker_log.read_text().splitlines()
+                        ),
+                        "An empty namespace must use the configured fallback.",
+                    )
+
+            environment["FAIL_COMMAND"] = "pull"
+            failed_pull = run_make("pull", "OPENWISP_VERSION=25.10.4")
+            self.assertNotEqual(
+                failed_pull.returncode,
+                0,
+                "A failed image pull must fail make pull.",
+            )
 
             environment.pop("FAIL_COMMAND")
             docker_log.write_text("")
             publish_arguments = (
                 "publish",
-                "USER=docker.io/openwisp",
-                "TAG=25.10.4",
+                f"IMAGE_REGISTRY={registry}",
+                f"IMAGE_NAMESPACE={namespace}",
+                "TAG=latest",
                 "OPENWISP_VERSION=25.10.4",
                 "SKIP_BUILD=true",
                 "SKIP_TESTS=true",
             )
             publish = run_make(*publish_arguments)
             self.assertEqual(publish.returncode, 0, publish.stderr)
-            self.assertFalse(
-                any(
-                    command.startswith("rmi ")
-                    for command in docker_log.read_text().splitlines()
+            commands = docker_log.read_text().splitlines()
+            self.assertEqual(
+                len(commands), 18, "Publishing must tag and push all images."
+            )
+            self.assertTrue(
+                all(
+                    command.startswith(f"tag {namespace}/")
+                    and f" {image_prefix}/" in command
+                    for command in commands[::2]
                 ),
-                "Publishing must retain the source tags for another registry.",
+                "Publishing must use the configured destination prefix.",
+            )
+            self.assertTrue(
+                all(
+                    command.startswith(f"push {image_prefix}/")
+                    for command in commands[1::2]
+                ),
+                "Publishing must push the configured destination prefix.",
+            )
+
+            docker_log.write_text("")
+            publish = run_make(
+                "publish",
+                f"IMAGE_REGISTRY={registry}",
+                f"IMAGE_NAMESPACE={namespace}",
+                "TAG=latest",
+                "OPENWISP_VERSION=25.10.4",
+                "SKIP_TESTS=true",
+            )
+            self.assertEqual(publish.returncode, 0, publish.stderr)
+            tag_commands = [
+                command
+                for command in docker_log.read_text().splitlines()
+                if command.startswith("tag ")
+            ]
+            self.assertEqual(len(tag_commands), 9)
+            self.assertTrue(
+                all(
+                    command.startswith(f"tag {image_prefix}/")
+                    for command in tag_commands
+                ),
+                "Publishing after a build must use the configured source prefix.",
+            )
+
+            docker_log.write_text("")
+            release = run_make(
+                "release",
+                f"IMAGE_REGISTRY={registry}",
+                f"IMAGE_NAMESPACE={namespace}",
+            )
+            self.assertEqual(release.returncode, 0, release.stderr)
+            commands = docker_log.read_text().splitlines()
+            self.assertEqual(
+                commands.count("compose build --parallel"),
+                2,
+                "Custom-registry releases must rebuild before the versioned publish.",
             )
 
             for command in ("tag", "push"):
