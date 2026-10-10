@@ -234,7 +234,7 @@ upgrade_docker_openwisp() {
 	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	start_step "Configuring docker-openwisp..."
-	while IFS='=' read -r config value; do
+	while IFS='=' read -r config value || [[ -n "$config" ]]; do
 		[[ "$config" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
 		set_env "$config" "$value"
 	done <"$ENV_BACKUP"

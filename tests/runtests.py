@@ -1666,11 +1666,6 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "# IMAGE_REGISTRY=docker.io\n# IMAGE_NAMESPACE=openwisp\n"
             )
             backup_file = tmpdir / "backup.env"
-            backup_file.write_text(
-                "DASHBOARD_DOMAIN=dashboard.example.com\n"
-                "# IMAGE_REGISTRY=docker.io\n"
-                "# IMAGE_NAMESPACE=openwisp\n"
-            )
             environment = os.environ.copy()
             environment.update(
                 {
@@ -1680,20 +1675,32 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
                 }
             )
-            result = subprocess.run(
-                ["bash", str(script)],
-                cwd=self.root_location,
-                check=False,
-                capture_output=True,
-                text=True,
-                env=environment,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
-            environment = environment_file.read_text()
-            self.assertIn("DASHBOARD_DOMAIN=dashboard.example.com", environment)
-            self.assertNotIn("\nIMAGE_REGISTRY=", environment)
-            self.assertNotIn("\nIMAGE_NAMESPACE=", environment)
-            self.assertNotIn("\n#=", environment)
+
+            for trailing_newline in (True, False):
+                with self.subTest(trailing_newline=trailing_newline):
+                    environment_file.write_text(
+                        "# IMAGE_REGISTRY=docker.io\n# IMAGE_NAMESPACE=openwisp\n"
+                    )
+                    backup_file.write_text(
+                        "# IMAGE_REGISTRY=docker.io\n"
+                        "# IMAGE_NAMESPACE=openwisp"
+                        "\nDASHBOARD_DOMAIN=dashboard.example.com"
+                        + ("\n" if trailing_newline else "")
+                    )
+                    result = subprocess.run(
+                        ["bash", str(script)],
+                        cwd=self.root_location,
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        env=environment,
+                    )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    content = environment_file.read_text()
+                    self.assertIn("DASHBOARD_DOMAIN=dashboard.example.com", content)
+                    self.assertNotIn("\nIMAGE_REGISTRY=", content)
+                    self.assertNotIn("\nIMAGE_NAMESPACE=", content)
+                    self.assertNotIn("\n#=", content)
 
     def test_nginx_source_verification_tracks_version(self):
         """Ensure Dependabot Nginx bumps retain source authentication."""
