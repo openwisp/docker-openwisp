@@ -29,8 +29,8 @@ services:
       - openwisp_private_storage:/opt/openwisp/private
       - openwisp_ssh:/home/openwisp/.ssh
       - influxdb_data:/var/lib/influxdb
-      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
-      - ./customization/theme:/opt/openwisp/static_custom:ro
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro,z
+      - ./customization/theme:/opt/openwisp/static_custom:ro,Z
     depends_on:
       - postgres
       - redis
@@ -53,7 +53,7 @@ services:
       - influxdb_data:/var/lib/influxdb
       - openwisp_media:/opt/openwisp/media
       - openwisp_private_storage:/opt/openwisp/private
-      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro,z
     depends_on:
       - postgres
       - redis
@@ -72,7 +72,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro,z
     depends_on:
       - dashboard
 
@@ -87,7 +87,7 @@ services:
       - openwisp_media:/opt/openwisp/media
       - openwisp_private_storage:/opt/openwisp/private
       - openwisp_ssh:/home/openwisp/.ssh
-      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro,z
     env_file:
       - .env
     <<: *celery-depends-on
@@ -103,7 +103,7 @@ services:
     volumes:
       - openwisp_media:/opt/openwisp/media
       - openwisp_private_storage:/opt/openwisp/private
-      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro,z
     env_file:
       - .env
     <<: *celery-depends-on
@@ -117,7 +117,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro
+      - ./customization/configuration/django/:/opt/openwisp/openwisp/configuration:ro,z
     depends_on:
       - postgres
       - redis
@@ -136,7 +136,7 @@ services:
       - openwisp_media:/opt/openwisp/public/media:ro
       - openwisp_private_storage:/opt/openwisp/public/private:ro
       - openwisp_certs:/etc/letsencrypt
-      - ./customization/nginx:/opt/openwisp/public/custom:ro
+      - ./customization/nginx:/opt/openwisp/public/custom:ro,Z
     networks:
       default:
         aliases:
