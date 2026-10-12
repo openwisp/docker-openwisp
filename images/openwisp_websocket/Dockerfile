@@ -1,7 +1,8 @@
 # hadolint ignore=DL3007
-ARG IMAGE_OWNER=openwisp
+ARG IMAGE_REGISTRY=docker.io
+ARG IMAGE_NAMESPACE=openwisp
 ARG OPENWISP_VERSION=edge
-FROM ${IMAGE_OWNER}/openwisp-base:${OPENWISP_VERSION}
+FROM ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/openwisp-base:${OPENWISP_VERSION}
 
 WORKDIR /opt/openwisp/
 

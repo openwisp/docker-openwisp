@@ -138,7 +138,7 @@ jobs:
       - name: Publish to Docker Hub
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: |
-          make publish USER=docker.io/openwisp TAG=edge SKIP_BUILD=true SKIP_TESTS=true
+          make publish TAG=edge SKIP_BUILD=true SKIP_TESTS=true
         env:
           SELENIUM_HEADLESS: 1
 
@@ -154,4 +154,4 @@ jobs:
       - name: Publish to GitLab Container Registry
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: |
-          make publish USER=registry.gitlab.com/openwisp/docker-openwisp TAG=edge SKIP_BUILD=true SKIP_TESTS=true
+          make publish IMAGE_REGISTRY=registry.gitlab.com TAG=edge SKIP_BUILD=true SKIP_TESTS=true

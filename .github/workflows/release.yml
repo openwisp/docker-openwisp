@@ -34,7 +34,7 @@ jobs:
 
       - name: Release to Docker Hub
         run: |
-          make release USER=docker.io/openwisp
+          make release
 
       - name: Login to GitLab Container Registry
         uses: docker/login-action@v4.6.0
@@ -45,4 +45,4 @@ jobs:
 
       - name: Release to GitLab Container Registry
         run: |
-          make release USER=registry.gitlab.com/openwisp/docker-openwisp SKIP_BUILD=true
+          make release IMAGE_REGISTRY=registry.gitlab.com SKIP_BUILD=true
