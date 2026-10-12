@@ -1,4 +1,5 @@
 #!/bin/bash
+# Run the upgrade path with external operations disabled for testing.
 
 source <(sed '/^## Init script$/,$d' "$AUTO_INSTALL_SCRIPT")
 

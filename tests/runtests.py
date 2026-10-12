@@ -1684,6 +1684,13 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     backup_file.write_text(
                         "# IMAGE_REGISTRY=docker.io\n"
                         "# IMAGE_NAMESPACE=openwisp"
+                        "\n#IMAGE_REGISTRY=docker.io"
+                        "\nINVALID-NAME=value"
+                        "\n=missing_name"
+                        "\nexport IMAGE_REGISTRY=docker.io"
+                        "\n IMAGE_REGISTRY=docker.io"
+                        "\nNOT_AN_ASSIGNMENT"
+                        "\nEMPTY_SETTING="
                         "\nDASHBOARD_DOMAIN=dashboard.example.com"
                         + ("\n" if trailing_newline else "")
                     )
@@ -1698,8 +1705,12 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     self.assertEqual(result.returncode, 0, result.stderr)
                     content = environment_file.read_text()
                     self.assertIn("DASHBOARD_DOMAIN=dashboard.example.com", content)
+                    self.assertIn("EMPTY_SETTING=", content)
                     self.assertNotIn("\nIMAGE_REGISTRY=", content)
                     self.assertNotIn("\nIMAGE_NAMESPACE=", content)
+                    self.assertNotIn("\nINVALID-NAME=", content)
+                    self.assertNotIn("\nNOT_AN_ASSIGNMENT=", content)
+                    self.assertNotIn("\nexport IMAGE_REGISTRY=", content)
                     self.assertNotIn("\n#=", content)
 
     def test_nginx_source_verification_tracks_version(self):

@@ -234,9 +234,10 @@ upgrade_docker_openwisp() {
 	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	start_step "Configuring docker-openwisp..."
-	while IFS='=' read -r config value || [[ -n "$config" ]]; do
-		[[ "$config" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
-		set_env "$config" "$value"
+	# Copy settings from the backup and ignore comments or invalid lines.
+	while IFS= read -r line || [[ -n "$line" ]]; do
+		[[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]] || continue
+		set_env "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
 	done <"$ENV_BACKUP"
 	set_env "DEV_MODE" "False"
 	report_ok
