@@ -31,6 +31,22 @@ repository
 <https://github.com/openwisp/docker-openwisp/tree/master/customization>`__
 for an example.
 
+SELinux Hosts
+-------------
+
+On hosts where SELinux is enabled, Docker Compose applies a shared SELinux
+label to the ``customization/configuration/django``,
+``customization/theme`` and ``customization/nginx`` directories when it
+mounts them in containers. This allows the containers to access the
+customization files without manually running ``chcon``.
+
+The label change persists on the host. If you repurpose these directories
+outside Docker, restore their default labels with:
+
+.. code-block:: shell
+
+    restorecon -RFv customization
+
 .. _docker_custom_django_settings:
 
 Supplying Custom Django Settings
