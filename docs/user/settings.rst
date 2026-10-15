@@ -1028,15 +1028,39 @@ Nginx
 ``NINGX_REAL_REMOTE_ADDR``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** The nginx header to get the value of the real IP
-  address of Access points. Example if a reverse proxy is used in your
-  cluster (Example if you are using an Ingress), then the real IP of the
-  AP is most likely the ``$http_x_forwarded_for``. If
-  ``$http_x_forwarded_for`` returns a list, you can use ``$real_ip`` for
-  getting first element of the list.
-- **Valid Values:** ``$remote_addr``, ``$http_x_forwarded_for``,
-  ``$realip_remote_addr``, ``$real_ip``.
-- **Default:** ``$real_ip``.
+- **Explanation:** The nginx variable passed to the application as the
+  client IP address (``REMOTE_ADDR``). ``$remote_addr`` is the address of
+  the connection to nginx and cannot be set by the client. If a reverse
+  proxy or an ingress is used in your cluster, keep ``$remote_addr`` and
+  set ``NGINX_TRUSTED_PROXIES`` instead.
+- **Valid Values:** ``$remote_addr``.
+- **Default:** ``$remote_addr``.
+
+.. warning::
+
+    ``$http_x_forwarded_for`` and ``$real_ip`` are read from the
+    ``X-Forwarded-For`` header, which can be set by any client. Do not use
+    them, as clients would be able to spoof their IP address.
+
+``NGINX_TRUSTED_PROXIES``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** IP addresses or subnets of the reverse proxies placed
+  in front of nginx (e.g. a load balancer or an ingress). The client IP
+  address is read from the ``X-Forwarded-For`` header only when the
+  request comes from one of these addresses. The client IP address is also
+  used by the ``allow`` rules of ``NGINX_ADMIN_ALLOW_NETWORK`` and
+  ``NGINX_HTTPS_ALLOWED_IPS``.
+- **Valid Values:** A comma separated string of valid IP addresses or IP
+  networks.
+- **Default:** ``''`` (empty, ``X-Forwarded-For`` is ignored).
+- **Example:** ``192.0.2.10``.
+
+.. warning::
+
+    List only the addresses of your reverse proxies. Any host in these
+    networks, including the Docker network of the containers, can set its
+    own IP address through the ``X-Forwarded-For`` header.
 
 OpenVPN
 -------

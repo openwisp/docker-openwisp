@@ -58,6 +58,26 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 	# correctly into the nginx configuration template.
 	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
 	export NGINX_EVENTS_BLOCK
+	case "${NINGX_REAL_REMOTE_ADDR:-}" in
+	"\$real_ip" | "\$http_x_forwarded_for")
+		echo "WARNING: NINGX_REAL_REMOTE_ADDR=${NINGX_REAL_REMOTE_ADDR} lets clients spoof their IP address, use NGINX_TRUSTED_PROXIES instead." >&2
+		;;
+	esac
+	NGINX_REAL_IP_BLOCK=""
+	set -f
+	for proxy in $(echo "${NGINX_TRUSTED_PROXIES:-}" | tr ',' ' '); do
+		if ! echo "$proxy" | grep -Eq '^[0-9A-Fa-f:.]+(/[0-9]{1,3})?$'; then
+			echo "ERROR: invalid NGINX_TRUSTED_PROXIES entry: ${proxy}" >&2
+			exit 1
+		fi
+		NGINX_REAL_IP_BLOCK="${NGINX_REAL_IP_BLOCK}set_real_ip_from ${proxy};\n    "
+	done
+	set +f
+	if [ -n "$NGINX_REAL_IP_BLOCK" ]; then
+		NGINX_REAL_IP_BLOCK="${NGINX_REAL_IP_BLOCK}real_ip_header X-Forwarded-For;\n    real_ip_recursive on;"
+	fi
+	NGINX_REAL_IP_BLOCK=$(printf "%b" "$NGINX_REAL_IP_BLOCK")
+	export NGINX_REAL_IP_BLOCK
 	# Use a sentinel value when the variable is unset. Since envsubst cannot
 	# conditionally omit directives, we later remove any line containing this
 	# sentinel from the generated nginx.conf.
