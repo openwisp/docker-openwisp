@@ -1427,18 +1427,17 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
 
     def test_workflows_publish_to_gitlab_registry(self):
         repository_root = Path(__file__).resolve().parents[1]
-        registry = "registry.gitlab.com"
+        options = "IMAGE_PREFIX=registry.gitlab.com/openwisp/docker-openwisp"
         ci_workflow = (repository_root / ".github" / "workflows" / "ci.yml").read_text()
         release_workflow = (
             repository_root / ".github" / "workflows" / "release.yml"
         ).read_text()
         self.assertIn(
-            f"make publish IMAGE_REGISTRY={registry} TAG=edge "
-            "SKIP_BUILD=true SKIP_TESTS=true",
+            f"make publish {options} TAG=edge SKIP_BUILD=true SKIP_TESTS=true",
             ci_workflow,
         )
         self.assertIn(
-            f"make release IMAGE_REGISTRY={registry} SKIP_BUILD=true",
+            f"make release {options} SKIP_BUILD=true",
             release_workflow,
         )
 
