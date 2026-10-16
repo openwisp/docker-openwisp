@@ -156,8 +156,8 @@ crl_revocations() {
 	openssl crl -in "$1" -noout -text 2>/dev/null | awk '
 		/^Revoked Certificates:$/ { revoked = 1; next }
 		revoked && /^    Signature Algorithm:/ { exit }
-		revoked { print }
-	'
+		revoked && /^    Serial Number:/ { print $3 }
+	' | sort
 }
 
 # The five-minute cron caller restarts only for changed revocations and
