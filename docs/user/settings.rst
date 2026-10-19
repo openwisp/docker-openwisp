@@ -1025,6 +1025,20 @@ Nginx
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
+.. warning::
+
+    When enabled, the generated nginx configuration settings do not apply:
+    ``SSL_CERT_MODE``, ``NGINX_HTTP2``, ``NGINX_CLIENT_BODY_SIZE``,
+    ``NGINX_IP6_STRING``, ``NGINX_IP6_80_STRING``,
+    ``NGINX_ADMIN_ALLOW_NETWORK``, ``NGINX_SERVER_NAME_HASH_BUCKET``,
+    ``NGINX_SSL_CONFIG``, ``NGINX_80_CONFIG``, ``NGINX_GZIP_SWITCH``,
+    ``NGINX_GZIP_LEVEL``, ``NGINX_GZIP_PROXIED``,
+    ``NGINX_GZIP_MIN_LENGTH``, ``NGINX_GZIP_TYPES``,
+    ``NGINX_BROTLI_SWITCH``, ``NGINX_HTTPS_ALLOWED_IPS``,
+    ``NGINX_HTTP_ALLOW``, and ``NGINX_TRUSTED_PROXIES``. Configure these
+    settings in the mounted nginx configuration instead. ``NGINX_PORT``
+    and ``NGINX_SSL_PORT`` continue to control the published Docker ports.
+
 ``NGINX_TRUSTED_PROXIES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1038,6 +1052,11 @@ Nginx
   networks.
 - **Default:** ``''`` (empty, ``X-Forwarded-For`` is ignored).
 - **Example:** ``192.0.2.10``.
+
+.. warning::
+
+    This setting does not apply when ``NGINX_CUSTOM_FILE`` is ``True``.
+    Configure trusted proxies in the mounted nginx configuration instead.
 
 .. warning::
 

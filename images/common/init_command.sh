@@ -61,7 +61,8 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 	NGINX_REAL_IP_BLOCK=""
 	set -f
 	for proxy in $(echo "${NGINX_TRUSTED_PROXIES:-}" | tr ',' ' '); do
-		if ! echo "$proxy" | grep -Eq '^[0-9A-Fa-f:.]+(/[0-9]{1,3})?$'; then
+		# Accept only IP addresses or networks, never hostnames.
+		if ! echo "$proxy" | grep -Eq '^(([0-9]{1,3}\.){3}[0-9]{1,3}|[0-9A-Fa-f]*:[0-9A-Fa-f:]+)(/[0-9]{1,3})?$'; then
 			echo "ERROR: invalid NGINX_TRUSTED_PROXIES entry: ${proxy}" >&2
 			exit 1
 		fi
