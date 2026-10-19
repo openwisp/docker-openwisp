@@ -1407,9 +1407,9 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         repository_root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
-            nginx_directory = tmpdir / "nginx"
-            nginx_directory.mkdir()
-            (nginx_directory / "nginx.template.conf").write_text(
+            config_directory = tmpdir / "nginx_config"
+            config_directory.mkdir()
+            (config_directory / "nginx.template.conf").write_text(
                 (
                     repository_root
                     / "images"
@@ -1420,7 +1420,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             (tmpdir / "init_command.sh").write_text(
                 (repository_root / "images" / "common" / "init_command.sh")
                 .read_text()
-                .replace("/etc/nginx", str(nginx_directory))
+                .replace("/etc/nginx", str(config_directory))
             )
             (tmpdir / "utils.sh").write_text(
                 "init_conf() { :; }\nenvsubst_create_config() { :; }\n"
@@ -1465,9 +1465,11 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     )
                     self.assertEqual(result.returncode, expected_returncode)
                     if expected_returncode:
-                        self.assertIn("invalid NGINX_TRUSTED_PROXIES entry", result.stderr)
+                        self.assertIn(
+                            "invalid NGINX_TRUSTED_PROXIES entry", result.stderr
+                        )
                     else:
-                        config = (nginx_directory / "nginx.conf").read_text()
+                        config = (config_directory / "nginx.conf").read_text()
                         self.assertIn("set_real_ip_from 192.0.2.10;", config)
                         self.assertIn("set_real_ip_from 2001:db8::/32;", config)
                         self.assertIn("real_ip_header X-Forwarded-For;", config)
