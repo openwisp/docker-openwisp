@@ -1053,7 +1053,7 @@ Nginx
 - **Default:** ``''`` (empty, ``X-Forwarded-For`` is ignored).
 - **Example:** ``192.0.2.10``.
 
-.. warning::
+.. note::
 
     This setting does not apply when ``NGINX_CUSTOM_FILE`` is ``True``.
     Configure trusted proxies in the mounted nginx configuration instead.

@@ -59,10 +59,10 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
 	export NGINX_EVENTS_BLOCK
 	NGINX_REAL_IP_BLOCK=""
+	# Disable glob expansion and trust X-Forwarded-For only from valid proxy IPs.
 	set -f
-	for proxy in $(echo "${NGINX_TRUSTED_PROXIES:-}" | tr ',' ' '); do
-		# Accept only IP addresses or networks, never hostnames.
-		if ! echo "$proxy" | grep -Eq '^(([0-9]{1,3}\.){3}[0-9]{1,3}|[0-9A-Fa-f]*:[0-9A-Fa-f:]+)(/[0-9]{1,3})?$'; then
+	for proxy in $(printf "%s" "${NGINX_TRUSTED_PROXIES:-}" | tr ',' ' '); do
+		if ! python3 -c 'import ipaddress, sys; ipaddress.ip_network(sys.argv[1], strict=False)' "$proxy" >/dev/null 2>&1; then
 			echo "ERROR: invalid NGINX_TRUSTED_PROXIES entry: ${proxy}" >&2
 			exit 1
 		fi

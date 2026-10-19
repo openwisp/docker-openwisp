@@ -1442,11 +1442,15 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 {
                     "MODULE_NAME": "nginx",
                     "SSL_CERT_MODE": "No",
+                    "NGINX_CUSTOM_FILE": "False",
                     "PATH": f"{tmpdir}:{environment['PATH']}",
                 }
             )
             for proxy, expected_returncode in (
                 ("deadbeef", 1),
+                ("192.0.2.10/33", 1),
+                ("2001:db8::1/129", 1),
+                ("999.999.999.999/32", 1),
                 ("192.0.2.10,2001:db8::/32", 0),
             ):
                 with self.subTest(proxy=proxy):
