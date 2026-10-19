@@ -1025,23 +1025,6 @@ Nginx
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
-``NINGX_REAL_REMOTE_ADDR``
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- **Explanation:** The nginx variable passed to the application as the
-  client IP address (``REMOTE_ADDR``). ``$remote_addr`` is the address of
-  the connection to nginx and cannot be set by the client. If a reverse
-  proxy or an ingress is used in your cluster, keep ``$remote_addr`` and
-  set ``NGINX_TRUSTED_PROXIES`` instead.
-- **Valid Values:** ``$remote_addr``.
-- **Default:** ``$remote_addr``.
-
-.. warning::
-
-    ``$http_x_forwarded_for`` and ``$real_ip`` are read from the
-    ``X-Forwarded-For`` header, which can be set by any client. Do not use
-    them, as clients would be able to spoof their IP address.
-
 ``NGINX_TRUSTED_PROXIES``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

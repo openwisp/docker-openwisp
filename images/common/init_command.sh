@@ -58,11 +58,6 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 	# correctly into the nginx configuration template.
 	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
 	export NGINX_EVENTS_BLOCK
-	case "${NINGX_REAL_REMOTE_ADDR:-}" in
-	"\$real_ip" | "\$http_x_forwarded_for")
-		echo "WARNING: NINGX_REAL_REMOTE_ADDR=${NINGX_REAL_REMOTE_ADDR} lets clients spoof their IP address, use NGINX_TRUSTED_PROXIES instead." >&2
-		;;
-	esac
 	NGINX_REAL_IP_BLOCK=""
 	set -f
 	for proxy in $(echo "${NGINX_TRUSTED_PROXIES:-}" | tr ',' ' '); do
