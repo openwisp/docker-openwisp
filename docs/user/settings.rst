@@ -1055,14 +1055,15 @@ Nginx
 
 .. note::
 
-    This setting does not apply when ``NGINX_CUSTOM_FILE`` is ``True``.
-    Configure trusted proxies in the mounted nginx configuration instead.
-
-.. warning::
-
     List only the addresses of your reverse proxies. Any host in these
     networks, including the Docker network of the containers, can set its
     own IP address through the ``X-Forwarded-For`` header.
+
+.. warning::
+
+    This setting does not apply when ``NGINX_CUSTOM_FILE`` is ``True``, in
+    that case, you have to configure trusted proxies in the mounted nginx
+    configuration instead.
 
 OpenVPN
 -------
