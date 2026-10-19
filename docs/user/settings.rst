@@ -1025,18 +1025,45 @@ Nginx
 - **Valid Values:** ``True``, ``False``.
 - **Default:** ``False``.
 
-``NINGX_REAL_REMOTE_ADDR``
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. warning::
 
-- **Explanation:** The nginx header to get the value of the real IP
-  address of Access points. Example if a reverse proxy is used in your
-  cluster (Example if you are using an Ingress), then the real IP of the
-  AP is most likely the ``$http_x_forwarded_for``. If
-  ``$http_x_forwarded_for`` returns a list, you can use ``$real_ip`` for
-  getting first element of the list.
-- **Valid Values:** ``$remote_addr``, ``$http_x_forwarded_for``,
-  ``$realip_remote_addr``, ``$real_ip``.
-- **Default:** ``$real_ip``.
+    When enabled, the generated nginx configuration settings do not apply:
+    ``SSL_CERT_MODE``, ``NGINX_HTTP2``, ``NGINX_CLIENT_BODY_SIZE``,
+    ``NGINX_IP6_STRING``, ``NGINX_IP6_80_STRING``,
+    ``NGINX_ADMIN_ALLOW_NETWORK``, ``NGINX_SERVER_NAME_HASH_BUCKET``,
+    ``NGINX_SSL_CONFIG``, ``NGINX_80_CONFIG``, ``NGINX_GZIP_SWITCH``,
+    ``NGINX_GZIP_LEVEL``, ``NGINX_GZIP_PROXIED``,
+    ``NGINX_GZIP_MIN_LENGTH``, ``NGINX_GZIP_TYPES``,
+    ``NGINX_BROTLI_SWITCH``, ``NGINX_HTTPS_ALLOWED_IPS``,
+    ``NGINX_HTTP_ALLOW``, and ``NGINX_TRUSTED_PROXIES``. Configure these
+    settings in the mounted nginx configuration instead. ``NGINX_PORT``
+    and ``NGINX_SSL_PORT`` continue to control the published Docker ports.
+
+``NGINX_TRUSTED_PROXIES``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** IP addresses or subnets of the reverse proxies placed
+  in front of nginx (e.g. a load balancer or an ingress). The client IP
+  address is read from the ``X-Forwarded-For`` header only when the
+  request comes from one of these addresses. The client IP address is also
+  used by the ``allow`` rules of ``NGINX_ADMIN_ALLOW_NETWORK`` and
+  ``NGINX_HTTPS_ALLOWED_IPS``.
+- **Valid Values:** A comma separated string of valid IP addresses or IP
+  networks.
+- **Default:** ``''`` (empty, ``X-Forwarded-For`` is ignored).
+- **Example:** ``192.0.2.10``.
+
+.. note::
+
+    List only the addresses of your reverse proxies. Any host in these
+    networks, including the Docker network of the containers, can set its
+    own IP address through the ``X-Forwarded-For`` header.
+
+.. warning::
+
+    This setting does not apply when ``NGINX_CUSTOM_FILE`` is ``True``, in
+    that case, you have to configure trusted proxies in the mounted nginx
+    configuration instead.
 
 OpenVPN
 -------
