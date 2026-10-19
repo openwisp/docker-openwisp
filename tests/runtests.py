@@ -1441,6 +1441,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             environment.update(
                 {
                     "MODULE_NAME": "nginx",
+                    "SSL_CERT_MODE": "No",
                     "PATH": f"{tmpdir}:{environment['PATH']}",
                 }
             )

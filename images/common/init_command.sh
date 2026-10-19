@@ -52,7 +52,7 @@ elif [ "$MODULE_NAME" = 'openvpn' ]; then
 elif [ "$MODULE_NAME" = 'nginx' ]; then
 	rm -rf /etc/nginx/conf.d/default.conf
 	if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
-		nginx -g 'daemon off;'
+		exec nginx -g 'daemon off;'
 	fi
 	# Expand escape sequences in the optional events block so it can be injected
 	# correctly into the nginx configuration template.
