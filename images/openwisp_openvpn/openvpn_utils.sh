@@ -164,10 +164,12 @@ crl_download_if_changed() (
 	fi
 	tmp_last_modified=$(mktemp /tmp/revoked.crl.last-modified.XXXXXX) || return 2
 	trap 'rm -f "$tmp_last_modified"' EXIT HUP INT TERM
+	touch -d @0 "$tmp_last_modified" || return 2
 	last_modified=$(curl_download --silent --fail --head --remote-time \
 		--output "$tmp_last_modified" --write-out '%header{last-modified}' \
 		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl") || return 2
 	[ -n "$last_modified" ] || return 2
+	[ "$(stat -c %Y "$tmp_last_modified")" != 0 ] || return 2
 	if [ "$(stat -c %Y "$tmp_last_modified")" = "$(stat -c %Y revoked.crl)" ]; then
 		return 1
 	fi

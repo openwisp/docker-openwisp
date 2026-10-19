@@ -37,6 +37,13 @@ curl() {
 	esac
 	if [ "$head" = true ]; then
 		test "$remote_time" = true
+		case "$CRL_TEST_MODE" in
+		no_last_modified) return ;;
+		invalid_last_modified)
+			printf '%s' 'invalid last-modified'
+			return
+			;;
+		esac
 		touch -d "@$last_modified" "$output_path"
 		printf '%s' "$last_modified"
 		return
@@ -136,6 +143,8 @@ run_case changed 0 "$changed_crl" "$initial_crl"
 run_case failed 2 "$initial_crl" "$initial_crl"
 run_case empty 2 "$initial_crl" "$initial_crl"
 run_case malformed 2 "$initial_crl" "$initial_crl"
+run_case no_last_modified 2 "$initial_crl" "$initial_crl"
+run_case invalid_last_modified 2 "$initial_crl" "$initial_crl"
 
 rm -f revoked.crl .slow-download-started
 CRL_TEST_MODE=slow
