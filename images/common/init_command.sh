@@ -52,12 +52,28 @@ elif [ "$MODULE_NAME" = 'openvpn' ]; then
 elif [ "$MODULE_NAME" = 'nginx' ]; then
 	rm -rf /etc/nginx/conf.d/default.conf
 	if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
-		nginx -g 'daemon off;'
+		exec nginx -g 'daemon off;'
 	fi
 	# Expand escape sequences in the optional events block so it can be injected
 	# correctly into the nginx configuration template.
 	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")
 	export NGINX_EVENTS_BLOCK
+	NGINX_REAL_IP_BLOCK=""
+	# Disable glob expansion and trust X-Forwarded-For only from valid proxy IPs.
+	set -f
+	for proxy in $(printf "%s" "${NGINX_TRUSTED_PROXIES:-}" | tr ',' ' '); do
+		if ! python3 -c 'import ipaddress, sys; ipaddress.ip_network(sys.argv[1], strict=False)' "$proxy" >/dev/null 2>&1; then
+			echo "ERROR: invalid NGINX_TRUSTED_PROXIES entry: ${proxy}" >&2
+			exit 1
+		fi
+		NGINX_REAL_IP_BLOCK="${NGINX_REAL_IP_BLOCK}set_real_ip_from ${proxy};\n    "
+	done
+	set +f
+	if [ -n "$NGINX_REAL_IP_BLOCK" ]; then
+		NGINX_REAL_IP_BLOCK="${NGINX_REAL_IP_BLOCK}real_ip_header X-Forwarded-For;\n    real_ip_recursive on;"
+	fi
+	NGINX_REAL_IP_BLOCK=$(printf "%b" "$NGINX_REAL_IP_BLOCK")
+	export NGINX_REAL_IP_BLOCK
 	# Use a sentinel value when the variable is unset. Since envsubst cannot
 	# conditionally omit directives, we later remove any line containing this
 	# sentinel from the generated nginx.conf.

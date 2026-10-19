@@ -1403,6 +1403,78 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     self.assertEqual(result.returncode, 0, result.stderr)
                     self.assertEqual(result.stdout, expected)
 
+    def test_nginx_trusted_proxies(self):
+        repository_root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            config_directory = tmpdir / "nginx_config"
+            config_directory.mkdir()
+            (config_directory / "nginx.template.conf").write_text(
+                (
+                    repository_root
+                    / "images"
+                    / "openwisp_nginx"
+                    / "nginx.template.conf"
+                ).read_text()
+            )
+            (tmpdir / "init_command.sh").write_text(
+                (repository_root / "images" / "common" / "init_command.sh")
+                .read_text()
+                .replace("/etc/nginx", str(config_directory))
+            )
+            (tmpdir / "utils.sh").write_text(
+                "init_conf() { :; }\nenvsubst_create_config() { :; }\n"
+            )
+            (tmpdir / "envsubst").write_text(
+                "#!/usr/bin/env python3\n"
+                "import os\n"
+                "import sys\n"
+                "content = sys.stdin.read()\n"
+                "for key, value in os.environ.items():\n"
+                "    content = content.replace(f'${{{key}}}', value)\n"
+                "sys.stdout.write(content)\n"
+            )
+            (tmpdir / "nginx").write_text("#!/bin/sh\n:\n")
+            (tmpdir / "envsubst").chmod(0o755)
+            (tmpdir / "nginx").chmod(0o755)
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "MODULE_NAME": "nginx",
+                    "SSL_CERT_MODE": "No",
+                    "NGINX_CUSTOM_FILE": "False",
+                    "PATH": f"{tmpdir}:{environment['PATH']}",
+                }
+            )
+            for proxy, expected_returncode in (
+                ("deadbeef", 1),
+                ("192.0.2.10/33", 1),
+                ("2001:db8::1/129", 1),
+                ("999.999.999.999/32", 1),
+                ("192.0.2.10,2001:db8::/32", 0),
+            ):
+                with self.subTest(proxy=proxy):
+                    environment["NGINX_TRUSTED_PROXIES"] = proxy
+                    result = subprocess.run(
+                        ["bash", "init_command.sh"],
+                        cwd=tmpdir,
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        env=environment,
+                    )
+                    self.assertEqual(result.returncode, expected_returncode)
+                    if expected_returncode:
+                        self.assertIn(
+                            "invalid NGINX_TRUSTED_PROXIES entry", result.stderr
+                        )
+                    else:
+                        config = (config_directory / "nginx.conf").read_text()
+                        self.assertIn("set_real_ip_from 192.0.2.10;", config)
+                        self.assertIn("set_real_ip_from 2001:db8::/32;", config)
+                        self.assertIn("real_ip_header X-Forwarded-For;", config)
+                        self.assertIn("real_ip_recursive on;", config)
+
     def test_nginx_development_headers_clear_hsts(self):
         repository_root = Path(__file__).resolve().parents[1]
         header_file = (
