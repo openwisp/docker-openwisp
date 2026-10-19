@@ -2,12 +2,12 @@ FROM python:3.14-slim-trixie AS system
 
 # System requirements:
 # 1. gettext: Required by envsubst used in scripts
-# 2. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0
+# 2. openwisp-radius/weasyprint: libcairo2 libpangocairo-1.0 libharfbuzz-subset0
 # 3. openwisp-monitoring: fping gdal-bin
 # hadolint ignore=DL3008
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
-    libcairo2 apt-utils libpangocairo-1.0-0 \
+    libcairo2 apt-utils libpangocairo-1.0-0 libharfbuzz-subset0 \
     gdal-bin gettext fping openssh-client && \
     rm -rf /var/lib/apt/lists/* /root/.cache/pip/* /tmp/*
 # hadolint ignore=DL3008, DL3009
