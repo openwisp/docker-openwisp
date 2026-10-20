@@ -2056,8 +2056,8 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
 
 
 class TestOpenVPN(unittest.TestCase):
-    def test_crl_refresh_detects_revocation_changes(self):
-        """Ensure CRL metadata updates do not trigger a revocation change."""
+    def test_crl_refresh_uses_last_modified(self):
+        """Ensure CRL downloads only follow a changed Last-Modified value."""
         script = Path(__file__).parent / "scripts" / "openvpn.sh"
         image = os.environ.get("OPENWISP_TEST_OPENVPN_IMAGE")
         name = f"openvpn-test-{os.getpid()}-{time.time_ns()}"
