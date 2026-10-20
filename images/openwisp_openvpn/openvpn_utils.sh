@@ -124,6 +124,7 @@ openvpn_config_download() {
 crl_download_to() {
 	local output_path="$1"
 	curl_download --silent --fail --retry 10 --retry-delay 5 --retry-max-time 300 \
+		--remote-time \
 		--output "$output_path" \
 		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl"
 	test -s "$output_path" || return 1
@@ -151,59 +152,29 @@ crl_download() {
 	}
 }
 
-crl_revocations() {
-	openssl crl -in "$1" -noout >/dev/null 2>&1 || return 1
-	openssl crl -in "$1" -noout -text 2>/dev/null | awk '
-		/^Revoked Certificates:$/ { revoked = 1; next }
-		revoked && /^    Signature Algorithm:/ { exit }
-		revoked { print }
-	'
-}
-
-# The five-minute cron caller restarts only for changed revocations and
-# preserves the current CRL on errors.
+# The five-minute cron caller checks the CRL's Last-Modified value with a HEAD
+# request before downloading and preserves the current CRL on errors.
 crl_download_if_changed() (
 	flock -n 9 || return 1
-	local tmp_crl
-	local tmp_new_revocations
-	local tmp_old_revocations
-	local crl_changed
-	tmp_crl=$(mktemp /tmp/revoked.crl.XXXXXX) || return 2
-	tmp_new_revocations=$(mktemp /tmp/revoked.revocations.XXXXXX) || {
-		rm -f "$tmp_crl"
-		return 2
-	}
-	tmp_old_revocations=$(mktemp /tmp/revoked.revocations.XXXXXX) || {
-		rm -f "$tmp_crl" "$tmp_new_revocations"
-		return 2
-	}
-	trap 'rm -f "$tmp_crl" "$tmp_new_revocations" "$tmp_old_revocations"' EXIT HUP INT TERM
-
-	if ! crl_download_to "$tmp_crl" ||
-		! crl_revocations "$tmp_crl" >"$tmp_new_revocations"; then
-		return 2
-	fi
+	local tmp_last_modified
+	local last_modified
 	if [ ! -f revoked.crl ]; then
-		mv "$tmp_crl" revoked.crl || return 2
-		trap - EXIT HUP INT TERM
-		rm -f "$tmp_new_revocations" "$tmp_old_revocations"
+		crl_download || return 2
 		return 0
 	fi
-	if ! crl_revocations revoked.crl >"$tmp_old_revocations"; then
-		return 2
+	tmp_last_modified=$(mktemp /tmp/revoked.crl.last-modified.XXXXXX) || return 2
+	trap 'rm -f "$tmp_last_modified"' EXIT HUP INT TERM
+	touch -d @0 "$tmp_last_modified" || return 2
+	last_modified=$(curl_download --silent --fail --head --remote-time \
+		--output "$tmp_last_modified" --write-out '%header{last-modified}' \
+		"${DASHBOARD_INTERNAL}/admin/pki/ca/x509/ca/${CA_UUID}.crl") || return 2
+	[ -n "$last_modified" ] || return 2
+	[ "$(stat -c %Y "$tmp_last_modified")" != 0 ] || return 2
+	if [ "$(stat -c %Y "$tmp_last_modified")" = "$(stat -c %Y revoked.crl)" ]; then
+		return 1
 	fi
-	cmp -s "$tmp_new_revocations" "$tmp_old_revocations"
-	crl_changed=$?
-	if [ "$crl_changed" -ne 0 ]; then
-		mv "$tmp_crl" revoked.crl || return 2
-		trap - EXIT HUP INT TERM
-		rm -f "$tmp_new_revocations" "$tmp_old_revocations"
-		return 0
-	fi
-	mv "$tmp_crl" revoked.crl || return 2
-	trap - EXIT HUP INT TERM
-	rm -f "$tmp_new_revocations" "$tmp_old_revocations"
-	return 1
+	crl_download || return 2
+	return 0
 ) 9>/revoked.crl.lock
 
 init_send_network_topology() {
