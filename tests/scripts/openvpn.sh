@@ -9,26 +9,53 @@ cleanup() {
 }
 
 curl() {
+	head=false
 	output_path=""
+	remote_time=false
 	while [ "$#" -gt 0 ]; do
 		case "$1" in
+		--head)
+			head=true
+			shift
+			;;
 		--output)
 			output_path="$2"
 			shift 2
+			;;
+		--remote-time)
+			remote_time=true
+			shift
 			;;
 		*)
 			shift
 			;;
 		esac
 	done
-	test -n "$output_path"
 	case "$CRL_TEST_MODE" in
+	changed | failed | empty | malformed) last_modified=200 ;;
+	*) last_modified=100 ;;
+	esac
+	if [ "$head" = true ]; then
+		test "$remote_time" = true
+		case "$CRL_TEST_MODE" in
+		no_last_modified) return ;;
+		invalid_last_modified)
+			printf '%s' 'invalid last-modified'
+			return
+			;;
+		esac
+		touch -d "@$last_modified" "$output_path"
+		printf '%s' "$last_modified"
+		return
+	fi
+	test -n "$output_path"
+	test "$remote_time" = true
+	case "$CRL_TEST_MODE" in
+	not_modified)
+		return 1
+		;;
 	initial)
 		printf '%s\n' 'Last Update: one' 'Next Update: two' \
-			'Revoked Certificates:' '    Serial Number: 01' >"$output_path"
-		;;
-	timestamp_only)
-		printf '%s\n' 'Last Update: three' 'Next Update: four' \
 			'Revoked Certificates:' '    Serial Number: 01' >"$output_path"
 		;;
 	changed)
@@ -51,6 +78,7 @@ curl() {
 			'Revoked Certificates:' '    Serial Number: 01' >"$output_path"
 		;;
 	esac
+	touch -d "@$last_modified" "$output_path"
 }
 
 openssl() {
@@ -80,6 +108,7 @@ run_case() {
 	rm -f revoked.crl
 	if [ -n "$initial_crl" ]; then
 		printf '%s\n' "$initial_crl" >revoked.crl
+		touch -d @100 revoked.crl
 	fi
 	CRL_TEST_MODE="$mode"
 	export CRL_TEST_MODE
@@ -103,21 +132,19 @@ initial_crl='Last Update: one
 Next Update: two
 Revoked Certificates:
     Serial Number: 01'
-timestamp_crl='Last Update: three
-Next Update: four
-Revoked Certificates:
-    Serial Number: 01'
 changed_crl='Last Update: five
 Next Update: six
 Revoked Certificates:
     Serial Number: 02'
 
 run_case initial 0 "$initial_crl"
-run_case timestamp_only 1 "$timestamp_crl" "$initial_crl"
+run_case not_modified 1 "$initial_crl" "$initial_crl"
 run_case changed 0 "$changed_crl" "$initial_crl"
 run_case failed 2 "$initial_crl" "$initial_crl"
 run_case empty 2 "$initial_crl" "$initial_crl"
 run_case malformed 2 "$initial_crl" "$initial_crl"
+run_case no_last_modified 2 "$initial_crl" "$initial_crl"
+run_case invalid_last_modified 2 "$initial_crl" "$initial_crl"
 
 rm -f revoked.crl .slow-download-started
 CRL_TEST_MODE=slow
