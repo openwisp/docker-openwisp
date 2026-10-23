@@ -33,13 +33,13 @@ RUN pip install --no-cache-dir --user --upgrade pip setuptools wheel
 ARG OPENWISP_MONITORING_SOURCE="openwisp-monitoring~=1.3.0"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_MONITORING_SOURCE}
-ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.3.0"
+ARG OPENWISP_FIRMWARE_SOURCE="openwisp-firmware-upgrader~=1.3.1"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_FIRMWARE_SOURCE}
-ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.3.0"
+ARG OPENWISP_TOPOLOGY_SOURCE="openwisp-network-topology~=1.3.1"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_TOPOLOGY_SOURCE}
-ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.3.0"
+ARG OPENWISP_RADIUS_SOURCE="openwisp-radius~=1.3.3"
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir --user --upgrade ${OPENWISP_RADIUS_SOURCE}
 
