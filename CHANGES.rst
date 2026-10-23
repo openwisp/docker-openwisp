@@ -1,6 +1,62 @@
 Changelog
 =========
 
+Version 26.9.2 [2026-10-23]
+---------------------------
+
+Changes
+~~~~~~~
+
+Other changes
++++++++++++++
+
+- Avoided unnecessary OpenVPN CRL downloads `#718
+  <https://github.com/openwisp/docker-openwisp/issues/718>`_
+
+  Use the CRL Last-Modified header introduced in django-x509 to avoid
+  downloading and parsing unchanged revocation lists.
+
+  [backport 26.09]
+
+Dependencies
+++++++++++++
+
+- Updated OpenWISP dependencies
+- Bump nginx in /images/openwisp_nginx
+
+  Bumps nginx from 1.31.5-alpine to 1.31.7-alpine.
+
+- Update django-celery-email-reboot requirement
+
+  Updates the requirements on `django-celery-email-reboot
+  <https://github.com/panevo/django-celery-email-reboot>`__ to permit the
+  latest version. - `Release notes
+  <https://github.com/panevo/django-celery-email-reboot/releases>`__ -
+  `Changelog
+  <https://github.com/panevo/django-celery-email-reboot/blob/master/CHANGELOGS.md>`__
+  - `Commits
+  <https://github.com/panevo/django-celery-email-reboot/compare/4.2.1...4.3.1>`__
+
+- Update boto3 requirement in /images/openwisp_base
+
+  Updates the requirements on `boto3 <https://github.com/boto/boto3>`__ to
+  permit the latest version. - `Release notes
+  <https://github.com/boto/boto3/releases>`__ - `Commits
+  <https://github.com/boto/boto3/compare/1.43.112...1.43.115>`__
+
+Bugfixes
+~~~~~~~~
+
+- Stopped trusting ``X-Forwarded-For`` for the client IP address
+
+  Removed the vulnerable ``NINGX_REAL_REMOTE_ADDR`` configuration and
+  added ``NGINX_TRUSTED_PROXIES`` to safely validate proxy IP addresses
+  before trusting the ``X-Forwarded-For`` header.
+
+  Advisory: **GHSA-hvmx-g7m2-vqx8**.
+
+  [backport 26.09]
+
 Version 26.09.1 [2026-09-29]
 ----------------------------
 
