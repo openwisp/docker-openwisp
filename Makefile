@@ -127,6 +127,7 @@ publish:
 	done
 
 release:
+	python build.py validate-version "$(RELEASE_VERSION)"
 	make publish TAG=latest OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_TESTS=true
 	make publish TAG=$(RELEASE_VERSION) OPENWISP_VERSION=$(RELEASE_VERSION) SKIP_BUILD=true SKIP_TESTS=true
 

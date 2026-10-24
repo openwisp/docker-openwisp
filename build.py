@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 VERSION_FILE = Path("images/common/openwisp/VERSION")
+VERSION_PATTERN = re.compile(r"\d{2}\.\d{2}\.\d+")
 
 
 def update_env_file(key, value):
@@ -35,9 +36,15 @@ def get_secret_key(allow_special_chars=True):
 
 
 def update_version_file(version: str):
+    validate_version(version)
     if not VERSION_FILE.exists():
         raise RuntimeError(f"{VERSION_FILE} not found; no changes written.")
     VERSION_FILE.write_text(f"{version}\n")
+
+
+def validate_version(version: str):
+    if not VERSION_PATTERN.fullmatch(version):
+        raise ValueError("version must use the YY.MM.PATCH format")
 
 
 if __name__ == "__main__":
@@ -61,3 +68,10 @@ if __name__ == "__main__":
             print("bump-version requires a version argument")
             sys.exit(1)
         update_version_file(new_version)
+    if "validate-version" in arguments:
+        try:
+            version = arguments[arguments.index("validate-version") + 1]
+        except IndexError:
+            print("validate-version requires a version argument")
+            sys.exit(1)
+        validate_version(version)

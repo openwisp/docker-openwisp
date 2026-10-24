@@ -1650,6 +1650,17 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 self.assertIn(makefile_content, makefile.read_text())
                 self.assertFalse((version_file.parent / "_version.py").exists())
 
+            with self.subTest(command="bump with invalid version"):
+                invalid_version = subprocess.run(
+                    ["make", "bump", "VERSION=26.1.0"],
+                    cwd=tmpdir,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(invalid_version.returncode, 0)
+                self.assertEqual(version_file.read_text(), "26.01.0\n")
+
             with self.subTest(command="bump without version"):
                 missing_argument = subprocess.run(
                     ["make", "bump"],
