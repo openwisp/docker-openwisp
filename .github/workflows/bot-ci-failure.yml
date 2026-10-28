@@ -1,24 +1,28 @@
 name: CI Failure Bot
 
 on:
-  workflow_run:
-    workflows: ["Merge Tests"]
+  workflow_run: # zizmor: ignore[dangerous-triggers] Privileged analysis follows failed PR CI and treats PR code and logs as data only.
+    workflows: ["CI Build (Docker-OpenWISP)"]
     types:
       - completed
 
-permissions:
-  pull-requests: read
-  actions: read
-  contents: read
+permissions: {}
 
 concurrency:
-  group: ci-failure-${{ github.repository }}-${{ github.event.workflow_run.pull_requests[0].number || format('{0}:{1}', github.event.workflow_run.head_repository.full_name, github.event.workflow_run.head_branch) }}
+  group: ci-failure-${{ github.repository }}-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 jobs:
   find-pr:
+    name: Find failed CI pull request
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.event == 'pull_request' }}
+    if: >
+      github.repository == 'openwisp/docker-openwisp' &&
+      github.event.workflow_run.name == 'CI Build (Docker-OpenWISP)' &&
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request'
+    permissions:
+      pull-requests: read # Locates the pull request associated with the failed workflow run.
     outputs:
       pr_number: ${{ steps.pr.outputs.number }}
       pr_author: ${{ steps.pr.outputs.author }}
@@ -30,6 +34,8 @@ jobs:
           REPO: ${{ github.repository }}
           PR_NUMBER_PAYLOAD: ${{ github.event.workflow_run.pull_requests[0].number }}
           EVENT_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          EVENT_HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+          EVENT_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           emit_pr() {
             local pr_number="$1"
@@ -47,20 +53,40 @@ jobs:
             emit_pr "$PR_NUMBER"
             exit 0
           fi
-          HEAD_SHA="$EVENT_HEAD_SHA"
-          echo "Payload empty. Searching for PR via Commits API..."
-          PR_NUMBER=$(gh api repos/$REPO/commits/$HEAD_SHA/pulls -q '.[0].number' 2>/dev/null || true)
-          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
-             echo "Found PR #$PR_NUMBER using Commits API."
-             emit_pr "$PR_NUMBER"
-             exit 0
+          find_match() {
+            local endpoint="$1" page response count match found=""
+            for page in {1..100}; do
+              response=$(gh api "$endpoint&per_page=100&page=$page") || return 1
+              count=$(jq 'length' <<< "$response")
+              match=$(jq -r --arg head_sha "$EVENT_HEAD_SHA" --arg head_repo "$EVENT_HEAD_REPOSITORY" --arg head_branch "$EVENT_HEAD_BRANCH" '
+                [.[] | select(.state == "open" and .head.sha == $head_sha and .head.repo.full_name == $head_repo and .head.ref == $head_branch) | .number] | .[]
+              ' <<< "$response")
+              if [ -n "$match" ]; then
+                if [ -n "$found" ] || [[ "$match" == *$'\n'* ]]; then
+                  return 1
+                fi
+                found="$match"
+              fi
+              if [ "$count" -lt 100 ]; then
+                printf '%s' "$found"
+                return 0
+              fi
+            done
+            echo "::warning::PR lookup exceeded 100 pages" >&2
+            return 1
+          }
+          PR_NUMBER=$(find_match "repos/$REPO/commits/$EVENT_HEAD_SHA/pulls?unused=1" 2>/dev/null || true)
+          if [ -z "$PR_NUMBER" ]; then
+            HEAD_OWNER="${EVENT_HEAD_REPOSITORY%%/*}"
+            if [ -n "$HEAD_OWNER" ] && [ -n "$EVENT_HEAD_BRANCH" ]; then
+              HEAD_FILTER=$(jq -rn --arg head "$HEAD_OWNER:$EVENT_HEAD_BRANCH" '$head | @uri')
+              PR_NUMBER=$(find_match "repos/$REPO/pulls?state=open&head=$HEAD_FILTER" 2>/dev/null || true)
+            fi
           fi
-          echo "API lookup failed/empty. Scanning open PRs for matching head SHA..."
-          PR_NUMBER=$(gh pr list --repo "$REPO" --state open --limit 100 --json number,headRefOid --jq ".[] | select(.headRefOid == \"$HEAD_SHA\") | .number" | head -n 1)
           if [ -n "$PR_NUMBER" ]; then
-             echo "Found PR #$PR_NUMBER by scanning open PRs."
-             emit_pr "$PR_NUMBER"
-             exit 0
+            echo "Found PR #$PR_NUMBER."
+            emit_pr "$PR_NUMBER"
+            exit 0
           fi
           echo "::warning::No open PR found. This workflow run might not be attached to an open PR."
           exit 0
@@ -69,16 +95,14 @@ jobs:
     needs: find-pr
     if: ${{ needs.find-pr.outputs.pr_number != '' }}
     permissions:
-      pull-requests: write
-      actions: write
       contents: read
-    uses: openwisp/openwisp-utils/.github/workflows/reusable-bot-ci-failure.yml@master
+    uses: openwisp/openwisp-actions/.github/workflows/reusable-bot-ci-failure.yml@61f8fad5c4f6b9b1cf47eb396c2e1c8392aed52f # 0.1.1
     with:
       pr_number: ${{ needs.find-pr.outputs.pr_number }}
       head_sha: ${{ github.event.workflow_run.head_sha }}
       head_repo: ${{ github.event.workflow_run.head_repository.full_name }}
       base_repo: ${{ github.repository }}
-      run_id: ${{ github.event.workflow_run.id }}
+      run_id: ${{ format('{0}', github.event.workflow_run.id) }}
       pr_author: ${{ needs.find-pr.outputs.pr_author }}
       actor: ${{ github.event.workflow_run.actor.login }}
     secrets:
