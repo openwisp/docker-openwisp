@@ -8,6 +8,8 @@ updates:
       - "/images/openwisp_nginx"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "[deps] "
   - package-ecosystem: "docker"
@@ -24,11 +26,15 @@ updates:
       - "/images/openwisp_websocket"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "[deps] "
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "[ci] "
