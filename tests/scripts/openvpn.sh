@@ -36,6 +36,8 @@ curl() {
 	*) last_modified=100 ;;
 	esac
 	if [ "$head" = true ]; then
+		# Record the request in a file so it remains visible outside the subshell.
+		: >.head-request
 		test "$remote_time" = true
 		case "$CRL_TEST_MODE" in
 		no_last_modified) return ;;
@@ -48,6 +50,8 @@ curl() {
 		printf '%s' "$last_modified"
 		return
 	fi
+	# Record the download separately to distinguish GET from HEAD requests.
+	: >.get-request
 	test -n "$output_path"
 	test "$remote_time" = true
 	case "$CRL_TEST_MODE" in
@@ -56,6 +60,10 @@ curl() {
 		;;
 	initial)
 		printf '%s\n' 'Last Update: one' 'Next Update: two' \
+			'Revoked Certificates:' '    Serial Number: 01' >"$output_path"
+		;;
+	refreshed)
+		printf '%s\n' 'Last Update: one' 'Next Update: later' \
 			'Revoked Certificates:' '    Serial Number: 01' >"$output_path"
 		;;
 	changed)
@@ -82,21 +90,39 @@ curl() {
 }
 
 openssl() {
-	if [ "$CRL_TEST_MODE" = malformed ]; then
-		return 1
-	fi
+	local input=""
+	local nextupdate=false
 	while [ "$#" -gt 0 ]; do
 		case "$1" in
 		-in)
-			cat "$2"
-			return
+			input="$2"
+			shift 2
+			;;
+		-nextupdate)
+			nextupdate=true
+			shift
 			;;
 		*)
 			shift
 			;;
 		esac
 	done
-	return 1
+	if [ "$nextupdate" = true ]; then
+		[ "$CRL_TEST_EXPIRY" != unreadable ] || return 1
+		[ "$CRL_TEST_EXPIRY" != missing ] || return 0
+		printf 'nextUpdate=%s\n' "$CRL_TEST_EXPIRY"
+		return
+	fi
+	[ "$CRL_TEST_MODE" != malformed ] || return 1
+	cat "$input"
+}
+
+date() {
+	if [ "$#" -eq 1 ] && [ "$1" = +%s ]; then
+		printf '%s\n' 1893553445
+	else
+		command date "$@"
+	fi
 }
 
 run_case() {
@@ -104,21 +130,38 @@ run_case() {
 	local expected_status="$2"
 	local expected_crl="$3"
 	local initial_crl="${4:-}"
+	local expiry="${5:-2030-01-02 03:04:06Z}"
+	local expected_requests="${6:-head-get}"
 	local status
-	rm -f revoked.crl
+	rm -f revoked.crl .head-request .get-request
 	if [ -n "$initial_crl" ]; then
 		printf '%s\n' "$initial_crl" >revoked.crl
 		touch -d @100 revoked.crl
 	fi
 	CRL_TEST_MODE="$mode"
-	export CRL_TEST_MODE
+	CRL_TEST_EXPIRY="$expiry"
+	export CRL_TEST_MODE CRL_TEST_EXPIRY
 	if crl_download_if_changed; then
 		status=0
 	else
 		status=$?
 	fi
-	test "$status" -eq "$expected_status"
-	printf '%s\n' "$expected_crl" | cmp -s - revoked.crl
+	[ "$status" -eq "$expected_status" ] || {
+		echo "$mode ($expiry): expected status $expected_status, got $status" >&2
+		return 1
+	}
+	printf '%s\n' "$expected_crl" | cmp -s - revoked.crl || {
+		echo "$mode ($expiry): unexpected CRL contents" >&2
+		return 1
+	}
+	case "$expected_requests" in
+	head-get) [ -f .head-request ] && [ -f .get-request ] ;;
+	head) [ -f .head-request ] && [ ! -f .get-request ] ;;
+	get) [ ! -f .head-request ] && [ -f .get-request ] ;;
+	esac || {
+		echo "$mode ($expiry): expected requests $expected_requests" >&2
+		return 1
+	}
 }
 
 # Use an isolated directory and remove it when the test completes.
@@ -136,15 +179,28 @@ changed_crl='Last Update: five
 Next Update: six
 Revoked Certificates:
     Serial Number: 02'
+refreshed_crl='Last Update: one
+Next Update: later
+Revoked Certificates:
+    Serial Number: 01'
 
-run_case initial 0 "$initial_crl"
-run_case not_modified 1 "$initial_crl" "$initial_crl"
+run_case initial 0 "$initial_crl" '' '' get
+run_case not_modified 1 "$initial_crl" "$initial_crl" '' head
 run_case changed 0 "$changed_crl" "$initial_crl"
 run_case failed 2 "$initial_crl" "$initial_crl"
 run_case empty 2 "$initial_crl" "$initial_crl"
 run_case malformed 2 "$initial_crl" "$initial_crl"
-run_case no_last_modified 2 "$initial_crl" "$initial_crl"
-run_case invalid_last_modified 2 "$initial_crl" "$initial_crl"
+run_case no_last_modified 2 "$initial_crl" "$initial_crl" '' head
+run_case invalid_last_modified 2 "$initial_crl" "$initial_crl" '' head
+run_case refreshed 0 "$refreshed_crl" "$initial_crl" '2030-01-02 03:04:04Z' get
+run_case refreshed 0 "$refreshed_crl" "$initial_crl" '2030-01-02 03:04:05Z' get
+run_case failed 2 "$initial_crl" "$initial_crl" '2030-01-02 03:04:04Z' get
+run_case empty 2 "$initial_crl" "$initial_crl" '2030-01-02 03:04:04Z' get
+run_case malformed 2 "$initial_crl" "$initial_crl" '2030-01-02 03:04:04Z' get
+run_case refreshed 0 "$refreshed_crl" "$initial_crl" unreadable get
+run_case failed 2 "$initial_crl" "$initial_crl" unreadable get
+run_case refreshed 0 "$refreshed_crl" "$initial_crl" missing get
+run_case refreshed 0 "$refreshed_crl" "$initial_crl" invalid get
 
 rm -f revoked.crl .slow-download-started
 CRL_TEST_MODE=slow
