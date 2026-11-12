@@ -152,13 +152,42 @@ crl_download() {
 	}
 }
 
-# The five-minute cron caller checks the CRL's Last-Modified value with a HEAD
-# request before downloading and preserves the current CRL on errors.
+crl_needs_refresh() {
+	local expiry
+	local now
+	expiry=$(openssl crl -in revoked.crl -noout -nextupdate -dateopt iso_8601 2>/dev/null) || expiry=""
+	case "$expiry" in
+	nextUpdate=*Z)
+		expiry=${expiry#nextUpdate=}
+		expiry=$(TZ=UTC date -u -d "${expiry%Z}" +%s 2>/dev/null) || expiry=""
+		;;
+	*) expiry="" ;;
+	esac
+	now=$(date +%s) || now=""
+	case "$expiry:$now" in
+	*[!0-9:]* | :* | *:) expiry="" ;;
+	esac
+	[ -z "$expiry" ] || [ "$expiry" -le "$now" ]
+}
+
+# Refresh the CRL:
+# - If the CRL is missing, expired, or its expiry cannot be read, download it.
+# - If the CRL is still valid, download it only if a HEAD request shows
+#   that the Last-Modified header has changed.
+#
+# Expired CRLs bypass the HEAD check because regenerating a CRL without new
+# revocations may leave Last-Modified unchanged.
+# If the download fails, preserve the existing CRL.
+#
+# Return codes:
+# - 0: CRL downloaded successfully; the caller restarts OpenVPN.
+# - 1: CRL unchanged or another refresh is already in progress.
+# - 2: Refresh failed; the caller reports an error.
 crl_download_if_changed() (
 	flock -n 9 || return 1
 	local tmp_last_modified
 	local last_modified
-	if [ ! -f revoked.crl ]; then
+	if [ ! -f revoked.crl ] || crl_needs_refresh; then
 		crl_download || return 2
 		return 0
 	fi
