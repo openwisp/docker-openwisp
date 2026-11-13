@@ -23,6 +23,7 @@ elif [ "$MODULE_NAME" = 'postfix' ]; then
 	rsyslogd -n
 elif [ "$MODULE_NAME" = 'freeradius' ]; then
 	wait_nginx_services
+	configure_freeradius_ipv6
 	if [ "$FREERADIUS_DEBUG_MODE" = 'True' ]; then
 		source docker-entrypoint.sh -X
 	else
@@ -54,6 +55,7 @@ elif [ "$MODULE_NAME" = 'nginx' ]; then
 	if [ "$NGINX_CUSTOM_FILE" = 'True' ]; then
 		exec nginx -g 'daemon off;'
 	fi
+	configure_nginx_ipv6
 	# Expand escape sequences in the optional events block so it can be injected
 	# correctly into the nginx configuration template.
 	NGINX_EVENTS_BLOCK=$(printf "%b" "${NGINX_EVENTS_BLOCK:-}")

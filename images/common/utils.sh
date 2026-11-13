@@ -5,6 +5,26 @@ init_conf() {
 	default_psql_vars
 }
 
+configure_nginx_ipv6() {
+	if [ "${INGRESS_IPV6_ENABLED:-false}" = true ]; then
+		NGINX_IP6_80_STRING=${NGINX_IP6_80_STRING-'listen [::]:80;'}
+		NGINX_IP6_STRING=${NGINX_IP6_STRING-"listen [::]:443 ssl ${NGINX_HTTP2-http2};"}
+	else
+		NGINX_IP6_80_STRING=${NGINX_IP6_80_STRING-}
+		NGINX_IP6_STRING=${NGINX_IP6_STRING-}
+	fi
+	export NGINX_IP6_80_STRING NGINX_IP6_STRING
+}
+
+configure_freeradius_ipv6() {
+	if [ "${INGRESS_IPV6_ENABLED:-false}" = true ]; then
+		cp /etc/raddb/ipv6-listeners.template /etc/raddb/ipv6-listeners.conf
+	else
+		# Keep the included file present but remove any IPv6 listeners.
+		: >/etc/raddb/ipv6-listeners.conf
+	fi
+}
+
 is_dev_mode() {
 	# DEV_MODE treats case-insensitive "true" and "yes" values as enabled.
 	case "${DEV_MODE:-False}" in

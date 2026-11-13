@@ -223,6 +223,11 @@ setup_docker_openwisp() {
 }
 
 upgrade_docker_openwisp() {
+	local compose_version
+	if ! compose_version=$(docker compose version --short 2>>"$LOG_FILE") ||
+		! dpkg --compare-versions "${compose_version#v}" ge 2.33.1; then
+		error_msg "Docker Compose 2.33.1 or later is required. Upgrade the Docker Compose plugin and retry."
+	fi
 	echo -e ${GRN}"\nOpenWISP Configuration:"${NON}
 	get_version_from_user
 	echo ""
