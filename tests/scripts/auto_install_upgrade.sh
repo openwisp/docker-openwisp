@@ -8,7 +8,11 @@ ENV_BACKUP="$TEST_ENV_BACKUP"
 LOG_FILE="$TEST_LOG_FILE"
 
 get_version_from_user() { openwisp_version=edge; }
-download_docker_openwisp() { :; }
+docker() {
+	printf '%s\n' "${TEST_COMPOSE_VERSION-2.33.1}"
+	return "${TEST_COMPOSE_STATUS:-0}"
+}
+download_docker_openwisp() { touch "$INSTALL_PATH/downloaded"; }
 check_status() { :; }
 start_step() { :; }
 report_ok() { :; }
