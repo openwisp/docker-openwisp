@@ -180,6 +180,9 @@ def create_default_vpn(ca=None, cert=None):
             # The config field is auto-generated on full_clean().
             template.full_clean()
             if template.config.get("openvpn"):
+                # Keep client address selection independent of the IPv6 listener.
+                if template.config["openvpn"][0]["proto"] == "udp6":
+                    template.config["openvpn"][0]["proto"] = "udp"
                 template.config["openvpn"][0]["log"] = "/var/log/tun0.log"
             # Verify that the config is still valid.
             template.full_clean()
