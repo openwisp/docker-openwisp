@@ -130,6 +130,14 @@ try:
     assert (
         selected_vpn.backend == "openwisp_controller.vpn_backends.OpenVpn"
     ), "Created VPN does not use the OpenVPN backend"
+    selected_vpn.refresh_from_db()
+    assert (
+        selected_vpn.config["openvpn"][0]["proto"] == "udp6"
+    ), "Default VPN server must retain its IPv6 listener"
+    created_template = Template.objects.get(vpn=selected_vpn, default=True)
+    assert (
+        created_template.config["openvpn"][0]["proto"] == "udp"
+    ), "Default VPN clients must support both IPv4 and IPv6 endpoints"
     created_vpn.delete()
     created_vpn = None
     Vpn.objects.filter(pk=default_vpn.pk).update(backend=default_vpn_backend)
