@@ -1,0 +1,11 @@
+listen {
+    type = auth
+    ipv6addr = ::
+    port = 1812
+}
+
+listen {
+    type = acct
+    ipv6addr = ::
+    port = 1813
+}

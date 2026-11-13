@@ -1196,6 +1196,177 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
+    def test_compose_ingress_network_is_ipv4_by_default(self):
+        environment = os.environ.copy()
+        environment.pop("INGRESS_IPV6_ENABLED", None)
+        result = subprocess.run(
+            ["docker", "compose", "config", "--format", "json"],
+            cwd=self.root_location,
+            capture_output=True,
+            text=True,
+            check=False,
+            env=environment,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        config = json.loads(result.stdout)
+        self.assertEqual(config["networks"]["ingress"]["enable_ipv6"], False)
+        self.assertEqual(
+            config["networks"]["default"]["ipam"]["config"][0]["subnet"],
+            "172.18.0.0/16",
+        )
+        services = config["services"]
+        ingress_networks = {"default": {}, "ingress": {"gw_priority": 1}}
+        self.assertEqual(services["openvpn"]["networks"], ingress_networks)
+        self.assertEqual(services["freeradius"]["networks"], ingress_networks)
+        self.assertEqual(services["nginx"]["networks"]["ingress"], {"gw_priority": 1})
+        self.assertEqual(set(services["nginx"]["networks"]), {"default", "ingress"})
+        self.assertEqual(services["dashboard"]["networks"], {"default": None})
+        self.assertEqual(services["api"]["networks"], {"default": None})
+        self.assertEqual(
+            services["nginx"]["environment"]["INGRESS_IPV6_ENABLED"], "false"
+        )
+        self.assertEqual(
+            services["freeradius"]["environment"]["INGRESS_IPV6_ENABLED"], "false"
+        )
+        self.assertEqual(
+            set(config["services"]["nginx"]["networks"]["default"]["aliases"]),
+            {"dashboard.internal", "api.internal"},
+        )
+
+    def test_compose_ingress_ipv6_can_be_enabled(self):
+        environment = os.environ.copy()
+        environment["INGRESS_IPV6_ENABLED"] = "true"
+        result = subprocess.run(
+            ["docker", "compose", "config", "--format", "json"],
+            cwd=self.root_location,
+            capture_output=True,
+            text=True,
+            check=False,
+            env=environment,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        config = json.loads(result.stdout)
+        self.assertEqual(config["networks"]["ingress"]["enable_ipv6"], True)
+        self.assertEqual(
+            config["services"]["nginx"]["environment"]["INGRESS_IPV6_ENABLED"],
+            "true",
+        )
+        self.assertEqual(
+            config["services"]["freeradius"]["environment"]["INGRESS_IPV6_ENABLED"],
+            "true",
+        )
+
+    def test_nginx_ipv6_listeners_follow_ingress_setting(self):
+        utils = Path(self.root_location) / "images" / "common" / "utils.sh"
+        command = (
+            f'. "{utils}"; configure_nginx_ipv6; '
+            'printf "%s\\n%s\\n" "$NGINX_IP6_80_STRING" "$NGINX_IP6_STRING"'
+        )
+        environment = os.environ.copy()
+        environment.pop("NGINX_IP6_STRING", None)
+        environment.pop("NGINX_IP6_80_STRING", None)
+        environment.pop("INGRESS_IPV6_ENABLED", None)
+        environment.pop("NGINX_HTTP2", None)
+        result = subprocess.run(
+            ["bash", "-c", command], capture_output=True, text=True, env=environment
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "\n\n")
+        environment["INGRESS_IPV6_ENABLED"] = "true"
+        result = subprocess.run(
+            ["bash", "-c", command], capture_output=True, text=True, env=environment
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "listen [::]:80;\nlisten [::]:443 ssl http2;\n")
+        environment["INGRESS_IPV6_ENABLED"] = "false"
+        result = subprocess.run(
+            ["bash", "-c", command], capture_output=True, text=True, env=environment
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "\n\n")
+        environment["INGRESS_IPV6_ENABLED"] = "true"
+        environment["NGINX_IP6_STRING"] = ""
+        result = subprocess.run(
+            ["bash", "-c", command], capture_output=True, text=True, env=environment
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "listen [::]:80;\n\n")
+        environment["NGINX_IP6_80_STRING"] = ""
+        result = subprocess.run(
+            ["bash", "-c", command], capture_output=True, text=True, env=environment
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "\n\n")
+        environment["NGINX_IP6_STRING"] = "listen [::]:8443 ssl;"
+        environment["NGINX_IP6_80_STRING"] = "listen [::]:8080;"
+        environment["INGRESS_IPV6_ENABLED"] = "false"
+        result = subprocess.run(
+            ["bash", "-c", command], capture_output=True, text=True, env=environment
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "listen [::]:8080;\nlisten [::]:8443 ssl;\n")
+        environment.pop("NGINX_IP6_STRING")
+        environment.pop("NGINX_IP6_80_STRING")
+        environment["INGRESS_IPV6_ENABLED"] = "true"
+        environment["NGINX_HTTP2"] = ""
+        result = subprocess.run(
+            ["bash", "-c", command], capture_output=True, text=True, env=environment
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "listen [::]:80;\nlisten [::]:443 ssl ;\n")
+
+    def test_freeradius_ipv6_listener_configuration(self):
+        image = os.environ.get(
+            "OPENWISP_TEST_FREERADIUS_IMAGE", "openwisp/openwisp-freeradius:edge"
+        )
+        script = Path(self.root_location) / "tests" / "scripts" / "freeradius_ipv6.sh"
+        enabled = subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--network",
+                "none",
+                "--entrypoint",
+                "sh",
+                "--volume",
+                f"{script}:/test_freeradius_ipv6.sh:ro",
+                "-e",
+                "INGRESS_IPV6_ENABLED=true",
+                image,
+                "/test_freeradius_ipv6.sh",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        self.assertEqual(enabled.returncode, 0, enabled.stdout + enabled.stderr)
+        self.assertIn("type = auth", enabled.stdout)
+        self.assertIn("type = acct", enabled.stdout)
+        self.assertIn("ipv6addr = ::", enabled.stdout)
+        disabled = subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--network",
+                "none",
+                "--entrypoint",
+                "sh",
+                "--volume",
+                f"{script}:/test_freeradius_ipv6.sh:ro",
+                image,
+                "/test_freeradius_ipv6.sh",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        self.assertEqual(disabled.returncode, 0, disabled.stdout + disabled.stderr)
+        self.assertEqual(disabled.stdout, "")
+
     def test_celery_supervisor_config_preserves_enabled_workers(self):
         supervisor_config = (
             Path(self.root_location) / "images" / "common" / "celery_supervisord.conf"
@@ -1379,6 +1550,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             )
             (tmpdir / "utils.sh").write_text(
                 "init_conf() { :; }\nwait_nginx_services() { :; }\n"
+                "configure_freeradius_ipv6() { :; }\n"
             )
             (tmpdir / "docker-entrypoint.sh").write_text('printf "%s" "$*"\n')
             environment = os.environ.copy()
@@ -1424,6 +1596,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             )
             (tmpdir / "utils.sh").write_text(
                 "init_conf() { :; }\nenvsubst_create_config() { :; }\n"
+                "configure_nginx_ipv6() { :; }\n"
             )
             (tmpdir / "envsubst").write_text(
                 "#!/usr/bin/env python3\n"
