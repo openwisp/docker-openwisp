@@ -134,6 +134,8 @@ services:
       dockerfile: openwisp_nginx/Dockerfile
     env_file:
       - .env
+    environment:
+      INGRESS_IPV6_ENABLED: ${INGRESS_IPV6_ENABLED:-false}
     volumes:
       - openwisp_static:/opt/openwisp/public/static:ro
       - openwisp_media:/opt/openwisp/public/media:ro
@@ -145,6 +147,8 @@ services:
         aliases:
           - dashboard.internal
           - api.internal
+      ingress:
+        gw_priority: 1
     ports:
       - "${NGINX_PORT:-80}:80"
       - "${NGINX_SSL_PORT:-443}:443"
@@ -161,6 +165,12 @@ services:
       dockerfile: openwisp_freeradius/Dockerfile
     env_file:
       - .env
+    environment:
+      INGRESS_IPV6_ENABLED: ${INGRESS_IPV6_ENABLED:-false}
+    networks:
+      default: {}
+      ingress:
+        gw_priority: 1
     ports:
       - "1812:1812/udp"
       - "1813:1813/udp"
@@ -190,6 +200,10 @@ services:
       - "1194:1194/udp"
     env_file:
       - .env
+    networks:
+      default: {}
+      ingress:
+        gw_priority: 1
     depends_on:
       - postgres
     cap_add:
@@ -241,6 +255,8 @@ volumes:
   openwisp_private_storage: {}
 
 networks:
+  ingress:
+    enable_ipv6: ${INGRESS_IPV6_ENABLED:-false}
   default:
     ipam:
       config:

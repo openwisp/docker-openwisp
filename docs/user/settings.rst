@@ -38,6 +38,24 @@ Essential
 You will need to adapt these values to get the docker images working
 properly on your system.
 
+``INGRESS_IPV6_ENABLED``
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** Enables IPv6 on the shared ingress network and the
+  default Nginx and FreeRADIUS IPv6 listeners.
+- **Valid Values:** ``true``, ``false``.
+- **Default:** ``false``.
+
+Docker allocates the IPv6 subnet automatically from its configured address
+pool, or from a generated Unique Local Address (ULA) pool. Clients connect
+to the host's public IPv6 address, not the container's ULA address. The
+host must have IPv6 connectivity and allow the relevant published ports.
+
+When ``NGINX_CUSTOM_FILE=True``, configure IPv6 listeners in your custom
+Nginx configuration instead. Explicit values for ``NGINX_IP6_STRING`` and
+``NGINX_IP6_80_STRING`` take precedence over the generated defaults,
+including empty values that disable the corresponding listeners.
+
 .. _openwisp_version:
 
 ``OPENWISP_VERSION``
@@ -874,7 +892,8 @@ Nginx
 - **Explanation:** Nginx listen on IPv6 for SSL connection. You can either
   enter a valid nginx statement or leave this value empty.
 - **Valid Values:** ``listen [::]:443 ssl http2;`` or empty string.
-- **Default:** ``""`` (empty string).
+- **Default:** ``listen [::]:443 ssl http2;`` when ingress IPv6 is
+  enabled, otherwise ``""``. The HTTP/2 option follows ``NGINX_HTTP2``.
 
 ``NGINX_IP6_80_STRING``
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -882,7 +901,12 @@ Nginx
 - **Explanation:** Nginx listen on IPv6 connection. You can either enter a
   valid nginx statement or leave this value empty.
 - **Valid Values:** ``listen [::]:80;`` or empty string.
-- **Default:** ``""`` (empty string).
+- **Default:** ``listen [::]:80;`` when ingress IPv6 is enabled, otherwise
+  ``""``.
+
+For both Nginx IPv6 listener settings, explicitly setting an empty value
+disables that listener even when ``INGRESS_IPV6_ENABLED=true``. Nonempty
+values are preserved regardless of ``INGRESS_IPV6_ENABLED``.
 
 ``NGINX_ADMIN_ALLOW_NETWORK``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

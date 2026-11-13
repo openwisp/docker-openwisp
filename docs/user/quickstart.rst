@@ -119,6 +119,12 @@ Using Docker Compose
 This setup is suitable for single-server setup requirements. It is quicker
 and requires less prior knowledge about OpenWISP & networking.
 
+The Compose deployment requires Docker Engine 28 or later and Docker
+Compose 2.33.1 or later. To enable IPv6 on the ingress network, set
+``INGRESS_IPV6_ENABLED=true`` in ``.env`` before starting the deployment.
+Public IPv6 access also requires a host IPv6 address and firewall rules
+for the published ports. Hostname-based access requires DNS AAAA records.
+
 1. Install requirements:
 
    .. code-block:: bash
