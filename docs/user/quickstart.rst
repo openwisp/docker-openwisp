@@ -105,6 +105,10 @@ To upgrade an installation in a custom directory, pass its path to the
 
     sudo bash auto-install.sh --upgrade /srv/openwisp
 
+The upgrade requires Docker Compose 2.33.1 or later. If Compose is missing
+or older, the script stops before replacing the existing installation.
+Upgrade the Docker Compose plugin, then run the upgrade command again.
+
 .. note::
 
     - If you're having any installation issues with the ``latest``

@@ -1199,14 +1199,23 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     def test_compose_ingress_network_is_ipv4_by_default(self):
         environment = os.environ.copy()
         environment.pop("INGRESS_IPV6_ENABLED", None)
-        result = subprocess.run(
-            ["docker", "compose", "config", "--format", "json"],
-            cwd=self.root_location,
-            capture_output=True,
-            text=True,
-            check=False,
-            env=environment,
-        )
+        with tempfile.NamedTemporaryFile() as env_file:
+            result = subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--env-file",
+                    env_file.name,
+                    "config",
+                    "--format",
+                    "json",
+                ],
+                cwd=self.root_location,
+                capture_output=True,
+                text=True,
+                check=False,
+                env=environment,
+            )
         self.assertEqual(result.returncode, 0, result.stderr)
         config = json.loads(result.stdout)
         self.assertEqual(config["networks"]["ingress"]["enable_ipv6"], False)
@@ -1236,14 +1245,23 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     def test_compose_ingress_ipv6_can_be_enabled(self):
         environment = os.environ.copy()
         environment["INGRESS_IPV6_ENABLED"] = "true"
-        result = subprocess.run(
-            ["docker", "compose", "config", "--format", "json"],
-            cwd=self.root_location,
-            capture_output=True,
-            text=True,
-            check=False,
-            env=environment,
-        )
+        with tempfile.NamedTemporaryFile() as env_file:
+            result = subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--env-file",
+                    env_file.name,
+                    "config",
+                    "--format",
+                    "json",
+                ],
+                cwd=self.root_location,
+                capture_output=True,
+                text=True,
+                check=False,
+                env=environment,
+            )
         self.assertEqual(result.returncode, 0, result.stderr)
         config = json.loads(result.stdout)
         self.assertEqual(config["networks"]["ingress"]["enable_ipv6"], True)
@@ -2070,6 +2088,72 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected)
+
+    def test_auto_install_upgrade_checks_compose_before_download(self):
+        script = Path(self.root_location) / "tests/scripts/auto_install_upgrade.sh"
+        auto_install_script = Path(self.root_location) / "deploy/auto-install.sh"
+
+        def run_upgrade(compose_version, expected_status, compose_status=0):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir = Path(tmpdir)
+                install_path = tmpdir / "install"
+                install_path.mkdir()
+                environment_file = install_path / ".env"
+                environment_file.write_text("DEV_MODE=True\n")
+                backup_file = tmpdir / "backup.env"
+                backup_file.write_text("DASHBOARD_DOMAIN=dashboard.example.com\n")
+                environment = os.environ.copy()
+                environment.update(
+                    {
+                        "AUTO_INSTALL_SCRIPT": str(auto_install_script),
+                        "TEST_ENV_BACKUP": str(backup_file),
+                        "TEST_INSTALL_PATH": str(install_path),
+                        "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
+                        "TEST_COMPOSE_VERSION": compose_version,
+                        "TEST_COMPOSE_STATUS": str(compose_status),
+                    }
+                )
+                result = subprocess.run(
+                    ["bash", str(script)],
+                    cwd=self.root_location,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(
+                    result.returncode, expected_status, result.stdout + result.stderr
+                )
+                if expected_status:
+                    self.assertIn(
+                        "Docker Compose 2.33.1 or later is required. "
+                        "Upgrade the Docker Compose plugin and retry.",
+                        result.stdout,
+                    )
+                    self.assertEqual(
+                        (install_path / "downloaded").exists(),
+                        False,
+                        "An unsupported Compose version must not replace the checkout.",
+                    )
+                    self.assertEqual(environment_file.read_text(), "DEV_MODE=True\n")
+                    self.assertEqual(
+                        backup_file.read_text(),
+                        "DASHBOARD_DOMAIN=dashboard.example.com\n",
+                    )
+                else:
+                    self.assertEqual((install_path / "downloaded").exists(), True)
+
+        with self.subTest("Compose below the minimum preserves the installation"):
+            run_upgrade(compose_version="2.33.0", expected_status=1)
+
+        with self.subTest("Compose at the minimum permits the upgrade"):
+            run_upgrade(compose_version="2.33.1", expected_status=0)
+
+        with self.subTest("Newer Compose permits the upgrade"):
+            run_upgrade(compose_version="2.34.0", expected_status=0)
+
+        with self.subTest("Missing Compose preserves the installation"):
+            run_upgrade(compose_version="", expected_status=1, compose_status=1)
 
     def test_auto_install_upgrade_ignores_commented_settings(self):
         script = (
