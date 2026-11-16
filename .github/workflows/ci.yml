@@ -52,7 +52,11 @@ jobs:
         if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
         run: |
           printf "edge\n./.env\n" | sudo -E ./deploy/auto-install.sh \
-              || (docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs && exit 1)
+              || {
+                sudo cat /opt/openwisp/autoinstall.log || true
+                docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
+                exit 1
+              }
 
       - name: Build Images
         id: build_images
@@ -85,7 +89,11 @@ jobs:
         run: |
           printf "edge\n" | \
             GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
-            || (cat /opt/openwisp/autoinstall.log && exit 1)
+            || {
+              sudo cat /opt/openwisp/autoinstall.log || true
+              docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
+              exit 1
+            }
 
       - name: Enable development profile for tests
         id: enable_development_profile
