@@ -7,6 +7,7 @@ from time import sleep
 import docker
 from openwisp_utils.tests import SeleniumTestMixin
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class BaseTestUtils:
@@ -158,7 +159,17 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
         # Scroll to the top of the page. This will ensure that the save
         # button is visible and clickable.
         driver.execute_script("window.scrollTo(0, 0);")
-        self.find_element(By.NAME, "_save", driver=driver).click()
+        self._click_and_wait(
+            self.find_element(By.NAME, "_save", driver=driver), driver=driver
+        )
+
+    def _click_and_wait(self, element, driver=None):
+        driver = driver or self.base_driver
+        document = driver.find_element(By.TAG_NAME, "html")
+        element.click()
+        # readyState can still describe the old document immediately after a click.
+        self.wait_until(EC.staleness_of(document), timeout=10, driver=driver)
+        self._wait_until_page_ready(driver=driver)
 
     def create_superuser(
         self,
