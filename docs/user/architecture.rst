@@ -42,3 +42,8 @@ repository.
   server, but openwisp-api & openwisp-dashboard use it as a base.
 - **Redis**: data caching service (required for actions like login).
 - **PostgreSQL**: SQL database container for OpenWISP.
+
+The Compose deployment connects Nginx, OpenVPN and FreeRADIUS to a shared
+ingress network as well as the IPv4 backend network. The ingress network
+supports IPv6 when enabled. Published ports use the ingress network, while
+the other services remain on the backend network.
