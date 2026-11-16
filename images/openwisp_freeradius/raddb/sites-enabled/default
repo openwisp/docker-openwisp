@@ -1,4 +1,5 @@
 server default {
+    $INCLUDE ${confdir}/ipv6-listeners.conf
     listen {
         type = auth
         ipaddr = *
