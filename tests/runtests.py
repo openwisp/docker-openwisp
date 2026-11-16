@@ -874,8 +874,9 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
         self.assertEqual(logout_title.text, "Logged out", "Logout failed.")
         self.open(self.reverse_url("account_reset_password"))
         self.find_element(By.NAME, "email").send_keys("admin@example.com")
-        self.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
-        self._wait_until_page_ready()
+        self._click_and_wait(
+            self.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
+        )
         self.assertIn(
             "We have sent you an email. If you have not received "
             "it please check your spam folder. Otherwise contact us "

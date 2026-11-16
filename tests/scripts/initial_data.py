@@ -1,5 +1,6 @@
 import os
 from copy import deepcopy
+from uuid import UUID
 
 import load_init_data
 import redis
@@ -143,7 +144,9 @@ try:
     Vpn.objects.filter(pk=default_vpn.pk).update(backend=default_vpn_backend)
     client.set("openwisp_default_vpn_uuid", str(default_vpn.pk))
 
+    # The missing-selector fallback uses UUID order, so the decoy must sort last.
     decoy_vpn = Vpn(
+        id=UUID("ffffffff-ffff-ffff-ffff-ffffffffffff"),
         name=marker,
         ca=default_vpn.ca,
         cert=default_vpn.cert,
