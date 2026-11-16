@@ -1,0 +1,21 @@
+#!/bin/bash
+# Run the upgrade path with external operations disabled for testing.
+
+source <(sed '/^## Init script$/,$d' "$AUTO_INSTALL_SCRIPT")
+
+INSTALL_PATH="$TEST_INSTALL_PATH"
+ENV_BACKUP="$TEST_ENV_BACKUP"
+LOG_FILE="$TEST_LOG_FILE"
+
+get_version_from_user() { openwisp_version=edge; }
+docker() {
+	printf '%s\n' "${TEST_COMPOSE_VERSION-2.33.1}"
+	return "${TEST_COMPOSE_STATUS:-0}"
+}
+download_docker_openwisp() { touch "$INSTALL_PATH/downloaded"; }
+check_status() { :; }
+start_step() { :; }
+report_ok() { :; }
+make() { :; }
+
+upgrade_docker_openwisp
