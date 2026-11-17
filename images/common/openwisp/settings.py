@@ -460,9 +460,11 @@ if env_bool(os.environ["USE_OPENWISP_RADIUS"]):
         ),
         "REGISTER_SERIALIZER": "openwisp_radius.api.serializers.RegisterSerializer",
     }
-    OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ[
-        "OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS"
-    ].split(",")
+    # Follow the backend subnet unless an operator supplies a separate allowlist.
+    OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ.get(
+        "OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS",
+        os.environ.get("DEFAULT_NETWORK_SUBNET") or "172.18.0.0/16",
+    ).split(",")
 elif "openwisp_radius" in INSTALLED_APPS:
     INSTALLED_APPS.remove("openwisp_radius")
 
