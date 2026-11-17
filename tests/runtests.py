@@ -2176,7 +2176,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 self.assertEqual(result.stdout, expected)
 
     def test_auto_install_upgrade_checks_compose_before_download(self):
-        script = Path(self.root_location) / "tests/scripts/auto_install_upgrade.sh"
+        script = Path(self.root_location) / "tests/scripts/auto_install.sh"
         auto_install_script = Path(self.root_location) / "deploy/auto-install.sh"
 
         def run_upgrade(compose_version, expected_status, compose_status=0):
@@ -2242,7 +2242,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             run_upgrade(compose_version="", expected_status=1, compose_status=1)
 
     def test_auto_install_upgrade_pulls_before_recreating_networks(self):
-        script = Path(self.root_location) / "tests/scripts/auto_install_upgrade.sh"
+        script = Path(self.root_location) / "tests/scripts/auto_install.sh"
         auto_install_script = Path(self.root_location) / "deploy/auto-install.sh"
 
         def run_upgrade(
@@ -2352,9 +2352,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             )
 
     def test_auto_install_upgrade_ignores_commented_settings(self):
-        script = (
-            Path(self.root_location) / "tests" / "scripts" / "auto_install_upgrade.sh"
-        )
+        script = Path(self.root_location) / "tests" / "scripts" / "auto_install.sh"
         auto_install_script = Path(self.root_location) / "deploy" / "auto-install.sh"
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir = Path(tmpdir)
@@ -2411,6 +2409,140 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     self.assertNotIn("\nNOT_AN_ASSIGNMENT=", content)
                     self.assertNotIn("\nexport IMAGE_REGISTRY=", content)
                     self.assertNotIn("\n#=", content)
+
+    def test_auto_install_uses_selected_version(self):
+        """Preserve supplied settings but use the selected image tag at startup."""
+        script = Path(self.root_location) / "tests/scripts/auto_install.sh"
+        auto_install_script = Path(self.root_location) / "deploy/auto-install.sh"
+        settings = {
+            "OPENWISP_VERSION": "26.09.2",
+            "DEV_MODE": "True",
+            "DASHBOARD_DOMAIN": "dashboard.example.com",
+            "DB_USER": "existing_user",
+            "DB_PASS": "existing_password",
+            "DJANGO_SECRET_KEY": "existing_secret",
+        }
+        supplied_content = "".join(
+            f"{key}={value}\n" for key, value in settings.items()
+        )
+        expected_edge = "".join(
+            f"{key}={value}\n"
+            for key, value in {
+                **settings,
+                "OPENWISP_VERSION": "edge",
+                "DEV_MODE": "False",
+            }.items()
+        )
+        expected_release = expected_edge.replace(
+            "OPENWISP_VERSION=edge\n", "OPENWISP_VERSION=26.09.3\n"
+        )
+
+        def run_installer(*, action, version, content, expected):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir = Path(tmpdir)
+                install_path = tmpdir / "install"
+                install_path.mkdir()
+                (install_path / ".env").write_text(
+                    "OPENWISP_VERSION=edge\nDEV_MODE=True\n"
+                )
+                supplied_file = tmpdir / "supplied.env"
+                supplied_file.write_text(content)
+                environment = os.environ.copy()
+                environment.update(
+                    {
+                        "AUTO_INSTALL_SCRIPT": str(auto_install_script),
+                        "TEST_ENV_BACKUP": str(supplied_file),
+                        "TEST_INSTALL_PATH": str(install_path),
+                        "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
+                        "TEST_ACTION": action,
+                        "TEST_OPENWISP_VERSION": version,
+                    }
+                )
+                result = subprocess.run(
+                    ["bash", str(script)],
+                    cwd=self.root_location,
+                    input=f"{supplied_file}\n",
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn("OpenWISP Configuration:", result.stdout)
+                self.assertEqual((install_path / ".env").read_text(), expected)
+                self.assertEqual((install_path / "started.env").read_text(), expected)
+
+        with self.subTest("Install selects edge over the supplied version"):
+            run_installer(
+                action="install",
+                version="edge",
+                content=supplied_content,
+                expected=expected_edge,
+            )
+
+        with self.subTest("Install selects a release over the supplied version"):
+            run_installer(
+                action="install",
+                version="26.09.3",
+                content=supplied_content,
+                expected=expected_release,
+            )
+
+        with self.subTest("Upgrade selects edge over the backed-up version"):
+            run_installer(
+                action="upgrade",
+                version="edge",
+                content=supplied_content,
+                expected=expected_edge,
+            )
+
+        with self.subTest("Upgrade selects a release over the backed-up version"):
+            run_installer(
+                action="upgrade",
+                version="26.09.3",
+                content=supplied_content,
+                expected=expected_release,
+            )
+
+        with self.subTest("Missing version and final newline preserve the password"):
+            run_installer(
+                action="install",
+                version="edge",
+                content="DEV_MODE=True\nDB_PASS=existing_password",
+                expected=(
+                    "DEV_MODE=False\nDB_PASS=existing_password\nOPENWISP_VERSION=edge\n"
+                ),
+            )
+
+        with self.subTest("Existing final newline does not gain a blank line"):
+            run_installer(
+                action="install",
+                version="edge",
+                content="DEV_MODE=True\nDB_PASS=existing_password\n",
+                expected=(
+                    "DEV_MODE=False\nDB_PASS=existing_password\nOPENWISP_VERSION=edge\n"
+                ),
+            )
+
+        with self.subTest("Existing version is replaced without changing the password"):
+            run_installer(
+                action="install",
+                version="edge",
+                content=(
+                    "OPENWISP_VERSION=26.09.2\nDEV_MODE=True\nDB_PASS=existing_password"
+                ),
+                expected=(
+                    "OPENWISP_VERSION=edge\nDEV_MODE=False\nDB_PASS=existing_password\n"
+                ),
+            )
+
+        with self.subTest("Empty configuration does not gain a leading blank line"):
+            run_installer(
+                action="install",
+                version="edge",
+                content="",
+                expected="OPENWISP_VERSION=edge\nDEV_MODE=False\n",
+            )
 
     def test_nginx_source_verification_tracks_version(self):
         """Ensure Dependabot Nginx bumps retain source authentication."""

@@ -81,9 +81,10 @@ the networks. This interrupts services but preserves named volumes.
 ``OPENWISP_VERSION``
 ~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** The version of OpenWISP to use. It can be set to a
-  specific version (e.g. ``25.10.0``) or to ``edge`` to always use the
-  latest development version.
+- **Explanation:** The Docker image tag to pull and run. It can be set to
+  a specific version (e.g. ``25.10.0``) or to ``edge`` to always use the
+  latest development version. The software version inside an image is
+  determined when the image is built.
 - **Valid Values:** ``edge``, ``latest``, or a semantic version string
   (e.g., ``25.10.0``)
 - **Default:** ``edge``
