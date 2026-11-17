@@ -260,8 +260,8 @@ networks:
     # Reserve a separate IPv4 range so automatic allocation cannot claim default's subnet.
     ipam:
       config:
-        - subnet: 172.19.0.0/16
+        - subnet: ${INGRESS_NETWORK_SUBNET:-172.19.0.0/16}
   default:
     ipam:
       config:
-        - subnet: 172.18.0.0/16
+        - subnet: ${DEFAULT_NETWORK_SUBNET:-172.18.0.0/16}

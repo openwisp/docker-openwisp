@@ -1200,6 +1200,8 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     def test_compose_ingress_network_is_ipv4_by_default(self):
         environment = os.environ.copy()
         environment.pop("INGRESS_IPV6_ENABLED", None)
+        environment.pop("DEFAULT_NETWORK_SUBNET", None)
+        environment.pop("INGRESS_NETWORK_SUBNET", None)
         with tempfile.NamedTemporaryFile() as env_file:
             result = subprocess.run(
                 [
@@ -1245,6 +1247,85 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         self.assertEqual(
             set(config["services"]["nginx"]["networks"]["default"]["aliases"]),
             {"dashboard.internal", "api.internal"},
+        )
+
+    def test_compose_network_subnets_can_be_configured(self):
+        environment = os.environ.copy()
+        environment["DEFAULT_NETWORK_SUBNET"] = "10.250.10.0/24"
+        environment["INGRESS_NETWORK_SUBNET"] = "10.250.11.0/24"
+        with tempfile.NamedTemporaryFile() as env_file:
+            result = subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--env-file",
+                    env_file.name,
+                    "config",
+                    "--format",
+                    "json",
+                ],
+                cwd=self.root_location,
+                capture_output=True,
+                text=True,
+                check=False,
+                env=environment,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        config = json.loads(result.stdout)
+        self.assertEqual(
+            config["networks"]["default"]["ipam"]["config"][0]["subnet"],
+            "10.250.10.0/24",
+        )
+        self.assertEqual(
+            config["networks"]["ingress"]["ipam"]["config"][0]["subnet"],
+            "10.250.11.0/24",
+        )
+        services = config["services"]
+        self.assertEqual(services["celery"]["environment"]["MODULE_NAME"], "celery")
+        self.assertEqual(
+            services["celery_monitoring"]["environment"]["MODULE_NAME"],
+            "celery_monitoring",
+        )
+        self.assertEqual(
+            services["celerybeat"]["environment"]["MODULE_NAME"], "celerybeat"
+        )
+
+    def test_radius_allowlist_follows_default_network_subnet(self):
+        repository_root = Path(self.root_location)
+        script = repository_root / "tests" / "scripts" / "radius_allowed_hosts.py"
+        settings = repository_root / "images" / "common" / "openwisp" / "settings.py"
+        image = os.environ.get(
+            "OPENWISP_TEST_DASHBOARD_IMAGE", "openwisp/openwisp-dashboard:edge"
+        )
+        result = subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--network",
+                "none",
+                "--entrypoint",
+                "python",
+                "--volume",
+                f"{script}:/opt/openwisp/test_radius_allowed_hosts.py:ro",
+                "--volume",
+                f"{settings}:/opt/openwisp/openwisp/settings.py:ro",
+                image,
+                "/opt/openwisp/test_radius_allowed_hosts.py",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Ran 4 tests", result.stderr)
+        self.assertIn("OK", result.stderr)
+        dockerfile = repository_root / "images" / "openwisp_base" / "Dockerfile"
+        self.assertNotIn(
+            "OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS=",
+            dockerfile.read_text(),
+            "A baked-in allowlist would override the configured default subnet.",
         )
 
     def test_compose_ingress_ipv6_can_be_enabled(self):
