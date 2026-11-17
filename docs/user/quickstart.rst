@@ -109,6 +109,13 @@ The upgrade requires Docker Compose 2.33.1 or later. If Compose is missing
 or older, the script stops before replacing the existing installation.
 Upgrade the Docker Compose plugin, then run the upgrade command again.
 
+.. warning::
+
+    Upgrades briefly interrupt all services while the auto-install script
+    recreates containers and networks to apply configuration changes.
+    Images are downloaded before services stop to minimize downtime.
+    Persistent data volumes are preserved.
+
 .. note::
 
     - If you're having any installation issues with the ``latest``

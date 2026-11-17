@@ -2241,6 +2241,103 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         with self.subTest("Missing Compose preserves the installation"):
             run_upgrade(compose_version="", expected_status=1, compose_status=1)
 
+    def test_auto_install_upgrade_pulls_before_recreating_networks(self):
+        script = Path(self.root_location) / "tests/scripts/auto_install_upgrade.sh"
+        auto_install_script = Path(self.root_location) / "deploy/auto-install.sh"
+
+        def run_upgrade(
+            *,
+            expected_commands,
+            failed_command="",
+            expected_error="",
+            skip_pull="false",
+        ):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir = Path(tmpdir)
+                install_path = tmpdir / "install with spaces"
+                install_path.mkdir()
+                (install_path / ".env").write_text("DEV_MODE=True\n")
+                backup_file = tmpdir / "backup.env"
+                backup_file.write_text("DASHBOARD_DOMAIN=dashboard.example.com\n")
+                environment = os.environ.copy()
+                environment.update(
+                    {
+                        "AUTO_INSTALL_SCRIPT": str(auto_install_script),
+                        "TEST_ENV_BACKUP": str(backup_file),
+                        "TEST_INSTALL_PATH": str(install_path),
+                        "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
+                        "TEST_FAIL_COMMAND": failed_command,
+                        "SKIP_PULL": skip_pull,
+                    }
+                )
+                result = subprocess.run(
+                    ["bash", str(script)],
+                    cwd=self.root_location,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(
+                    result.returncode,
+                    1 if failed_command else 0,
+                    result.stdout + result.stderr,
+                )
+                commands = (install_path / "commands.log").read_text()
+                self.assertEqual(
+                    commands.replace(str(install_path), "<install>").splitlines(),
+                    expected_commands,
+                    "Upgrade must pull before shutdown and not pull during startup.",
+                )
+                if expected_error:
+                    self.assertIn(expected_error, result.stdout)
+
+        with self.subTest("Successful upgrade recreates networks after pulling"):
+            run_upgrade(
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose down",
+                    "make start -C <install>/ SKIP_PULL=true",
+                ]
+            )
+
+        with self.subTest("Failed pull leaves services running"):
+            run_upgrade(
+                failed_command="pull",
+                expected_error="Downloading OpenWISP images failed.",
+                expected_commands=["make pull -C <install>/"],
+            )
+
+        with self.subTest("Failed shutdown prevents startup"):
+            run_upgrade(
+                failed_command="down",
+                expected_error="Stopping OpenWISP services failed.",
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose down",
+                ],
+            )
+
+        with self.subTest("Failed startup reports the failure"):
+            run_upgrade(
+                failed_command="start",
+                expected_error="Starting openwisp failed.",
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose down",
+                    "make start -C <install>/ SKIP_PULL=true",
+                ],
+            )
+
+        with self.subTest("Explicit skip uses existing images"):
+            run_upgrade(
+                skip_pull="true",
+                expected_commands=[
+                    "docker compose down",
+                    "make start -C <install>/ SKIP_PULL=true",
+                ],
+            )
+
     def test_auto_install_upgrade_ignores_commented_settings(self):
         script = (
             Path(self.root_location) / "tests" / "scripts" / "auto_install_upgrade.sh"
