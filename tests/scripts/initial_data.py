@@ -1,3 +1,5 @@
+"""Exercise initial-data selection while preserving the running stack's data."""
+
 import os
 from copy import deepcopy
 from uuid import UUID
@@ -36,6 +38,11 @@ default_topology = Topology.objects.get(
     pk=client.get("default_openvpn_topology_uuid").decode()
 )
 ssh_template = Template.objects.get(default=True, type="generic", vpn__isnull=True)
+ssh_templates = Template.objects.filter(
+    type="generic",
+    vpn__isnull=True,
+    config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
+)
 marker = "initial-data-selector-decoy"
 template_marker = "initial-data-selector-template"
 ssh_template_marker = "initial-data-selector-ssh-template"
@@ -110,12 +117,18 @@ try:
 
     client.delete("openwisp_default_ssh_template_uuid")
     selected_ssh_template = load_init_data.create_ssh_key_template()
-    assert (
-        selected_ssh_template.pk == ssh_template.pk
-    ), "SSH template selector migration chose the wrong template"
-    assert client.get("openwisp_default_ssh_template_uuid").decode() == str(
-        ssh_template.pk
-    )
+    # A previous run or developer may have cloned the SSH template, even without
+    # making the clone a default. Ambiguous migration must not choose either one.
+    if ssh_templates.count() == 1:
+        assert (
+            selected_ssh_template.pk == ssh_template.pk
+        ), "SSH template selector migration chose the wrong template"
+        assert client.get("openwisp_default_ssh_template_uuid").decode() == str(
+            ssh_template.pk
+        )
+    else:
+        assert selected_ssh_template is None, "Ambiguous SSH template was selected"
+        assert client.get("openwisp_default_ssh_template_uuid") is None
 
     Vpn.objects.filter(pk=default_vpn.pk).update(backend="test.NonOpenVpn")
     client.delete("openwisp_default_vpn_uuid")
@@ -207,7 +220,7 @@ try:
     ssh_template.save()
     competing_ssh_template = Template(
         name=competing_ssh_template_marker,
-        default=True,
+        default=False,
         type="generic",
         backend=ssh_template.backend,
         config=deepcopy(ssh_template.config),
@@ -215,19 +228,10 @@ try:
     competing_ssh_template.full_clean()
     competing_ssh_template.save()
     client.delete("openwisp_default_ssh_template_uuid")
-    ssh_template_count = Template.objects.filter(
-        type="generic",
-        vpn__isnull=True,
-        config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
-    ).count()
+    ssh_template_count = ssh_templates.count()
     load_init_data.create_ssh_key_template()
     assert (
-        Template.objects.filter(
-            type="generic",
-            vpn__isnull=True,
-            config__contains={"files": [{"path": "/etc/dropbear/authorized_keys"}]},
-        ).count()
-        == ssh_template_count
+        ssh_templates.count() == ssh_template_count
     ), "Multiple SSH templates caused a new template to be created"
     assert client.get("openwisp_default_ssh_template_uuid") is None
 
