@@ -1197,6 +1197,55 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
+    @mock.patch("utils.subprocess.run")
+    def test_compose_failures_include_output(self, run):
+        """Keep inner failures visible in CI without flooding the traceback."""
+        for text_mode in (False, True):
+            with self.subTest(text_mode=text_mode):
+                output = "old output\n" * 1000 + "selector assertion failed"
+                error = "Traceback: inner command failed"
+                result = subprocess.CompletedProcess(
+                    ["docker", "compose", "run"],
+                    1,
+                    output if text_mode else output.encode(),
+                    error if text_mode else error.encode(),
+                )
+                run.return_value = result
+                with tempfile.TemporaryDirectory() as directory:
+                    log = Path(directory) / "compose.log"
+                    with mock.patch.dict(self.config, logs_file=str(log)):
+                        with self.assertRaises(RuntimeError) as raised:
+                            self._execute_docker_compose_command(
+                                result.args, use_text_mode=text_mode
+                            )
+                    message = str(raised.exception)
+                    self.assertIn("selector assertion failed", message)
+                    self.assertIn(error, message)
+                    self.assertLess(len(message), 9000)
+                    self.assertEqual(log.read_text(), output + error)
+
+    @mock.patch("utils.subprocess.run")
+    def test_compose_timeout_includes_output(self, run):
+        """TimeoutExpired can contain bytes even when text mode is requested."""
+        run.side_effect = subprocess.TimeoutExpired(
+            ["docker", "compose", "exec"],
+            120,
+            output=b"partial stdout",
+            stderr=b"partial stderr",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "compose.log"
+            with mock.patch.dict(self.config, logs_file=str(log)):
+                with self.assertRaises(RuntimeError) as raised:
+                    self._execute_docker_compose_command(
+                        ["docker", "compose", "exec"], use_text_mode=True
+                    )
+            message = str(raised.exception)
+            self.assertIn("timed out after 120s", message)
+            self.assertIn("partial stdout", message)
+            self.assertIn("partial stderr", message)
+            self.assertEqual(log.read_text(), "partial stdoutpartial stderr")
+
     def test_compose_ingress_network_is_ipv4_by_default(self):
         environment = os.environ.copy()
         environment.pop("INGRESS_IPV6_ENABLED", None)
