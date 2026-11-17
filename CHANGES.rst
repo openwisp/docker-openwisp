@@ -1,6 +1,42 @@
 Changelog
 =========
 
+Version 26.09.3 [2026-11-17]
+----------------------------
+
+Changes
+~~~~~~~
+
+Dependencies
+++++++++++++
+
+- Bumped the Nginx image from ``1.31.7-alpine`` to ``1.31.8-alpine``.
+- Required ``brotli-dev>=1.2.1-r0`` and ``brotli-libs>=1.2.1-r0`` when
+  building the Nginx image to address `CVE-2026-111497
+  <https://nvd.nist.gov/vuln/detail/cve-2026-111497>`_ in the Brotli
+  decoder.
+- Bumped ``boto3`` from ``>=1.43.115,<1.44.0`` to `>=1.43.126,<1.44.0
+  <https://github.com/boto/boto3/blob/1.43.126/CHANGELOG.rst>`_.
+
+Bugfixes
+~~~~~~~~
+
+- Fixed client IPv6 addresses being reported as internal Docker proxy
+  addresses by Nginx, OpenVPN and FreeRADIUS. Added optional IPv6
+  networking for these services to preserve the original client addresses.
+  IPv6 is disabled by default and can be enabled by setting
+  ``INGRESS_IPV6_ENABLED=true`` in ``.env``. Backend services continue to
+  communicate over IPv4.
+- Fixed IPv6 clients being unable to connect to newly provisioned
+  management VPN servers. Changed the default protocol to ``udp6`` so
+  OpenVPN accepts both IPv4 and IPv6 connections. New client templates
+  continue to use ``udp`` for compatibility with IPv4-only clients.
+  Existing VPN servers and client templates are unchanged.
+- Fixed `VPN connection failures caused by expired certificate revocation
+  lists <https://github.com/openwisp/docker-openwisp/issues/740>`_.
+  OpenVPN now refreshes expired lists even when the server reports no
+  changes, and keeps the existing list if the download fails.
+
 Version 26.09.2 [2026-10-23]
 ----------------------------
 
