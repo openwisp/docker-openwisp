@@ -22,6 +22,10 @@ set_env() {
 	local temp_file
 	# Append only absent variables, preserving existing configuration entries.
 	if ! grep -q "^$1=" "$env_file"; then
+		# Separate the assignment from an unterminated final configuration line.
+		if [[ -s "$env_file" && -n "$(tail -c 1 "$env_file")" ]]; then
+			printf '\n' >>"$env_file"
+		fi
 		printf '%s=%s\n' "$1" "$2" >>"$env_file"
 	else
 		# Rewrite the file to keep values literal and avoid evaluating user input.
@@ -159,7 +163,6 @@ setup_docker_openwisp() {
 
 	cd "$INSTALL_PATH" &>>"$LOG_FILE"
 	check_status $? "docker-openwisp download failed."
-	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	if [[ ! -f "$env_path" ]]; then
 		# Dashboard Domain
@@ -213,6 +216,8 @@ setup_docker_openwisp() {
 		mv "$ENV_USER" "$INSTALL_PATH/.env" &>>"$LOG_FILE"
 		rm -rf "$ENV_USER" &>>"$LOG_FILE"
 	fi
+	# The selected version takes precedence over a supplied .env image tag.
+	set_env "OPENWISP_VERSION" "$openwisp_version"
 	set_env "DEV_MODE" "False"
 
 	start_step "Configuring docker-openwisp..."
@@ -236,7 +241,6 @@ upgrade_docker_openwisp() {
 
 	cd "$INSTALL_PATH" &>>"$LOG_FILE"
 	check_status $? "docker-openwisp download failed."
-	set_env "OPENWISP_VERSION" "$openwisp_version"
 
 	start_step "Configuring docker-openwisp..."
 	# Copy settings from the backup and ignore comments or invalid lines.
@@ -244,6 +248,8 @@ upgrade_docker_openwisp() {
 		[[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]] || continue
 		set_env "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}"
 	done <"$ENV_BACKUP"
+	# Apply the selected version last so the backup cannot restore the old image tag.
+	set_env "OPENWISP_VERSION" "$openwisp_version"
 	set_env "DEV_MODE" "False"
 	report_ok
 

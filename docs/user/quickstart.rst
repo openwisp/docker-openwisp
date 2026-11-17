@@ -50,7 +50,9 @@ This script prompts the user for basic configuration parameters required
 to set up OpenWISP. Below are the prompts and their descriptions:
 
 - **OpenWISP Version:** Version of OpenWISP you want to install. If you
-  leave this blank, the latest released version will be installed.
+  leave this blank, the latest released version will be installed. The
+  selected version takes precedence over ``OPENWISP_VERSION`` in a
+  supplied ``.env`` file or the existing configuration during an upgrade.
 - **.env File Path:** Path to an existing :doc:`".env" file <settings>`
   file if you have one. If you leave this blank, the script will continue
   prompting for additional configuration.
