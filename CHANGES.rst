@@ -6,6 +6,23 @@ Version 27.04.0a [unreleased]
 
 Work in progress.
 
+Version 26.09.4 [2026-11-17]
+----------------------------
+
+Bugfixes
+~~~~~~~~
+
+- Fixed `installer version selection
+  <https://github.com/openwisp/docker-openwisp/issues/758>`_, ensuring
+  that the OpenWISP image version selected during installation or upgrades
+  is not overridden by existing or restored ``.env`` settings.
+- Ignored commented settings and invalid assignments when restoring
+  ``.env`` files during upgrades.
+- Prevented overlapping Docker networks from blocking startup by assigning
+  separate, configurable subnets to the application and ingress networks.
+  Updated the default FreeRADIUS API allowlist to match the application
+  subnet while preserving explicit overrides.
+
 Version 26.09.3 [2026-11-17]
 ----------------------------
 
