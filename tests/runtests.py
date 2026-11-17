@@ -1202,8 +1202,8 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         """Keep inner failures visible in CI without flooding the traceback."""
         for text_mode in (False, True):
             with self.subTest(text_mode=text_mode):
-                output = "old output\n" * 1000 + "selector assertion failed"
-                error = "Traceback: inner command failed"
+                output = "stdout prefix\n" + "a" * 4000
+                error = "stderr prefix\n" + "b" * 4000
                 result = subprocess.CompletedProcess(
                     ["docker", "compose", "run"],
                     1,
@@ -1219,19 +1219,27 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                                 result.args, use_text_mode=text_mode
                             )
                     message = str(raised.exception)
-                    self.assertIn("selector assertion failed", message)
-                    self.assertIn(error, message)
+                    diagnostics = message.split(
+                        "\nstdout (last 4000 characters):\n", 1
+                    )[1]
+                    stdout_tail, stderr_tail = diagnostics.split(
+                        "\nstderr (last 4000 characters):\n", 1
+                    )
+                    self.assertEqual(stdout_tail, "a" * 4000)
+                    self.assertEqual(stderr_tail, "b" * 4000)
                     self.assertLess(len(message), 9000)
                     self.assertEqual(log.read_text(), output + error)
 
     @mock.patch("utils.subprocess.run")
     def test_compose_timeout_includes_output(self, run):
         """TimeoutExpired can contain bytes even when text mode is requested."""
+        output = "partial stdout prefix\n" + "a" * 4000
+        error = "partial stderr prefix\n" + "b" * 4000
         run.side_effect = subprocess.TimeoutExpired(
             ["docker", "compose", "exec"],
             120,
-            output=b"partial stdout",
-            stderr=b"partial stderr",
+            output=output.encode(),
+            stderr=error.encode(),
         )
         with tempfile.TemporaryDirectory() as directory:
             log = Path(directory) / "compose.log"
@@ -1242,9 +1250,13 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     )
             message = str(raised.exception)
             self.assertIn("timed out after 120s", message)
-            self.assertIn("partial stdout", message)
-            self.assertIn("partial stderr", message)
-            self.assertEqual(log.read_text(), "partial stdoutpartial stderr")
+            diagnostics = message.split("\nstdout (last 4000 characters):\n", 1)[1]
+            stdout_tail, stderr_tail = diagnostics.split(
+                "\nstderr (last 4000 characters):\n", 1
+            )
+            self.assertEqual(stdout_tail, "a" * 4000)
+            self.assertEqual(stderr_tail, "b" * 4000)
+            self.assertEqual(log.read_text(), output + error)
 
     def test_compose_ingress_network_is_ipv4_by_default(self):
         environment = os.environ.copy()
