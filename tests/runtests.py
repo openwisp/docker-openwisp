@@ -1221,6 +1221,10 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         config = json.loads(result.stdout)
         self.assertEqual(config["networks"]["ingress"]["enable_ipv6"], False)
         self.assertEqual(
+            config["networks"]["ingress"]["ipam"]["config"][0]["subnet"],
+            "172.19.0.0/16",
+        )
+        self.assertEqual(
             config["networks"]["default"]["ipam"]["config"][0]["subnet"],
             "172.18.0.0/16",
         )
