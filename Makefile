@@ -74,6 +74,7 @@ develop-pythontests:
 	# latest locally built image rather than the image published in the registries.
 	OPENWISP_TEST_OPENVPN_IMAGE=$(IMAGE_OWNER)/openwisp-openvpn:$(OPENWISP_VERSION) \
 		OPENWISP_TEST_FREERADIUS_IMAGE=$(IMAGE_OWNER)/openwisp-freeradius:$(OPENWISP_VERSION) \
+		OPENWISP_TEST_DASHBOARD_IMAGE=$(IMAGE_OWNER)/openwisp-dashboard:$(OPENWISP_VERSION) \
 		python3 tests/runtests.py
 
 # Development

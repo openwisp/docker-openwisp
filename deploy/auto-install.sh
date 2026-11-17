@@ -246,8 +246,23 @@ upgrade_docker_openwisp() {
 	set_env "DEV_MODE" "False"
 	report_ok
 
+	# Download before shutdown so image pulls do not extend service downtime.
+	if [[ "${SKIP_PULL:-false}" == "false" ]]; then
+		start_step "Downloading OpenWISP images..."
+		make pull -C "$INSTALL_PATH/" &>>"$LOG_FILE"
+		check_status $? "Downloading OpenWISP images failed."
+		# make pull excludes dependencies. Match startup's reuse of cached images.
+		start_step "Downloading dependency images..."
+		docker compose pull --ignore-buildable --policy missing &>>"$LOG_FILE"
+		check_status $? "Downloading dependency images failed."
+	fi
+	# Recreate networks as well as containers when upgrade settings change.
+	start_step "Stopping OpenWISP services..."
+	docker compose down &>>"$LOG_FILE"
+	check_status $? "Stopping OpenWISP services failed."
+
 	start_step "Starting images docker-openwisp (this will take a while)..."
-	make start -C "$INSTALL_PATH/" &>>"$LOG_FILE"
+	make start -C "$INSTALL_PATH/" SKIP_PULL=true &>>"$LOG_FILE"
 	check_status $? "Starting openwisp failed."
 }
 

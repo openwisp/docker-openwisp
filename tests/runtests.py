@@ -1200,6 +1200,8 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     def test_compose_ingress_network_is_ipv4_by_default(self):
         environment = os.environ.copy()
         environment.pop("INGRESS_IPV6_ENABLED", None)
+        environment.pop("DEFAULT_NETWORK_SUBNET", None)
+        environment.pop("INGRESS_NETWORK_SUBNET", None)
         with tempfile.NamedTemporaryFile() as env_file:
             result = subprocess.run(
                 [
@@ -1221,6 +1223,10 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         config = json.loads(result.stdout)
         self.assertEqual(config["networks"]["ingress"]["enable_ipv6"], False)
         self.assertEqual(
+            config["networks"]["ingress"]["ipam"]["config"][0]["subnet"],
+            "172.19.0.0/16",
+        )
+        self.assertEqual(
             config["networks"]["default"]["ipam"]["config"][0]["subnet"],
             "172.18.0.0/16",
         )
@@ -1241,6 +1247,85 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
         self.assertEqual(
             set(config["services"]["nginx"]["networks"]["default"]["aliases"]),
             {"dashboard.internal", "api.internal"},
+        )
+
+    def test_compose_network_subnets_can_be_configured(self):
+        environment = os.environ.copy()
+        environment["DEFAULT_NETWORK_SUBNET"] = "10.250.10.0/24"
+        environment["INGRESS_NETWORK_SUBNET"] = "10.250.11.0/24"
+        with tempfile.NamedTemporaryFile() as env_file:
+            result = subprocess.run(
+                [
+                    "docker",
+                    "compose",
+                    "--env-file",
+                    env_file.name,
+                    "config",
+                    "--format",
+                    "json",
+                ],
+                cwd=self.root_location,
+                capture_output=True,
+                text=True,
+                check=False,
+                env=environment,
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        config = json.loads(result.stdout)
+        self.assertEqual(
+            config["networks"]["default"]["ipam"]["config"][0]["subnet"],
+            "10.250.10.0/24",
+        )
+        self.assertEqual(
+            config["networks"]["ingress"]["ipam"]["config"][0]["subnet"],
+            "10.250.11.0/24",
+        )
+        services = config["services"]
+        self.assertEqual(services["celery"]["environment"]["MODULE_NAME"], "celery")
+        self.assertEqual(
+            services["celery_monitoring"]["environment"]["MODULE_NAME"],
+            "celery_monitoring",
+        )
+        self.assertEqual(
+            services["celerybeat"]["environment"]["MODULE_NAME"], "celerybeat"
+        )
+
+    def test_radius_allowlist_follows_default_network_subnet(self):
+        repository_root = Path(self.root_location)
+        script = repository_root / "tests" / "scripts" / "radius_allowed_hosts.py"
+        settings = repository_root / "images" / "common" / "openwisp" / "settings.py"
+        image = os.environ.get(
+            "OPENWISP_TEST_DASHBOARD_IMAGE", "openwisp/openwisp-dashboard:edge"
+        )
+        result = subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--network",
+                "none",
+                "--entrypoint",
+                "python",
+                "--volume",
+                f"{script}:/opt/openwisp/test_radius_allowed_hosts.py:ro",
+                "--volume",
+                f"{settings}:/opt/openwisp/openwisp/settings.py:ro",
+                image,
+                "/opt/openwisp/test_radius_allowed_hosts.py",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Ran 5 tests", result.stderr)
+        self.assertIn("OK", result.stderr)
+        dockerfile = repository_root / "images" / "openwisp_base" / "Dockerfile"
+        self.assertNotIn(
+            "OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS=",
+            dockerfile.read_text(),
+            "A baked-in allowlist would override the configured default subnet.",
         )
 
     def test_compose_ingress_ipv6_can_be_enabled(self):
@@ -1764,6 +1849,10 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "local-test/openwisp-freeradius:test-tag",
                 result.stdout,
             )
+            self.assertIn(
+                "OPENWISP_TEST_DASHBOARD_IMAGE=local-test/openwisp-dashboard:test-tag",
+                result.stdout,
+            )
 
     def test_make_start_rejects_development_mode(self):
         with self._makefile_test_environment() as (run_make, docker_log, _):
@@ -1988,6 +2077,116 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
 
         with self.subTest("Missing Compose preserves the installation"):
             run_upgrade(compose_version="", expected_status=1, compose_status=1)
+
+    def test_auto_install_upgrade_pulls_before_recreating_networks(self):
+        script = Path(self.root_location) / "tests/scripts/auto_install_upgrade.sh"
+        auto_install_script = Path(self.root_location) / "deploy/auto-install.sh"
+
+        def run_upgrade(
+            *,
+            expected_commands,
+            failed_command="",
+            expected_error="",
+            skip_pull="false",
+        ):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmpdir = Path(tmpdir)
+                install_path = tmpdir / "install with spaces"
+                install_path.mkdir()
+                (install_path / ".env").write_text("DEV_MODE=True\n")
+                backup_file = tmpdir / "backup.env"
+                backup_file.write_text("DASHBOARD_DOMAIN=dashboard.example.com\n")
+                environment = os.environ.copy()
+                environment.update(
+                    {
+                        "AUTO_INSTALL_SCRIPT": str(auto_install_script),
+                        "TEST_ENV_BACKUP": str(backup_file),
+                        "TEST_INSTALL_PATH": str(install_path),
+                        "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
+                        "TEST_FAIL_COMMAND": failed_command,
+                        "SKIP_PULL": skip_pull,
+                    }
+                )
+                result = subprocess.run(
+                    ["bash", str(script)],
+                    cwd=self.root_location,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=environment,
+                )
+                self.assertEqual(
+                    result.returncode,
+                    1 if failed_command else 0,
+                    result.stdout + result.stderr,
+                )
+                commands = (install_path / "commands.log").read_text()
+                self.assertEqual(
+                    commands.replace(str(install_path), "<install>").splitlines(),
+                    expected_commands,
+                    "Upgrade must pull before shutdown and not pull during startup.",
+                )
+                if expected_error:
+                    self.assertIn(expected_error, result.stdout)
+
+        with self.subTest("Successful upgrade recreates networks after pulling"):
+            run_upgrade(
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
+                    "docker compose down",
+                    "make start -C <install>/ SKIP_PULL=true",
+                ]
+            )
+
+        with self.subTest("Failed pull leaves services running"):
+            run_upgrade(
+                failed_command="pull",
+                expected_error="Downloading OpenWISP images failed.",
+                expected_commands=["make pull -C <install>/"],
+            )
+
+        with self.subTest("Failed dependency pull leaves services running"):
+            run_upgrade(
+                failed_command="compose-pull",
+                expected_error="Downloading dependency images failed.",
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
+                ],
+            )
+
+        with self.subTest("Failed shutdown prevents startup"):
+            run_upgrade(
+                failed_command="compose-down",
+                expected_error="Stopping OpenWISP services failed.",
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
+                    "docker compose down",
+                ],
+            )
+
+        with self.subTest("Failed startup reports the failure"):
+            run_upgrade(
+                failed_command="start",
+                expected_error="Starting openwisp failed.",
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
+                    "docker compose down",
+                    "make start -C <install>/ SKIP_PULL=true",
+                ],
+            )
+
+        with self.subTest("Explicit skip uses existing images"):
+            run_upgrade(
+                skip_pull="true",
+                expected_commands=[
+                    "docker compose down",
+                    "make start -C <install>/ SKIP_PULL=true",
+                ],
+            )
 
     def test_nginx_source_verification_tracks_version(self):
         """Ensure Dependabot Nginx bumps retain source authentication."""

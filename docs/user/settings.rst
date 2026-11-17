@@ -56,6 +56,26 @@ Nginx configuration instead. Explicit values for ``NGINX_IP6_STRING`` and
 ``NGINX_IP6_80_STRING`` take precedence over the generated defaults,
 including empty values that disable the corresponding listeners.
 
+``DEFAULT_NETWORK_SUBNET``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** IPv4 subnet for the default network used by application
+  services. It must not overlap with the ingress subnet or other networks.
+- **Valid Values:** An IPv4 network in CIDR notation.
+- **Default:** ``172.18.0.0/16``.
+
+``INGRESS_NETWORK_SUBNET``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Explanation:** IPv4 subnet for the ingress network. It must not
+  overlap with ``DEFAULT_NETWORK_SUBNET`` or other networks.
+- **Valid Values:** An IPv4 network in CIDR notation.
+- **Default:** ``172.19.0.0/16``.
+
+After changing either subnet in ``.env``, run ``docker compose down`` and
+then ``docker compose up -d`` from the installation directory to recreate
+the networks. This interrupts services but preserves named volumes.
+
 .. _openwisp_version:
 
 ``OPENWISP_VERSION``
@@ -163,11 +183,13 @@ Tune these options to strengthen the security of your instance.
 ``OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Explanation:** Default IP address or subnet of your freeradius
-  instance.
+- **Explanation:** IP addresses or subnets allowed to access the
+  FreeRADIUS API. If unset, the application uses
+  ``DEFAULT_NETWORK_SUBNET`` when configured.
 - **Valid Values:** A comma separated string of valid IP address or IP
   Networks.
-- **Default:** ``172.18.0.0/16``.
+- **Default:** ``DEFAULT_NETWORK_SUBNET``, or ``172.18.0.0/16`` when the
+  subnet setting is not supplied.
 - **Example:** ``127.0.0.1,192.0.2.20,172.18.0.0/16``.
 
 OpenWISP
