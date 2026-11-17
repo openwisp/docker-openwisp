@@ -463,7 +463,7 @@ if env_bool(os.environ["USE_OPENWISP_RADIUS"]):
     # Follow the backend subnet unless an operator supplies a separate allowlist.
     OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS = os.environ.get(
         "OPENWISP_RADIUS_FREERADIUS_ALLOWED_HOSTS",
-        os.environ.get("DEFAULT_NETWORK_SUBNET", "172.18.0.0/16"),
+        os.environ.get("DEFAULT_NETWORK_SUBNET") or "172.18.0.0/16",
     ).split(",")
 elif "openwisp_radius" in INSTALLED_APPS:
     INSTALLED_APPS.remove("openwisp_radius")

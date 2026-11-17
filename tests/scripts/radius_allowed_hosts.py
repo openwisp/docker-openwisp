@@ -31,6 +31,10 @@ class TestRadiusAllowedHosts(unittest.TestCase):
     def test_standalone_image_keeps_default_subnet(self):
         self.assertEqual(self._allowed_hosts(), ["172.18.0.0/16"])
 
+    def test_empty_subnet_uses_default_subnet(self):
+        os.environ["DEFAULT_NETWORK_SUBNET"] = ""
+        self.assertEqual(self._allowed_hosts(), ["172.18.0.0/16"])
+
     def test_configured_subnet_becomes_allowlist(self):
         os.environ["DEFAULT_NETWORK_SUBNET"] = "10.250.10.0/24"
         self.assertEqual(self._allowed_hosts(), ["10.250.10.0/24"])

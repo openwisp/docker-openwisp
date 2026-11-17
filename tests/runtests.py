@@ -1319,7 +1319,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             check=False,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("Ran 4 tests", result.stderr)
+        self.assertIn("Ran 5 tests", result.stderr)
         self.assertIn("OK", result.stderr)
         dockerfile = repository_root / "images" / "openwisp_base" / "Dockerfile"
         self.assertNotIn(
