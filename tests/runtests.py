@@ -2296,6 +2296,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
             run_upgrade(
                 expected_commands=[
                     "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
                     "docker compose down",
                     "make start -C <install>/ SKIP_PULL=true",
                 ]
@@ -2308,12 +2309,23 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 expected_commands=["make pull -C <install>/"],
             )
 
+        with self.subTest("Failed dependency pull leaves services running"):
+            run_upgrade(
+                failed_command="compose-pull",
+                expected_error="Downloading dependency images failed.",
+                expected_commands=[
+                    "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
+                ],
+            )
+
         with self.subTest("Failed shutdown prevents startup"):
             run_upgrade(
-                failed_command="down",
+                failed_command="compose-down",
                 expected_error="Stopping OpenWISP services failed.",
                 expected_commands=[
                     "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
                     "docker compose down",
                 ],
             )
@@ -2324,6 +2336,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 expected_error="Starting openwisp failed.",
                 expected_commands=[
                     "make pull -C <install>/",
+                    "docker compose pull --ignore-buildable --policy missing",
                     "docker compose down",
                     "make start -C <install>/ SKIP_PULL=true",
                 ],

@@ -252,6 +252,10 @@ upgrade_docker_openwisp() {
 		start_step "Downloading OpenWISP images..."
 		make pull -C "$INSTALL_PATH/" &>>"$LOG_FILE"
 		check_status $? "Downloading OpenWISP images failed."
+		# make pull excludes dependencies. Match startup's reuse of cached images.
+		start_step "Downloading dependency images..."
+		docker compose pull --ignore-buildable --policy missing &>>"$LOG_FILE"
+		check_status $? "Downloading dependency images failed."
 	fi
 	# Recreate networks as well as containers when upgrade settings change.
 	start_step "Stopping OpenWISP services..."

@@ -113,8 +113,9 @@ Upgrade the Docker Compose plugin, then run the upgrade command again.
 
     Upgrades briefly interrupt all services while the auto-install script
     recreates containers and networks to apply configuration changes.
-    Images are downloaded before services stop to minimize downtime.
-    Persistent data volumes are preserved.
+    OpenWISP images and any missing dependency images are downloaded
+    before services stop to minimize downtime. If a download fails,
+    services are left running. Persistent data volumes are preserved.
 
 .. note::
 

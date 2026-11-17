@@ -14,7 +14,7 @@ docker() {
 		return "${TEST_COMPOSE_STATUS:-0}"
 	fi
 	printf 'docker %s\n' "$*" >>"$INSTALL_PATH/commands.log"
-	[[ "${TEST_FAIL_COMMAND-}" != "down" ]]
+	[[ "${TEST_FAIL_COMMAND-}" != "compose-$2" ]]
 }
 download_docker_openwisp() { touch "$INSTALL_PATH/downloaded"; }
 start_step() { :; }
