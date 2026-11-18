@@ -2639,6 +2639,67 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                         self.assertFalse(css_path.exists())
                         self.assertFalse(css_path.parent.exists())
 
+    @mock.patch("utils.subprocess.run")
+    def test_compose_failures_include_output(self, run):
+        """Keep inner failures visible in CI without flooding the traceback."""
+        for text_mode in (False, True):
+            with self.subTest(text_mode=text_mode):
+                output = "stdout prefix\n" + "a" * 4000
+                error = "stderr prefix\n" + "b" * 4000
+                result = subprocess.CompletedProcess(
+                    ["docker", "compose", "run"],
+                    1,
+                    output if text_mode else output.encode(),
+                    error if text_mode else error.encode(),
+                )
+                run.return_value = result
+                with tempfile.TemporaryDirectory() as directory:
+                    log = Path(directory) / "compose.log"
+                    with mock.patch.dict(self.config, logs_file=str(log)):
+                        with self.assertRaises(RuntimeError) as raised:
+                            self._execute_docker_compose_command(
+                                result.args, use_text_mode=text_mode
+                            )
+                    message = str(raised.exception)
+                    diagnostics = message.split(
+                        "\nstdout (last 4000 characters):\n", 1
+                    )[1]
+                    stdout_tail, stderr_tail = diagnostics.split(
+                        "\nstderr (last 4000 characters):\n", 1
+                    )
+                    self.assertEqual(stdout_tail, "a" * 4000)
+                    self.assertEqual(stderr_tail, "b" * 4000)
+                    self.assertLess(len(message), 9000)
+                    self.assertEqual(log.read_text(), output + error)
+
+    @mock.patch("utils.subprocess.run")
+    def test_compose_timeout_includes_output(self, run):
+        """TimeoutExpired can contain bytes even when text mode is requested."""
+        output = "partial stdout prefix\n" + "a" * 4000
+        error = "partial stderr prefix\n" + "b" * 4000
+        run.side_effect = subprocess.TimeoutExpired(
+            ["docker", "compose", "exec"],
+            120,
+            output=output.encode(),
+            stderr=error.encode(),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "compose.log"
+            with mock.patch.dict(self.config, logs_file=str(log)):
+                with self.assertRaises(RuntimeError) as raised:
+                    self._execute_docker_compose_command(
+                        ["docker", "compose", "exec"], use_text_mode=True
+                    )
+            message = str(raised.exception)
+            self.assertIn("timed out after 120s", message)
+            diagnostics = message.split("\nstdout (last 4000 characters):\n", 1)[1]
+            stdout_tail, stderr_tail = diagnostics.split(
+                "\nstderr (last 4000 characters):\n", 1
+            )
+            self.assertEqual(stdout_tail, "a" * 4000)
+            self.assertEqual(stderr_tail, "b" * 4000)
+            self.assertEqual(log.read_text(), output + error)
+
 
 class TestOpenVPN(unittest.TestCase):
     def test_crl_refresh_checks_expiry_and_last_modified(self):

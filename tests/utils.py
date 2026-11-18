@@ -60,7 +60,9 @@ class BaseTestUtils:
                 logs_file.write(error)
             raise RuntimeError(
                 "docker compose command timed out "
-                f"after {cls.docker_compose_timeout}s: {' '.join(cmd_args)}"
+                f"after {cls.docker_compose_timeout}s: {' '.join(cmd_args)}\n"
+                f"stdout (last 4000 characters):\n{output[-4000:]}\n"
+                f"stderr (last 4000 characters):\n{error[-4000:]}"
             )
         if use_text_mode:
             output, error = cmd.stdout, cmd.stderr
@@ -73,7 +75,9 @@ class BaseTestUtils:
         if cmd.returncode != 0:
             raise RuntimeError(
                 f"docker compose command failed "
-                f"({cmd.returncode}): {' '.join(cmd_args)}"
+                f"({cmd.returncode}): {' '.join(cmd_args)}\n"
+                f"stdout (last 4000 characters):\n{output[-4000:]}\n"
+                f"stderr (last 4000 characters):\n{error[-4000:]}"
             )
         return output, error
 
