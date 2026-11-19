@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Version 26.09.5 [2026-11-19]
+----------------------------
+
+Changes
+~~~~~~~
+
+Dependencies
+++++++++++++
+
+- Updated nginx to 1.31.9-alpine (nginx2root fix)
+
 Version 26.09.4 [2026-11-17]
 ----------------------------
 
