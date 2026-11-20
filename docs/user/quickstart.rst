@@ -43,6 +43,18 @@ The `auto-install
 <https://github.com/openwisp/docker-openwisp/blob/master/deploy/auto-install.sh>`_
 script can be used to quickly install an OpenWISP instance on your server.
 
+.. note::
+
+    The auto-install script supports Debian 11, 12 and 13, and Ubuntu
+    22.04, 24.04 and 26.04.
+
+    On other distributions, install the required dependencies for your
+    system and deploy using `Docker Compose <using docker compose_>`_ or
+    another container deployment method. Use the `auto-install script's
+    source
+    <https://github.com/openwisp/docker-openwisp/blob/master/deploy/auto-install.sh>`_
+    as a reference for the required setup.
+
 It will install the required system dependencies and start the docker
 containers.
 
