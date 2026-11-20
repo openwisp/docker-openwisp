@@ -21,7 +21,7 @@ concurrency:
 jobs:
   build:
     name: CI Build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Git Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,9 +39,12 @@ jobs:
           echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
           # The auto-install script uses production mode, so disable metrics explicitly.
           printf '\nMETRIC_COLLECTION=False\n' >> .env
-          # ERROR: Cannot uninstall urllib3 2.0.7, RECORD file not found. Hint: The package was installed by debian.
-          sudo apt remove python3-urllib3 python3-typing-extensions python3-packaging
-          sudo pip3 install -r requirements-test.txt
+          # Isolate pip dependencies to avoid conflicts with Ubuntu's Python packages.
+          sudo apt-get update
+          sudo apt-get install -y python3-venv
+          python3 -m venv "$RUNNER_TEMP/openwisp-venv"
+          "$RUNNER_TEMP/openwisp-venv/bin/pip" install -r requirements-test.txt
+          echo "$RUNNER_TEMP/openwisp-venv/bin" >> "$GITHUB_PATH"
           sudo npm install -g prettier
 
       - name: QA checks
@@ -51,7 +54,7 @@ jobs:
         id: auto_install_edge
         if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
         run: |
-          printf "edge\n./.env\n" | sudo -E ./deploy/auto-install.sh \
+          printf "edge\n./.env\n" | sudo ./deploy/auto-install.sh \
               || {
                 sudo cat /opt/openwisp/autoinstall.log || true
                 docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
@@ -86,9 +89,12 @@ jobs:
         id: auto_install_upgrade
         if: ${{ !cancelled() && steps.set_git_branch.conclusion == 'success' }}
         # Do not remove the blank lines from the input.
+        # sudo-rs ignores -E, so preserve the variables needed to test this branch.
         run: |
           printf "edge\n" | \
-            GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
+            GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true \
+            sudo --preserve-env=GIT_BRANCH,GIT_PATH,SKIP_PULL \
+              ./deploy/auto-install.sh --upgrade \
             || {
               sudo cat /opt/openwisp/autoinstall.log || true
               docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
