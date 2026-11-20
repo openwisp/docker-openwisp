@@ -65,6 +65,10 @@ error_msg() {
 	exit 1
 }
 
+# Returns true if version $1 >= version $2, without relying on
+# distro-specific tools like dpkg (not available on non-Debian systems).
+version_ge() { [[ "$(printf '%s\n' "$1" "$2" | sort -V | tail -n1)" == "$1" ]]; }
+
 error_msg_with_continue() {
 	report_error
 	echo -ne ${RED}${1}${NON}
@@ -230,7 +234,7 @@ setup_docker_openwisp() {
 upgrade_docker_openwisp() {
 	local compose_version
 	if ! compose_version=$(docker compose version --short 2>>"$LOG_FILE") ||
-		! dpkg --compare-versions "${compose_version#v}" ge 2.33.1; then
+		! version_ge "${compose_version#v}" "2.33.1"; then
 		error_msg "Docker Compose 2.33.1 or later is required. Upgrade the Docker Compose plugin and retry."
 	fi
 	echo -e ${GRN}"\nOpenWISP Configuration:"${NON}
