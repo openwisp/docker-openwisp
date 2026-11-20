@@ -39,9 +39,12 @@ jobs:
           echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
           # The auto-install script uses production mode, so disable metrics explicitly.
           printf '\nMETRIC_COLLECTION=False\n' >> .env
-          # ERROR: Cannot uninstall urllib3 2.0.7, RECORD file not found. Hint: The package was installed by debian.
-          sudo apt remove python3-urllib3 python3-typing-extensions python3-packaging
-          sudo pip3 install -r requirements-test.txt
+          # Isolate pip dependencies to avoid conflicts with Ubuntu's Python packages.
+          sudo apt-get update
+          sudo apt-get install -y python3-venv
+          python3 -m venv "$RUNNER_TEMP/openwisp-venv"
+          "$RUNNER_TEMP/openwisp-venv/bin/pip" install -r requirements-test.txt
+          echo "$RUNNER_TEMP/openwisp-venv/bin" >> "$GITHUB_PATH"
           sudo npm install -g prettier
 
       - name: QA checks
