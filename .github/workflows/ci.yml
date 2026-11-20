@@ -54,7 +54,7 @@ jobs:
         id: auto_install_edge
         if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
         run: |
-          printf "edge\n./.env\n" | sudo -E ./deploy/auto-install.sh \
+          printf "edge\n./.env\n" | sudo ./deploy/auto-install.sh \
               || {
                 sudo cat /opt/openwisp/autoinstall.log || true
                 docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
@@ -89,9 +89,12 @@ jobs:
         id: auto_install_upgrade
         if: ${{ !cancelled() && steps.set_git_branch.conclusion == 'success' }}
         # Do not remove the blank lines from the input.
+        # sudo-rs ignores -E, so preserve the variables needed to test this branch.
         run: |
           printf "edge\n" | \
-            GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true sudo -E ./deploy/auto-install.sh --upgrade \
+            GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true \
+            sudo --preserve-env=GIT_BRANCH,GIT_PATH,SKIP_PULL \
+              ./deploy/auto-install.sh --upgrade \
             || {
               sudo cat /opt/openwisp/autoinstall.log || true
               docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
