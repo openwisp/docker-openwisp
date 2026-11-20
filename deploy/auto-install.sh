@@ -317,7 +317,7 @@ init_setup() {
 		echo -e "  - Root privileges"
 		echo -e "  - Supported systems"
 		echo -e "    - Debian: 11, 12 & 13"
-		echo -e "    - Ubuntu 22.04 & 24.04"
+		echo -e "    - Ubuntu 22.04, 24.04 & 26.04"
 		echo -e ${YLW}"\nUse -u, --upgrade [path] to upgrade an existing installation.\n"${NON}
 	fi
 
@@ -338,7 +338,7 @@ init_setup() {
 
 	if [[ "$system_id" == "Debian" || "$system_id" == "Ubuntu" ]]; then
 		case "$system_release" in
-		22.04 | 24.04 | 11 | 12 | 13)
+		22.04 | 24.04 | 26.04 | 11 | 12 | 13)
 			if [[ "$1" == "upgrade" ]]; then
 				report_ok && upgrade_debian
 			else
@@ -365,7 +365,7 @@ init_help() {
 	echo -e "  - Root privileges"
 	echo -e "  - Supported systems"
 	echo -e "    - Debian: 11, 12 & 13"
-	echo -e "    - Ubuntu 22.04 & 24.04\n"
+	echo -e "    - Ubuntu 22.04, 24.04 & 26.04\n"
 	echo -e "  -i, --install [path]: (default) Install OpenWISP. Default path is /opt/openwisp"
 	echo -e "  -u, --upgrade [path]: Change an OpenWISP installation deployed with this script"
 	echo -e "  -h, --help: See this help message"
