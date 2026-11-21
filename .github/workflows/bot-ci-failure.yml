@@ -96,10 +96,11 @@ jobs:
     if: ${{ needs.find-pr.outputs.pr_number != '' }}
     permissions:
       contents: read
-    uses: openwisp/openwisp-actions/.github/workflows/reusable-bot-ci-failure.yml@61f8fad5c4f6b9b1cf47eb396c2e1c8392aed52f # 0.1.1
+    uses: openwisp/openwisp-actions/.github/workflows/reusable-bot-ci-failure.yml@d6cc603701fe96a84115b060d34e8844a969cc41 # 0.3.0
     with:
       pr_number: ${{ needs.find-pr.outputs.pr_number }}
       head_sha: ${{ github.event.workflow_run.head_sha }}
+      base_sha: ${{ github.event.workflow_run.pull_requests[0].base.sha }}
       head_repo: ${{ github.event.workflow_run.head_repository.full_name }}
       base_repo: ${{ github.repository }}
       run_id: ${{ format('{0}', github.event.workflow_run.id) }}
