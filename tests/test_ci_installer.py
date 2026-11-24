@@ -1,6 +1,7 @@
 """Check dependency phases without installing host tools."""
 
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -41,3 +42,39 @@ class CiInstallerTests(unittest.TestCase):
         result, calls = self.run_installer(CI_SYSTEM_DEPS_READY="1")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(calls, ["python -m pip install -r requirements-test.txt"])
+
+    def test_ci_creates_and_publishes_the_virtualenv(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            fake = path / "python"
+            shutil.copy2(ROOT / "tests" / "scripts" / "ci_fake_python.sh", fake)
+            fake.chmod(0o755)
+            log = path / "calls"
+            github_path = path / "github-path"
+            env = {
+                **os.environ,
+                "PATH": f"{path}:{os.environ['PATH']}",
+                "CALLS": str(log),
+                "GITHUB_PATH": str(github_path),
+                "RUNNER_TEMP": str(path),
+                "CI_SYSTEM_DEPS_READY": "1",
+                "CI_SYSTEM_DEPS_ONLY": "0",
+            }
+            result = subprocess.run(
+                [str(ROOT / "install-ci-deps.sh")],
+                cwd=ROOT,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(
+                log.read_text().splitlines(),
+                [
+                    f"-m venv {path / 'openwisp-venv'}",
+                    "-m pip install -r requirements-test.txt",
+                ],
+            )
+            self.assertEqual(
+                github_path.read_text().strip(), str(path / "openwisp-venv" / "bin")
+            )
