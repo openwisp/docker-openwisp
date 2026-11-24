@@ -71,7 +71,8 @@ class CiInstallerTests(unittest.TestCase):
             self.assertEqual(
                 log.read_text().splitlines(),
                 [
-                    f"-m venv {path / 'openwisp-venv'}",
+                    f"{fake}: -m venv {path / 'openwisp-venv'}",
+                    f"{path / 'openwisp-venv' / 'bin' / 'python'}: "
                     "-m pip install -r requirements-test.txt",
                 ],
             )
