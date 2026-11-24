@@ -44,38 +44,47 @@ class CiInstallerTests(unittest.TestCase):
         self.assertEqual(calls, ["python -m pip install -r requirements-test.txt"])
 
     def test_ci_creates_and_publishes_the_virtualenv(self):
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory)
-            fake = path / "python"
-            shutil.copy2(ROOT / "tests" / "scripts" / "ci_fake_python.sh", fake)
-            fake.chmod(0o755)
-            log = path / "calls"
-            github_path = path / "github-path"
-            env = {
-                **os.environ,
-                "PATH": f"{path}:{os.environ['PATH']}",
-                "CALLS": str(log),
-                "GITHUB_PATH": str(github_path),
-                "RUNNER_TEMP": str(path),
-                "CI_SYSTEM_DEPS_READY": "1",
-                "CI_SYSTEM_DEPS_ONLY": "0",
-            }
-            result = subprocess.run(
-                [str(ROOT / "install-ci-deps.sh")],
-                cwd=ROOT,
-                env=env,
-                capture_output=True,
-                text=True,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(
-                log.read_text().splitlines(),
-                [
-                    f"{fake}: -m venv {path / 'openwisp-venv'}",
-                    f"{path / 'openwisp-venv' / 'bin' / 'python'}: "
-                    "-m pip install -r requirements-test.txt",
-                ],
-            )
-            self.assertEqual(
-                github_path.read_text().strip(), str(path / "openwisp-venv" / "bin")
-            )
+        for fail_pip in (False, True):
+            with self.subTest(fail_pip=fail_pip):
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory)
+                    fake = path / "python"
+                    shutil.copy2(ROOT / "tests" / "scripts" / "ci_fake_python.sh", fake)
+                    fake.chmod(0o755)
+                    log = path / "calls"
+                    github_path = path / "github-path"
+                    env = {
+                        **os.environ,
+                        "PATH": f"{path}:{os.environ['PATH']}",
+                        "CALLS": str(log),
+                        "GITHUB_PATH": str(github_path),
+                        "RUNNER_TEMP": str(path),
+                        "CI_SYSTEM_DEPS_READY": "1",
+                        "CI_SYSTEM_DEPS_ONLY": "0",
+                        "FAIL_PIP": str(int(fail_pip)),
+                    }
+                    result = subprocess.run(
+                        [str(ROOT / "install-ci-deps.sh")],
+                        cwd=ROOT,
+                        env=env,
+                        capture_output=True,
+                        text=True,
+                    )
+                    self.assertEqual(
+                        result.returncode, 17 if fail_pip else 0, result.stderr
+                    )
+                    self.assertEqual(
+                        log.read_text().splitlines(),
+                        [
+                            f"{fake}: -m venv {path / 'openwisp-venv'}",
+                            f"{path / 'openwisp-venv' / 'bin' / 'python'}: "
+                            "-m pip install -r requirements-test.txt",
+                        ],
+                    )
+                    if fail_pip:
+                        self.assertFalse(github_path.exists())
+                    else:
+                        self.assertEqual(
+                            github_path.read_text().strip(),
+                            str(path / "openwisp-venv" / "bin"),
+                        )
