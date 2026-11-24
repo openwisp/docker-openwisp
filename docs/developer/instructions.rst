@@ -102,7 +102,10 @@ Finish Setup and Run Tests
 
    .. code-block:: bash
 
-       python3 tests/runtests.py <TestSuite>.<TestCase>
+       ./runtests <TestSuite>.<TestCase>
+
+The entry point requires a running Compose stack and accepts ``-q``,
+``-v``, and ``-f``. Test code remains untrusted.
 
 Run Quality Assurance Checks
 ----------------------------

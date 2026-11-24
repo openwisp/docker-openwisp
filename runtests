@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+"""Run integration tests against an already running Compose stack."""
+
+import ast
+import os
+import re
+import sys
+from pathlib import Path
+
+
+def main():
+    arguments = sys.argv[1:]
+    labels = []
+    for argument in arguments:
+        if argument in ("-q", "-v", "-f"):
+            continue
+        match = re.fullmatch(r"(Test[A-Za-z0-9_]+)(?:\.test_[A-Za-z0-9_]+)?", argument)
+        if not match:
+            print(f"Unsupported test argument: {argument}", file=sys.stderr)
+            return 2
+        labels.append(match.group(1))
+    if labels:
+        # Read declarations without importing the test module, which connects to Docker.
+        tree = ast.parse(Path("tests/runtests.py").read_text())
+        classes = {
+            node.name
+            for node in tree.body
+            if isinstance(node, ast.ClassDef)
+            and any(
+                isinstance(base, ast.Attribute)
+                and isinstance(base.value, ast.Name)
+                and base.value.id == "unittest"
+                and base.attr == "TestCase"
+                for base in node.bases
+            )
+        }
+        if any(label not in classes for label in labels):
+            print("Unsupported test argument: non-test class", file=sys.stderr)
+            return 2
+    os.execvp(
+        "make", ["make", "develop-pythontests", f"TEST_LABELS={' '.join(arguments)}"]
+    )
+
+
+if __name__ == "__main__":
+    sys.exit(main())
