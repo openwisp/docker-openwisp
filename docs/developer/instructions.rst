@@ -104,8 +104,7 @@ Finish Setup and Run Tests
 
        ./runtests <TestSuite>.<TestCase>
 
-The entry point requires a running Compose stack and accepts ``-q``,
-``-v``, and ``-f``. Test code remains untrusted.
+The entry point requires a running Compose stack.
 
 Run Quality Assurance Checks
 ----------------------------
