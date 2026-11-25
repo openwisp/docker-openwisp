@@ -8,7 +8,6 @@ ENV_BACKUP="$TEST_ENV_BACKUP"
 ENV_USER="$TEST_INSTALL_PATH/config.env"
 LOG_FILE="$TEST_LOG_FILE"
 
-get_version_from_user() { openwisp_version="${TEST_OPENWISP_VERSION:-edge}"; }
 docker() {
 	if [[ "$*" == "compose version --short" ]]; then
 		printf '%s\n' "${TEST_COMPOSE_VERSION-2.33.1}"

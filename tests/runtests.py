@@ -2175,6 +2175,138 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, expected)
 
+    def test_auto_install_non_interactive_validation(self):
+        script = Path(self.root_location) / "deploy/auto-install.sh"
+        cases = (
+            (["--non-interactive"], "--version is required"),
+            (["--non-interactive", "--version", "edge"], "--env-file is required"),
+            (["--version"], "--version requires a value"),
+            (["--version", "--non-interactive"], "--version requires a value"),
+            (["--env-file"], "--env-file requires a value"),
+            (["--env-file", ""], "--env-file requires a value"),
+            (["--env-file", "/missing/openwisp.env"], "Cannot read --env-file"),
+            (["--env-file", "/tmp"], "Cannot read --env-file"),
+            (
+                ["--upgrade", "--env-file", "/tmp/config.env"],
+                "--env-file cannot be used with --upgrade",
+            ),
+            (["--unknown"], "Unknown option"),
+        )
+        for arguments, message in cases:
+            with self.subTest(arguments=arguments):
+                result = subprocess.run(
+                    ["bash", str(script), *arguments],
+                    input="",
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
+                self.assertNotIn("Checking your system capabilities", result.stdout)
+
+    def test_auto_install_options_preserve_configuration(self):
+        script = Path(self.root_location) / "tests/scripts/auto_install.sh"
+        cases = (
+            (
+                "install",
+                [
+                    "--non-interactive",
+                    "--version",
+                    "edge",
+                    "--env-file",
+                    "supplied config.env",
+                ],
+                "",
+                "edge",
+            ),
+            (
+                "upgrade",
+                ["--upgrade", "--non-interactive", "--version", "26.09.3"],
+                "",
+                "26.09.3",
+            ),
+            ("install", [], "edge\nsupplied config.env\n", "edge"),
+            ("install", ["--version", "edge"], "supplied config.env\n", "edge"),
+            ("install", ["--env-file", "supplied config.env"], "26.09.3\n", "26.09.3"),
+        )
+        for action, arguments, user_input, version in cases:
+            with self.subTest(action=action, arguments=arguments):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    tmpdir = Path(tmpdir)
+                    install_path = tmpdir / "install with spaces"
+                    install_path.mkdir()
+                    (install_path / ".env").write_text("DEV_MODE=True\n")
+                    supplied_file = tmpdir / "supplied config.env"
+                    content = (
+                        "OPENWISP_VERSION=old\nDEV_MODE=True\n"
+                        "DB_PASS=existing-password\n"
+                    )
+                    supplied_file.write_text(content)
+                    environment = os.environ.copy()
+                    environment.update(
+                        {
+                            "AUTO_INSTALL_SCRIPT": str(
+                                Path(self.root_location) / "deploy/auto-install.sh"
+                            ),
+                            "TEST_ENV_BACKUP": str(supplied_file),
+                            "TEST_INSTALL_PATH": str(install_path),
+                            "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
+                            "TEST_ACTION": action,
+                        }
+                    )
+                    result = subprocess.run(
+                        ["bash", str(script), *arguments],
+                        cwd=tmpdir,
+                        input=user_input,
+                        capture_output=True,
+                        text=True,
+                        env=environment,
+                        timeout=5,
+                    )
+                    self.assertEqual(
+                        result.returncode, 0, result.stdout + result.stderr
+                    )
+                    expected = content.replace(
+                        "OPENWISP_VERSION=old", f"OPENWISP_VERSION={version}"
+                    ).replace("DEV_MODE=True", "DEV_MODE=False")
+                    self.assertEqual(
+                        sorted((install_path / "started.env").read_text().splitlines()),
+                        sorted(expected.splitlines()),
+                    )
+                    self.assertEqual(supplied_file.read_text(), content)
+                    if "--non-interactive" in arguments:
+                        self.assertNotIn("leave blank", result.stdout)
+
+    def test_auto_install_non_interactive_rejects_unsupported_system(self):
+        command = (
+            "source <(sed '/^## Init script$/,$d' \"$AUTO_INSTALL_SCRIPT\"); "
+            "error_msg_with_continue 'Unsupported system, continue? '"
+        )
+        environment = os.environ.copy()
+        environment["AUTO_INSTALL_SCRIPT"] = str(
+            Path(self.root_location) / "deploy/auto-install.sh"
+        )
+        result = subprocess.run(
+            [
+                "bash",
+                "-c",
+                command,
+                "auto-install.sh",
+                "--upgrade",
+                "--non-interactive",
+                "--version",
+                "edge",
+            ],
+            input="y\n",
+            capture_output=True,
+            text=True,
+            env=environment,
+            timeout=5,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Cannot continue in non-interactive mode", result.stdout)
+
     def test_auto_install_upgrade_checks_compose_before_download(self):
         script = Path(self.root_location) / "tests/scripts/auto_install.sh"
         auto_install_script = Path(self.root_location) / "deploy/auto-install.sh"
@@ -2202,6 +2334,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 result = subprocess.run(
                     ["bash", str(script)],
                     cwd=self.root_location,
+                    input="edge\n",
                     check=False,
                     capture_output=True,
                     text=True,
@@ -2273,6 +2406,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 result = subprocess.run(
                     ["bash", str(script)],
                     cwd=self.root_location,
+                    input="edge\n",
                     check=False,
                     capture_output=True,
                     text=True,
@@ -2394,6 +2528,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     result = subprocess.run(
                         ["bash", str(script)],
                         cwd=self.root_location,
+                        input="edge\n",
                         check=False,
                         capture_output=True,
                         text=True,
@@ -2455,13 +2590,12 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                         "TEST_INSTALL_PATH": str(install_path),
                         "TEST_LOG_FILE": str(tmpdir / "auto-install.log"),
                         "TEST_ACTION": action,
-                        "TEST_OPENWISP_VERSION": version,
                     }
                 )
                 result = subprocess.run(
                     ["bash", str(script)],
                     cwd=self.root_location,
-                    input=f"{supplied_file}\n",
+                    input=f"{version}\n{supplied_file}\n",
                     check=False,
                     capture_output=True,
                     text=True,
