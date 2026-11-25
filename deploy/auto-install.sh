@@ -86,7 +86,7 @@ apt_dependenices_setup() {
 get_version_from_user() {
 	if [[ -z "$openwisp_version" ]]; then
 		echo -ne "${GRN}OpenWISP Version (leave blank for latest stable release): ${NON}"
-		IFS= read -r openwisp_version || error_msg "No version input received."
+		IFS= read -r openwisp_version || [[ -n "$openwisp_version" ]] || error_msg "No version input received."
 	fi
 	if [[ -z "$openwisp_version" ]]; then
 		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)
@@ -130,7 +130,7 @@ setup_docker_openwisp() {
 	get_version_from_user
 	if [[ -z "$env_path" ]]; then
 		echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
-		IFS= read -r env_path || error_msg "No configuration input received."
+		IFS= read -r env_path || [[ -n "$env_path" ]] || error_msg "No configuration input received."
 	fi
 	if [[ ! -f "$env_path" && "$non_interactive" != true ]]; then
 		# Prevent issues when users reinstall carelessly
@@ -163,8 +163,10 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(5/5) Use Let's Encrypt SSL? (y/N, blank for no): "${NON}
 		read use_letsencrypt
 	else
-		cp "$env_path" "$ENV_USER" &>>"$LOG_FILE"
-		check_status $? "Copying the supplied .env file failed."
+		if [[ ! "$env_path" -ef "$ENV_USER" ]]; then
+			cp "$env_path" "$ENV_USER" &>>"$LOG_FILE"
+			check_status $? "Copying the supplied .env file failed."
+		fi
 		use_env_file=true
 	fi
 	echo ""
