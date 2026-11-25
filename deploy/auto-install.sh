@@ -163,7 +163,16 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(5/5) Use Let's Encrypt SSL? (y/N, blank for no): "${NON}
 		read use_letsencrypt
 	else
-		if [[ ! "$env_path" -ef "$ENV_USER" ]]; then
+		# A staging symlink may point into the checkout that will be replaced.
+		if [[ -L "$ENV_USER" ]]; then
+			local staged_env
+			staged_env=$(mktemp "${ENV_USER}.XXXXXX") || error_msg "Creating the staging file failed."
+			if ! cp "$env_path" "$staged_env" &>>"$LOG_FILE" ||
+				! mv -f "$staged_env" "$ENV_USER" &>>"$LOG_FILE"; then
+				rm -f "$staged_env"
+				error_msg "Copying the supplied .env file failed."
+			fi
+		elif [[ ! "$env_path" -ef "$ENV_USER" ]]; then
 			cp "$env_path" "$ENV_USER" &>>"$LOG_FILE"
 			check_status $? "Copying the supplied .env file failed."
 		fi

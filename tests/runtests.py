@@ -2246,8 +2246,19 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                 "linked config.env",
             )
         )
-        for action, arguments, user_input, version in cases:
-            with self.subTest(action=action, arguments=arguments):
+        cases = tuple((*case, False) for case in cases) + (
+            (
+                "install",
+                ["--non-interactive", "--version", "edge", "--env-file", "config.env"],
+                "",
+                "edge",
+                True,
+            ),
+        )
+        for action, arguments, user_input, version, symlink_staging in cases:
+            with self.subTest(
+                action=action, arguments=arguments, symlink_staging=symlink_staging
+            ):
                 with tempfile.TemporaryDirectory() as tmpdir:
                     tmpdir = Path(tmpdir)
                     install_path = tmpdir / "install with spaces"
@@ -2260,6 +2271,8 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     )
                     supplied_file = tmpdir / filename
                     staged_file = tmpdir / "config.env"
+                    if symlink_staging:
+                        staged_file.symlink_to(install_path / ".env")
                     if filename == "linked config.env":
                         supplied_file.symlink_to(staged_file)
                     content = (
@@ -2301,6 +2314,7 @@ class TestLocalUtils(BaseTestUtils, unittest.TestCase):
                     expected = content.replace(
                         "OPENWISP_VERSION=old", f"OPENWISP_VERSION={version}"
                     ).replace("DEV_MODE=True", "DEV_MODE=False")
+                    self.assertFalse((install_path / ".env").is_symlink())
                     self.assertEqual(
                         sorted((install_path / "started.env").read_text().splitlines()),
                         sorted(expected.splitlines()),
