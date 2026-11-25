@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import ssl
 import subprocess
 from time import sleep
@@ -259,6 +260,15 @@ class FunctionalTestUtils(SeleniumTestMixin, BaseTestUtils):
                 # Ignore error generated due to "beforeunload" chrome issue
                 # https://stackoverflow.com/questions/10680544/beforeunload-chrome-issue
                 if "beforeunload" in logentry["message"]:
+                    continue
+                # Chrome no longer permits Django admin's legacy unload handler.
+                # https://developer.chrome.com/blog/unload-deprecated-in-chrome
+                if re.fullmatch(
+                    r"https?://\S+/admin/js/admin/RelatedObjectLookups\.js "
+                    r"\d+(?::\d+)? Permissions policy violation: "
+                    r"unload is not allowed in this document\.",
+                    logentry["message"],
+                ):
                     continue
                 console_logs.append(logentry["message"])
         return console_logs

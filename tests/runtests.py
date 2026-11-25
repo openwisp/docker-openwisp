@@ -1197,6 +1197,42 @@ class TestServices(FunctionalTestUtils, unittest.TestCase):
 class TestLocalUtils(BaseTestUtils, unittest.TestCase):
     """Tests for local utilities"""
 
+    @mock.patch.object(FunctionalTestUtils, "get_browser_logs")
+    def test_console_error_check_keeps_unexpected_errors(self, get_logs):
+        """Ignore only Django admin's known unload deprecation warning."""
+        utils = FunctionalTestUtils()
+        utils.base_driver = mock.sentinel.driver
+        source = (
+            "https://dashboard.openwisp.org/static/admin/js/admin/"
+            "RelatedObjectLookups.js"
+        )
+        warning = (
+            "Permissions policy violation: unload is not allowed in this document."
+        )
+        error = (
+            f"{source} 215 Uncaught TypeError: "
+            "window.dismissRelatedLookupPopup is not a function"
+        )
+        cases = (
+            (f"{source} 214 {warning}", True),
+            (f"{source} 214:7 {warning}", True),
+            (f"https://dashboard.openwisp.org/static/app.js 214 {warning}", False),
+            (f"{source} 214 {warning.replace('unload', 'camera')}", False),
+            (f"{source} 214 Uncaught Error: {warning}", False),
+            (f"{source} 214 {warning} Additional error", False),
+            ("Uncaught ReferenceError: missing is not defined", False),
+        )
+        for message, ignored in cases:
+            with self.subTest(message=message):
+                get_logs.return_value = [
+                    {"level": "SEVERE", "message": message},
+                    {"level": "WARNING", "message": "An ordinary warning"},
+                    {"level": "SEVERE", "message": error},
+                ]
+                expected = [error] if ignored else [message, error]
+                self.assertEqual(utils.console_error_check(), expected)
+                get_logs.assert_called_with(driver=mock.sentinel.driver)
+
     def test_compose_ingress_network_is_ipv4_by_default(self):
         environment = os.environ.copy()
         environment.pop("INGRESS_IPV6_ENABLED", None)
