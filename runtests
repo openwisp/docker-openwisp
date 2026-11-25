@@ -3,22 +3,26 @@
 
 import ast
 import os
-import re
 import sys
 from pathlib import Path
+
+from openwisp_utils.test.runner import (
+    TEST_CLASS_LABEL_PATTERN,
+    InvalidTestArgument,
+    parse_test_arguments,
+)
 
 
 def main():
     arguments = sys.argv[1:]
-    labels = []
-    for argument in arguments:
-        if argument in ("-q", "-v", "-f"):
-            continue
-        match = re.fullmatch(r"(Test[A-Za-z0-9_]+)(?:\.test_[A-Za-z0-9_]+)?", argument)
-        if not match:
-            print(f"Unsupported test argument: {argument}", file=sys.stderr)
-            return 2
-        labels.append(match.group(1))
+    try:
+        matches, _ = parse_test_arguments(
+            arguments, TEST_CLASS_LABEL_PATTERN, ("-q", "-v", "-f")
+        )
+    except InvalidTestArgument as error:
+        print(error, file=sys.stderr)
+        return 2
+    labels = [match.group("class") for match in matches]
     if labels:
         # Read declarations without importing the test module, which connects to Docker.
         tree = ast.parse(Path("tests/runtests.py").read_text())
