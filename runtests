@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Run integration tests against an already running Compose stack."""
+
+import ast
+import os
+import sys
+from pathlib import Path
+
+from openwisp_utils.test.runner import (
+    TEST_CLASS_LABEL_PATTERN,
+    InvalidTestArgument,
+    parse_test_arguments,
+)
+
+
+def main():
+    arguments = sys.argv[1:]
+    try:
+        matches, _ = parse_test_arguments(
+            arguments, TEST_CLASS_LABEL_PATTERN, ("-q", "-v", "-f")
+        )
+    except InvalidTestArgument as error:
+        print(error, file=sys.stderr)
+        return 2
+    labels = [match.group("class") for match in matches]
+    if labels:
+        # Read declarations without importing the test module, which connects to Docker.
+        tree = ast.parse(Path("tests/runtests.py").read_text())
+        classes = {
+            node.name
+            for node in tree.body
+            if isinstance(node, ast.ClassDef)
+            and any(
+                isinstance(base, ast.Attribute)
+                and isinstance(base.value, ast.Name)
+                and base.value.id == "unittest"
+                and base.attr == "TestCase"
+                for base in node.bases
+            )
+        }
+        if any(label not in classes for label in labels):
+            print("Unsupported test argument: non-test class", file=sys.stderr)
+            return 2
+    os.execvp(
+        "make", ["make", "develop-pythontests", f"TEST_LABELS={' '.join(arguments)}"]
+    )
+
+
+if __name__ == "__main__":
+    sys.exit(main())

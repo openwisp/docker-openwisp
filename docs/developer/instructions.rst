@@ -102,7 +102,9 @@ Finish Setup and Run Tests
 
    .. code-block:: bash
 
-       python3 tests/runtests.py <TestSuite>.<TestCase>
+       ./runtests <TestSuite>.<TestCase>
+
+The entry point requires a running Compose stack.
 
 Run Quality Assurance Checks
 ----------------------------

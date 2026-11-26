@@ -19,9 +19,12 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
+  test:
     name: CI Build
     runs-on: ubuntu-26.04
+    env:
+      AI_REVIEW_BROWSERS: chrome
+      AI_REVIEW_SYSTEM_DEPS: "true"
     steps:
       - name: Git Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -29,23 +32,39 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
-      - name: Setup testing environment
+      - name: Set up Python
+        id: python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+
+      - name: Identify runner image
+        id: platform
+        run: echo "image_os=$ImageOS" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pip downloads
+        id: cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/pip
+          key: >-
+            ${{ format('{0}-{1}-{2}-pip-{3}-{4}', runner.os, runner.arch,
+                steps.platform.outputs.image_os, steps.python.outputs.python-version,
+                hashFiles('requirements-test.txt', 'requirements.txt', 'requirements-qa.txt', 'setup.py',
+                'install-ci-deps.sh', 'install-dev.sh')) }}
+
+      - name: Install CI dependencies
         id: deps
+        run: ./install-ci-deps.sh
+
+      - name: Prepare integration environment
         run: |
-          sudo curl -sL -o /bin/hadolint "https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64"
-          sudo chmod +x /bin/hadolint
-          sudo curl -sL -o /usr/local/bin/shfmt "https://github.com/mvdan/sh/releases/download/v3.13.1/shfmt_v3.13.1_linux_amd64"
-          sudo chmod +x /usr/local/bin/shfmt
           echo "127.0.0.1 dashboard.openwisp.org api.openwisp.org" | sudo tee -a /etc/hosts
           # The auto-install script uses production mode, so disable metrics explicitly.
           printf '\nMETRIC_COLLECTION=False\n' >> .env
-          # Isolate pip dependencies to avoid conflicts with Ubuntu's Python packages.
-          sudo apt-get update
-          sudo apt-get install -y python3-venv
-          python3 -m venv "$RUNNER_TEMP/openwisp-venv"
-          "$RUNNER_TEMP/openwisp-venv/bin/pip" install -r requirements-test.txt
-          echo "$RUNNER_TEMP/openwisp-venv/bin" >> "$GITHUB_PATH"
-          sudo npm install -g prettier
+
+      - name: CI entry point tests
+        run: python -m unittest discover -s tests -p 'test_ci_*.py'
 
       - name: QA checks
         run: ./run-qa-checks
@@ -129,7 +148,7 @@ jobs:
           # execute the test from this directory.
           # The containers are already running, so use the target that only
           # executes Python tests without restarting or stopping the stack.
-          command: cd /opt/openwisp/docker-openwisp && make develop-pythontests
+          command: cd /opt/openwisp/docker-openwisp && ./runtests
         env:
           SELENIUM_HEADLESS: 1
 
