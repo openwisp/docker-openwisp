@@ -96,6 +96,24 @@ different directory, pass it to the ``--install`` option:
 
     sudo bash auto-install.sh --install /srv/openwisp
 
+For unattended installations, supply a version and an existing
+configuration file:
+
+.. code-block:: bash
+
+    sudo bash auto-install.sh --non-interactive --version edge --env-file ./production.env
+
+Replace ``edge`` with a release tag to deploy a specific release. The
+supplied file must contain your deployment settings and credentials. The
+installer preserves those settings, sets ``OPENWISP_VERSION`` to the
+selected version, and sets ``DEV_MODE=False``.
+
+``--non-interactive`` requires both ``--version`` and ``--env-file`` for
+installation. Missing values or unreadable files cause an error before
+system setup begins. Unsupported operating systems are rejected without
+asking for confirmation. Without ``--non-interactive``, omitted options
+are prompted for as usual; piped answers remain supported.
+
 The auto-install script maintains a log, which is useful for debugging or
 checking the real-time output of the script. You can view the log by
 running the following command:
@@ -118,6 +136,16 @@ To upgrade an installation in a custom directory, pass its path to the
 .. code-block:: bash
 
     sudo bash auto-install.sh --upgrade /srv/openwisp
+
+For an unattended upgrade, provide the version and keep the existing
+settings:
+
+.. code-block:: bash
+
+    sudo bash auto-install.sh --upgrade /srv/openwisp --non-interactive --version edge
+
+``--env-file`` is not accepted with ``--upgrade`` because upgrades restore
+the existing installation's configuration.
 
 The upgrade requires Docker Compose 2.33.1 or later. If Compose is missing
 or older, the script stops before replacing the existing installation.

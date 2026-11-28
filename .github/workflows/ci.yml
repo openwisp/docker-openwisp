@@ -73,7 +73,7 @@ jobs:
         id: auto_install_edge
         if: ${{ !cancelled() && steps.deps.conclusion == 'success' }}
         run: |
-          printf "edge\n./.env\n" | sudo ./deploy/auto-install.sh \
+          sudo ./deploy/auto-install.sh --non-interactive --version edge --env-file ./.env \
               || {
                 sudo cat /opt/openwisp/autoinstall.log || true
                 docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
@@ -107,18 +107,16 @@ jobs:
       - name: Use auto-install script to upgrade containers to latest version
         id: auto_install_upgrade
         if: ${{ !cancelled() && steps.set_git_branch.conclusion == 'success' }}
-        # Do not remove the blank lines from the input.
         # sudo-rs ignores -E, so preserve the variables needed to test this branch.
         run: |
-          printf "edge\n" | \
-            GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true \
-            sudo --preserve-env=GIT_BRANCH,GIT_PATH,SKIP_PULL \
-              ./deploy/auto-install.sh --upgrade \
-            || {
-              sudo cat /opt/openwisp/autoinstall.log || true
-              docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
-              exit 1
-            }
+          GIT_BRANCH="${GIT_BRANCH}" SKIP_PULL=true \
+          sudo --preserve-env=GIT_BRANCH,GIT_PATH,SKIP_PULL \
+            ./deploy/auto-install.sh --upgrade --non-interactive --version edge \
+          || {
+            sudo cat /opt/openwisp/autoinstall.log || true
+            docker compose --file /opt/openwisp/docker-openwisp/docker-compose.yml logs || true
+            exit 1
+          }
 
       - name: Enable development profile for tests
         id: enable_development_profile

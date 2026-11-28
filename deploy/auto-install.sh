@@ -66,6 +66,9 @@ error_msg() {
 }
 
 error_msg_with_continue() {
+	if [[ "$non_interactive" == true ]]; then
+		error_msg "Cannot continue in non-interactive mode: $1"
+	fi
 	report_error
 	echo -ne ${RED}${1}${NON}
 	read reply
@@ -81,8 +84,10 @@ apt_dependenices_setup() {
 }
 
 get_version_from_user() {
-	echo -ne "${GRN}OpenWISP Version (leave blank for latest stable release): ${NON}"
-	read openwisp_version
+	if [[ -z "$openwisp_version" ]]; then
+		echo -ne "${GRN}OpenWISP Version (leave blank for latest stable release): ${NON}"
+		IFS= read -r openwisp_version || [[ -n "$openwisp_version" ]] || error_msg "No version input received."
+	fi
 	if [[ -z "$openwisp_version" ]]; then
 		openwisp_version=$(curl -L --silent https://api.github.com/repos/openwisp/docker-openwisp/releases/latest | jq -r .tag_name)
 	fi
@@ -120,11 +125,14 @@ download_docker_openwisp() {
 }
 
 setup_docker_openwisp() {
+	local use_env_file=false
 	echo -e ${GRN}"\nOpenWISP Configuration:"${NON}
 	get_version_from_user
-	echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
-	read env_path
-	if [[ ! -f "$env_path" ]]; then
+	if [[ -z "$env_path" ]]; then
+		echo -ne ${GRN}"Do you have .env file? Enter filepath (leave blank for ad-hoc configuration): "${NON}
+		IFS= read -r env_path || [[ -n "$env_path" ]] || error_msg "No configuration input received."
+	fi
+	if [[ ! -f "$env_path" && "$non_interactive" != true ]]; then
 		# Prevent issues when users reinstall carelessly
 		if [[ ! -f "$INSTALL_PATH/.env" ]] && ! has_backup_with_secrets && docker volume inspect "docker-openwisp_postgres_data" &>/dev/null; then
 			{
@@ -155,7 +163,20 @@ setup_docker_openwisp() {
 		echo -ne ${GRN}"(5/5) Use Let's Encrypt SSL? (y/N, blank for no): "${NON}
 		read use_letsencrypt
 	else
-		cp "$env_path" "$ENV_USER" &>>"$LOG_FILE"
+		# A staging symlink may point into the checkout that will be replaced.
+		if [[ -L "$ENV_USER" ]]; then
+			local staged_env
+			staged_env=$(mktemp "${ENV_USER}.XXXXXX") || error_msg "Creating the staging file failed."
+			if ! cp "$env_path" "$staged_env" &>>"$LOG_FILE" ||
+				! mv -f "$staged_env" "$ENV_USER" &>>"$LOG_FILE"; then
+				rm -f "$staged_env"
+				error_msg "Copying the supplied .env file failed."
+			fi
+		elif [[ ! "$env_path" -ef "$ENV_USER" ]]; then
+			cp "$env_path" "$ENV_USER" &>>"$LOG_FILE"
+			check_status $? "Copying the supplied .env file failed."
+		fi
+		use_env_file=true
 	fi
 	echo ""
 
@@ -164,7 +185,8 @@ setup_docker_openwisp() {
 	cd "$INSTALL_PATH" &>>"$LOG_FILE"
 	check_status $? "docker-openwisp download failed."
 
-	if [[ ! -f "$env_path" ]]; then
+	# The original path may no longer exist after replacing the checkout.
+	if [[ "$use_env_file" == false ]]; then
 		# Dashboard Domain
 		set_env "DASHBOARD_DOMAIN" "$dashboard_domain"
 		# API Domain
@@ -368,17 +390,42 @@ init_help() {
 	echo -e "    - Ubuntu 22.04, 24.04 & 26.04\n"
 	echo -e "  -i, --install [path]: (default) Install OpenWISP. Default path is /opt/openwisp"
 	echo -e "  -u, --upgrade [path]: Change an OpenWISP installation deployed with this script"
+	echo -e "  --version <version>: OpenWISP release tag or edge"
+	echo -e "  --env-file <path>: Existing .env file for installation (not upgrades)"
+	echo -e "  --non-interactive: Never prompt; requires --version and, for installation, --env-file"
 	echo -e "  -h, --help: See this help message"
 	echo -e ${NON}
 }
 
 ## Parse command line arguments
+non_interactive=false
+openwisp_version=''
+env_path=''
 while test $# != 0; do
 	case "$1" in
 	-i | --install) action='install' ;;
 	-u | --upgrade) action='upgrade' ;;
-	-h | --help) action='help' ;;
-	*) action='help' ;;
+	-h | --help)
+		action='help'
+		break
+		;;
+	--non-interactive) non_interactive=true ;;
+	--version | --env-file)
+		if [[ -z "$2" || "$2" == -* ]]; then
+			printf '%s requires a value.\n' "$1" >&2
+			exit 1
+		fi
+		if [[ "$1" == "--version" ]]; then
+			openwisp_version="$2"
+		else
+			env_path="$2"
+		fi
+		shift
+		;;
+	*)
+		printf 'Unknown option: %s\n' "$1" >&2
+		exit 1
+		;;
 	esac
 	case "$1" in
 	-i | --install | -u | --upgrade)
@@ -390,6 +437,29 @@ while test $# != 0; do
 	esac
 	shift
 done
+
+# Validate options before creating directories, installing packages, or replacing files.
+if [[ "$action" != "help" ]]; then
+	if [[ "$non_interactive" == true && -z "$openwisp_version" ]]; then
+		echo "--version is required in non-interactive mode." >&2
+		exit 1
+	fi
+	if [[ "$action" == "upgrade" && -n "$env_path" ]]; then
+		echo "--env-file cannot be used with --upgrade; existing settings are preserved." >&2
+		exit 1
+	fi
+	if [[ "$non_interactive" == true && "$action" != "upgrade" && -z "$env_path" ]]; then
+		echo "--env-file is required for non-interactive installation." >&2
+		exit 1
+	fi
+	if [[ -n "$env_path" ]]; then
+		if [[ ! -f "$env_path" || ! -r "$env_path" ]]; then
+			echo "Cannot read --env-file: $env_path" >&2
+			exit 1
+		fi
+		env_path=$(realpath "$env_path") || exit 1
+	fi
+fi
 
 # Define dependent paths after the installation path is decided.
 export INSTALL_PATH="${USER_INSTALL_PATH}/docker-openwisp"

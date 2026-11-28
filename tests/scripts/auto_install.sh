@@ -5,10 +5,9 @@ source <(sed '/^## Init script$/,$d' "$AUTO_INSTALL_SCRIPT")
 
 INSTALL_PATH="$TEST_INSTALL_PATH"
 ENV_BACKUP="$TEST_ENV_BACKUP"
-ENV_USER="$TEST_INSTALL_PATH/config.env"
+ENV_USER="${TEST_ENV_USER:-$TEST_INSTALL_PATH/config.env}"
 LOG_FILE="$TEST_LOG_FILE"
 
-get_version_from_user() { openwisp_version="${TEST_OPENWISP_VERSION:-edge}"; }
 docker() {
 	if [[ "$*" == "compose version --short" ]]; then
 		printf '%s\n' "${TEST_COMPOSE_VERSION-2.33.1}"
@@ -17,7 +16,15 @@ docker() {
 	printf 'docker %s\n' "$*" >>"$INSTALL_PATH/commands.log"
 	[[ "${TEST_FAIL_COMMAND-}" != "compose-$2" ]]
 }
-download_docker_openwisp() { touch "$INSTALL_PATH/downloaded"; }
+download_docker_openwisp() {
+	if [[ "${TEST_REPLACE_CHECKOUT:-false}" == true ]]; then
+		mv "$INSTALL_PATH/.env" "$ENV_BACKUP"
+		rm -rf "$INSTALL_PATH"
+		mkdir -p "$INSTALL_PATH"
+		printf 'DEV_MODE=True\n' >"$INSTALL_PATH/.env"
+	fi
+	touch "$INSTALL_PATH/downloaded"
+}
 start_step() { :; }
 report_ok() { :; }
 make() {
